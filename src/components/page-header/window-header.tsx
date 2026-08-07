@@ -7,7 +7,7 @@ import { Trans, useTranslation } from 'react-i18next';
 import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { redoAction, undoAction } from '../../redux/param/param-slice';
+import { redoAction, undoAction } from '../../redux/project-history';
 import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';

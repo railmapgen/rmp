@@ -73,7 +73,7 @@ describe('StationNameTranslateButton', () => {
             param: {
                 ...realState.param,
                 present: presentGraph.export(),
-                past: [previousGraph.export()],
+                past: [{ kind: 'graph', graph: previousGraph.export() }],
                 future: [],
             },
         });
@@ -89,9 +89,11 @@ describe('StationNameTranslateButton', () => {
         fireEvent.keyDown(englishTextarea, { key: 'z', ctrlKey: true });
 
         expect(getSavedEnglishName(mockStore.getState().param.present)).toBe('');
-        const [futureGraph] = mockStore.getState().param.future;
-        expect(futureGraph).toBeDefined();
-        expect(getSavedEnglishName(futureGraph!)).toBe('Nan Jing Dong Lu');
+        const [futureEntry] = mockStore.getState().param.future;
+        expect(futureEntry?.kind).toBe('graph');
+        if (futureEntry?.kind === 'graph') {
+            expect(getSavedEnglishName(futureEntry.graph)).toBe('Nan Jing Dong Lu');
+        }
         const stationAttrs = window.graph.getNodeAttribute('stn_test', StationType.ShmetroBasic) as StationAttributes;
         expect(stationAttrs.names[1]).toBe('');
     });

@@ -15,7 +15,7 @@ import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
-import { redoAction, undoAction } from '../param/param-slice';
+import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -215,6 +215,16 @@ const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOp
     return 'close';
 };
 
+const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
+    state.selected = new Set<Id>();
+    state.pointerPosition = undefined;
+    state.active = undefined;
+    state.mode = 'free';
+    state.lastTool = undefined;
+    state.isDetailsOpen = 'close';
+    state.radialTouchMenu = defaultRadialTouchMenuState;
+};
+
 const runtimeSlice = createSlice({
     name: 'runtime',
     initialState,
@@ -332,13 +342,23 @@ const runtimeSlice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(undoAction, state => {
+            .addCase(applyUndoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
             })
-            .addCase(redoAction, state => {
+            .addCase(applyRedoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
+            })
+            .addCase(replaceProjectState, state => {
+                /**
+                 * A project replacement can invalidate selected element IDs and
+                 * in-progress tool state. These values are transient, so reset
+                 * them instead of storing them in project history.
+                 */
+                resetProjectInteractionState(state);
             });
     },
 });

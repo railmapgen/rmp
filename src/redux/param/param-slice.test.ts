@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import store from '../index';
-import appReducer, { MAX_UNDO_SIZE, redoAction, saveGraph, undoAction } from './param-slice';
+import appReducer, { applyRedoAction, applyUndoAction, HistoryEntry, MAX_UNDO_SIZE, saveGraph } from './param-slice';
 
 const realStore = store.getState();
 const emptySerializedGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
@@ -18,15 +18,16 @@ describe('ParamSlice', () => {
     it('Can preserve past stack upon save', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));
-        expect(nextState.past).toEqual([emptySerializedGraph]);
+        expect(nextState.past).toEqual([{ kind: 'graph', graph: emptySerializedGraph }]);
     });
 
     it('Can reset future stack upon save', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        const nextState = appReducer(
-            { ...realStore.param, future: Array(MAX_UNDO_SIZE).fill(graph.export()).flat() },
-            saveGraph(graph.export())
-        );
+        const future: HistoryEntry[] = Array.from({ length: MAX_UNDO_SIZE }, () => ({
+            kind: 'graph',
+            graph: graph.export(),
+        }));
+        const nextState = appReducer({ ...realStore.param, future }, saveGraph(graph.export()));
         expect(nextState.future.length).toEqual(0);
     });
 
@@ -38,10 +39,13 @@ describe('ParamSlice', () => {
         const nextState = appReducer(
             {
                 ...realStore.param,
-                past: Array(MAX_UNDO_SIZE).fill(graph.export()).flat(),
+                past: Array.from({ length: MAX_UNDO_SIZE }, () => ({
+                    kind: 'graph' as const,
+                    graph: graph.export(),
+                })),
                 present: newGraph.export(),
             },
-            undoAction()
+            applyUndoAction('graph')
         );
         expect(nextState.past.length).toEqual(MAX_UNDO_SIZE - 1);
         expect(nextState.future.length).toEqual(1);
@@ -56,10 +60,13 @@ describe('ParamSlice', () => {
         const nextState = appReducer(
             {
                 ...realStore.param,
-                future: Array(MAX_UNDO_SIZE).fill(graph.export()).flat(),
+                future: Array.from({ length: MAX_UNDO_SIZE }, () => ({
+                    kind: 'graph' as const,
+                    graph: graph.export(),
+                })),
                 present: oldGraph.export(),
             },
-            redoAction()
+            applyRedoAction('graph')
         );
         expect(nextState.past.length).toEqual(1);
         expect(nextState.future.length).toEqual(MAX_UNDO_SIZE - 1);
@@ -68,10 +75,11 @@ describe('ParamSlice', () => {
 
     it('Can discard old graph if past.length > MAX_UNDO_SIZE', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        const nextState = appReducer(
-            { ...realStore.param, past: Array(MAX_UNDO_SIZE).fill(graph.export()).flat() },
-            saveGraph(graph.export())
-        );
+        const past: HistoryEntry[] = Array.from({ length: MAX_UNDO_SIZE }, () => ({
+            kind: 'graph',
+            graph: graph.export(),
+        }));
+        const nextState = appReducer({ ...realStore.param, past }, saveGraph(graph.export()));
         expect(nextState.past.length).toEqual(MAX_UNDO_SIZE);
     });
 });

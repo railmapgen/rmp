@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootDispatch, RootState } from '..';
-import { setSvgViewport, setSvgViewBoxMin, setSvgViewBoxZoom } from '../param/param-slice';
+import {
+    applyRedoAction,
+    applyUndoAction,
+    replaceProjectState,
+    setSvgViewport,
+    setSvgViewBoxMin,
+    setSvgViewBoxZoom,
+} from '../param/param-slice';
 
 export interface LiveViewport {
     x: number;
@@ -73,6 +80,15 @@ const viewportSlice = createSlice({
             })
             .addCase(setSvgViewBoxMin, state => {
                 state.liveViewport = undefined;
+            })
+            .addCase(replaceProjectState, state => {
+                state.liveViewport = undefined;
+            })
+            .addCase(applyUndoAction, (state, action) => {
+                if (action.payload === 'project') state.liveViewport = undefined;
+            })
+            .addCase(applyRedoAction, (state, action) => {
+                if (action.payload === 'project') state.liveViewport = undefined;
             });
     },
 });
