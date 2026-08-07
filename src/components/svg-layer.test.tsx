@@ -289,4 +289,74 @@ describe('SvgLayer', () => {
         expect(miscNodeGroup).not.toHaveClass('removeMe');
         expect(miscNodeGroup).not.toHaveAttribute('filter');
     });
+
+    it('adds the timeline missing glow to highlighted elements', () => {
+        const elements: Element[] = [
+            {
+                id: 'misc_node_a',
+                type: 'misc-node',
+                miscNode: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 0,
+                    y: 0,
+                    type: MiscNodeType.Virtual,
+                    [MiscNodeType.Virtual]: {},
+                },
+            },
+        ];
+
+        const { container } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    highlighted={new Set(['misc_node_a'])}
+                    handlePointerDown={vi.fn()}
+                    handlePointerMove={vi.fn()}
+                    handlePointerUp={vi.fn()}
+                    handleEdgePointerDown={vi.fn()}
+                    handleEdgeDoubleClick={vi.fn()}
+                />
+            </svg>
+        );
+
+        expect(container.querySelector('#misc_node_a')).toHaveClass('rmp-timeline-missing-glow');
+    });
+
+    it('prefers selected glow when an element is selected and highlighted', () => {
+        const elements: Element[] = [
+            {
+                id: 'misc_node_a',
+                type: 'misc-node',
+                miscNode: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 0,
+                    y: 0,
+                    type: MiscNodeType.Virtual,
+                    [MiscNodeType.Virtual]: {},
+                },
+            },
+        ];
+
+        const { container } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set(['misc_node_a'])}
+                    highlighted={new Set(['misc_node_a'])}
+                    handlePointerDown={vi.fn()}
+                    handlePointerMove={vi.fn()}
+                    handlePointerUp={vi.fn()}
+                    handleEdgePointerDown={vi.fn()}
+                    handleEdgeDoubleClick={vi.fn()}
+                />
+            </svg>
+        );
+
+        const element = container.querySelector('#misc_node_a');
+        expect(element).toHaveClass('rmp-selected-glow');
+        expect(element).not.toHaveClass('rmp-timeline-missing-glow');
+    });
 });
