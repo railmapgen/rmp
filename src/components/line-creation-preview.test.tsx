@@ -63,6 +63,7 @@ describe('LineCreationPreview', () => {
                     gesture={{
                         type: LinePathType.Freeform,
                         source: 'stn_source',
+                        sourcePoint: makePoint(10, 20),
                         pointer,
                         session,
                     }}

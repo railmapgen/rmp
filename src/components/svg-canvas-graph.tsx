@@ -44,7 +44,7 @@ import {
     isNodeSupportSnapLine,
     makeSnapLinesPath,
 } from '../util/snap-lines';
-import { LineCreationPreview, type LineCreationPreviewGesture } from './line-creation-preview';
+import { LineCreationPreview, type LineDrawingGesture } from './line-creation-preview';
 import { Overlay } from './overlay';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
@@ -82,10 +82,6 @@ export const findConnectableTarget = (elements: Element[]) => {
         }
     }
 };
-
-interface LineDrawingGesture extends LineCreationPreviewGesture {
-    sourcePoint: PathPoint;
-}
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();

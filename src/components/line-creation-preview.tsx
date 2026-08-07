@@ -6,9 +6,10 @@ import { Path, PathPoint } from '../constants/path';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 
-export interface LineCreationPreviewGesture {
+export interface LineDrawingGesture {
     type: LinePathType;
     source: NodeId;
+    sourcePoint: PathPoint;
     pointer: PathPoint;
     target?: NodeId;
     session?: LinePathDrawingSession<LinePathAttributes>;
@@ -21,7 +22,7 @@ interface LineCreationPreviewProps {
     theme: Theme;
     source: NodeId;
     pointerOffset: { dx: number; dy: number };
-    gesture?: LineCreationPreviewGesture;
+    gesture?: LineDrawingGesture;
 }
 
 const ignorePointerDown = () => {};
