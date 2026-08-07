@@ -464,4 +464,49 @@ describe('autoUpdateStationType and autoPopulateTransfer', () => {
         // Verify station type remains unchanged (we didn't call autoUpdateStationType)
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
     });
+
+    it('should clear transfer info when only one line color is connected', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const lineColor: Theme = [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black];
+
+        graph.addNode('stn_1', {
+            x: 0,
+            y: 0,
+            type: StationType.GzmtrInt,
+            zIndex: 0,
+            visible: true,
+            [StationType.GzmtrInt]: {
+                names: ['Station 1', 'Stn 1'],
+                nameOffsetX: 'right' as const,
+                nameOffsetY: 'top' as const,
+                transfer: [[[CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black, '', '']]],
+                open: true,
+                secondaryNames: ['', ''],
+                tram: false,
+            },
+        });
+        graph.addNode('stn_2', { x: 100, y: 0, type: StationType.GzmtrBasic, zIndex: 0, visible: true });
+        graph.addDirectedEdge('stn_1', 'stn_2', {
+            type: LinePathType.Diagonal,
+            style: LineStyleType.SingleColor,
+            zIndex: 0,
+            reconcileId: '',
+            visible: true,
+            parallelIndex: -1,
+            [LinePathType.Diagonal]: {
+                startFrom: 'from',
+                offsetFrom: 0,
+                offsetTo: 0,
+                roundCornerFactor: 0,
+            },
+            [LineStyleType.SingleColor]: {
+                color: lineColor,
+            },
+        });
+
+        const updated = autoPopulateTransfer(graph, 'stn_1');
+
+        expect(updated).toBe(true);
+        expect(graph.getNodeAttribute('stn_1', StationType.GzmtrInt)!.transfer).toEqual([[]]);
+    });
 });

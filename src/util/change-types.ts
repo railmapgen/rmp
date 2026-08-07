@@ -470,6 +470,7 @@ export const autoUpdateStationType = (
  * Automatically populate transfer information based on connected line colors.
  * - Merges existing transfer info with new line colors
  * - Filters out transfer info for lines that are no longer connected
+ * - Clears transfer info when fewer than two distinct line colors are connected
  * - Only updates stations that support the transfer property
  *
  * @param graph Graph instance
@@ -498,6 +499,14 @@ export const autoPopulateTransfer = (
     // Get current transfer info, defaulting to empty array if not set
     const currentTransfer =
         (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer?.at(0) ?? [];
+
+    if (lineColorStr.size < 2) {
+        if (currentTransfer.length > 0) {
+            updateStationTransfer(graph, station, currentType, []);
+            return true;
+        }
+        return false;
+    }
 
     // Filter existing transfer info to keep only those still connected
     const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
