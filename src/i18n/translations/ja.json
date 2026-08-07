@@ -829,15 +829,41 @@
             "video": "ビデオをエクスポート",
             "videoExport": {
                 "title": "ビデオをエクスポート",
+                "groups": {
+                    "output": "出力設定",
+                    "viewport": "ビュー設定",
+                    "rendering": "レンダリング設定",
+                    "sharing": "共有と利用規約"
+                },
                 "fps": "フレームレート（FPS）",
                 "duration": "長さ（秒）",
+                "resolution": "ビデオ解像度",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
                 "quality": "ビデオ品質",
+                "currentScale": "現在のビューの拡大率（全体表示 = 100%）",
+                "fullscreenScale": "全画面ビューの拡大率（全体表示 = 100%）",
+                "autoChangeStationType": "一般駅と乗換駅を自動的に切り替える",
+                "autoChangeStationTypeHint": "有効にすると、動画内で現在表示されている路線に基づいて、対応する以下の乗換駅が自動的に調整されます：{{stations}}。",
+                "autoChangeStationTypeWarning": "動画内の駅名位置や乗換情報が現在のマップと一致しない場合は、「一般駅と乗換駅を自動的に切り替える」をオフにすると、マップの現在の状態どおりに駅を描画できます。",
                 "generating": "ビデオを生成しています...",
+                "transcoding": "MP4に変換しています...",
                 "progress": "進捗: {{progress}}%",
                 "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "timelineGuide": "駅と路線はタイムラインに設定された順序で描画されます。タイムラインが未設定の場合は、既定の順序が使用されます。",
+                "editTimeline": "タイムラインを編集",
                 "shareInfo1": "この動画を共有する際には",
                 "shareInfo2": "とそのリンクを添付します。",
-                "format": "WebM形式",
+                "format": "ビデオ形式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4は透過背景に対応していないため、現在の画面背景色を使用します。",
                 "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
                 "noNodes": "ビデオを書き出せません: グラフにノードがありません。"
             },

@@ -827,15 +827,41 @@
             "video": "Export video",
             "videoExport": {
                 "title": "Export Video",
+                "groups": {
+                    "output": "Output settings",
+                    "viewport": "Viewport settings",
+                    "rendering": "Rendering settings",
+                    "sharing": "Sharing and permissions"
+                },
                 "fps": "Frames per second (FPS)",
                 "duration": "Duration (seconds)",
+                "resolution": "Video resolution",
+                "resolutions": {
+                    "720p": "720p (1280×720)",
+                    "1080p": "1080p (1920×1080)",
+                    "2k": "2K (2560×1440)",
+                    "4k": "4K (3840×2160)"
+                },
                 "quality": "Video quality",
+                "currentScale": "Current viewport zoom (fit all = 100%)",
+                "fullscreenScale": "Fullscreen viewport zoom (fit all = 100%)",
+                "autoChangeStationType": "Automatically switch basic and interchange stations",
+                "autoChangeStationTypeHint": "When enabled, the following supported interchange stations are updated automatically based on the lines currently visible in the video: {{stations}}.",
+                "autoChangeStationTypeWarning": "If station-name positioning or interchange information in the video differs from the current map, turn off “Automatically switch basic and interchange stations” to render stations exactly as they appear on the map.",
                 "generating": "Generating video...",
+                "transcoding": "Converting to MP4...",
                 "progress": "Progress: {{progress}}%",
                 "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
+                "timelineGuide": "Stations and lines are rendered in the order set on the timeline. If the timeline has not been configured, the default order is used.",
+                "editTimeline": "Edit timeline",
                 "shareInfo1": "I will attach ",
                 "shareInfo2": " and its link when I share this video.",
-                "format": "WebM format",
+                "format": "Video format",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4 does not support transparent backgrounds. The current interface background will be used.",
                 "error": "Video export failed. Please try again.",
                 "noNodes": "Cannot export video: No nodes in the graph."
             },

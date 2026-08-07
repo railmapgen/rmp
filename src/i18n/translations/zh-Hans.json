@@ -826,15 +826,41 @@
             "video": "导出视频",
             "videoExport": {
                 "title": "导出视频",
+                "groups": {
+                    "output": "输出设置",
+                    "viewport": "视角设置",
+                    "rendering": "渲染设置",
+                    "sharing": "分享与许可"
+                },
                 "fps": "每秒帧数 (FPS)",
                 "duration": "时长（秒）",
+                "resolution": "视频分辨率",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
                 "quality": "视频质量",
+                "currentScale": "当前视角放大倍率（全图 = 100%）",
+                "fullscreenScale": "全屏视角放大倍率（全图 = 100%）",
+                "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "autoChangeStationTypeHint": "开启后，将根据视频中当前已显示的线路自动调整以下受支持的换乘站：{{stations}}。",
+                "autoChangeStationTypeWarning": "如果视频中的站名位置或换乘信息与当前地图不一致，请关闭“自动切换基本车站与换乘车站”，以完全按照地图当前状态渲染车站。",
                 "generating": "正在生成视频...",
+                "transcoding": "正在转换为 MP4...",
                 "progress": "进度：{{progress}}%",
                 "description": "此功能会导出一个动画视频，展示节点和线路逐步绘制的过程。",
+                "timelineGuide": "视频会按照时间线中设置的顺序依次渲染车站和线路；如果尚未设置时间线，则使用默认顺序。",
+                "editTimeline": "修改时间线",
                 "shareInfo1": "当我分享此视频时我会附上",
                 "shareInfo2": "和它的链接。",
-                "format": "WebM 格式",
+                "format": "视频格式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4 不支持透明背景，将使用当前界面背景色。",
                 "error": "视频导出失败，请重试。",
                 "noNodes": "无法导出视频：图中没有节点。"
             },

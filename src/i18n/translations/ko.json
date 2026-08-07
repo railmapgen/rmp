@@ -826,15 +826,41 @@
             "video": "비디오 내보내기",
             "videoExport": {
                 "title": "비디오 내보내기",
+                "groups": {
+                    "output": "출력 설정",
+                    "viewport": "보기 설정",
+                    "rendering": "렌더링 설정",
+                    "sharing": "공유 및 약관"
+                },
                 "fps": "프레임 속도 (FPS)",
                 "duration": "길이 (초)",
+                "resolution": "비디오 해상도",
+                "resolutions": {
+                    "720p": "720p (1280×720)",
+                    "1080p": "1080p (1920×1080)",
+                    "2k": "2K (2560×1440)",
+                    "4k": "4K (3840×2160)"
+                },
                 "quality": "비디오 품질",
+                "currentScale": "현재 보기 확대 배율(전체 맞춤 = 100%)",
+                "fullscreenScale": "전체 화면 보기 확대 배율(전체 맞춤 = 100%)",
+                "autoChangeStationType": "일반역과 환승역 자동 전환",
+                "autoChangeStationTypeHint": "활성화하면 비디오에 현재 표시된 노선을 기준으로 다음 지원 환승역이 자동으로 조정됩니다: {{stations}}.",
+                "autoChangeStationTypeWarning": "비디오의 역명 위치 또는 환승 정보가 현재 지도와 일치하지 않으면, 지도의 현재 상태 그대로 역을 렌더링할 수 있도록 ‘일반역과 환승역 자동 전환’을 끄세요.",
                 "generating": "비디오를 생성하는 중...",
+                "transcoding": "MP4로 변환하는 중...",
                 "progress": "진행률: {{progress}}%",
                 "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "timelineGuide": "역과 노선은 타임라인에 설정된 순서대로 렌더링됩니다. 타임라인이 설정되지 않은 경우 기본 순서가 사용됩니다.",
+                "editTimeline": "타임라인 편집",
                 "shareInfo1": "이 동영상을 공유할 때",
                 "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
-                "format": "WebM 형식",
+                "format": "비디오 형식",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4는 투명 배경을 지원하지 않으므로 현재 화면 배경색을 사용합니다.",
                 "error": "비디오 내보내기에 실패했습니다. 다시 시도해 주세요.",
                 "noNodes": "비디오를 내보낼 수 없습니다: 그래프에 노드가 없습니다."
             },
