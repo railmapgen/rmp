@@ -568,8 +568,6 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    const { path: drawingLinePath, style: drawingLineStyle } = getLinePathAndStyle(mode);
-
     return (
         <>
             <SvgLayer
@@ -581,17 +579,7 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
                 handleEdgeDoubleClick={handleEdgeDoubleClick}
             />
-            {drawingLinePath && drawingLineStyle && active && active !== 'background' && (
-                <LineCreationPreview
-                    graph={graph.current}
-                    linePath={drawingLinePath}
-                    lineStyle={drawingLineStyle}
-                    theme={theme}
-                    source={active}
-                    pointerOffset={pointerOffset}
-                    gesture={drawingGesture.current}
-                />
-            )}
+            <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
             <Overlay />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (

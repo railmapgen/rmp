@@ -1,8 +1,8 @@
-import type { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId, Theme } from '../constants/constants';
+import { EdgeAttributes, getLinePathAndStyle, NodeId } from '../constants/constants';
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { Path, PathPoint } from '../constants/path';
+import { useRootSelector } from '../redux';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 
@@ -16,11 +16,6 @@ export interface LineDrawingGesture {
 }
 
 interface LineCreationPreviewProps {
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-    linePath: LinePathType;
-    lineStyle: LineStyleType;
-    theme: Theme;
-    source: NodeId;
     pointerOffset: { dx: number; dy: number };
     gesture?: LineDrawingGesture;
 }
@@ -28,17 +23,33 @@ interface LineCreationPreviewProps {
 const ignorePointerDown = () => {};
 
 export const LineCreationPreview = (props: LineCreationPreviewProps) => {
-    const { graph, linePath, lineStyle, theme, source, pointerOffset, gesture } = props;
-    const LineStyleComponent = lineStyles[lineStyle].component;
+    const { pointerOffset, gesture } = props;
+    const mode = useRootSelector(state => state.runtime.mode);
+    const theme = useRootSelector(state => state.runtime.theme);
+    const source = useRootSelector(state => state.runtime.active);
+    const { path: linePath, style: lineStyle } = getLinePathAndStyle(mode);
     const lineStyleAttrs = React.useMemo(() => {
+        if (!lineStyle) return;
         const attrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
         // TODO: there should be some way for a style to disable auto theme injection
         if ('color' in attrs && lineStyle !== LineStyleType.River) attrs.color = theme;
         return attrs;
     }, [lineStyle, theme]);
 
-    if ((gesture && gesture.type !== linePath) || !graph.hasNode(source)) return null;
+    const graph = window.graph;
+    if (
+        !linePath ||
+        !lineStyle ||
+        !lineStyleAttrs ||
+        !source ||
+        source === 'background' ||
+        (gesture && gesture.type !== linePath) ||
+        !graph.hasNode(source)
+    ) {
+        return null;
+    }
 
+    const LineStyleComponent = lineStyles[lineStyle].component;
     const sourcePoint = {
         x: graph.getNodeAttribute(source, 'x'),
         y: graph.getNodeAttribute(source, 'y'),

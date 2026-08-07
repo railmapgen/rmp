@@ -5,8 +5,9 @@ import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { makeLinearPath, makePoint } from '../constants/path';
 import { StationType } from '../constants/stations';
+import { createStore } from '../redux';
 import { render } from '../test-utils';
-import { LineCreationPreview } from './line-creation-preview';
+import { LineCreationPreview, LineDrawingGesture } from './line-creation-preview';
 
 const RED: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 
@@ -22,20 +23,28 @@ const makeGraph = () => {
     return graph;
 };
 
+const renderPreview = (linePath: LinePathType, gesture?: LineDrawingGesture) => {
+    window.graph = makeGraph();
+    const initialState = createStore().getState();
+    const store = createStore({
+        runtime: {
+            ...initialState.runtime,
+            active: 'stn_source',
+            mode: `line-${linePath}/${LineStyleType.SingleColor}`,
+            theme: RED,
+        },
+    });
+    return render(
+        <svg>
+            <LineCreationPreview pointerOffset={{ dx: -100, dy: 0 }} gesture={gesture} />
+        </svg>,
+        { store }
+    );
+};
+
 describe('LineCreationPreview', () => {
     it('renders an endpoint-derived path with the selected style and theme', () => {
-        const { container } = render(
-            <svg>
-                <LineCreationPreview
-                    graph={makeGraph()}
-                    linePath={LinePathType.Simple}
-                    lineStyle={LineStyleType.SingleColor}
-                    theme={RED}
-                    source="stn_source"
-                    pointerOffset={{ dx: -100, dy: 0 }}
-                />
-            </svg>
-        );
+        const { container } = renderPreview(LinePathType.Simple);
 
         const path = container.querySelector('path');
         expect(path).toHaveAttribute('d', 'M 10 20 L 110 20');
@@ -51,25 +60,13 @@ describe('LineCreationPreview', () => {
             createAttrs: vi.fn(),
             getPreviewPath: vi.fn(() => previewPath),
         };
-        const { container } = render(
-            <svg>
-                <LineCreationPreview
-                    graph={makeGraph()}
-                    linePath={LinePathType.Freeform}
-                    lineStyle={LineStyleType.SingleColor}
-                    theme={RED}
-                    source="stn_source"
-                    pointerOffset={{ dx: -100, dy: 0 }}
-                    gesture={{
-                        type: LinePathType.Freeform,
-                        source: 'stn_source',
-                        sourcePoint: makePoint(10, 20),
-                        pointer,
-                        session,
-                    }}
-                />
-            </svg>
-        );
+        const { container } = renderPreview(LinePathType.Freeform, {
+            type: LinePathType.Freeform,
+            source: 'stn_source',
+            sourcePoint: makePoint(10, 20),
+            pointer,
+            session,
+        });
 
         expect(session.getPreviewPath).toHaveBeenCalledWith(pointer);
         expect(container.querySelector('g')).toHaveAttribute('opacity', '0.65');
