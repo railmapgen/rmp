@@ -5,12 +5,12 @@ import { Id, NodeId } from '../../constants/constants';
 import { TimelineDocument } from '../../constants/timeline';
 import { useRootSelector } from '../../redux';
 import {
-    appendTimelineEntry,
-    appendTimelineEntries,
     findShortestPathByLine,
     getAdjacentLineColors,
     getTimelineEntrySubtitle,
     getTimelineEntryTitle,
+    insertTimelineEntries,
+    insertTimelineEntry,
     moveTimelineEntry,
     removeTimelineEntry,
 } from '../../util/timeline';
@@ -43,6 +43,7 @@ export default function TimelineTrackPanel({
     const toast = useToast();
     const graph = React.useRef(window.graph);
     const [draftDocument, setDraftDocument] = React.useState(document);
+    const [insertionIndex, setInsertionIndex] = React.useState(document.track.length);
     const dragEntryIdRef = React.useRef<string | null>(null);
     const dragDocumentRef = React.useRef(document);
 
@@ -58,6 +59,7 @@ export default function TimelineTrackPanel({
 
     React.useEffect(() => {
         setDraftDocument(document);
+        setInsertionIndex(currentIndex => Math.min(currentIndex, document.track.length));
         dragDocumentRef.current = document;
     }, [document]);
 
@@ -71,9 +73,10 @@ export default function TimelineTrackPanel({
             const destNode = selectedId as NodeId;
             const path = findShortestPathByLine(graph.current, pathMode.startNode, destNode, pathMode.themeStr!);
             if (path) {
-                const nextDocument = appendTimelineEntries(draftDocument, path);
+                const nextDocument = insertTimelineEntries(draftDocument, path, insertionIndex);
                 const addedCount = nextDocument.track.length - draftDocument.track.length;
                 if (addedCount > 0) {
+                    setInsertionIndex(Math.min(insertionIndex, draftDocument.track.length) + addedCount);
                     toast({
                         title: t('header.timelinePage.pathAdded', { count: addedCount }),
                         status: 'success',
@@ -100,7 +103,7 @@ export default function TimelineTrackPanel({
             }
             setPathMode(null);
         }
-    }, [selectedId, pathMode, draftDocument, onDocumentChange, t, toast]);
+    }, [selectedId, pathMode, draftDocument, insertionIndex, onDocumentChange, t, toast]);
 
     const selectedEntry = React.useMemo(() => {
         if (!selectedId) return undefined;
@@ -120,6 +123,10 @@ export default function TimelineTrackPanel({
 
     const hasSelectedEntry = !!selectedEntry;
     const isDuplicate = !!selectedId && draftDocument.track.some(entry => entry.refId === selectedId);
+    const insertionLabel =
+        insertionIndex === draftDocument.track.length
+            ? t('header.timelinePage.cursorEnd')
+            : t('header.timelinePage.cursorBefore', { position: insertionIndex + 1 });
 
     const adjacentLineColors = React.useMemo(() => {
         if (selectedEntry?.kind === 'node') {
@@ -130,13 +137,23 @@ export default function TimelineTrackPanel({
 
     const handleAddSelected = () => {
         if (!selectedId) return;
-        const nextDocument = appendTimelineEntry(draftDocument, selectedId);
+        const nextDocument = insertTimelineEntry(draftDocument, selectedId, insertionIndex);
+        if (nextDocument === draftDocument) return;
+
+        setInsertionIndex(Math.min(insertionIndex, draftDocument.track.length) + 1);
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
     };
 
     const handleRemoveEntry = (entryId: string) => {
+        const removedIndex = draftDocument.track.findIndex(entry => entry.id === entryId);
         const nextDocument = removeTimelineEntry(draftDocument, entryId);
+        if (nextDocument === draftDocument || removedIndex === -1) return;
+
+        setInsertionIndex(currentIndex => {
+            const adjustedIndex = removedIndex < currentIndex ? currentIndex - 1 : currentIndex;
+            return Math.min(adjustedIndex, nextDocument.track.length);
+        });
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
     };
@@ -187,6 +204,9 @@ export default function TimelineTrackPanel({
                         <HStack spacing={2}>
                             <Text fontWeight="bold">{t('header.timelinePage.trackTitle')}</Text>
                             <Badge>{draftDocument.track.length}</Badge>
+                            <Text fontSize="xs" color="blue.600" noOfLines={1}>
+                                {insertionLabel}
+                            </Text>
                         </HStack>
                         {hasSelectedEntry ? (
                             <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
@@ -297,7 +317,9 @@ export default function TimelineTrackPanel({
                         document={draftDocument}
                         graph={graph.current}
                         selectedId={selectedId}
+                        insertionIndex={insertionIndex}
                         onSelectEntry={onSelectEntry}
+                        onInsertionIndexChange={setInsertionIndex}
                         onRemoveEntry={handleRemoveEntry}
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}

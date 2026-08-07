@@ -773,6 +773,8 @@
             "noPathFound": "선택한 색상의 경로를 찾을 수 없습니다.",
             "pathAdded": "트랙에 {{count}}개의 요소를 성공적으로 추가했습니다.",
             "pathAlreadyAdded": "이 경로의 모든 요소가 이미 추가되었습니다.",
+            "cursorBefore": "새 콘텐츠를 {{position}}번째 항목 앞에 삽입",
+            "cursorEnd": "새 콘텐츠를 트랙 끝에 삽입",
             "empty": "트랙이 비어 있습니다. 위에서 요소를 선택해 타임라인을 시작하세요.",
             "missingCoverage": "{{nodeCount}}개 노드와 {{edgeCount}}개 선분이 타임라인에 아직 추가되지 않았습니다.",
             "highlightMissing": "누락 항목 강조",

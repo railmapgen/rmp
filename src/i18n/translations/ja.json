@@ -776,6 +776,8 @@
             "noPathFound": "選択した色のパスが見つかりません。",
             "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
             "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
+            "cursorBefore": "新しい内容を {{position}} 番目の項目の前に挿入",
+            "cursorEnd": "新しい内容をトラックの末尾に挿入",
             "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。",
             "missingCoverage": "{{nodeCount}} 個のノードと {{edgeCount}} 本の線分がタイムラインに未追加です。",
             "highlightMissing": "未追加を強調",

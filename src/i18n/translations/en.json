@@ -774,6 +774,8 @@
             "noPathFound": "No path found between selected stations along this line.",
             "pathAdded": "Successfully added {{count}} elements to the track.",
             "pathAlreadyAdded": "All elements in this path are already added.",
+            "cursorBefore": "Insert new content before item {{position}}",
+            "cursorEnd": "Insert new content at the end of the track",
             "empty": "The track is empty. Select an element above to start building the timeline.",
             "missingCoverage": "Nodes not added: {{nodeCount}}; line segments not added: {{edgeCount}}.",
             "highlightMissing": "Highlight missing",

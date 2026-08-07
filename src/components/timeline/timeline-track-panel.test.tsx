@@ -23,6 +23,11 @@ vi.mock('react-i18next', () => ({
             if (key === 'header.timelinePage.empty') {
                 return 'The track is empty. Select an element above to start building the timeline.';
             }
+            if (key === 'header.timelinePage.addSelected') return 'Add selected';
+            if (key === 'header.timelinePage.cursorBefore') {
+                return `Insert new content before item ${options?.position}`;
+            }
+            if (key === 'header.timelinePage.cursorEnd') return 'Insert new content at the end of the track';
             return key;
         },
     }),
@@ -89,5 +94,30 @@ describe('TimelineTrackPanel', () => {
 
         expect(screen.queryByText('All nodes and edges are added to the timeline.')).not.toBeNull();
         expect(screen.queryByRole('button', { name: 'Highlight missing' })).toBeNull();
+    });
+
+    it('should insert selected content at the cursor position', () => {
+        const onDocumentChange = vi.fn();
+        renderPanel({
+            document: {
+                version: 1,
+                track: [
+                    { id: 'clip_a', kind: 'node', refId: 'stn_a' },
+                    { id: 'clip_b', kind: 'node', refId: 'stn_b' },
+                ],
+            },
+            selectedId: 'stn_c',
+            onDocumentChange,
+        });
+
+        fireEvent.click(screen.getByRole('button', { name: 'Insert new content before item 2' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Add selected' }));
+
+        expect(onDocumentChange).toHaveBeenCalledOnce();
+        expect(onDocumentChange.mock.calls[0][0].track.map((entry: { refId: string }) => entry.refId)).toEqual([
+            'stn_a',
+            'stn_c',
+            'stn_b',
+        ]);
     });
 });

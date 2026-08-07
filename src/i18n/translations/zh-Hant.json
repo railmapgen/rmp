@@ -773,6 +773,8 @@
             "noPathFound": "所選顏色在這兩站之間沒有找到路徑。",
             "pathAdded": "成功將 {{count}} 個元素添加進軌道。",
             "pathAlreadyAdded": "此路徑中的所有元素都已存在於軌道中。",
+            "cursorBefore": "將新增內容插入第 {{position}} 項之前",
+            "cursorEnd": "將新增內容插入軌道末尾",
             "empty": "軌道仍是空的。先在上方選擇元素，再開始建立時間線。",
             "missingCoverage": "還有 {{nodeCount}} 個節點、{{edgeCount}} 條線段未加入時間線。",
             "highlightMissing": "高亮遺漏",

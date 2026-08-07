@@ -50,13 +50,21 @@ export const createTimelineEntry = (refId: Id): TimelineEntry => {
         : { id: `timeline_${nanoid(10)}`, kind: 'edge', refId };
 };
 
-export const appendTimelineEntry = (doc: TimelineDocument, refId: Id): TimelineDocument => {
+export const insertTimelineEntry = (doc: TimelineDocument, refId: Id, index: number): TimelineDocument => {
     if (doc.track.some(entry => entry.refId === refId)) return doc;
+
+    const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
+    const track = [...doc.track];
+    track.splice(insertionIndex, 0, createTimelineEntry(refId));
 
     return {
         ...doc,
-        track: [...doc.track, createTimelineEntry(refId)],
+        track,
     };
+};
+
+export const appendTimelineEntry = (doc: TimelineDocument, refId: Id): TimelineDocument => {
+    return insertTimelineEntry(doc, refId, doc.track.length);
 };
 
 export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): TimelineDocument => ({
@@ -132,7 +140,8 @@ export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEn
 };
 
 export const getTimelineEntryAccent = (graph: TimelineGraph, entry: TimelineEntry): string[] => {
-    if (entry.kind === 'node') return ['#2B6CB0'];
+    if (entry.kind === 'node' && entry.refId.startsWith('stn_')) return ['#c3e1f3'];
+    if (entry.kind === 'node' && entry.refId.startsWith('misc_')) return ['#f3c3e1'];
     if (!graph.hasEdge(entry.refId)) return ['#718096'];
 
     const attrs = graph.getEdgeAttributes(entry.refId) as Record<string, any>;
@@ -279,10 +288,28 @@ export const findShortestPathByLine = (
     return null;
 };
 
+export const insertTimelineEntries = (doc: TimelineDocument, refIds: Id[], index: number): TimelineDocument => {
+    const existingRefs = new Set<Id>(doc.track.map(entry => entry.refId));
+    const entries = refIds
+        .filter(refId => {
+            if (existingRefs.has(refId)) return false;
+            existingRefs.add(refId);
+            return true;
+        })
+        .map(createTimelineEntry);
+
+    if (entries.length === 0) return doc;
+
+    const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
+    const track = [...doc.track];
+    track.splice(insertionIndex, 0, ...entries);
+
+    return {
+        ...doc,
+        track,
+    };
+};
+
 export const appendTimelineEntries = (doc: TimelineDocument, refIds: Id[]): TimelineDocument => {
-    let currentDoc = doc;
-    for (const refId of refIds) {
-        currentDoc = appendTimelineEntry(currentDoc, refId);
-    }
-    return currentDoc;
+    return insertTimelineEntries(doc, refIds, doc.track.length);
 };
