@@ -4,7 +4,7 @@ import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../constant
 import { MiscNodeType } from '../constants/nodes';
 import { defaultRadialTouchMenuState } from '../components/touch/radial-touch-menu';
 import { createStore } from '.';
-import { ParamGraph, ProjectSnapshot, saveGraph, setFullState, setSvgViewport } from './param/param-slice';
+import { initializeProject, ParamGraph, ProjectSnapshot, saveGraph, setSvgViewport } from './param/param-slice';
 import { redoAction, replaceProject, undoAction } from './project-history';
 import {
     setActive,
@@ -42,14 +42,7 @@ const createProject = (
 
 const createProjectStore = (project: ProjectSnapshot) => {
     const testStore = createStore();
-    testStore.dispatch(
-        setFullState({
-            ...testStore.getState().param,
-            present: project,
-            past: [],
-            future: [],
-        })
-    );
+    testStore.dispatch(initializeProject(project));
     window.graph = MultiDirectedGraph.from(project.graph);
     return testStore;
 };

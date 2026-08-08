@@ -77,11 +77,12 @@ const paramSlice = createSlice({
     initialState,
     reducers: {
         /**
-         * Only set full state in initialization or undo/redo won't work.
-         * It relies on changes to be updated by saveGraph.
+         * Initializes the project without creating a history entry.
          */
-        setFullState: (state, action: PayloadAction<ParamState>) => {
-            return structuredClone(action.payload);
+        initializeProject: (state, action: PayloadAction<ProjectSnapshot>) => {
+            state.present = structuredClone(action.payload);
+            state.past = [];
+            state.future = [];
         },
         saveGraph: (state, action: PayloadAction<ParamGraph>) => {
             state.future = [];
@@ -126,6 +127,12 @@ const paramSlice = createSlice({
     },
 });
 
-export const { setFullState, saveGraph, replaceProjectState, setSvgViewport, setSvgViewBoxZoom, setSvgViewBoxMin } =
-    paramSlice.actions;
+export const {
+    initializeProject,
+    saveGraph,
+    replaceProjectState,
+    setSvgViewport,
+    setSvgViewBoxZoom,
+    setSvgViewBoxMin,
+} = paramSlice.actions;
 export default paramSlice.reducer;

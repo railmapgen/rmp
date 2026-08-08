@@ -23,7 +23,7 @@ import {
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
 } from './app/app-slice';
-import { ParamState, setFullState } from './param/param-slice';
+import { initializeProject } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 
@@ -102,10 +102,9 @@ export const initStore = async (store: RootStore) => {
     // Upgrade param and inject to ParamState.
     const param = await upgrade(paramState);
 
-    const { version, ...present } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(present.graph);
-    const state: ParamState = { present, past: [], future: [] };
-    store.dispatch(setFullState(state));
+    const { version, ...project } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(project.graph);
+    store.dispatch(initializeProject(project));
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 

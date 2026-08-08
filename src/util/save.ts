@@ -161,8 +161,9 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 /**
  * Return a valid save string from ParamState.
  */
-export const stringifyParam = (paramState: ParamState) => {
+export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
     const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
+    if (paramState.images) save.images = paramState.images;
     return JSON.stringify(save);
 };
 

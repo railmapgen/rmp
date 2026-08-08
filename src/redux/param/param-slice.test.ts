@@ -3,7 +3,14 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import store from '../index';
-import appReducer, { applyRedoAction, applyUndoAction, HistoryEntry, MAX_UNDO_SIZE, saveGraph } from './param-slice';
+import appReducer, {
+    applyRedoAction,
+    applyUndoAction,
+    HistoryEntry,
+    initializeProject,
+    MAX_UNDO_SIZE,
+    saveGraph,
+} from './param-slice';
 
 const realStore = store.getState();
 const emptySerializedGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
@@ -14,6 +21,17 @@ const createGraphEntry = (graph = emptySerializedGraph): HistoryEntry => ({
 });
 
 describe('ParamSlice', () => {
+    it('initializes a project with empty history', () => {
+        const project = { ...realStore.param.present, svgViewBoxZoom: 75 };
+        const history = [createGraphEntry()];
+        const nextState = appReducer(
+            { ...realStore.param, past: history, future: history },
+            initializeProject(project)
+        );
+
+        expect(nextState).toEqual({ present: project, past: [], future: [] });
+    });
+
     it('Can save graph as expected', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));

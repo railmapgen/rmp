@@ -4,12 +4,13 @@ import { ParamGraph, ProjectSnapshot } from '../redux/param/param-slice';
 import { CURRENT_VERSION, parseVersionFromSave, stringifyParam } from './save';
 
 describe('stringifyParam', () => {
-    it('serializes only the current project snapshot', () => {
+    it('serializes the current project snapshot and export-only images without history', () => {
         const present: ProjectSnapshot = {
             graph: new MultiDirectedGraph().export() as ParamGraph,
             svgViewBoxZoom: 75,
             svgViewBoxMin: { x: 10, y: 20 },
         };
+        const images = [{ id: 'img-local', base64: 'data:image/png;base64,example' }];
 
         expect(
             JSON.parse(
@@ -17,9 +18,10 @@ describe('stringifyParam', () => {
                     present,
                     past: [{ scope: 'graph', ...present }],
                     future: [],
+                    images,
                 })
             )
-        ).toEqual({ ...present, version: CURRENT_VERSION });
+        ).toEqual({ ...present, version: CURRENT_VERSION, images });
     });
 });
 
