@@ -69,6 +69,25 @@ describe('bezier line path', () => {
         });
     });
 
+    it('skips unregistered path types during normalization', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'misc_node_left', -100);
+        addNode(graph, 'misc_node_right', 100);
+        graph.addDirectedEdgeWithKey('line_unknown', 'misc_node_left', 'misc_node_right', {
+            visible: true,
+            zIndex: 0,
+            type: 'future-line-path' as LinePathType,
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color: RED },
+            reconcileId: '',
+            parallelIndex: -1,
+        });
+
+        normalizeEdgeAttributes(graph, ['line_unknown']);
+
+        expect(graph.getEdgeAttribute('line_unknown', 'type')).toBe('future-line-path');
+    });
+
     it('builds one cubic segment through the tangent intersection model', () => {
         const path = generateBezierPath(0, 100, 0, 0, defaultBezierPathAttributes);
 

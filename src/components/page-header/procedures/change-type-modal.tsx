@@ -24,8 +24,8 @@ import { CityCode, LineId, MiscNodeId, NodeId, StnId, Theme } from '../../../con
 import { LinePathType, LineStyleType, isVisibleLineStyle } from '../../../constants/lines';
 import { StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { commitEdgesThunk } from '../../../redux/param/commit-edges-thunk';
-import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { saveGraph } from '../../../redux/param/param-slice';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import {
     changeLinePathTypeInBatch,
     changeLineStyleTypeInBatch,
@@ -38,7 +38,7 @@ import {
 import { findThemes } from '../../../util/color';
 import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../../panels/theme-button';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
@@ -332,7 +332,9 @@ export const ChangeTypeModal = (props: {
                 zIndex
             );
         }
-        await dispatch(commitEdgesThunk({ edgeIds: changedLines })).unwrap();
+        normalizeEdgeAttributes(graph.current, changedLines);
+        dispatch(saveGraph(graph.current.export()));
+        await dispatch(refreshEdgesThunk()).unwrap();
         await dispatch(refreshNodesThunk()).unwrap();
         onClose();
     };

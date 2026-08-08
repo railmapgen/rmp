@@ -46,10 +46,11 @@ the editor. It has several problems:
 - whole-graph loading and clipboard import must preserve saved attributes instead
   of treating every imported edge as a newly authored edge.
 
-The temporary `commitEdgesThunk` solves the ordering problem for the Bezier
-endpoint invariant, but it does not solve the broader duplication. Extending it
-alongside `refreshNodesThunk` and `refreshEdgesThunk` would leave three overlapping
-entry points.
+The temporary manual `normalizeEdgeAttributes()` → `saveGraph()` →
+`refreshEdgesThunk()` sequences solve the ordering problem for the Bezier endpoint
+invariant, but they deliberately depend on this unified pipeline being implemented
+soon. Duplicating those sequences alongside `refreshNodesThunk` and
+`refreshEdgesThunk` is not a sustainable public API.
 
 ## Goal
 
@@ -85,7 +86,7 @@ operation does. They should not manually compose `saveGraph()`,
 - Infer conservative render invalidation from the changed entity sets.
 - Persist local storage from committed `param.present` changes, not render
   refresh timestamps.
-- Remove the old public refresh thunks, temporary `commitEdgesThunk`, and
+- Remove the old public refresh thunks, temporary manual commit sequences, and
   component-local hard-refresh helpers after migration.
 
 ## Non-goals
@@ -639,14 +640,14 @@ Implement incrementally while keeping behavior testable:
 3. Extract node/edge derived-state reconciliation from the existing refresh
    thunks.
 4. Migrate edge creation, edge attributes, type/style changes, and the temporary
-   `commitEdgesThunk`.
+   manual normalize/save/refresh sequences.
 5. Migrate node detail fields and node movement.
 6. Migrate deletion, clipboard, bulk transforms, and import/open flows.
 7. Migrate overlays to preview/commit transactions.
 8. Route initialization and undo/redo through explicit refresh requests.
 9. Move local persistence from refresh timestamps to committed param changes.
 10. Remove component-local `hardRefresh`/`refreshAndSave`, the old node/edge
-    refresh thunks, `commitEdgesThunk`, and the unused graph-event saver.
+    refresh thunks, manual commit sequences, and the unused graph-event saver.
 
 During migration, old and new paths must not both save the same logical action.
 

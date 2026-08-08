@@ -1,5 +1,4 @@
-import React from 'react';
-import { LineId, NodeId, OverlayProps } from '../constants/constants';
+import { LineId, NodeId } from '../constants/constants';
 import { useRootSelector } from '../redux';
 import { linePaths } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -33,14 +32,12 @@ export const Overlay = () => {
     if (window.graph.hasNode(selectedId)) {
         const id = selectedId as NodeId;
         const type = window.graph.getNodeAttribute(id, 'type');
-        const definition = nodeDefinitions[type as keyof typeof nodeDefinitions] as
-            | { overlayComponent?: React.FC<OverlayProps<NodeId>> }
-            | undefined;
-        const OverlayComponent = definition?.overlayComponent;
+        const OverlayComponent = nodeDefinitions[type]?.overlayComponent;
         if (!OverlayComponent) return null;
 
         return (
             <g className="removeMe">
+                {/* @ts-ignore The graph keeps each node ID paired with its definition type. */}
                 <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
             </g>
         );

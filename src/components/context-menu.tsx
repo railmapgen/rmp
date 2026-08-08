@@ -5,7 +5,6 @@ import useEvent from 'react-use-event-hook';
 import { Id, LineId, NodeId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { useRootDispatch, useRootSelector } from '../redux';
-import { commitEdgesThunk } from '../redux/param/commit-edges-thunk';
 import { saveGraph } from '../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setSelected } from '../redux/runtime/runtime-slice';
 import {
@@ -25,6 +24,7 @@ import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { reconcileSelectedEdges } from '../util/reconcile-ui';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
+import { normalizeEdgeAttributes } from './svgs/lines/lines';
 
 interface ContextMenuProps {
     isOpen: boolean;
@@ -254,7 +254,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             return;
         }
 
-        dispatch(commitEdgesThunk({ edgeIds: [...selected] as LineId[] }));
+        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     });
 
     const handleRotate = useEvent((angle: number) => {
