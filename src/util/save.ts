@@ -159,7 +159,8 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Return a valid save string from ParamState.
+ * Returns a save containing only the current project snapshot, never its undo
+ * and redo stacks. Images are attached only when supplied by an export flow.
  */
 export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
     const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };

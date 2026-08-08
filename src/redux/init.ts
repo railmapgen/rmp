@@ -99,12 +99,15 @@ export const initStore = async (store: RootStore) => {
         store.dispatch(setActiveSubscriptions(loginState.activeSubscriptions));
     }
 
-    // Upgrade param and inject to ParamState.
+    // Upgrade the serialized save, then initialize the current project without
+    // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
     const { version, ...project } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(project.graph);
     store.dispatch(initializeProject(project));
+    // TODO(graph-mutation-pipeline): Route initialization through one explicit
+    // refresh request; see docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 

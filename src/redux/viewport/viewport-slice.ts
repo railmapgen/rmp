@@ -15,6 +15,7 @@ export interface LiveViewport {
     zoom: number;
 }
 
+/** Holds an in-progress viewport preview before it is persisted in the project snapshot. */
 export interface ViewportState {
     liveViewport?: LiveViewport;
 }
@@ -71,6 +72,9 @@ const viewportSlice = createSlice({
         },
     },
     extraReducers: builder => {
+        // Persisted viewport changes discard their transient preview. Graph-scoped
+        // history deliberately keeps it so undo/redo cannot move the current view;
+        // project-scoped history clears it to expose the restored project viewport.
         builder
             .addCase(setSvgViewport, state => {
                 state.liveViewport = undefined;

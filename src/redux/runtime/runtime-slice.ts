@@ -215,6 +215,11 @@ const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOp
     return 'close';
 };
 
+/**
+ * Clears transient UI state that may refer to entities from another project
+ * after a whole-project replacement or restore. Graph-scoped history keeps this
+ * state as part of the current editing session rather than recording it in history.
+ */
 const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
     state.selected = new Set<Id>();
     state.pointerPosition = undefined;
@@ -341,6 +346,8 @@ const runtimeSlice = createSlice({
         },
     },
     extraReducers: builder => {
+        // All history restores invalidate graph consumers. Only project-scoped
+        // restores clear transient interaction state that can reference the old project.
         builder
             .addCase(applyUndoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
@@ -353,11 +360,6 @@ const runtimeSlice = createSlice({
                 if (action.payload === 'project') resetProjectInteractionState(state);
             })
             .addCase(replaceProjectState, state => {
-                /**
-                 * A project replacement can invalidate selected element IDs and
-                 * in-progress tool state. These values are transient, so reset
-                 * them instead of storing them in project history.
-                 */
                 resetProjectInteractionState(state);
             });
     },

@@ -18,15 +18,24 @@ const replaceWindowGraph = (graph: ParamGraph) => {
 };
 
 const refreshGraphState = (dispatch: RootDispatch) => {
+    // TODO(graph-mutation-pipeline): Replace these split refresh thunks with one
+    // explicit graph refresh request. History should coordinate reconciliation,
+    // not know how node and edge derived state is refreshed internally.
+    // See docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     return Promise.all([dispatch(refreshNodesThunk()), dispatch(refreshEdgesThunk())]);
 };
 
+/**
+ * Replaces the live graph before committing project history so a malformed
+ * graph cannot leave Redux pointing at a project that failed to open.
+ */
 export const replaceProject = (project: ProjectSnapshot) => (dispatch: RootDispatch) => {
     replaceWindowGraph(project.graph);
     dispatch(replaceProjectState(project));
     return refreshGraphState(dispatch);
 };
 
+/** Restores the latest undo entry across the live graph, Redux, and derived runtime state. */
 export const undoAction = () => (dispatch: RootDispatch, getState: () => RootState) => {
     const entry = getState().param.past.at(-1);
     if (!entry) return;
@@ -36,6 +45,7 @@ export const undoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     return refreshGraphState(dispatch);
 };
 
+/** Restores the next redo entry across the live graph, Redux, and derived runtime state. */
 export const redoAction = () => (dispatch: RootDispatch, getState: () => RootState) => {
     const entry = getState().param.future[0];
     if (!entry) return;
