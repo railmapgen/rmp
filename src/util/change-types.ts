@@ -501,7 +501,7 @@ export const autoPopulateTransfer = (
         (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer?.at(0) ?? [];
 
     if (lineColorStr.size < 2) {
-        if (currentTransfer.length > 0) {
+        if (currentTransfer.length > 1) {
             updateStationTransfer(graph, station, currentType, []);
             return true;
         }
