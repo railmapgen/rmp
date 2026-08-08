@@ -40,7 +40,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const {
         selected,
         count: { masters: masterNodesCount, lines: parallelLinesCount },

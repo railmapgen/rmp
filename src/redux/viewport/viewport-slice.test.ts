@@ -38,8 +38,8 @@ describe('ViewportSlice', () => {
         store.dispatch(commitLiveViewport());
 
         const nextState = store.getState();
-        expect(nextState.param.svgViewBoxMin).toEqual({ x: 10, y: 20 });
-        expect(nextState.param.svgViewBoxZoom).toBe(150);
+        expect(nextState.param.present.svgViewBoxMin).toEqual({ x: 10, y: 20 });
+        expect(nextState.param.present.svgViewBoxZoom).toBe(150);
         expect(nextState.viewport.liveViewport).toBeUndefined();
     });
 });

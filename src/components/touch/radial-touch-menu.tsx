@@ -36,7 +36,7 @@ export const defaultRadialTouchMenuState: RadialTouchMenuState = {
  */
 export const RadialTouchMenu: React.FC = () => {
     const dispatch = useRootDispatch();
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param.present);
     const { visible, position, data } = useRootSelector(state => state.runtime.radialTouchMenu);
 
     const elements = [...data[MenuCategory.STATION], ...data[MenuCategory.MISC_NODE], ...data[MenuCategory.LINE]];

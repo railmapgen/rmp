@@ -45,11 +45,9 @@ const createProjectStore = (project: ProjectSnapshot) => {
     testStore.dispatch(
         setFullState({
             ...testStore.getState().param,
-            present: project.graph,
+            present: project,
             past: [],
             future: [],
-            svgViewBoxZoom: project.svgViewBoxZoom,
-            svgViewBoxMin: project.svgViewBoxMin,
         })
     );
     window.graph = MultiDirectedGraph.from(project.graph);
@@ -58,9 +56,7 @@ const createProjectStore = (project: ProjectSnapshot) => {
 
 const expectCurrentProject = (testStore: ReturnType<typeof createStore>, project: ProjectSnapshot) => {
     const param = testStore.getState().param;
-    expect(param.present).toEqual(project.graph);
-    expect(param.svgViewBoxZoom).toBe(project.svgViewBoxZoom);
-    expect(param.svgViewBoxMin).toEqual(project.svgViewBoxMin);
+    expect(param.present).toEqual(project);
     expect(window.graph.export()).toEqual(project.graph);
 };
 
@@ -110,8 +106,8 @@ describe('project history', () => {
 
         expectCurrentProject(testStore, nextProject);
         expect(testStore.getState().param.past.at(-1)).toEqual({
-            kind: 'project',
-            project: previousProject,
+            scope: 'project',
+            ...previousProject,
         });
         expectTransientInteractionStateReset(testStore);
 
@@ -128,7 +124,7 @@ describe('project history', () => {
         expectTransientInteractionStateReset(testStore);
     });
 
-    it('keeps viewport and transient interaction state for graph-only undo', async () => {
+    it('keeps the current viewport and transient interaction state when undoing a graph edit', async () => {
         const projectBeforeEdit = createProject('before', 25, { x: 10, y: 20 });
         const graphAfterEdit = createGraph('after');
         const testStore = createProjectStore(projectBeforeEdit);
@@ -141,9 +137,9 @@ describe('project history', () => {
 
         await testStore.dispatch(undoAction());
 
-        expect(testStore.getState().param.present).toEqual(projectBeforeEdit.graph);
-        expect(testStore.getState().param.svgViewBoxZoom).toBe(75);
-        expect(testStore.getState().param.svgViewBoxMin).toEqual({ x: 30, y: 40 });
+        expect(testStore.getState().param.present.graph).toEqual(projectBeforeEdit.graph);
+        expect(testStore.getState().param.present.svgViewBoxZoom).toBe(75);
+        expect(testStore.getState().param.present.svgViewBoxMin).toEqual({ x: 30, y: 40 });
         expect(testStore.getState().runtime.selected).toEqual(new Set<Id>(['misc_node_stale']));
         expect(testStore.getState().runtime.pointerPosition).toEqual({ x: 10, y: 20 });
         expect(testStore.getState().runtime.active).toBe('background');
@@ -173,21 +169,21 @@ describe('project history', () => {
         expectCurrentProject(testStore, replacementProject);
 
         await testStore.dispatch(undoAction());
-        expect(testStore.getState().param.present).toEqual(graphAfterFirstEdit);
-        expect(testStore.getState().param.svgViewBoxZoom).toBe(projectBeforeEdit.svgViewBoxZoom);
-        expect(testStore.getState().param.svgViewBoxMin).toEqual(projectBeforeEdit.svgViewBoxMin);
+        expect(testStore.getState().param.present.graph).toEqual(graphAfterFirstEdit);
+        expect(testStore.getState().param.present.svgViewBoxZoom).toBe(projectBeforeEdit.svgViewBoxZoom);
+        expect(testStore.getState().param.present.svgViewBoxMin).toEqual(projectBeforeEdit.svgViewBoxMin);
 
         await testStore.dispatch(undoAction());
         expectCurrentProject(testStore, projectBeforeEdit);
 
         await testStore.dispatch(redoAction());
-        expect(testStore.getState().param.present).toEqual(graphAfterFirstEdit);
+        expect(testStore.getState().param.present.graph).toEqual(graphAfterFirstEdit);
 
         await testStore.dispatch(redoAction());
         expectCurrentProject(testStore, replacementProject);
 
         await testStore.dispatch(redoAction());
-        expect(testStore.getState().param.present).toEqual(graphAfterSecondEdit);
+        expect(testStore.getState().param.present.graph).toEqual(graphAfterSecondEdit);
         expect(window.graph.export()).toEqual(graphAfterSecondEdit);
     });
 

@@ -16,7 +16,7 @@ import { useWindowSize } from '../../util/hooks';
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const { radialTouchMenu } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 

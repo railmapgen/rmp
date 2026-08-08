@@ -29,8 +29,8 @@ export const commitLiveViewport = (viewport?: LiveViewport) => (dispatch: RootDi
 
     if (!nextViewport) return;
 
-    const persistedMin = state.param.svgViewBoxMin;
-    const persistedZoom = state.param.svgViewBoxZoom;
+    const persistedMin = state.param.present.svgViewBoxMin;
+    const persistedZoom = state.param.present.svgViewBoxZoom;
     const shouldUpdateZoom = persistedZoom !== nextViewport.zoom;
     const shouldUpdateMin = persistedMin.x !== nextViewport.x || persistedMin.y !== nextViewport.y;
 

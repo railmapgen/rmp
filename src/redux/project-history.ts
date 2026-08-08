@@ -3,15 +3,11 @@ import type { RootDispatch, RootState } from '.';
 import {
     applyRedoAction,
     applyUndoAction,
-    HistoryEntry,
     ParamGraph,
     ProjectSnapshot,
     replaceProjectState,
 } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
-
-const getHistoryGraph = (entry: HistoryEntry): ParamGraph =>
-    entry.kind === 'graph' ? entry.graph : entry.project.graph;
 
 const replaceWindowGraph = (graph: ParamGraph) => {
     // Validate and clone the target before clearing the live graph. A malformed
@@ -35,8 +31,8 @@ export const undoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     const entry = getState().param.past.at(-1);
     if (!entry) return;
 
-    replaceWindowGraph(getHistoryGraph(entry));
-    dispatch(applyUndoAction(entry.kind));
+    replaceWindowGraph(entry.graph);
+    dispatch(applyUndoAction(entry.scope));
     return refreshGraphState(dispatch);
 };
 
@@ -44,7 +40,7 @@ export const redoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     const entry = getState().param.future[0];
     if (!entry) return;
 
-    replaceWindowGraph(getHistoryGraph(entry));
-    dispatch(applyRedoAction(entry.kind));
+    replaceWindowGraph(entry.graph);
+    dispatch(applyRedoAction(entry.scope));
     return refreshGraphState(dispatch);
 };

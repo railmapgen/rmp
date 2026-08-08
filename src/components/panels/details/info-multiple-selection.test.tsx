@@ -40,7 +40,7 @@ describe('InfoMultipleSection visibility', () => {
         const mockStore = createStore({
             param: {
                 ...realState.param,
-                present: window.graph.export(),
+                present: { ...realState.param.present, graph: window.graph.export() },
             },
             runtime: {
                 ...realState.runtime,

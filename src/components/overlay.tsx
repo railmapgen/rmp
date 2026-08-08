@@ -11,8 +11,8 @@ const nodeDefinitions = { ...stations, ...miscNodes };
  */
 export const Overlay = () => {
     const selected = useRootSelector(state => state.runtime.selected);
-    const svgViewBoxZoom = useRootSelector(state => state.param.svgViewBoxZoom);
-    const svgViewBoxMin = useRootSelector(state => state.param.svgViewBoxMin);
+    const svgViewBoxZoom = useRootSelector(state => state.param.present.svgViewBoxZoom);
+    const svgViewBoxMin = useRootSelector(state => state.param.present.svgViewBoxMin);
     if (selected.size !== 1) return null;
 
     const [selectedId] = selected;

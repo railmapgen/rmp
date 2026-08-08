@@ -1,5 +1,27 @@
+import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { CURRENT_VERSION, parseVersionFromSave } from './save';
+import { ParamGraph, ProjectSnapshot } from '../redux/param/param-slice';
+import { CURRENT_VERSION, parseVersionFromSave, stringifyParam } from './save';
+
+describe('stringifyParam', () => {
+    it('serializes only the current project snapshot', () => {
+        const present: ProjectSnapshot = {
+            graph: new MultiDirectedGraph().export() as ParamGraph,
+            svgViewBoxZoom: 75,
+            svgViewBoxMin: { x: 10, y: 20 },
+        };
+
+        expect(
+            JSON.parse(
+                stringifyParam({
+                    present,
+                    past: [{ scope: 'graph', ...present }],
+                    future: [],
+                })
+            )
+        ).toEqual({ ...present, version: CURRENT_VERSION });
+    });
+});
 
 describe('parseVersionFromSave', () => {
     it('should parse valid version from save string', () => {

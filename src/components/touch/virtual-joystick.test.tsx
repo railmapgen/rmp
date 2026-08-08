@@ -7,7 +7,7 @@ import { CityCode, Id, NodeType, Theme } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
 import accountSlice from '../../redux/account/account-slice';
 import appSlice from '../../redux/app/app-slice';
-import paramSlice from '../../redux/param/param-slice';
+import paramSlice, { ProjectSnapshot } from '../../redux/param/param-slice';
 import runtimeSlice from '../../redux/runtime/runtime-slice';
 import VirtualJoystick from './virtual-joystick';
 import { defaultRadialTouchMenuState } from './radial-touch-menu';
@@ -40,8 +40,9 @@ Object.assign(navigator, {
 });
 
 describe('VirtualJoystick', () => {
-    const createTestStore = (selectedNodes: Id[] = [], paramOverride?: any) =>
-        configureStore({
+    const createTestStore = (selectedNodes: Id[] = [], paramOverride: Partial<ProjectSnapshot> = {}) => {
+        const paramState = paramSlice(undefined, { type: 'init' });
+        return configureStore({
             reducer: {
                 app: appSlice,
                 param: paramSlice,
@@ -50,10 +51,11 @@ describe('VirtualJoystick', () => {
             },
             preloadedState: {
                 param: {
-                    // minimal fields used by component
-                    svgViewBoxZoom: 100,
-                    svgViewBoxMin: { x: 0, y: 0 },
-                    ...paramOverride,
+                    ...paramState,
+                    present: {
+                        ...paramState.present,
+                        ...paramOverride,
+                    },
                 },
                 runtime: {
                     selected: new Set(selectedNodes),
@@ -81,6 +83,7 @@ describe('VirtualJoystick', () => {
                 },
             },
         });
+    };
 
     it('renders joystick even when no nodes are selected', () => {
         const store = createTestStore();

@@ -87,8 +87,11 @@ const renderOverlay = (
         runtime: { ...initialState.runtime, selected },
         param: {
             ...initialState.param,
-            svgViewBoxZoom: viewport.zoom,
-            svgViewBoxMin: viewport.min,
+            present: {
+                ...initialState.param.present,
+                svgViewBoxZoom: viewport.zoom,
+                svgViewBoxMin: viewport.min,
+            },
         },
     });
     return render(

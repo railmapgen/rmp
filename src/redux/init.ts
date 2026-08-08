@@ -102,9 +102,9 @@ export const initStore = async (store: RootStore) => {
     // Upgrade param and inject to ParamState.
     const param = await upgrade(paramState);
 
-    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(graph);
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
+    const { version, ...present } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(present.graph);
+    const state: ParamState = { present, past: [], future: [] };
     store.dispatch(setFullState(state));
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());

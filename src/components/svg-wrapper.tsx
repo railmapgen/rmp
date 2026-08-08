@@ -74,7 +74,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const {
         selected,
         active,
