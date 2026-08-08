@@ -479,7 +479,12 @@ describe('autoUpdateStationType and autoPopulateTransfer', () => {
                 names: ['Station 1', 'Stn 1'],
                 nameOffsetX: 'right' as const,
                 nameOffsetY: 'top' as const,
-                transfer: [[[CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black, '', '']]],
+                transfer: [
+                    [
+                        [CityCode.Guangzhou, 'gz1', '#F3D03E', MonoColour.black, '', ''],
+                        [CityCode.Guangzhou, 'gz2', '#97D700', MonoColour.white, '', ''],
+                    ],
+                ],
                 open: true,
                 secondaryNames: ['', ''],
                 tram: false,
