@@ -12,7 +12,9 @@ import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
 const replaceWindowGraph = (graph: ParamGraph) => {
     // Validate and clone the target before clearing the live graph. A malformed
     // project or history entry must not destroy the project that is currently open.
+    // Cloning also prevents the graph from sharing attributes with frozen Redux snapshots.
     const replacement = MultiDirectedGraph.from(structuredClone(graph));
+    // Preserve object identity because existing canvas refs keep pointing to window.graph.
     window.graph.clear();
     window.graph.import(replacement);
 };

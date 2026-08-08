@@ -26,7 +26,9 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
     configureStore({
         reducer: rootReducer,
         middleware: getDefaultMiddleware =>
-            // undo slice contains MultiDirectedGraph instance, it is not meant to be serialized nor persisted
+            // Runtime state deliberately contains transient Sets, so it is excluded
+            // from persistence and the serializable state check is disabled.
+            // https://stackoverflow.com/questions/61704805/getting-an-error-a-non-serializable-value-was-detected-in-the-state-when-using
             getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
         preloadedState,
     });

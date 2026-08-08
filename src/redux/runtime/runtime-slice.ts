@@ -126,6 +126,8 @@ const initialState: RuntimeState = {
 
 /**
  * Thunk middleware to sum the master nodes count.
+ * The graph refresh thunks dispatch their derived updates as separate actions.
+ * https://stackoverflow.com/questions/63516716/redux-toolkit-is-it-possible-to-dispatch-other-actions-from-the-same-slice-in-o
  */
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
