@@ -31,8 +31,16 @@ export interface HistoryEntry extends ProjectSnapshot {
 
 /**
  * Wraps the current project with its runtime-only undo and redo stacks.
+ * This follows Redux's undo-history pattern, but remains custom because the
+ * mutable `window.graph` must stay synchronized and graph/project restore scopes
+ * must coordinate reducers across multiple slices.
+ *
  * The newest past entry is at the end of `past`; the next redo entry is at the
  * beginning of `future`. Only `present` is serialized into a project save.
+ *
+ * https://redux.js.org/usage/implementing-undo-history
+ * https://redux-toolkit.js.org/usage/immer-reducers
+ * https://redux-toolkit.js.org/api/createSlice#extrareducers
  */
 export interface ParamState {
     present: ProjectSnapshot;
