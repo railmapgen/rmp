@@ -274,6 +274,22 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         }
                                     />
                                 </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>
+                                    <Switch
+                                        isChecked={disableWarningChangeType}
+                                        onChange={({ target: { checked } }) =>
+                                            dispatch(setDisableWarningChangeType(checked))
+                                        }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                    />
+                                </HStack>
                                 {mapEnabled && (
                                     <Box mb="1">
                                         <HStack>
@@ -295,22 +311,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         </Text>
                                     </Box>
                                 )}
-                                <HStack mb="1">
-                                    <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>
-                                    <Switch
-                                        isChecked={disableWarningChangeType}
-                                        onChange={({ target: { checked } }) =>
-                                            dispatch(setDisableWarningChangeType(checked))
-                                        }
-                                    />
-                                </HStack>
-                                <HStack mb="1">
-                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
-                                    <Switch
-                                        isChecked={mapEnabled}
-                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
-                                    />
-                                </HStack>
                             </VStack>
                         </Box>
 

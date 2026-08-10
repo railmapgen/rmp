@@ -30,9 +30,11 @@ const renderSettings = (mapEnabled: boolean) => {
 describe('SettingsModal map performance preference', () => {
     it('lets map users disable idle raster optimization', () => {
         const store = renderSettings(true);
+        const mapEnabledRow = screen.getByText('Show geographic map layer').parentElement;
         const label = screen.getByText('Disable map performance optimization');
         const checkbox = label.parentElement?.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
+        expect(mapEnabledRow?.nextElementSibling).toContainElement(label);
         expect(checkbox).not.toBeNull();
         fireEvent.click(checkbox!);
         expect(store.getState().app.preference.disableMapPerformanceOptimization).toBe(true);
