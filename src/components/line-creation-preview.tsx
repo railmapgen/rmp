@@ -3,6 +3,7 @@ import { EdgeAttributes, getLinePathAndStyle, NodeId } from '../constants/consta
 import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
 import { Path, PathPoint } from '../constants/path';
 import { useRootSelector } from '../redux';
+import { canUseLine } from '../util/line-path-availability';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 
@@ -27,6 +28,8 @@ export const LineCreationPreview = (props: LineCreationPreviewProps) => {
     const mode = useRootSelector(state => state.runtime.mode);
     const theme = useRootSelector(state => state.runtime.theme);
     const source = useRootSelector(state => state.runtime.active);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
     const { path: linePath, style: lineStyle } = getLinePathAndStyle(mode);
     const lineStyleAttrs = React.useMemo(() => {
         if (!lineStyle) return;
@@ -41,6 +44,7 @@ export const LineCreationPreview = (props: LineCreationPreviewProps) => {
         !linePath ||
         !lineStyle ||
         !lineStyleAttrs ||
+        !canUseLine(linePath, lineStyle, mapEnabled, isSubscriber) ||
         !source ||
         source === 'background' ||
         (gesture && gesture.type !== linePath) ||

@@ -15,6 +15,7 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition } from '../util/helpers';
+import { canUseLine } from '../util/line-path-availability';
 import { supportsParallelLinePath } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
@@ -82,6 +83,10 @@ const PredictNextNode = () => {
     const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const predictionPathType = getPredictionPathType(mapEnabled);
     const makeStationName = useMakeStationName();
+
+    if (!canUseLine(predictionPathType, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
+        return undefined;
+    }
 
     // must have exactly one selected, checked in the parent component
     const selectedID = selected.keys().next().value!;
@@ -205,6 +210,9 @@ const PredictNextNode = () => {
     const path2 = generatePreviewPath(nextPos2, path2StartFrom);
 
     const handlePointerDown = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
+        if (!canUseLine(predictionPathType, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
+            return;
+        }
         e.stopPropagation();
         const { x, y } = getMousePosition(e);
         dispatch(setPointerPosition({ x, y }));

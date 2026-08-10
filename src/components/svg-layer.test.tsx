@@ -71,6 +71,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={true}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -107,6 +109,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -117,6 +121,60 @@ describe('SvgLayer', () => {
         );
 
         expect(container.querySelector('path')?.getAttribute('stroke')).toBe('grey');
+    });
+
+    it('combines explicit visibility with contextual policy visibility without mutating the edge', () => {
+        const attr: EdgeAttributes = {
+            ...makeLineAttrs(),
+            type: LinePathType.Bezier,
+        };
+        const elements: Element[] = [
+            {
+                id: 'line_bezier',
+                type: 'line',
+                line: {
+                    attr,
+                    path: makeLinearPath(makePoint(0, 0), makePoint(100, 0)),
+                },
+            },
+        ];
+        const handlers = {
+            handlePointerDown: vi.fn(),
+            handlePointerMove: vi.fn(),
+            handlePointerUp: vi.fn(),
+            handleEdgePointerDown: vi.fn(),
+            handleEdgeDoubleClick: vi.fn(),
+        };
+
+        const { container, rerender } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={false}
+                    {...handlers}
+                />
+            </svg>
+        );
+
+        expect(container.querySelector('#line_bezier')).toHaveClass('removeMe');
+        expect(attr.visible).toBe(true);
+
+        rerender(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    mapEnabled={true}
+                    isSubscriber={false}
+                    {...handlers}
+                />
+            </svg>
+        );
+
+        expect(container.querySelector('#line_bezier')).not.toHaveClass('removeMe');
+        expect(attr.visible).toBe(true);
     });
 
     it('keeps invisible lines rendered and marks their wrapper with the hidden filter', () => {
@@ -136,6 +194,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -174,6 +234,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set(['line_hidden'])}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -209,6 +271,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -245,6 +309,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}

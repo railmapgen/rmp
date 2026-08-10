@@ -22,6 +22,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { canUseLine } from './line-path-availability';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 import { canReconcileLine } from './reconcile-ui';
 
@@ -138,16 +139,22 @@ export const changeStationsTypeInBatch = (
  * @param graph Graph.
  * @param selectedFirst Current line's id.
  * @param newLinePathType New line's path type.
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
+ * @param autoParallel Whether parallel line indexes should be assigned automatically.
  * @returns Whether the edge was changed.
  */
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
     newLinePathType: LinePathType,
+    mapEnabled: boolean,
+    isSubscriber: boolean,
     autoParallel: boolean
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
+    if (!canUseLine(newLinePathType, currentLineStyleType, mapEnabled, isSubscriber)) return false;
     if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
         const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
 
@@ -177,6 +184,9 @@ export const changeLinePathType = (
  * @param currentLinePathType Current lines' path type.
  * @param newLinePathType New lines' path type.
  * @param lines Selected lines. (undefined for all)
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
+ * @param autoParallel Whether parallel line indexes should be assigned automatically.
  * @returns Changed edge IDs.
  */
 export const changeLinePathTypeInBatch = (
@@ -184,11 +194,13 @@ export const changeLinePathTypeInBatch = (
     currentLinePathType: LinePathType | 'any',
     newLinePathType: LinePathType,
     lines: LineId[],
+    mapEnabled: boolean,
+    isSubscriber: boolean,
     autoParallel: boolean
 ) =>
     lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
-        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, autoParallel));
+        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, mapEnabled, isSubscriber, autoParallel));
 
 /**
  * Change a line's style type.
@@ -196,16 +208,21 @@ export const changeLinePathTypeInBatch = (
  * @param selectedFirst Current line's id.
  * @param newLineStyleType New line's style type.
  * @param theme A handy helper to override color to current theme.
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
  * @returns Whether the edge was changed.
  */
 export const changeLineStyleType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
     newLineStyleType: LineStyleType,
-    theme: Theme
+    theme: Theme,
+    mapEnabled: boolean,
+    isSubscriber: boolean
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
+    if (!canUseLine(currentLinePathType, newLineStyleType, mapEnabled, isSubscriber)) return false;
     if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
         const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
         const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
@@ -247,13 +264,15 @@ export const changeLineStyleTypeInBatch = (
     currentLineStyleType: LineStyleType | 'any',
     newLineStyleType: LineStyleType,
     theme: Theme,
-    lines: LineId[]
+    lines: LineId[],
+    mapEnabled: boolean,
+    isSubscriber: boolean
 ) =>
     lines
         .filter(
             edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
-        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme));
+        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme, mapEnabled, isSubscriber));
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch

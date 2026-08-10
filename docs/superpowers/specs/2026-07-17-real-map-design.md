@@ -1,10 +1,11 @@
-# Real Map Display Design
+# Real Map Display and Line Access Design
 
 ## Goal
 
 Rail Map Painter has one project model. A project may show or hide the geographic
-map layer while the graph remains the source of truth. Switching the map does not
-convert, delete, move, or rewrite elements.
+map layer, and that display context determines which known line paths a free user
+may author and see. The graph remains the source of truth: switching the map does
+not convert, delete, move, or rewrite elements.
 
 ## Persisted Project Model
 
@@ -40,16 +41,109 @@ the canvas.
   selection and tool state so element IDs and stale drawing modes cannot leak
   between projects.
 
+## Central Line Policy
+
+The only contextual path classifications are two explicit, disjoint sets:
+
+```text
+MAP_NATIVE_LINE_PATHS:
+  Bezier
+  Freeform
+
+DIAGRAM_NATIVE_LINE_PATHS:
+  Diagonal
+  Perpendicular
+  RotatePerpendicular
+  RayGuided
+```
+
+`Simple` belongs to neither set. A test asserts both exact membership and
+disjointness.
+
+For a known path, subscription is required when either condition is true:
+
+```text
+linePaths[path].isPro
+mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS.has(path)
+           : MAP_NATIVE_LINE_PATHS.has(path)
+```
+
+A known line style independently requires subscription when
+`lineStyles[style].isPro` is true. A subscriber may use every known compatible
+path/style combination. The six legacy `Simple` combinations with
+`ShmetroVirtualInt`, `GzmtrVirtualInt`, `River`, `MTRPaidArea`,
+`MTRUnpaidArea`, or `MRTTapeOut` remain free in both map-display contexts. This
+pair-specific exception does not make `Simple` available with any other style.
+There is no `availableIn`, `restrictionMode`, future availability state,
+node-type policy, or source/target visibility coupling.
+
+The policy exposes one authoring-access operation, `canUseLine`, for a known
+path/style pair. A caller checking only one axis supplies a permitted default
+for the other axis: `SingleColor` for a path-only check, or the current
+context's default path for a style-only check. Path/style rendering
+compatibility remains a separate metadata check.
+
+Existing-line visibility remains a separate operation because it preserves
+unknown types for fallback rendering rather than authoring them.
+
+Unknown existing paths and styles remain renderable through existing fallbacks
+so forward-compatible or partially understood saves are not destroyed. Unknown
+types cannot be newly authored.
+
 ## Visibility
 
 `visible` is mandatory on every line, station, and miscellaneous node. Rendering
-never defaults it with `?? true`. Lines, stations, and miscellaneous nodes each
-read their own `visible` attribute; an edge never inherits visibility from either
-endpoint.
+never defaults it with `?? true`.
+
+For lines:
+
+```text
+effectiveEdgeVisible =
+  edge.visible &&
+  isLinePolicyVisible(edge, mapEnabled, isSubscriber)
+```
+
+For nodes and stations, effective visibility is exactly their own `visible`
+attribute. An edge never inherits visibility from either endpoint. Policy
+evaluation is derived at render time and never mutates graph attributes.
 
 `SvgLayer` keeps hidden elements mounted with the existing `removeMe` class and
-invisible SVG filter. This preserves selection and details behavior while
-ensuring the hidden markup is removed from serialized exports.
+invisible SVG filter. This preserves selection/details behavior while ensuring
+exports omit hidden content. Export bounds ignore `removeMe`, including the
+all-hidden fallback to a 100-by-100 canvas.
+
+## Authoring Enforcement
+
+The central policy is enforced at every mutation boundary, not only in disabled
+buttons:
+
+- line path and style tools;
+- keyboard restoration of the last line tool;
+- pointer-down previews and the final pointer-up edge commit;
+- contextual prediction;
+- Fill-node line creation;
+- edge splitting;
+- details-panel path/style conversion;
+- bulk conversion procedures;
+- any path/style fallback chosen by a UI.
+
+When map context or subscription changes, a now-restricted active drawing mode
+returns to free mode. A stale mode therefore cannot commit a restricted line.
+
+Conversion validates the target combination only. This lets a free user convert
+an existing restricted line to an allowed target while preventing conversion
+into a restricted target.
+
+Paste, project import, RMG import, and AARC import preserve known restricted
+existing elements rather than silently dropping them. Their policy visibility
+is derived in the destination context. Existing quota behavior, such as
+generic-style layer clamping, remains independent.
+
+Fill quick shapes choose a context-native boundary: map-hidden shapes keep their
+existing Diagonal/Perpendicular construction, while map-visible shapes use
+straight Bezier segments for polygons and four outward Bezier arcs for circles.
+Freeform is not used because its generated filled-area path cannot be
+concatenated by the open-path Fill boundary pipeline.
 
 ## Context-Driven Editor Behavior
 
@@ -61,15 +155,10 @@ Behavior formerly selected by project kind reads `mapEnabled` directly:
 - map style settings;
 - map inclusion in export.
 
-Prediction and Fill quick shapes choose geometry that fits the display context.
-Map-hidden prediction uses Diagonal paths and Fill keeps its existing
-Diagonal/Perpendicular boundaries. Map-visible prediction and Fill use Bezier
-paths; polygons use straight Bezier segments and circles use four outward arcs.
-Freeform is not used for Fill because its generated filled-area path cannot be
-concatenated by the open-path Fill boundary pipeline.
-
 RMG import is always available and continues to preserve its Diagonal plus
-SingleColor representation.
+SingleColor representation. If that combination is restricted in the current
+map/subscription context, the imported edges remain in the graph and derive as
+hidden through the same policy as opened or pasted content.
 
 ## Map Coordinate and Runtime
 
@@ -100,20 +189,31 @@ detached map clone over the visible graph bounds and retains attribution.
 Before serialization:
 
 - `.removeMe` content is removed;
-- selection and interaction-only markup is removed.
+- selection and interaction-only markup is removed;
+- graph bounds exclude every `.removeMe` top-level element;
+- an all-hidden or empty graph uses the 100-by-100 fallback.
 
-An empty graph uses the existing 100-by-100 bounds fallback.
+Thus an explicitly hidden or policy-hidden element affects neither pixels nor
+export dimensions.
 
 ## Verification
 
 Focused tests cover:
 
+- exact and disjoint native-path sets;
+- free/subscriber policy matrices, legacy `Simple` combinations, static Pro
+  paths/styles, and unknown types;
 - map toggle persistence without graph, element visibility, viewport, or history
   mutation;
-- mandatory visibility for lines, nodes, and stations;
-- context-driven prediction and Fill geometry;
+- `effectiveEdgeVisible` changing with context without modifying `visible`;
+- no visibility fallback for nodes or stations;
+- restricted-target rejection and restricted-to-allowed conversion;
+- stale tool and final canvas commit guards;
+- prediction, Fill, split, and bulk conversion guards;
 - unconditional RMG import and AARC map-display preservation;
-- hidden export omission;
+- paste retention of every known path;
+- unknown path fallback, including inherited object-property names;
+- hidden export omission and bounds exclusion;
 - map controller lifecycle, coordinate mapping, tile switching, and export.
 
 Repository completion gates:
@@ -130,8 +230,11 @@ git diff --check
 - There is one persisted project shape and one New Project flow.
 - The map can be shown or hidden without changing graph data or the current
   viewport.
-- Lines and nodes are governed by their own mandatory `visible` attribute.
-- Prediction and Fill use context-appropriate geometry without changing existing
-  graph elements.
-- Hidden content is absent from export output.
+- Free users see and author only the permitted line combinations for the current
+  context; subscribers may use all known combinations.
+- Every authoring mutation boundary enforces the same centralized policy.
+- Existing restricted and unknown content remains intact, with effective
+  visibility derived at render time.
+- Nodes are governed only by their own mandatory `visible` attribute.
+- Hidden content is absent from export output and export bounds.
 - Map and graph remain aligned through the existing shared viewport.

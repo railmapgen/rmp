@@ -72,6 +72,25 @@ describe('getLines', () => {
         expect(getLines(graph)[0].line?.path.kind).toBe('mc');
     });
 
+    it.each(['future-path', 'toString'])('renders unknown path %s as a read-only linear fallback', type => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 0, 0);
+        addNode(graph, 'misc_node_b', 100, 25);
+        const attrs = {
+            ...makeLineAttrs(''),
+            type: type as LinePathType,
+        };
+        delete attrs[LinePathType.Simple];
+        graph.addDirectedEdgeWithKey('line_a', 'misc_node_a', 'misc_node_b', attrs);
+
+        const [element] = getLines(graph);
+
+        expect(element.line?.path.kind).toBe('ml');
+        expect(element.line?.path.d).toBe('M 0 0 L 100 25');
+        expect(element.line?.attr.type).toBe(type);
+        expect(graph.getEdgeAttribute('line_a', 'type')).toBe(type);
+    });
+
     it('returns dangling reconcile lines with the unknown style', () => {
         const graph = makeGraph();
         addNode(graph, 'misc_node_a', 0, 0);

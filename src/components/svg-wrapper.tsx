@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
-import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
+import { Events, getLinePathAndStyle, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
@@ -39,6 +39,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
+import { canUseLine } from '../util/line-path-availability';
 import { sendErrorNotification } from '../util/notifications';
 import {
     makeParallelIndex,
@@ -339,7 +340,10 @@ const SvgWrapper = () => {
                 });
             }
         } else if (e.key === 'f' && lastTool) {
-            dispatch(setMode(lastTool as RuntimeMode));
+            const { path, style } = getLinePathAndStyle(lastTool as RuntimeMode);
+            if (!path || !style || canUseLine(path, style, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
+                dispatch(setMode(lastTool as RuntimeMode));
+            }
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());

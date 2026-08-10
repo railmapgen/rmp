@@ -32,6 +32,7 @@ import {
 } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { moveNodesAndRedrawLines } from '../util/imperative-dom';
+import { canUseLine } from '../util/line-path-availability';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
@@ -95,7 +96,8 @@ const SvgCanvas = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const { mapEnabled, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
     const {
         selected,
         pointerPosition,
@@ -107,6 +109,13 @@ const SvgCanvas = () => {
     } = useRootSelector(state => state.runtime);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
+
+    React.useEffect(() => {
+        const { path, style } = getLinePathAndStyle(mode);
+        if (path && style && !canUseLine(path, style, mapEnabled, isSubscriber)) {
+            dispatch(setMode('free'));
+        }
+    }, [dispatch, isSubscriber, mapEnabled, mode]);
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
@@ -167,8 +176,8 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         drawingGesture.current = undefined;
-        const { path } = getLinePathAndStyle(mode);
-        if (path) {
+        const { path, style } = getLinePathAndStyle(mode);
+        if (path && style && canUseLine(path, style, mapEnabled, isSubscriber)) {
             const sourcePoint = getNodePoint(node);
             const pointer = getSvgPointerPosition(e);
             const behavior = linePaths[path].drawingBehavior;
@@ -400,7 +409,13 @@ const SvgCanvas = () => {
             const target = getConnectableNodeFromPointer(e);
             const gestureMatches = !gesture || (gesture.type === type && gesture.source === source);
 
-            if (source && target && source !== target && gestureMatches) {
+            if (
+                source &&
+                target &&
+                source !== target &&
+                gestureMatches &&
+                canUseLine(type, style, mapEnabled, isSubscriber)
+            ) {
                 const newLineId: LineId = `line_${nanoid(10)}`;
                 const sourcePoint = gesture?.sourcePoint ?? getNodePoint(source);
                 const targetPoint = getNodePoint(target);
@@ -486,9 +501,20 @@ const SvgCanvas = () => {
         else dispatch(addSelected(edge));
 
         if (mode.startsWith('station') || mode.startsWith('misc-node-virtual') || mode.startsWith('misc-node-master')) {
-            if (graph.current.getEdgeAttribute(edge, 'type') === LinePathType.Freeform) {
-                // The generic splitter only derives a new path from endpoints. Freeform needs its authored points
-                // partitioned, otherwise inserting a node would silently discard the drawn shape.
+            const currentLinePathType = graph.current.getEdgeAttribute(edge, 'type');
+            // TODO: Move split capability into a LinePath-owned operation; cloning path attributes is not an exact
+            // geometric split for Bezier, while authored paths such as Freeform may need to reject splitting entirely.
+            if (
+                currentLinePathType === LinePathType.Freeform ||
+                !canUseLine(
+                    currentLinePathType,
+                    graph.current.getEdgeAttribute(edge, 'style'),
+                    mapEnabled,
+                    isSubscriber
+                )
+            ) {
+                // The generic splitter cannot partition Freeform's authored geometry. It also must not turn a
+                // backwards-compatible legacy path into newly persisted paths that are invalid for this project.
                 dispatch(setMode('free'));
                 return;
             }
@@ -578,6 +604,8 @@ const SvgCanvas = () => {
                 handlePointerUp={handlePointerUp}
                 handleEdgePointerDown={handleEdgePointerDown}
                 handleEdgeDoubleClick={handleEdgeDoubleClick}
+                mapEnabled={mapEnabled}
+                isSubscriber={isSubscriber}
             />
             <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
             <Overlay />

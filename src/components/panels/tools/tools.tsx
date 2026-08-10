@@ -37,6 +37,7 @@ import {
 } from '../../../redux/app/app-slice';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
+import { canUseLine } from '../../../util/line-path-availability';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -78,6 +79,7 @@ const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const {
         preference: {
             toolsPanel: { expand: isToolsExpanded, showOnlyFavorites },
@@ -90,6 +92,7 @@ const ToolsPanel = () => {
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+    const availableLinePathTypes = Object.values(LinePathType);
 
     const handleThemeApplied = React.useCallback((theme: Theme) => {
         dispatch(setTheme(theme));
@@ -109,14 +112,11 @@ const ToolsPanel = () => {
     const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
         const style = lineStyles[styleType];
         const pathSupported = style.metadata.supportLinePathType.includes(pathType);
-        const subscriptionOK = !style.isPro || activeSubscriptions.RMP_CLOUD;
-        return pathSupported && subscriptionOK;
+        return pathSupported && canUseLine(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD);
     };
     const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
-        const path = linePaths[pathType];
         const styleSupported = lineStyles[styleType].metadata.supportLinePathType.includes(pathType);
-        const subscriptionOK = !path.isPro || activeSubscriptions.RMP_CLOUD;
-        return styleSupported && subscriptionOK;
+        return styleSupported && canUseLine(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD);
     };
     const handleLine = (pathType: LinePathType) => {
         let { style: currentStyle } = getLinePathAndStyle(mode);
@@ -125,14 +125,19 @@ const ToolsPanel = () => {
         // If current style is compatible with new path, keep it; otherwise use SingleColor
         const newStyle =
             currentStyle && isStyleCompatible(currentStyle, pathType) ? currentStyle : LineStyleType.SingleColor;
+        if (!canUseLine(pathType, newStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) return;
         dispatch(setMode(`line-${pathType}/${newStyle}`));
     };
     const handleLineStyle = (styleType: LineStyleType) => {
         let { path: currentPath } = getLinePathAndStyle(mode);
         // When user click the background and mode becomes 'free', we try to recover last used path.
         if (!currentPath && lastTool) currentPath = getLinePathAndStyle(lastTool as RuntimeMode).path;
-        // If current path is compatible with new style, keep it; otherwise use Diagonal
-        const newPath = currentPath && isPathCompatible(currentPath, styleType) ? currentPath : LinePathType.Diagonal;
+        // If current path is incompatible, use the first permitted path for this style.
+        const newPath =
+            currentPath && isPathCompatible(currentPath, styleType)
+                ? currentPath
+                : availableLinePathTypes.find(pathType => isPathCompatible(pathType, styleType));
+        if (!newPath) return;
         dispatch(setMode(`line-${newPath}/${styleType}`));
     };
 
@@ -236,47 +241,52 @@ const ToolsPanel = () => {
                                 </Text>
                             </Flex>
 
-                            {Object.values(LinePathType)
-                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
-                                .map(type => {
-                                    const isProLinePath = !!linePaths[type].isPro;
-                                    const isLinePathDisabled =
-                                        (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
-                                        (currentStyle ? !isPathCompatible(type, currentStyle) : false);
+                            {availableLinePathTypes.map(type => {
+                                const isProLinePath = !canUseLine(type, LineStyleType.SingleColor, mapEnabled, false);
+                                const targetStyle =
+                                    currentStyle && isStyleCompatible(currentStyle, type)
+                                        ? currentStyle
+                                        : LineStyleType.SingleColor;
+                                const isLinePathDisabled = !canUseLine(
+                                    type,
+                                    targetStyle,
+                                    mapEnabled,
+                                    activeSubscriptions.RMP_CLOUD
+                                );
 
-                                    return (
-                                        <Flex key={type} w="100%" align="stretch">
-                                            <Box
-                                                w="4px"
-                                                bg={currentPath === type ? 'blue.500' : 'transparent'}
-                                                transition="background-color 0.2s"
-                                            />
-                                            <Button
-                                                aria-label={type}
-                                                leftIcon={linePaths[type].icon}
-                                                onClick={() => handleLine(type)}
-                                                variant="ghost"
-                                                isDisabled={isLinePathDisabled}
-                                                sx={buttonStyle}
-                                                flex={1}
-                                            >
-                                                {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                                {isTextShown && isProLinePath ? (
-                                                    <Tooltip label={t('header.settings.pro')}>
-                                                        <Badge
-                                                            ml="1"
-                                                            color="gray.50"
-                                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                            mr="auto"
-                                                        >
-                                                            PRO
-                                                        </Badge>
-                                                    </Tooltip>
-                                                ) : undefined}
-                                            </Button>
-                                        </Flex>
-                                    );
-                                })}
+                                return (
+                                    <Flex key={type} w="100%" align="stretch">
+                                        <Box
+                                            w="4px"
+                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                            transition="background-color 0.2s"
+                                        />
+                                        <Button
+                                            aria-label={type}
+                                            leftIcon={linePaths[type].icon}
+                                            onClick={() => handleLine(type)}
+                                            variant="ghost"
+                                            isDisabled={isLinePathDisabled}
+                                            sx={buttonStyle}
+                                            flex={1}
+                                        >
+                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                            {isTextShown && isProLinePath ? (
+                                                <Tooltip label={t('header.settings.pro')}>
+                                                    <Badge
+                                                        ml="1"
+                                                        color="gray.50"
+                                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                        mr="auto"
+                                                    >
+                                                        PRO
+                                                    </Badge>
+                                                </Tooltip>
+                                            ) : undefined}
+                                        </Button>
+                                    </Flex>
+                                );
+                            })}
 
                             <Flex w="100%" align="stretch">
                                 <Box
@@ -323,7 +333,11 @@ const ToolsPanel = () => {
                                         leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
-                                        isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
+                                        isDisabled={
+                                            !availableLinePathTypes.some(pathType =>
+                                                isPathCompatible(pathType, styleType)
+                                            )
+                                        }
                                         sx={buttonStyle}
                                         flex={1}
                                     >

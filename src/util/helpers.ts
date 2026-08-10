@@ -71,9 +71,11 @@ export const calculateCanvasSize = (
         return { xMin: 0, yMin: 0, xMax: 100, yMax: 100 };
     }
 
+    let hasVisibleElement = false;
     elements.forEach(id => {
         const elem = document.getElementById(id) as SVGSVGElement | null;
-        if (elem) {
+        if (elem && !elem.classList.contains('removeMe')) {
+            hasVisibleElement = true;
             const rect = transformedBoundingBox(elem);
             xMin = Math.min(rect.x, xMin);
             yMin = Math.min(rect.y, yMin);
@@ -81,6 +83,10 @@ export const calculateCanvasSize = (
             yMax = Math.max(rect.y + rect.height, yMax);
         }
     });
+
+    if (!hasVisibleElement) {
+        return { xMin: 0, yMin: 0, xMax: 100, yMax: 100 };
+    }
 
     xMin -= padding;
     yMin -= padding;
