@@ -151,6 +151,7 @@ Behavior formerly selected by project kind reads `mapEnabled` directly:
 
 - map layer lifecycle and overview/editor visibility;
 - desktop and touch zoom limits;
+- precise versus circular rotation controls;
 - Bezier versus Diagonal prediction defaults;
 - map style settings;
 - map inclusion in export.

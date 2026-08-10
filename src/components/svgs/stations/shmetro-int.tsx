@@ -19,6 +19,7 @@ import {
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
+import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 
@@ -262,16 +263,11 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-            onChange: val => {
-                handleAttrsUpdate(id, {
-                    ...attrs,
-                    rotate: Number(val) as Rotate,
-                });
-            },
+            component: (
+                <RotateField type={StationType.ShmetroInt} defaultAttributes={defaultShmetroIntStationAttributes} />
+            ),
             minW: 'full',
         },
     ];

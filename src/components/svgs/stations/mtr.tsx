@@ -23,6 +23,7 @@ import {
     InterchangeInfo,
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
+import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const LINE_WIDTH = 5;
@@ -269,14 +270,9 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                handleAttrsUpdate(id, attrs);
-            },
+            component: <RotateField type={StationType.MTR} defaultAttributes={defaultMTRStationAttributes} />,
             minW: 'full',
         },
     ];

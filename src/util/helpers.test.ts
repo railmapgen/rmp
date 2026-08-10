@@ -2,7 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { calculateCanvasSize, roundToMultiple } from './helpers';
+import { calculateCanvasSize, roundToMultiple, roundToRotateAngle } from './helpers';
 
 describe('unit tests for round to multiple function', () => {
     // Test rounding to the nearest integer when base=1
@@ -59,6 +59,23 @@ describe('unit tests for round to multiple function', () => {
         // base=0.001 → 3 decimal places
         expect(roundToMultiple(12.3456, 0.001)).toBe(12.346);
         expect(roundToMultiple(12.3454, 0.001)).toBe(12.345);
+    });
+});
+
+describe('roundToRotateAngle', () => {
+    it.each([
+        [0, 0],
+        [22, 0],
+        [23, 45],
+        [337, 315],
+        [338, 0],
+        [359, 0],
+        [360, 0],
+        [-23, 315],
+        [-45, 315],
+        [-360, 0],
+    ])('rounds and normalizes %s degrees to %s degrees', (value, expected) => {
+        expect(roundToRotateAngle(value)).toBe(expected);
     });
 });
 
