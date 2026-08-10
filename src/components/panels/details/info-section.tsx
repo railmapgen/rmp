@@ -88,9 +88,9 @@ export default function InfoSection() {
             label: t('panel.details.info.visible'),
             isChecked: selectedFirst
                 ? graph.current.hasNode(selectedFirst)
-                    ? (graph.current.getNodeAttribute(selectedFirst, 'visible') ?? true)
+                    ? graph.current.getNodeAttribute(selectedFirst, 'visible')
                     : graph.current.hasEdge(selectedFirst)
-                      ? (graph.current.getEdgeAttribute(selectedFirst, 'visible') ?? true)
+                      ? graph.current.getEdgeAttribute(selectedFirst, 'visible')
                       : true
                 : true,
             onChange: handleVisibleChange,

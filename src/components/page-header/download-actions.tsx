@@ -181,88 +181,114 @@ export default function DownloadActions() {
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = async () => {
         setIsDownloadRunning(true);
-        if (isAllowAppTelemetry)
-            rmgRuntime.event(
-                Events.DOWNLOAD_IMAGES,
-                isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
+        try {
+            if (isAllowAppTelemetry)
+                rmgRuntime.event(
+                    Events.DOWNLOAD_IMAGES,
+                    isAllowProjectTelemetry
+                        ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size }
+                        : {}
+                );
+
+            const { elem, width, height } = await makeRenderReadySVGElement(
+                graph.current,
+                param.present.mapEnabled,
+                isAttachSelected,
+                isSystemFontsOnly,
+                languages,
+                isRmpInfoForced,
+                svgVersion
             );
+            // white spaces will be converted to &nbsp; and will fail the canvas render process
+            // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
+            // ASCII control characters will also break the rendering, reported in #1224
+            const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
 
-        const { elem, width, height } = await makeRenderReadySVGElement(
-            graph.current,
-            isAttachSelected,
-            isSystemFontsOnly,
-            languages,
-            isRmpInfoForced,
-            svgVersion
-        );
-        // white spaces will be converted to &nbsp; and will fail the canvas render process
-        // in fact other named characters might also break such as `& -> &amp;`, let's fix if someone reports
-        // ASCII control characters will also break the rendering, reported in #1224
-        const svgString = elem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
+            if (format === 'svg') {
+                downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
+                return;
+            }
 
-        if (format === 'svg') {
-            downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
+            // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
+            if (isTauri) {
+                // note mtr fonts are replaced in Tauri/resvg
+                // @ts-expect-error
+                await window.parent.__TAURI__.core.invoke('render_image', {
+                    svgString,
+                    scale,
+                    isTransparent,
+                    isSystemFontsOnly,
+                });
+                return;
+            }
+
+            // fall back to canvas rendering
+
+            // append to document before encoding the SVG for browser canvas rendering
+            document.body.appendChild(elem);
+            let src: string;
+            try {
+                src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+            } finally {
+                elem.remove();
+            }
+
+            // prepare a clean canvas to be drawn on
+            const canvas = document.createElement('canvas');
+            const [canvasWidth, canvasHeight] = [(width * scale) / 100, (height * scale) / 100];
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas 2D context is unavailable');
+
+            // Keep exported images independent from the editor color mode.
+            if (!isTransparent) {
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            }
+
+            await new Promise<void>((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    setTimeout(
+                        () => {
+                            try {
+                                ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                                canvas.toBlob(blob => {
+                                    try {
+                                        if (!blob) {
+                                            // The canvas size is bigger than the current browser can support.
+                                            dispatch(
+                                                setGlobalAlert({
+                                                    id: GlobalAlertId.DownloadImageTooBig,
+                                                    status: 'error',
+                                                    message: t('header.download.imageTooBig'),
+                                                })
+                                            );
+                                            resolve();
+                                            return;
+                                        }
+                                        downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob);
+                                        resolve();
+                                    } catch (error) {
+                                        reject(error);
+                                    }
+                                }, 'image/png');
+                            } catch (error) {
+                                reject(error);
+                            }
+                        },
+                        isSafari() ? 2000 : 0
+                    );
+                };
+                img.onerror = () => reject(new Error('Failed to load the generated SVG image'));
+                img.src = src;
+            });
+        } catch (error) {
+            console.error('Failed to export image', error);
+        } finally {
             setIsDownloadRunning(false);
-            return;
         }
-
-        // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
-        if (isTauri) {
-            // note mtr fonts are replaced in Tauri/resvg
-            // @ts-expect-error
-            window.parent.__TAURI__.core
-                .invoke('render_image', { svgString, scale, isTransparent, isSystemFontsOnly })
-                .then(() => setIsDownloadRunning(false));
-            return;
-        }
-
-        // fall back to canvas rendering
-
-        // append to document to render the svg
-        document.body.appendChild(elem);
-        // convert it to an encoded string
-        const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
-        // release after use
-        document.body.removeChild(elem);
-        elem.remove();
-
-        // prepare a clean canvas to be drawn on
-        const canvas = document.createElement('canvas');
-        const [canvasWidth, canvasHeight] = [(width * scale) / 100, (height * scale) / 100];
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-        // Keep exported images independent from the editor color mode.
-        if (!isTransparent) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-        }
-
-        const img = new Image();
-        img.onload = () => {
-            setTimeout(
-                () => {
-                    ctx.drawImage(img, 0, 0, canvasWidth, canvasHeight);
-                    canvas.toBlob(blob => {
-                        setIsDownloadRunning(false);
-                        if (!blob) {
-                            // The canvas size is bigger than the current browser can support.
-                            dispatch(
-                                setGlobalAlert({
-                                    id: GlobalAlertId.DownloadImageTooBig,
-                                    status: 'error',
-                                    message: t('header.download.imageTooBig'),
-                                })
-                            );
-                            return;
-                        }
-                        downloadBlobAs(`RMP_${new Date().valueOf()}.png`, blob!);
-                    }, 'image/png');
-                },
-                isSafari() ? 2000 : 0
-            );
-        };
-        img.src = src; // draw src on canvas
     };
 
     return (

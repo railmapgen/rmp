@@ -85,7 +85,7 @@ export const VirtualJoystick: React.FC = () => {
     const buttonSpacing = 40;
 
     return (
-        <g transform={`translate(${centerX}, ${bottomY})scale(${(1.5 * svgViewBoxZoom) / 100})`}>
+        <g className="removeMe" transform={`translate(${centerX}, ${bottomY})scale(${(1.5 * svgViewBoxZoom) / 100})`}>
             {/* Up button */}
             <g transform={`translate(0, -${buttonSpacing})`}>
                 <circle

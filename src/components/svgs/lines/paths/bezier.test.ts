@@ -249,4 +249,27 @@ describe('bezier line path', () => {
             targetOffset: { x: 7, y: 8 },
         });
     });
+
+    it('preserves outer misc-node offsets when splitting at a station', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'misc_node_source', 0);
+        addNode(graph, 'stn_inserted', 50);
+        addNode(graph, 'misc_node_target', 100);
+
+        const originalAttrs = makeBezierEdgeAttrs(RED, { x: 5, y: 6 }, { x: 7, y: 8 });
+        graph.addDirectedEdgeWithKey('line_original', 'misc_node_source', 'misc_node_target', originalAttrs);
+
+        graph.addDirectedEdgeWithKey('line_first', 'misc_node_source', 'stn_inserted', structuredClone(originalAttrs));
+        graph.addDirectedEdgeWithKey('line_second', 'stn_inserted', 'misc_node_target', structuredClone(originalAttrs));
+        normalizeEdgeAttributes(graph, ['line_first', 'line_second'], 'created');
+
+        expect(graph.getEdgeAttribute('line_first', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 5, y: 6 },
+            targetOffset: { x: 0, y: 0 },
+        });
+        expect(graph.getEdgeAttribute('line_second', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 0, y: 0 },
+            targetOffset: { x: 7, y: 8 },
+        });
+    });
 });

@@ -1,7 +1,7 @@
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { Events, LineId, NodeAttributes, NodeId, NodeType, Theme } from '../constants/constants';
+import { EdgeAttributes, Events, LineId, NodeAttributes, NodeId, NodeType, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, STATION_TYPE_VALUES, StationAttributes, StationType } from '../constants/stations';
@@ -15,9 +15,12 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition } from '../util/helpers';
+import { supportsParallelLinePath } from '../util/parallel';
 import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
-import { linePaths } from './svgs/lines/lines';
+import { normalizeEdgeAttributes } from './svgs/lines/lines';
+import bezierPath from './svgs/lines/paths/bezier';
+import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 import diagonalPath from './svgs/lines/paths/diagonal';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -25,9 +28,38 @@ import virtual from './svgs/nodes/virtual';
 import stations from './svgs/stations/stations';
 
 const VirtualNodeComponent = virtual.component;
-const diagonalPathGenerator = diagonalPath.generatePath;
 const SingleColorComponent = singleColor.component;
 const OFFSET = 10;
+type PredictionPathType = LinePathType.Diagonal | LinePathType.Bezier;
+
+/**
+ * Prediction follows the visible canvas context: Diagonal without the map and
+ * Bezier over the geographic map.
+ */
+const getPredictionPathType = (mapEnabled: boolean): PredictionPathType =>
+    mapEnabled ? LinePathType.Bezier : LinePathType.Diagonal;
+
+/** Keep Diagonal routing attributes out of the persisted Bezier payload. */
+const makePredictionPathAttrs = (pathType: PredictionPathType, startFrom: 'from' | 'to') =>
+    pathType === LinePathType.Diagonal
+        ? { ...structuredClone(diagonalPath.defaultAttrs), startFrom }
+        : structuredClone(bezierPath.defaultAttrs);
+
+const makePredictionEdgeAttrs = (
+    pathType: PredictionPathType,
+    startFrom: 'from' | 'to',
+    color: Theme
+): EdgeAttributes =>
+    ({
+        visible: true,
+        zIndex: 0,
+        type: pathType,
+        [pathType]: makePredictionPathAttrs(pathType, startFrom),
+        style: LineStyleType.SingleColor,
+        [LineStyleType.SingleColor]: { color },
+        reconcileId: '',
+        parallelIndex: -1,
+    }) as EdgeAttributes;
 
 const PredictNextNode = () => {
     const dispatch = useRootDispatch();
@@ -47,7 +79,8 @@ const PredictNextNode = () => {
         count: { mostFrequentStationType },
         lastTool,
     } = useRootSelector(state => state.runtime);
-
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const predictionPathType = getPredictionPathType(mapEnabled);
     const makeStationName = useMakeStationName();
 
     // must have exactly one selected, checked in the parent component
@@ -151,15 +184,25 @@ const PredictNextNode = () => {
               ? true
               : false;
     const path1StartFrom = switchStartFrom ? 'from' : 'to';
-    const path1 = diagonalPathGenerator(curPos.x, nextPos1.x, curPos.y, nextPos1.y, {
-        ...diagonalPath.defaultAttrs,
-        startFrom: path1StartFrom,
-    });
     const path2StartFrom = switchStartFrom ? 'to' : 'from';
-    const path2 = diagonalPathGenerator(curPos.x, nextPos2.x, curPos.y, nextPos2.y, {
-        ...diagonalPath.defaultAttrs,
-        startFrom: path2StartFrom,
-    });
+    const bezierPreviewAttrs =
+        predictionPathType === LinePathType.Bezier
+            ? initializeBezierEndpointOffsets(
+                  window.graph,
+                  selectedID as NodeId,
+                  undefined,
+                  makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme)
+              )
+            : undefined;
+    const generatePreviewPath = (target: { x: number; y: number }, startFrom: 'from' | 'to') => {
+        if (bezierPreviewAttrs) {
+            return bezierPath.generatePath(curPos.x, target.x, curPos.y, target.y, bezierPreviewAttrs);
+        }
+        const edgeAttrs = makePredictionEdgeAttrs(LinePathType.Diagonal, startFrom, mostFrequentTheme);
+        return diagonalPath.generatePath(curPos.x, target.x, curPos.y, target.y, edgeAttrs[LinePathType.Diagonal]!);
+    };
+    const path1 = generatePreviewPath(nextPos1, path1StartFrom);
+    const path2 = generatePreviewPath(nextPos2, path2StartFrom);
 
     const handlePointerDown = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -195,25 +238,15 @@ const PredictNextNode = () => {
         });
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_STATION, { type: nodeType });
 
-        const pathType = LinePathType.Diagonal;
+        const pathType = predictionPathType;
         const newLineId: LineId = `line_${nanoid(10)}`;
         const [source, target] = [selectedID as NodeId, nextID];
-        const parallelIndex = autoParallel ? 0 : -1;
+        const parallelIndex = autoParallel && supportsParallelLinePath(pathType) ? 0 : -1;
         const startFrom = isStation ? path2StartFrom : path1StartFrom;
-        window.graph.addDirectedEdgeWithKey(newLineId, source, target, {
-            visible: true,
-            zIndex: 0,
-            type: pathType,
-            [pathType]: {
-                // deep copy to prevent mutual reference
-                ...structuredClone(linePaths[pathType].defaultAttrs),
-                startFrom,
-            },
-            style: LineStyleType.SingleColor,
-            [LineStyleType.SingleColor]: { color: mostFrequentTheme },
-            reconcileId: '',
-            parallelIndex,
-        });
+        const edgeAttrs = makePredictionEdgeAttrs(pathType, startFrom, mostFrequentTheme);
+        edgeAttrs.parallelIndex = parallelIndex;
+        window.graph.addDirectedEdgeWithKey(newLineId, source, target, edgeAttrs);
+        normalizeEdgeAttributes(window.graph, [newLineId], 'created');
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type: pathType });
 
         refreshAndSave();
@@ -225,7 +258,7 @@ const PredictNextNode = () => {
         <g id="prediction" opacity="0.5" className="removeMe">
             <SingleColorComponent
                 id="line_prediction_1"
-                type={LinePathType.Diagonal}
+                type={predictionPathType}
                 path={path1}
                 styleAttrs={{ color: mostFrequentTheme }}
                 newLine
@@ -233,7 +266,7 @@ const PredictNextNode = () => {
             />
             <SingleColorComponent
                 id="line_prediction_2"
-                type={LinePathType.Diagonal}
+                type={predictionPathType}
                 path={path2}
                 styleAttrs={{ color: mostFrequentTheme }}
                 newLine

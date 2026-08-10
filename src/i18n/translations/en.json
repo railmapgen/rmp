@@ -907,6 +907,7 @@
             },
             "preference": {
                 "title": "Preference",
+                "mapEnabled": "Show geographic map layer",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
@@ -1074,5 +1075,35 @@
         }
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
+    "map": {
+        "loading": "Loading map",
+        "loadError": "Unable to load the map background.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "enabled": "Show",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": {
+                "title": "Railways",
+                "metro": "Metro",
+                "national": "National railway"
+            },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show labels",
+                "sizeScale": "Size scale"
+            }
+        }
+    }
 }
