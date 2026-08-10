@@ -932,6 +932,7 @@
                 "predictNextNode": "當選擇一個節點時預測下一個節點",
                 "autoChangeStationType": "自動切換基本車站與換乘車站",
                 "disableMapPerformanceOptimization": "停用地圖效能最佳化",
+                "mapPerformanceOptimizationProgress": "已最佳化：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "更改車站或線段類型時禁用警告"
             },
             "shortcuts": {

@@ -32,6 +32,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { StationCity } from '../../constants/constants';
+import { getMapOptimizationProgress } from '../../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoChangeStationType,
@@ -101,6 +102,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
+    const mapOptimizationProgress = React.useMemo(
+        () =>
+            isOpen
+                ? getMapOptimizationProgress(document.querySelector<SVGGElement>('[data-map-layer]'))
+                : { optimized: 0, total: 0 },
+        [isOpen]
+    );
 
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const handleAdditionalTelemetry = (allowTelemetry: boolean) => {
@@ -274,17 +282,25 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     />
                                 </HStack>
                                 {mapEnabled && (
-                                    <HStack mb="1">
-                                        <Text flex="1">
-                                            {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                    <Box mb="1">
+                                        <HStack>
+                                            <Text flex="1">
+                                                {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                            </Text>
+                                            <Switch
+                                                isChecked={disableMapPerformanceOptimization}
+                                                onChange={({ target: { checked } }) =>
+                                                    dispatch(setDisableMapPerformanceOptimization(checked))
+                                                }
+                                            />
+                                        </HStack>
+                                        <Text color="gray.500" fontSize="sm">
+                                            {t('header.settings.preference.mapPerformanceOptimizationProgress', {
+                                                optimized: mapOptimizationProgress.optimized,
+                                                total: mapOptimizationProgress.total,
+                                            })}
                                         </Text>
-                                        <Switch
-                                            isChecked={disableMapPerformanceOptimization}
-                                            onChange={({ target: { checked } }) =>
-                                                dispatch(setDisableMapPerformanceOptimization(checked))
-                                            }
-                                        />
-                                    </HStack>
+                                    </Box>
                                 )}
                                 <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>

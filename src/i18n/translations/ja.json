@@ -935,6 +935,7 @@
                 "predictNextNode": "節点を選択したときに次の節点を予測する",
                 "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
                 "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
+                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
             },
             "shortcuts": {

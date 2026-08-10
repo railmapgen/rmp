@@ -932,6 +932,7 @@
                 "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
                 "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환",
                 "disableMapPerformanceOptimization": "지도 성능 최적화 비활성화",
+                "mapPerformanceOptimizationProgress": "최적화됨: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화"
             },
             "shortcuts": {

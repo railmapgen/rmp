@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MAP_COMMON_ZOOM, MAP_TILE_SIZE, MAP_ZOOMED_SWITCH_THRESHOLD, worldPixelToGraph } from './map-config';
-import { MapTileController, type MapLoadingProgress, renderMapLayerForExport } from './map-tile-controller';
+import {
+    getMapOptimizationProgress,
+    MapTileController,
+    type MapLoadingProgress,
+    renderMapLayerForExport,
+} from './map-tile-controller';
 
 const availability = (zoom: number, x: number, y: number, width = 1, bits = 1) => {
     const buffer = new ArrayBuffer(28 + Math.ceil(width / 8));
@@ -345,6 +350,7 @@ describe('MapTileController', () => {
         expect(rasterizer.render.mock.calls[0][1]).toBe(4096);
 
         await vi.waitFor(() => expect(root.querySelector('[data-map-raster]')).not.toBeNull());
+        expect(getMapOptimizationProgress(root)).toEqual({ optimized: 0, total: 1 });
         expect(consoleInfo.mock.calls).toEqual([
             ['Background map rasterization: 0 / 1'],
             ['Background map rasterization: 1 / 1'],
@@ -359,6 +365,7 @@ describe('MapTileController', () => {
         expect(raster.getAttribute('preserveAspectRatio')).toBe('none');
         raster.dispatchEvent(new Event('load'));
         expect(svgTile.style.display).toBe('none');
+        expect(getMapOptimizationProgress(root)).toEqual({ optimized: 1, total: 1 });
 
         const cacheReadsBeforeReturn = rasterCache.getRaster.mock.calls.length;
         controller.setInteractionActive(true);
@@ -398,6 +405,7 @@ describe('MapTileController', () => {
         controller.setRasterEnabled(false);
         expect(root.querySelector('[data-map-raster]')).toBeNull();
         expect(svgTile.style.display).toBe('');
+        expect(getMapOptimizationProgress(root)).toEqual({ optimized: 0, total: 1 });
         controller.updateStyle('[data-map-layer] .rmp-map-tile .road { stroke: #111111; }');
         await new Promise(resolve => setTimeout(resolve, 10));
         expect(rasterizer.render).toHaveBeenCalledTimes(2);

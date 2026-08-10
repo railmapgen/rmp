@@ -933,6 +933,7 @@
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
                 "disableMapPerformanceOptimization": "Disable map performance optimization",
+                "mapPerformanceOptimizationProgress": "Optimized: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {

@@ -96,6 +96,7 @@ interface MountedTile {
     rasterUnavailable?: boolean;
     raster?: SVGImageElement;
     rasterUrl?: string;
+    rasterReady?: boolean;
 }
 
 interface MountQueueEntry {
@@ -133,6 +134,11 @@ export interface MapTileControllerOptions {
  */
 export interface MapLoadingProgress {
     completed: number;
+    total: number;
+}
+
+export interface MapOptimizationProgress {
+    optimized: number;
     total: number;
 }
 
@@ -199,6 +205,12 @@ export const renderMapLayerForExport = (
     const controller = controllersByRoot.get(source);
     if (!controller) throw new Error('Map tile controller is not available for export');
     return controller.renderForExport(target, bounds);
+};
+
+/** Returns a snapshot of rasterized tiles in the current live viewport. */
+export const getMapOptimizationProgress = (root: SVGGElement | null): MapOptimizationProgress => {
+    const controller = root ? controllersByRoot.get(root) : undefined;
+    return controller?.getOptimizationProgress() ?? { optimized: 0, total: 0 };
 };
 
 /**
@@ -393,6 +405,14 @@ export class MapTileController {
             return;
         }
         this.markRasterActivity();
+    }
+
+    getOptimizationProgress(): MapOptimizationProgress {
+        let optimized = 0;
+        for (const key of this.desired.keys()) {
+            if (this.nodes.get(key)?.rasterReady) optimized += 1;
+        }
+        return { optimized, total: this.desired.size };
     }
 
     /**
@@ -1097,6 +1117,7 @@ export class MapTileController {
                 if (mounted.raster !== image || this.nodes.get(mounted.request.key) !== mounted) return;
                 image.style.removeProperty('visibility');
                 mounted.svg.style.display = 'none';
+                mounted.rasterReady = true;
             },
             { once: true }
         );
@@ -1150,6 +1171,7 @@ export class MapTileController {
         if (mounted.rasterUrl) URL.revokeObjectURL(mounted.rasterUrl);
         mounted.raster = undefined;
         mounted.rasterUrl = undefined;
+        mounted.rasterReady = false;
         mounted.svg.style.removeProperty('display');
     }
 

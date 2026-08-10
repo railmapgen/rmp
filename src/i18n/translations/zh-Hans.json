@@ -932,6 +932,7 @@
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
                 "disableMapPerformanceOptimization": "禁用地图性能优化",
+                "mapPerformanceOptimizationProgress": "已优化：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "更改车站或线段类型时禁用警告"
             },
             "shortcuts": {
