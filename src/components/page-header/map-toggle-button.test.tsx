@@ -35,12 +35,14 @@ describe('MapToggleButton', () => {
 
         const showButton = screen.getByRole('button', { name: 'Show geographic map' });
         expect(showButton).toHaveAttribute('aria-pressed', 'false');
+        expect(showButton).not.toHaveAttribute('data-active');
 
         fireEvent.click(showButton);
 
         expect(store.getState().param.present.mapEnabled).toBe(true);
         const hideButton = screen.getByRole('button', { name: 'Hide geographic map' });
         expect(hideButton).toHaveAttribute('aria-pressed', 'true');
+        expect(hideButton).toHaveAttribute('data-active');
 
         fireEvent.click(hideButton);
         expect(store.getState().param.present.mapEnabled).toBe(false);

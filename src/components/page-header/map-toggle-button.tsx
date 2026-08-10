@@ -14,8 +14,9 @@ export const MapToggleButton = () => {
         <Tooltip label={label} hasArrow>
             <IconButton
                 size="sm"
-                variant={mapEnabled ? 'solid' : 'ghost'}
-                colorScheme="blue"
+                variant="ghost"
+                colorScheme="gray"
+                isActive={mapEnabled}
                 aria-label={label}
                 aria-pressed={mapEnabled}
                 icon={<MdMap />}

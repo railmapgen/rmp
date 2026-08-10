@@ -72,7 +72,6 @@ export default function WindowHeader() {
                             )
                         }
                     />
-                    <MapToggleButton />
                 </HStack>
 
                 <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
@@ -113,6 +112,8 @@ export default function WindowHeader() {
                             </MenuList>
                         </Menu>
                     )}
+
+                    <MapToggleButton />
 
                     <IconButton
                         size="sm"
