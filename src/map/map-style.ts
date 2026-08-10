@@ -1,5 +1,32 @@
 export type MapRoadKind = 'path' | 'local' | 'collector' | 'arterial';
 export type MapRailKind = 'metro' | 'national';
+export const MAP_LABEL_GROUPS = [
+    { name: 'places', kinds: ['place-major', 'place-medium', 'place-minor'] },
+    { name: 'roads', kinds: ['road-arterial', 'road-collector'] },
+    { name: 'buildings', kinds: ['building'] },
+    {
+        name: 'areas',
+        kinds: [
+            'area-water',
+            'area-park',
+            'area-grass',
+            'area-forest',
+            'area-farmland',
+            'area-cemetery',
+            'area-residential',
+            'area-commercial',
+            'area-industrial',
+            'area-education',
+            'area-healthcare',
+        ],
+    },
+    {
+        name: 'transport',
+        kinds: ['transport-airport', 'transport-rail', 'transport-metro', 'transport-platform', 'transport-entrance'],
+    },
+] as const;
+export type MapLabelKind = (typeof MAP_LABEL_GROUPS)[number]['kinds'][number];
+export const MAP_LABEL_KINDS: readonly MapLabelKind[] = MAP_LABEL_GROUPS.flatMap(group => group.kinds);
 
 /** User-adjustable appearance shared by all road features in one generated category. */
 export interface MapRoadStyle {
@@ -16,16 +43,24 @@ export interface MapRailStyle {
     widthScale: number;
 }
 
+/** Every semantic label class can be styled independently without changing tile payloads. */
+export interface MapLabelStyle {
+    enabled: boolean;
+    color: string;
+    strokeColor: string;
+    sizeScale: number;
+}
+
 /**
- * This shape is persisted in RMP saves. New adjustable categories therefore
- * need a default and a save migration rather than being added only to the UI.
+ * This shape is persisted in RMP saves, so every adjustable category belongs
+ * here rather than existing only as transient UI state.
  */
 export interface MapStyle {
     roads: Record<MapRoadKind, MapRoadStyle>;
     rails: Record<MapRailKind, MapRailStyle>;
     labels: {
         enabled: boolean;
-        sizeScale: number;
+        categories: Record<MapLabelKind, MapLabelStyle>;
     };
 }
 
@@ -43,7 +78,30 @@ export const DEFAULT_MAP_STYLE: MapStyle = {
     },
     labels: {
         enabled: true,
-        sizeScale: 1,
+        categories: {
+            'place-major': { enabled: true, color: '#3a342d', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'place-medium': { enabled: true, color: '#4a443d', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'place-minor': { enabled: true, color: '#625c54', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'road-arterial': { enabled: true, color: '#554f48', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'road-collector': { enabled: true, color: '#68625a', strokeColor: '#f8f5ef', sizeScale: 1 },
+            building: { enabled: true, color: '#726c64', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-water': { enabled: true, color: '#477285', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-park': { enabled: true, color: '#4f6f45', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-grass': { enabled: true, color: '#5f744e', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-forest': { enabled: true, color: '#4f6a43', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-farmland': { enabled: true, color: '#746d45', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-cemetery': { enabled: true, color: '#5e6f58', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-residential': { enabled: true, color: '#625c54', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-commercial': { enabled: true, color: '#795a5a', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-industrial': { enabled: true, color: '#675d75', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-education': { enabled: true, color: '#715f3b', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'area-healthcare': { enabled: true, color: '#7a5661', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'transport-airport': { enabled: true, color: '#3d6482', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'transport-rail': { enabled: true, color: '#3f3a34', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'transport-metro': { enabled: true, color: '#4d6c88', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'transport-platform': { enabled: true, color: '#655f58', strokeColor: '#f8f5ef', sizeScale: 1 },
+            'transport-entrance': { enabled: true, color: '#6f8496', strokeColor: '#f8f5ef', sizeScale: 1 },
+        },
     },
 };
 
@@ -160,27 +218,26 @@ const MAP_BASE_STYLE_CSS = `
     text-anchor: middle;
     dominant-baseline: middle;
 }
-[data-map-layer] .rmp-map-tile .label-place-major { fill: #3a342d; }
-[data-map-layer] .rmp-map-tile .label-transport-airport { fill: #3d6482; }
-[data-map-layer] .rmp-map-tile .label-transport-rail { fill: #3f3a34; }
-[data-map-layer] .rmp-map-tile .label-place-medium { fill: #4a443d; }
-[data-map-layer] .rmp-map-tile .label-transport-metro { fill: #4d6c88; }
-[data-map-layer] .rmp-map-tile .label-place-minor,
-[data-map-layer] .rmp-map-tile .label-area-residential { fill: #625c54; }
-[data-map-layer] .rmp-map-tile .label-road-arterial { fill: #554f48; }
-[data-map-layer] .rmp-map-tile .label-road-collector { fill: #68625a; }
-[data-map-layer] .rmp-map-tile .label-building { fill: #726c64; }
-[data-map-layer] .rmp-map-tile .label-area-commercial { fill: #795a5a; }
-[data-map-layer] .rmp-map-tile .label-area-industrial { fill: #675d75; }
-[data-map-layer] .rmp-map-tile .label-area-education { fill: #715f3b; }
-[data-map-layer] .rmp-map-tile .label-area-healthcare { fill: #7a5661; }
-[data-map-layer] .rmp-map-tile .label-area-park { fill: #4f6f45; }
-[data-map-layer] .rmp-map-tile .label-area-grass { fill: #5f744e; }
-[data-map-layer] .rmp-map-tile .label-area-forest { fill: #4f6a43; }
-[data-map-layer] .rmp-map-tile .label-area-farmland { fill: #746d45; }
-[data-map-layer] .rmp-map-tile .label-area-cemetery { fill: #5e6f58; }
-[data-map-layer] .rmp-map-tile .label-area-water { fill: #477285; }
 `.trim();
+
+const labelZoomedFontSize = (kind: MapLabelKind) => (kind === 'place-major' ? 12.8 : 4);
+
+const compileLabelStyleCss = (labels: MapStyle['labels']) =>
+    MAP_LABEL_KINDS.map(kind => {
+        const category = labels.categories[kind];
+        const categoryDisplay = labels.enabled && category.enabled ? 'inline' : 'none';
+        const overviewFontSize =
+            kind === 'place-major'
+                ? `\n[data-map-layer] .rmp-map-tile[data-level="overview"] .labels.label-${kind} { font-size: ${scaled(10, category.sizeScale)}px; }`
+                : '';
+
+        return `[data-map-layer] .rmp-map-tile .labels.label-${kind} {
+    display: ${categoryDisplay};
+    fill: ${category.color};
+    stroke: ${category.strokeColor};
+}
+[data-map-layer] .rmp-map-tile[data-level="zoomed"] .labels.label-${kind} { font-size: ${scaled(labelZoomedFontSize(kind), category.sizeScale)}px; }${overviewFontSize}`;
+    }).join('\n\n');
 
 /**
  * Produces the single stylesheet used by live tiles and exported SVG snapshots.
@@ -191,6 +248,7 @@ export const compileMapStyleCss = (style: MapStyle) => {
     const { path, local, collector, arterial } = style.roads;
     const display = (enabled: boolean) => (enabled ? 'inline' : 'none');
     const labelDisplay = style.labels.enabled ? 'inline' : 'none';
+    const labelStyleCss = compileLabelStyleCss(style.labels);
 
     // Filled road polygons are generated as part of the local-road layer and must share its visibility and color.
     return `${MAP_BASE_STYLE_CSS}
@@ -231,8 +289,9 @@ export const compileMapStyleCss = (style: MapStyle) => {
 [data-map-layer] .rmp-map-tile[data-level="overview"] .rail-national.detail { stroke-width: ${scaled(0.4, style.rails.national.widthScale)}; }
 
 [data-map-layer] .rmp-map-tile .labels { display: ${labelDisplay}; }
-[data-map-layer] .rmp-map-tile[data-level="zoomed"] .labels { font-size: ${scaled(4, style.labels.sizeScale)}px; }
-[data-map-layer] .rmp-map-tile[data-level="zoomed"] .label-place-major { font-size: ${scaled(12.8, style.labels.sizeScale)}px; }
-[data-map-layer] .rmp-map-tile[data-level="overview"] .labels { font-size: ${scaled(10, style.labels.sizeScale)}px; }
+[data-map-layer] .rmp-map-tile[data-level="zoomed"] .labels { font-size: 4px; }
+[data-map-layer] .rmp-map-tile[data-level="overview"] .labels { font-size: 10px; }
+
+${labelStyleCss}
 `.trim();
 };

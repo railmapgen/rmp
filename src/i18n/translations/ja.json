@@ -792,6 +792,10 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "mapToggle": {
+            "show": "地理地図を表示",
+            "hide": "地理地図を非表示"
+        },
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",
@@ -1102,8 +1106,41 @@
             },
             "labels": {
                 "title": "ラベル",
-                "enabled": "ラベルを表示",
-                "sizeScale": "文字サイズ倍率"
+                "enabled": "すべてのラベルを表示",
+                "sizeScale": "文字サイズ倍率",
+                "color": "文字",
+                "strokeColor": "縁取り",
+                "groups": {
+                    "places": "地名",
+                    "roads": "道路",
+                    "buildings": "建物",
+                    "areas": "エリア",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地名",
+                    "place-medium": "中規模地名",
+                    "place-minor": "小規模地名",
+                    "road-arterial": "幹線道路",
+                    "road-collector": "補助幹線道路",
+                    "building": "建物",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農地",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅地",
+                    "area-commercial": "商業地",
+                    "area-industrial": "工業地",
+                    "area-education": "教育施設",
+                    "area-healthcare": "医療施設",
+                    "transport-airport": "空港",
+                    "transport-rail": "一般鉄道駅",
+                    "transport-metro": "地下鉄駅",
+                    "transport-platform": "プラットホーム",
+                    "transport-entrance": "出入口"
+                }
             }
         }
     }

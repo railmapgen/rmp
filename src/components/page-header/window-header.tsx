@@ -11,6 +11,7 @@ import { redoAction, undoAction } from '../../redux/project-history';
 import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
+import { MapToggleButton } from './map-toggle-button';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
@@ -71,6 +72,7 @@ export default function WindowHeader() {
                             )
                         }
                     />
+                    <MapToggleButton />
                 </HStack>
 
                 <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>

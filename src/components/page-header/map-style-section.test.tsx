@@ -73,8 +73,12 @@ describe('MapStyleSection', () => {
         expect(metroRowElement.closest('table')).toBeInTheDocument();
 
         const labelsRow = within(screen.getByTestId('map-style-labels'));
-        expect(labelsRow.getByRole('checkbox', { name: 'Show labels' })).toBeInTheDocument();
-        expect(labelsRow.getByRole('slider')).toBeInTheDocument();
+        expect(labelsRow.getByRole('checkbox', { name: 'Show all labels' })).toBeInTheDocument();
+
+        const majorPlaceRow = within(screen.getByTestId('map-style-label-place-major'));
+        expect(majorPlaceRow.getByRole('checkbox', { name: 'Major places Show' })).toBeInTheDocument();
+        expect(majorPlaceRow.getAllByRole('button', { name: 'Color' })).toHaveLength(2);
+        expect(majorPlaceRow.getByRole('slider')).toBeInTheDocument();
     });
 
     it('hides a map category and disables its controls', () => {
@@ -88,12 +92,33 @@ describe('MapStyleSection', () => {
         expect(pathRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
     });
 
-    it('disables all map style controls for free users', () => {
-        renderSection(false);
+    it('lets free users toggle labels and railway layers while keeping appearance controls subscribed', () => {
+        const store = renderSection(false);
 
         expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
         screen.getAllByRole('button', { name: 'Color' }).forEach(button => expect(button).toBeDisabled());
         screen.getAllByRole('slider').forEach(slider => expect(slider).toHaveAttribute('aria-disabled', 'true'));
-        screen.getAllByRole('checkbox').forEach(checkbox => expect(checkbox).toBeDisabled());
+
+        const roadRow = within(screen.getByTestId('map-style-road-path'));
+        expect(roadRow.getByRole('checkbox', { name: 'Path Show' })).toBeDisabled();
+
+        const metroRow = within(screen.getByTestId('map-style-rail-metro'));
+        const metroSwitch = metroRow.getByRole('checkbox', { name: 'Metro Show' });
+        expect(metroSwitch).toBeEnabled();
+        fireEvent.click(metroSwitch);
+        expect(store.getState().param.present.mapStyle.rails.metro.enabled).toBe(false);
+
+        const labelsSwitch = within(screen.getByTestId('map-style-labels')).getByRole('checkbox', {
+            name: 'Show all labels',
+        });
+        expect(labelsSwitch).toBeEnabled();
+
+        const majorPlaceRow = within(screen.getByTestId('map-style-label-place-major'));
+        const majorPlaceSwitch = majorPlaceRow.getByRole('checkbox', { name: 'Major places Show' });
+        expect(majorPlaceSwitch).toBeEnabled();
+        fireEvent.click(majorPlaceSwitch);
+        expect(store.getState().param.present.mapStyle.labels.categories['place-major'].enabled).toBe(false);
+        expect(majorPlaceRow.getAllByRole('button', { name: 'Color' })[0]).toBeDisabled();
+        expect(majorPlaceRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
     });
 });

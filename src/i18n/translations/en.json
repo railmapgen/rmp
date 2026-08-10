@@ -790,6 +790,10 @@
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
+        "mapToggle": {
+            "show": "Show geographic map",
+            "hide": "Hide geographic map"
+        },
         "open": {
             "new": "New project",
             "config": "Import project",
@@ -1101,8 +1105,41 @@
             },
             "labels": {
                 "title": "Labels",
-                "enabled": "Show labels",
-                "sizeScale": "Size scale"
+                "enabled": "Show all labels",
+                "sizeScale": "Size scale",
+                "color": "Text",
+                "strokeColor": "Outline",
+                "groups": {
+                    "places": "Places",
+                    "roads": "Roads",
+                    "buildings": "Buildings",
+                    "areas": "Areas",
+                    "transport": "Transport"
+                },
+                "categories": {
+                    "place-major": "Major places",
+                    "place-medium": "Medium places",
+                    "place-minor": "Minor places",
+                    "road-arterial": "Arterial roads",
+                    "road-collector": "Collector roads",
+                    "building": "Buildings",
+                    "area-water": "Water",
+                    "area-park": "Parks",
+                    "area-grass": "Grass",
+                    "area-forest": "Forests",
+                    "area-farmland": "Farmland",
+                    "area-cemetery": "Cemeteries",
+                    "area-residential": "Residential areas",
+                    "area-commercial": "Commercial areas",
+                    "area-industrial": "Industrial areas",
+                    "area-education": "Education",
+                    "area-healthcare": "Healthcare",
+                    "transport-airport": "Airports",
+                    "transport-rail": "Railway stations",
+                    "transport-metro": "Metro stations",
+                    "transport-platform": "Platforms",
+                    "transport-entrance": "Entrances"
+                }
             }
         }
     }

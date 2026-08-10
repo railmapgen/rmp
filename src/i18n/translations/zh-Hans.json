@@ -789,6 +789,10 @@
         "popoverHeader": "你正在浏览<1>{{environment}}</1>环境！",
         "popoverBody": "我们正在测试最新的RMP。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜索车站",
+        "mapToggle": {
+            "show": "显示地理地图",
+            "hide": "隐藏地理地图"
+        },
         "open": {
             "new": "新项目",
             "config": "导入项目",
@@ -1100,8 +1104,41 @@
             },
             "labels": {
                 "title": "标签",
-                "enabled": "显示标签",
-                "sizeScale": "字号倍率"
+                "enabled": "显示全部标签",
+                "sizeScale": "字号倍率",
+                "color": "文字",
+                "strokeColor": "描边",
+                "groups": {
+                    "places": "地名",
+                    "roads": "道路",
+                    "buildings": "建筑",
+                    "areas": "区域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地名",
+                    "place-medium": "中等地名",
+                    "place-minor": "次要地名",
+                    "road-arterial": "主干路",
+                    "road-collector": "次干路",
+                    "building": "建筑",
+                    "area-water": "水域",
+                    "area-park": "公园",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "农田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅区",
+                    "area-commercial": "商业区",
+                    "area-industrial": "工业区",
+                    "area-education": "教育设施",
+                    "area-healthcare": "医疗设施",
+                    "transport-airport": "机场",
+                    "transport-rail": "国铁车站",
+                    "transport-metro": "地铁车站",
+                    "transport-platform": "站台",
+                    "transport-entrance": "出入口"
+                }
             }
         }
     }

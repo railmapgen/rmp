@@ -3,7 +3,12 @@ import {
     HStack,
     IconButton,
     Switch,
+    Tab,
     Table,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
     Tbody,
     Td,
     Text,
@@ -11,14 +16,20 @@ import {
     Thead,
     Tooltip,
     Tr,
-    VStack,
 } from '@chakra-ui/react';
 import { RmgThrottledSlider } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdRestartAlt } from 'react-icons/md';
 import { CityCode, Theme } from '../../constants/constants';
-import { DEFAULT_MAP_STYLE, MapRailKind, MapRoadKind, MapStyle } from '../../map/map-style';
+import {
+    DEFAULT_MAP_STYLE,
+    MAP_LABEL_GROUPS,
+    MapLabelKind,
+    MapRailKind,
+    MapRoadKind,
+    MapStyle,
+} from '../../map/map-style';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setMapStyle } from '../../redux/param/param-slice';
 import { getContrastingColor } from '../../util/color';
@@ -93,16 +104,17 @@ const ScaleAndSwitch = (props: {
     scaleLabel: string;
     switchLabel: string;
     isChecked: boolean;
-    isDisabled: boolean;
+    isScaleDisabled: boolean;
+    isSwitchDisabled: boolean;
     onScaleChange: (value: number) => void;
     onEnabledChange: (enabled: boolean) => void;
 }) => (
     <HStack justify="flex-end" spacing="3">
-        <Box opacity={props.isChecked && !props.isDisabled ? 1 : 0.5}>
+        <Box opacity={props.isChecked && !props.isScaleDisabled ? 1 : 0.5}>
             <ScaleSlider
                 label={props.scaleLabel}
                 value={props.value}
-                isDisabled={props.isDisabled || !props.isChecked}
+                isDisabled={props.isScaleDisabled || !props.isChecked}
                 onChange={props.onScaleChange}
             />
         </Box>
@@ -110,7 +122,7 @@ const ScaleAndSwitch = (props: {
             <Switch
                 aria-label={props.switchLabel}
                 isChecked={props.isChecked}
-                isDisabled={props.isDisabled}
+                isDisabled={props.isSwitchDisabled}
                 onChange={({ target: { checked } }) => props.onEnabledChange(checked)}
             />
         </Box>
@@ -122,13 +134,8 @@ export const MapStyleSection = () => {
     const dispatch = useRootDispatch();
     const mapStyle = useRootSelector(state => state.param.present.mapStyle);
 
-    /**
-     * Subscription state is read at the section boundary so reset, switches,
-     * sliders, and color pickers share one gate. Accepting a caller-provided flag
-     * would let a future mounting point accidentally expose only part of the
-     * subscribed editor.
-     */
-    const isDisabled = !useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    /** Appearance controls are subscribed; label and railway visibility remain free. */
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
 
     const saveStyle = (style: MapStyle) => dispatch(setMapStyle(style));
 
@@ -152,6 +159,19 @@ export const MapStyleSection = () => {
         });
     };
 
+    const updateLabel = (kind: MapLabelKind, patch: Partial<MapStyle['labels']['categories'][MapLabelKind]>) => {
+        saveStyle({
+            ...mapStyle,
+            labels: {
+                ...mapStyle.labels,
+                categories: {
+                    ...mapStyle.labels.categories,
+                    [kind]: { ...mapStyle.labels.categories[kind], ...patch },
+                },
+            },
+        });
+    };
+
     return (
         <Box width="100%" mb="3">
             <HStack justify="space-between">
@@ -164,7 +184,7 @@ export const MapStyleSection = () => {
                         variant="ghost"
                         aria-label={t('map.style.reset')}
                         icon={<MdRestartAlt />}
-                        isDisabled={isDisabled}
+                        isDisabled={!isSubscriber}
                         onClick={() => saveStyle(structuredClone(DEFAULT_MAP_STYLE))}
                     />
                 </Tooltip>
@@ -199,7 +219,7 @@ export const MapStyleSection = () => {
                                 ) : (
                                     <PaletteColorInput
                                         value={mapStyle.roads[kind].casingColor}
-                                        isDisabled={isDisabled || !mapStyle.roads[kind].enabled}
+                                        isDisabled={!isSubscriber || !mapStyle.roads[kind].enabled}
                                         onChange={casingColor => updateRoad(kind, { casingColor })}
                                     />
                                 )}
@@ -207,7 +227,7 @@ export const MapStyleSection = () => {
                             <Td px="1" opacity={mapStyle.roads[kind].enabled ? 1 : 0.5}>
                                 <PaletteColorInput
                                     value={mapStyle.roads[kind].color}
-                                    isDisabled={isDisabled || !mapStyle.roads[kind].enabled}
+                                    isDisabled={!isSubscriber || !mapStyle.roads[kind].enabled}
                                     onChange={color => updateRoad(kind, { color })}
                                 />
                             </Td>
@@ -217,7 +237,8 @@ export const MapStyleSection = () => {
                                     switchLabel={`${t(`map.style.roads.${kind}`)} ${t('map.style.enabled')}`}
                                     value={mapStyle.roads[kind].widthScale}
                                     isChecked={mapStyle.roads[kind].enabled}
-                                    isDisabled={isDisabled}
+                                    isScaleDisabled={!isSubscriber}
+                                    isSwitchDisabled={!isSubscriber}
                                     onScaleChange={widthScale => updateRoad(kind, { widthScale })}
                                     onEnabledChange={enabled => updateRoad(kind, { enabled })}
                                 />
@@ -250,7 +271,7 @@ export const MapStyleSection = () => {
                             <Td px="1" opacity={mapStyle.rails[kind].enabled ? 1 : 0.5}>
                                 <PaletteColorInput
                                     value={mapStyle.rails[kind].color}
-                                    isDisabled={isDisabled || !mapStyle.rails[kind].enabled}
+                                    isDisabled={!isSubscriber || !mapStyle.rails[kind].enabled}
                                     onChange={color => updateRail(kind, { color })}
                                 />
                             </Td>
@@ -260,7 +281,8 @@ export const MapStyleSection = () => {
                                     switchLabel={`${t(`map.style.rails.${kind}`)} ${t('map.style.enabled')}`}
                                     value={mapStyle.rails[kind].widthScale}
                                     isChecked={mapStyle.rails[kind].enabled}
-                                    isDisabled={isDisabled}
+                                    isScaleDisabled={!isSubscriber}
+                                    isSwitchDisabled={false}
                                     onScaleChange={widthScale => updateRail(kind, { widthScale })}
                                     onEnabledChange={enabled => updateRail(kind, { enabled })}
                                 />
@@ -273,22 +295,83 @@ export const MapStyleSection = () => {
             <Text as="b" display="block" mt="4" mb="1">
                 {t('map.style.labels.title')}
             </Text>
-            <VStack align="stretch" spacing="1">
-                <HStack data-testid="map-style-labels">
-                    <Text flex="1">{t('map.style.labels.sizeScale')}</Text>
-                    <ScaleAndSwitch
-                        scaleLabel={t('map.style.labels.sizeScale')}
-                        switchLabel={t('map.style.labels.enabled')}
-                        value={mapStyle.labels.sizeScale}
-                        isChecked={mapStyle.labels.enabled}
-                        isDisabled={isDisabled}
-                        onScaleChange={sizeScale =>
-                            saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, sizeScale } })
-                        }
-                        onEnabledChange={enabled => saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, enabled } })}
-                    />
-                </HStack>
-            </VStack>
+            <HStack data-testid="map-style-labels" mb="2">
+                <Text flex="1">{t('map.style.labels.enabled')}</Text>
+                <Switch
+                    aria-label={t('map.style.labels.enabled')}
+                    isChecked={mapStyle.labels.enabled}
+                    onChange={({ target: { checked } }) =>
+                        saveStyle({ ...mapStyle, labels: { ...mapStyle.labels, enabled: checked } })
+                    }
+                />
+            </HStack>
+            <Tabs isFitted isLazy size="sm" variant="enclosed">
+                <TabList>
+                    {MAP_LABEL_GROUPS.map(group => (
+                        <Tab key={group.name}>{t(`map.style.labels.groups.${group.name}`)}</Tab>
+                    ))}
+                </TabList>
+                <TabPanels>
+                    {MAP_LABEL_GROUPS.map(group => (
+                        <TabPanel key={group.name} px="0" py="2">
+                            <Table size="sm">
+                                <Thead>
+                                    <Tr>
+                                        <Th px="1">{t('map.style.type')}</Th>
+                                        <Th px="1">{t('map.style.labels.color')}</Th>
+                                        <Th px="1">{t('map.style.labels.strokeColor')}</Th>
+                                        <Th px="1">
+                                            <ScaleAndSwitchHeader
+                                                scaleLabel={t('map.style.labels.sizeScale')}
+                                                enabledLabel={t('map.style.enabled')}
+                                            />
+                                        </Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    {group.kinds.map(kind => {
+                                        const category = mapStyle.labels.categories[kind];
+                                        const isCategoryVisible = mapStyle.labels.enabled && category.enabled;
+                                        const isAppearanceDisabled = !isSubscriber || !isCategoryVisible;
+
+                                        return (
+                                            <Tr key={kind} data-testid={`map-style-label-${kind}`}>
+                                                <Td px="1">{t(`map.style.labels.categories.${kind}`)}</Td>
+                                                <Td px="1" opacity={isCategoryVisible ? 1 : 0.5}>
+                                                    <PaletteColorInput
+                                                        value={category.color}
+                                                        isDisabled={isAppearanceDisabled}
+                                                        onChange={color => updateLabel(kind, { color })}
+                                                    />
+                                                </Td>
+                                                <Td px="1" opacity={isCategoryVisible ? 1 : 0.5}>
+                                                    <PaletteColorInput
+                                                        value={category.strokeColor}
+                                                        isDisabled={isAppearanceDisabled}
+                                                        onChange={strokeColor => updateLabel(kind, { strokeColor })}
+                                                    />
+                                                </Td>
+                                                <Td px="1">
+                                                    <ScaleAndSwitch
+                                                        scaleLabel={t('map.style.labels.sizeScale')}
+                                                        switchLabel={`${t(`map.style.labels.categories.${kind}`)} ${t('map.style.enabled')}`}
+                                                        value={category.sizeScale}
+                                                        isChecked={category.enabled}
+                                                        isScaleDisabled={!isSubscriber || !mapStyle.labels.enabled}
+                                                        isSwitchDisabled={!mapStyle.labels.enabled}
+                                                        onScaleChange={sizeScale => updateLabel(kind, { sizeScale })}
+                                                        onEnabledChange={enabled => updateLabel(kind, { enabled })}
+                                                    />
+                                                </Td>
+                                            </Tr>
+                                        );
+                                    })}
+                                </Tbody>
+                            </Table>
+                        </TabPanel>
+                    ))}
+                </TabPanels>
+            </Tabs>
         </Box>
     );
 };
