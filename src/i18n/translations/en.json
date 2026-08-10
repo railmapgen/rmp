@@ -1012,8 +1012,8 @@
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
-            "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "zulip": "Zulip community",
+            "zulipContent": "Join our community on Zulip!"
         }
     },
 
