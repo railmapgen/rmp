@@ -127,8 +127,8 @@ export const makeRenderReadySVGElement = async (
          * part blank, so populate the detached clone before it is serialized.
          */
         await renderMapLayerForExport(sourceMapLayer, exportMapLayer, { xMin, yMin, xMax, yMax });
+        positionMapAttributionForExport(elem, { xMin, yMax });
     }
-    positionMapAttributionForExport(elem, { xMin, yMax });
 
     if (!isSystemFontsOnly) {
         // add additional fonts data to the final svg in encoded base64 format
@@ -163,8 +163,7 @@ export const makeRenderReadySVGElement = async (
  * viewport-relative placement.
  */
 export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
-    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]');
-    if (!mapAttribution) return;
+    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]')!;
     const text = mapAttribution.querySelector<SVGTextElement>('[data-map-attribution-text]')?.textContent ?? '';
     if (!text.includes(MAP_ATTRIBUTION_EXPORT_URL)) {
         setMapAttributionText(mapAttribution, `${text} · ${MAP_ATTRIBUTION_EXPORT_URL}`);
