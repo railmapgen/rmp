@@ -142,13 +142,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             </Text>
                             <VStack spacing="0" mt="3" align="stretch">
                                 <HStack mb="1">
-                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
-                                    <Switch
-                                        isChecked={mapEnabled}
-                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
-                                    />
-                                </HStack>
-                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.keepLastPath')}</Text>
                                     <Switch
                                         isChecked={keepLastPath}
@@ -309,6 +302,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         onChange={({ target: { checked } }) =>
                                             dispatch(setDisableWarningChangeType(checked))
                                         }
+                                    />
+                                </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
                                     />
                                 </HStack>
                             </VStack>
