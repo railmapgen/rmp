@@ -9,6 +9,7 @@ const { getMapOptimizationProgress } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../map/map-tile-controller', () => ({ getMapOptimizationProgress }));
+vi.mock('./map-style-section', () => ({ MapStyleSection: () => null }));
 
 beforeEach(() => {
     getMapOptimizationProgress.mockReset().mockReturnValue({ optimized: 0, total: 0 });
