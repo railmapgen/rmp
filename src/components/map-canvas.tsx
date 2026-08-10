@@ -6,11 +6,13 @@ import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
 import { compileMapStyleCss } from '../map/map-style';
 import { MapTileController, type MapLoadingProgress } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
-import { closeGlobalAlert, setGlobalAlert } from '../redux/runtime/runtime-slice';
+import { closeGlobalAlert, setGlobalAlert, setMapOverview } from '../redux/runtime/runtime-slice';
 import type { LiveViewport } from '../redux/viewport/viewport-slice';
 import { getCanvasSize } from '../util/helpers';
 import { useWindowSize } from '../util/hooks';
 import { sendErrorNotification } from '../util/notifications';
+
+const VIEWPORT_INTERACTION_IDLE_MS = 200;
 
 export interface MapCanvasHandle {
     /**
@@ -19,10 +21,13 @@ export interface MapCanvasHandle {
      * without coupling generic viewport code to map rendering.
      */
     updateViewport: (viewport: LiveViewport) => void;
-}
 
-interface MapCanvasProps {
-    onOverviewChange: (isOverview: boolean) => void;
+    /**
+     * Rasterization is intentionally deferred while wheel input is arriving.
+     * The component owns the idle timer so SvgWrapper only reports the gesture
+     * and does not regain responsibility for map lifecycle.
+     */
+    markViewportInteraction: () => void;
 }
 
 /**
@@ -33,15 +38,20 @@ interface MapCanvasProps {
  * imperative handle keeps that high-frequency bridge explicit without making
  * this component aware of the editor canvas or its children.
  */
-const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOverviewChange }, ref) => {
+const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const store = useRootStore();
     const { mapEnabled, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const disableMapPerformanceOptimization = useRootSelector(
+        state => state.app.preference.disableMapPerformanceOptimization
+    );
+    const editorInteractionActive = useRootSelector(state => state.runtime.active !== undefined);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const mapLayerRef = React.useRef<SVGGElement>(null);
     const mapControllerRef = React.useRef<MapTileController | undefined>(undefined);
+    const viewportInteractionTimerRef = React.useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     const isLoadingSessionRef = React.useRef(false);
 
     // A viewport may arrive before manifests finish loading; retaining it lets the controller start at the latest frame.
@@ -51,9 +61,6 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         zoom: svgViewBoxZoom,
     });
 
-    // Overview changes affect React content, but identical viewport frames should not repeatedly rerender SvgCanvas.
-    const isOverviewRef = React.useRef(false);
-
     /**
      * The controller asks for size lazily while calculating visible tiles. A ref
      * gives that long-lived controller fresh dimensions without recreating it
@@ -61,10 +68,30 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
      */
     const viewportSizeRef = React.useRef({ height, width });
     const mapStyleCss = React.useMemo(() => compileMapStyleCss(mapStyle), [mapStyle]);
-    const emitOverviewChange = useEvent(onOverviewChange);
+    const mapStyleCssRef = React.useRef(mapStyleCss);
+    const rasterEnabledRef = React.useRef(!disableMapPerformanceOptimization);
+    const editorInteractionActiveRef = React.useRef(editorInteractionActive);
     const notifyLoadError = useEvent((error: unknown) => {
         console.error('Failed to initialize map tiles', error);
         sendErrorNotification(t('error'), t('map.loadError'));
+    });
+    const updateOverviewState = useEvent((isOverview: boolean) => {
+        // Redux is the sole overview state; consulting it here also avoids re-publishing identical viewport frames.
+        if (store.getState().runtime.isMapOverview === isOverview) return;
+        dispatch(setMapOverview(isOverview));
+
+        if (isOverview) {
+            dispatch(
+                setGlobalAlert({
+                    id: GlobalAlertId.MapOverviewEdit,
+                    status: 'info',
+                    message: t('map.zoomInToEdit'),
+                })
+            );
+        } else {
+            // The same transition handles zooming in, hiding the map, and teardown.
+            dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit));
+        }
     });
     const updateLoadingAlert = useEvent((loading: boolean, progress?: MapLoadingProgress) => {
         if (!loading) {
@@ -91,23 +118,52 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
             })
         );
     });
-
     const updateViewport = React.useCallback(
         (viewport: LiveViewport) => {
             latestViewportRef.current = viewport;
 
             const isOverview = mapEnabled && !isMapZoomed(viewport.zoom);
-            if (isOverviewRef.current !== isOverview) {
-                isOverviewRef.current = isOverview;
-                emitOverviewChange(isOverview);
-            }
+            updateOverviewState(isOverview);
 
             mapControllerRef.current?.updateViewport(viewport);
         },
-        [emitOverviewChange, mapEnabled]
+        [mapEnabled, updateOverviewState]
     );
 
-    React.useImperativeHandle(ref, () => ({ updateViewport }), [updateViewport]);
+    const markViewportInteraction = React.useCallback(() => {
+        if (!mapEnabled) return;
+        if (viewportInteractionTimerRef.current !== undefined) {
+            clearTimeout(viewportInteractionTimerRef.current);
+        }
+        mapControllerRef.current?.setInteractionActive(true);
+        viewportInteractionTimerRef.current = setTimeout(() => {
+            viewportInteractionTimerRef.current = undefined;
+            mapControllerRef.current?.setInteractionActive(editorInteractionActiveRef.current);
+        }, VIEWPORT_INTERACTION_IDLE_MS);
+    }, [mapEnabled]);
+
+    React.useImperativeHandle(ref, () => ({ updateViewport, markViewportInteraction }), [
+        markViewportInteraction,
+        updateViewport,
+    ]);
+
+    /**
+     * Persisted viewport changes can arrive before the controller effect runs.
+     * Publishing in a layout effect hides editing UI before the browser paints,
+     * while transient pan/zoom frames continue through `updateViewport`.
+     */
+    React.useLayoutEffect(() => {
+        updateOverviewState(mapEnabled && !isMapZoomed(svgViewBoxZoom));
+    }, [mapEnabled, svgViewBoxZoom, updateOverviewState]);
+
+    React.useEffect(
+        () => () => {
+            // Runtime UI must not retain a map-only state if the canvas is removed.
+            dispatch(setMapOverview(false));
+            dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit));
+        },
+        [dispatch]
+    );
 
     React.useEffect(() => {
         if (!mapEnabled || !mapLayerRef.current) {
@@ -121,6 +177,8 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         const controller = new MapTileController({
             root: mapLayer,
             baseUrl: MAP_TILE_BASE_URL,
+            styleCss: mapStyleCssRef.current,
+            rasterEnabled: rasterEnabledRef.current,
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
@@ -132,6 +190,9 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
             onLoadingChange: updateLoadingAlert,
         });
         mapControllerRef.current = controller;
+        controller.setInteractionActive(
+            editorInteractionActiveRef.current || viewportInteractionTimerRef.current !== undefined
+        );
         updateViewport(latestViewportRef.current);
 
         void controller.initialize().catch(error => {
@@ -142,6 +203,10 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
         });
 
         return () => {
+            if (viewportInteractionTimerRef.current !== undefined) {
+                clearTimeout(viewportInteractionTimerRef.current);
+                viewportInteractionTimerRef.current = undefined;
+            }
             updateLoadingAlert(false);
             controller.dispose();
             if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
@@ -149,6 +214,9 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
     }, [mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
 
     viewportSizeRef.current = { height, width };
+    mapStyleCssRef.current = mapStyleCss;
+    rasterEnabledRef.current = !disableMapPerformanceOptimization;
+    editorInteractionActiveRef.current = editorInteractionActive;
 
     React.useEffect(() => {
         /**
@@ -159,6 +227,20 @@ const MapCanvas = React.forwardRef<MapCanvasHandle, MapCanvasProps>(({ onOvervie
          */
         mapControllerRef.current?.updateViewport(latestViewportRef.current);
     }, [height, width]);
+
+    React.useLayoutEffect(() => {
+        mapControllerRef.current?.updateStyle(mapStyleCss);
+    }, [mapStyleCss]);
+
+    React.useLayoutEffect(() => {
+        mapControllerRef.current?.setRasterEnabled(!disableMapPerformanceOptimization);
+    }, [disableMapPerformanceOptimization]);
+
+    React.useLayoutEffect(() => {
+        mapControllerRef.current?.setInteractionActive(
+            editorInteractionActive || viewportInteractionTimerRef.current !== undefined
+        );
+    }, [editorInteractionActive]);
 
     if (!mapEnabled) return null;
 

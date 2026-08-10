@@ -26,7 +26,6 @@ import {
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
-import canvasSize from 'canvas-size';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
@@ -36,12 +35,15 @@ import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, shouldForceRmpInfo } from '../../util/download';
+import { ExportCanvasSize, getExportCanvasSize, testExportCanvasSize } from '../../util/export-canvas';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
+
+const PNG_EXPORT_SCALES = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
 
 const getTauriUrl = () => {
     const baseUrl = 'https://ghfast.top/https://github.com/railmapgen/railmapgen.github.io/releases/download';
@@ -78,11 +80,9 @@ export default function DownloadActions() {
         svg: t('header.download.svg'),
     };
     const [svgVersion, setSvgVersion] = React.useState(2 as 1.1 | 2);
-    const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
     const [scale, setScale] = React.useState(200);
-    const scales = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
-    const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
-    const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
+    const scaleOptions: { [k: number]: string } = Object.fromEntries(PNG_EXPORT_SCALES.map(v => [v, `${v}%`]));
+    const [isCanvasSizeSupported, setIsCanvasSizeSupported] = React.useState<boolean>();
     const [isTransparent, setIsTransparent] = React.useState(false);
     const fields: RmgFieldsField[] = [
         {
@@ -90,7 +90,11 @@ export default function DownloadActions() {
             label: t('header.download.format'),
             value: format,
             options: formatOptions,
-            onChange: value => setFormat(value === 'png' ? 'png' : 'svg'),
+            onChange: value => {
+                const nextFormat = value === 'png' ? 'png' : 'svg';
+                setFormat(nextFormat);
+                if (nextFormat === 'png') setIsCanvasSizeSupported(undefined);
+            },
         },
     ];
     const svgFields: RmgFieldsField[] = [
@@ -111,7 +115,10 @@ export default function DownloadActions() {
             label: t('header.download.scale'),
             value: scale,
             options: scaleOptions,
-            onChange: value => setScale(value as number),
+            onChange: value => {
+                setScale(value as number);
+                setIsCanvasSizeSupported(undefined);
+            },
         },
         {
             type: 'switch',
@@ -129,28 +136,27 @@ export default function DownloadActions() {
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
     const isRmpInfoForced = shouldForceRmpInfo(existsNodeTypes, RMP_EXPORT);
 
-    // calculate the max canvas area the current browser can support
     React.useEffect(() => {
-        const getMaxArea = async () => {
-            const maximumArea = await canvasSize.maxArea({
-                usePromise: true,
-                useWorker: true,
-            });
-            setMaxArea(maximumArea);
-        };
-        getMaxArea();
-    }, []);
-    // disable some scale options that are too big for the current browser to generate
-    React.useEffect(() => {
-        if (isDownloadModalOpen) {
+        if (!isDownloadModalOpen || format !== 'png') return;
+
+        let isCancelled = false;
+        const testSelectedCanvasSize = async () => {
             const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
-            const [width, height] = [xMax - xMin, yMax - yMin];
-            const disabledScales = scales.filter(
-                scale => (width * scale) / 100 > maxArea.width && (height * scale) / 100 > maxArea.height
-            );
-            setResvgScaleOptions(disabledScales);
-        }
-    }, [isDownloadModalOpen]);
+            const exportCanvasSize = getExportCanvasSize(xMax - xMin, yMax - yMin, scale);
+            const isSupported = await testExportCanvasSize(exportCanvasSize);
+            if (!isCancelled) setIsCanvasSizeSupported(isSupported);
+        };
+        testSelectedCanvasSize().catch(error => {
+            console.error('Failed to test export canvas size', error);
+            if (!isCancelled) setIsCanvasSizeSupported(false);
+        });
+
+        // A slower result for the previous scale must not overwrite the latest
+        // selection when users move quickly through the scale options.
+        return () => {
+            isCancelled = true;
+        };
+    }, [format, isDownloadModalOpen, scale]);
 
     React.useEffect(() => {
         if (isDownloadModalOpen && isRmpInfoForced) {
@@ -180,6 +186,13 @@ export default function DownloadActions() {
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
     const handleDownload = async () => {
+        if (
+            format === 'png' &&
+            (isCanvasSizeSupported === undefined || (isCanvasSizeSupported === false && (!isTauri || !RMP_EXPORT)))
+        ) {
+            return;
+        }
+
         setIsDownloadRunning(true);
         try {
             if (isAllowAppTelemetry)
@@ -190,7 +203,13 @@ export default function DownloadActions() {
                         : {}
                 );
 
-            const { elem, width, height } = await makeRenderReadySVGElement(
+            let exportCanvasSize: ExportCanvasSize | undefined;
+            if (format === 'png') {
+                const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
+                exportCanvasSize = getExportCanvasSize(xMax - xMin, yMax - yMin, scale);
+            }
+
+            const { elem } = await makeRenderReadySVGElement(
                 graph.current,
                 param.present.mapEnabled,
                 isAttachSelected,
@@ -235,7 +254,7 @@ export default function DownloadActions() {
 
             // prepare a clean canvas to be drawn on
             const canvas = document.createElement('canvas');
-            const [canvasWidth, canvasHeight] = [(width * scale) / 100, (height * scale) / 100];
+            const { width: canvasWidth, height: canvasHeight } = exportCanvasSize!;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
             const ctx = canvas.getContext('2d');
@@ -304,7 +323,13 @@ export default function DownloadActions() {
                         New
                     </Badge>
                 </MenuItem>
-                <MenuItem icon={<MdImage />} onClick={() => setIsDownloadModalOpen(true)}>
+                <MenuItem
+                    icon={<MdImage />}
+                    onClick={() => {
+                        setIsCanvasSizeSupported(undefined);
+                        setIsDownloadModalOpen(true);
+                    }}
+                >
                     {t('header.download.image')}
                 </MenuItem>
             </MenuList>
@@ -370,7 +395,7 @@ export default function DownloadActions() {
                                 </Box>
                             </Alert>
                         )}
-                        {format === 'png' && resvgScaleOptions.includes(scale) && !isTauri && (
+                        {format === 'png' && isCanvasSizeSupported === false && !isTauri && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
                                 <Box>
@@ -402,7 +427,7 @@ export default function DownloadActions() {
                                 </Box>
                             </Alert>
                         )}
-                        {format === 'png' && resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT && (
+                        {format === 'png' && isCanvasSizeSupported === false && isTauri && !RMP_EXPORT && (
                             <Alert status="error" mt="4">
                                 <AlertIcon />
                                 <Box>
@@ -422,10 +447,12 @@ export default function DownloadActions() {
                                 size="sm"
                                 isDisabled={
                                     !isTermsAndConditionsSelected ||
+                                    // Wait for the exact-size probe before allowing a PNG export.
+                                    (format === 'png' && isCanvasSizeSupported === undefined) ||
                                     // disable if the user is using a scale that is too big for the current browser
-                                    (format === 'png' && resvgScaleOptions.includes(scale) && !isTauri) ||
+                                    (format === 'png' && isCanvasSizeSupported === false && !isTauri) ||
                                     // disable if the user is in Tauri and the scale is too big to render without a subscription
-                                    (format === 'png' && resvgScaleOptions.includes(scale) && isTauri && !RMP_EXPORT)
+                                    (format === 'png' && isCanvasSizeSupported === false && isTauri && !RMP_EXPORT)
                                 }
                                 isLoading={isDownloadRunning}
                                 onClick={handleDownload}

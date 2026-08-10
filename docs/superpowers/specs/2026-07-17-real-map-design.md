@@ -77,14 +77,12 @@ pair-specific exception does not make `Simple` available with any other style.
 There is no `availableIn`, `restrictionMode`, future availability state,
 node-type policy, or source/target visibility coupling.
 
-The policy exposes one authoring-access operation, `canUseLine`, for a known
-path/style pair. A caller checking only one axis supplies a permitted default
-for the other axis: `SingleColor` for a path-only check, or the current
-context's default path for a style-only check. Path/style rendering
-compatibility remains a separate metadata check.
+The policy exposes separate operations for:
 
-Existing-line visibility remains a separate operation because it preserves
-unknown types for fallback rendering rather than authoring them.
+- authoring a known path;
+- authoring a known style;
+- authoring a compatible path/style pair;
+- deciding whether an existing line is policy-visible.
 
 Unknown existing paths and styles remain renderable through existing fallbacks
 so forward-compatible or partially understood saves are not destroyed. Unknown
@@ -111,6 +109,17 @@ evaluation is derived at render time and never mutates graph attributes.
 invisible SVG filter. This preserves selection/details behavior while ensuring
 exports omit hidden content. Export bounds ignore `removeMe`, including the
 all-hidden fallback to a 100-by-100 canvas.
+
+## Level Switching
+
+- The two data levels are overview z7 and zoomed z13.
+- Crossing from overview to zoomed immediately removes or hides overview; no enlarged overview tiles remain visible during the transition.
+- The editor group becomes visible as soon as the viewport crosses the zoomed threshold, independent of network completion.
+- One replaceable, dismissible global loading alert appears when a level switch starts, reports settled target tiles, and disappears when all target-level tiles required by the current viewport are settled.
+- No blocking overlay is shown, and camera or editor input is not intercepted.
+- Ordinary panning within the same level does not show the global switching status.
+- A generation token prevents requests from a superseded viewport or level from mounting stale tiles.
+- Failed bundles are treated as settled so loading cannot remain stuck. Failed areas stay blank and errors are logged.
 
 ## Authoring Enforcement
 
@@ -182,10 +191,57 @@ cancellation, caches, DOM cloning, and mounting. Tile nodes are never React
 children. At overview scale the editor group is hidden; at detail scale it is
 shown immediately even while target tiles are loading.
 
+At overview scale, the editor group and tool panel are hidden, leaving only the
+map, and a dismissible informational alert asks the user to zoom in before
+editing. At the configured threshold, the editor group and tools are shown
+immediately and the overview alert is closed. Redux is the single source of
+truth for this transient overview state.
+
+Runtime responsibilities are split as follows:
+
+- Configuration contains the CDN base URL, coordinate constants, switch
+  threshold, cache budgets, and fetch concurrency.
+- Pure binary utilities validate and parse the availability bitmap and RMPB1
+  bundles.
+- Byte-aware in-memory LRUs cache parsed bundles and imported SVG tile
+  templates.
+- An IndexedDB cache stores generated raster tiles against a source epoch,
+  map-style key, tile key, and raster resolution. Source epochs expire after 30
+  days, and periodic pruning keeps the raster cache within its configured byte
+  budget.
+- `MapTileController` owns visible tile calculation, request deduplication,
+  bounded fetching, generation cancellation, SVG parsing, DOM cloning,
+  mounting, detached export rendering, and optional raster replacement.
+- A small React shell creates stable SVG groups, starts and disposes the
+  controller when `mapEnabled` changes, publishes overview and loading state,
+  and forwards style, interaction, and performance-preference changes.
+
+## On-Demand Raster Optimization
+
+SVG tiles remain the authoritative live representation and the fallback for every map tile. Unless the map-only performance preference disables the optimization, the controller replaces settled visible SVG tiles with raster images in the background:
+
+- Raster work starts only after every desired tile is mounted, level switching and Redux-reported canvas dragging have stopped, and five seconds have elapsed since the latest controller activity. Wheel input explicitly extends the interaction window.
+- Visible tiles are serialized one at a time with the current scoped map CSS and rendered through a reusable canvas as 4096-pixel WebP images. The work is UI-silent; newly rendered progress is written to the console and persistent-cache hits produce no progress output.
+- A raster is initially hidden. Its SVG tile remains visible until the raster image has decoded, after which the SVG is hidden rather than discarded. Disabling the optimization, changing styles, changing source revision, or interrupting work restores SVG immediately and prevents stale results from being applied.
+- Generated rasters are persisted in IndexedDB and reused only when source epoch, map style, tile key, and raster resolution all match. A raster image that fails to decode is stored as a `null` negative-cache entry for that exact key, so later mounts use SVG without retrying the same failed work; a new source or style key may try again. Cache and rasterizer failures degrade to live SVG tiles rather than making the map unavailable.
+- Object URLs, canvas work, cache requests, and pending revisions remain controller-owned and are cleaned up or invalidated during disposal.
+
+Raster replacement is an interactive rendering optimization only. Exports always serialize SVG map tiles.
+
 ## Export
 
-Map-hidden export contains no geographic layer. Map-enabled export populates the
-detached map clone over the visible graph bounds and retains attribution.
+Map-hidden export contains no geographic layer. Map-enabled SVG and PNG exports
+start from the same deep canvas clone as map-hidden exports, then repopulate the
+detached map layer for the visible graph export bounds:
+
+- The live viewport and mounted map layer are not changed.
+- The latest viewport selects one map level for the entire export. The controller calculates every tile intersecting the export bounds, reuses its metadata and in-memory caches, and waits for those tile requests to settle before serialization.
+- Each tile failure is isolated: successful tiles remain in the export while unavailable or failed areas remain blank.
+- Live raster overlays are removed from the clone and original SVG tiles are restored, preserving vector map content and scoped map-style CSS in both SVG and PNG export paths.
+- Attribution from the manifest is displayed on the map canvas and retained in exports.
+- Map-hidden exports remain unchanged.
+
+The download pipeline locates the controller through the live map layer and asks it to populate only the detached export layer. This keeps export orchestration outside the controller while allowing the controller to reuse tile addressing, validation, fetching, parsing, and caches.
 
 Before serialization:
 
@@ -197,10 +253,47 @@ Before serialization:
 Thus an explicitly hidden or policy-hidden element affects neither pixels nor
 export dimensions.
 
+## Existing-Code Impact
+
+Integration changes are intentionally narrow:
+
+- Param and save types persist `mapEnabled`, map style, and viewport.
+- New/open actions set or restore map display and viewport state.
+- The viewport controller gains one imperative viewport observer seam.
+- The SVG wrapper adds stable map and editor groups and forwards wheel activity to the map controller.
+- The app shell hides the tool panel in overview mode and uses keyed global alerts for overview guidance and map loading progress.
+- Export code validates the cloned map layer, requests all tiles covering the graph bounds, restores vector tiles, and repositions attribution for the new view box.
+- Settings expose a map-only switch that disables background raster replacement without disabling the SVG map.
+
+Tile parsing, caching, scheduling, and DOM operations stay in new map-owned modules. Existing graph interaction and rendering code must not learn tile concepts.
+
+## Error Handling
+
+- Invalid manifest, availability, bundle index, bundle headers, tile metadata, and SVG payloads fail closed for the affected map content.
+- Initialization failure leaves the map blank and surfaces the existing non-blocking global alert mechanism.
+- Tile and bundle failures do not block later camera updates or future retries after cache eviction.
+- Raster generation, raster decoding, and persistent-cache failures restore or retain SVG tiles and are logged without displaying a global raster-progress alert.
+- A missing map layer during map export rejects the export instead of silently producing a file without a basemap.
+- Disposal invalidates pending generations and prevents DOM writes after hiding the map or unmounting.
+
 ## Verification
 
 Focused tests cover:
 
+- old-save migration and `mapEnabled` round trips;
+- new projects and map toggling without graph or viewport mutation;
+- full-project replacement, undo, and redo, including graph, map display, map style, and persisted viewport restoration;
+- Mixed graph/project history ordering, graph-only state preservation, and transient interaction-state reset for full-project changes.
+- Coordinate conversion and visible tile selection at both levels.
+- Availability and RMPB1 validation and parsing.
+- LRU byte and entry limits, request deduplication, and stale generation rejection.
+- Map-hidden projects issuing no map requests.
+- Overview hiding editor content and the tool panel, publishing one dismissible edit hint, and zoomed scale restoring editing.
+- Immediate overview removal, replaceable loading-alert progress, dismissal behavior, and failure settlement.
+- Map DOM being non-interactive and below every editor element.
+- Detached export rendering loading an export-only tile without changing the live mounted set.
+- Export restoring vector tiles, retaining scoped map CSS and attribution, and rejecting a missing required map layer.
+- Five-second raster deferral, raster serialization and style application, persistent source/style cache keys, cache reuse, style invalidation, interruption, and the disable-performance-optimization preference.
 - exact and disjoint native-path sets;
 - free/subscriber policy matrices, legacy `Simple` combinations, static Pro
   paths/styles, and unknown types;
@@ -228,9 +321,19 @@ git diff --check
 
 ## Acceptance Criteria
 
+- Existing saves and new map-hidden projects behave as before.
 - There is one persisted project shape and one New Project flow.
 - The map can be shown or hidden without changing graph data or the current
   viewport.
+- Full-project replacement remains undoable across map display states without carrying invalid selection or tool state across the boundary.
+- Map tiles and graph elements remain aligned under pan and zoom using a configurable fixed ratio.
+- Overview shows only the map, hides tools, and provides dismissible zoom-in guidance; zoomed scale shows map plus editor elements and tools.
+- Switching to zoomed never keeps overview visible and immediately shows one non-blocking, dismissible loading alert with progress.
+- Once the map is settled and the tracked interaction window has been idle for five seconds, optional background raster replacement runs silently and reuses source- and style-bound persistent cache entries.
+- Disabling raster optimization or encountering raster/cache failures leaves the live SVG map available.
+- No individual tile participates in React reconciliation.
+- Existing modules receive only the minimal integration changes described above.
+- Map exports load SVG tiles for the complete graph bounds without mutating the live viewport, preserve attribution and style, and isolate individual tile failures.
 - Free users see and author only the permitted line combinations for the current
   context; subscribers may use all known combinations.
 - Every authoring mutation boundary enforces the same centralized policy.

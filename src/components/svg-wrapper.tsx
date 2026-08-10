@@ -86,6 +86,7 @@ const SvgWrapper = () => {
         lastTool,
         keepLastPath,
         theme,
+        isMapOverview,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 
@@ -93,7 +94,6 @@ const SvgWrapper = () => {
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
     const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
-    const [isMapOverview, setIsMapOverview] = React.useState(false);
 
     /**
      * Intermediate pan/zoom frames bypass Redux for interaction performance.
@@ -249,6 +249,7 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
+        mapCanvasRef.current?.markViewportInteraction();
         const currentViewport = viewportGetLatest();
         const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
         const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
@@ -507,7 +508,7 @@ const SvgWrapper = () => {
                      * MapCanvas is a sibling of the editor content so it can own and clear its
                      * imperative tile root without taking ownership of SvgCanvas's React tree.
                      */}
-                    <MapCanvas ref={mapCanvasRef} onOverviewChange={setIsMapOverview} />
+                    <MapCanvas ref={mapCanvasRef} />
                     {/*
                      * At geographic overview scale, editor geometry is too dense to be useful.
                      * Keep it mounted to preserve editor state, but exclude it from rendering.

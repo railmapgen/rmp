@@ -931,6 +931,7 @@
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "disableMapPerformanceOptimization": "禁用地图性能优化",
                 "disableWarningChangeType": "更改车站或线段类型时禁用警告"
             },
             "shortcuts": {
@@ -1082,6 +1083,7 @@
     "map": {
         "loading": "正在加载地图",
         "loadError": "无法加载地图底图。",
+        "zoomInToEdit": "请放大地图以进行编辑。",
         "style": {
             "title": "地图样式",
             "reset": "恢复默认",

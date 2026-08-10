@@ -36,6 +36,7 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
@@ -81,6 +82,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
             snapLines,
             predictNextNode,
             autoChangeStationType,
+            disableMapPerformanceOptimization,
             disableWarning: { changeType: disableWarningChangeType },
         },
     } = useRootSelector(state => state.app);
@@ -271,6 +273,19 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         }
                                     />
                                 </HStack>
+                                {mapEnabled && (
+                                    <HStack mb="1">
+                                        <Text flex="1">
+                                            {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                        </Text>
+                                        <Switch
+                                            isChecked={disableMapPerformanceOptimization}
+                                            onChange={({ target: { checked } }) =>
+                                                dispatch(setDisableMapPerformanceOptimization(checked))
+                                            }
+                                        />
+                                    </HStack>
+                                )}
                                 <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.disableWarningChangeType')}</Text>
                                     <Switch

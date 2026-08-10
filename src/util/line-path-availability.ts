@@ -36,25 +36,30 @@ const legacySimplePathAvailableStyles: ReadonlySet<LineStyleType> = new Set([
 const KNOWN_LINE_PATH_TYPES: readonly unknown[] = Object.values(LinePathType);
 const KNOWN_LINE_STYLE_TYPES: readonly unknown[] = Object.values(LineStyleType);
 
-const isKnownLinePathType = (type: unknown): type is LinePathType => KNOWN_LINE_PATH_TYPES.includes(type);
+export const isKnownLinePathType = (type: unknown): type is LinePathType => KNOWN_LINE_PATH_TYPES.includes(type);
 
-const isKnownLineStyleType = (style: unknown): style is LineStyleType => KNOWN_LINE_STYLE_TYPES.includes(style);
+export const isKnownLineStyleType = (style: unknown): style is LineStyleType => KNOWN_LINE_STYLE_TYPES.includes(style);
 
 const isLegacySimplePathCombination = (type: unknown, style: unknown): style is LineStyleType =>
     type === LinePathType.Simple && isKnownLineStyleType(style) && legacySimplePathAvailableStyles.has(style);
 
-/** The single authoring-access check for a path/style pair. */
-export const canUseLine = (type: unknown, style: unknown, mapEnabled: boolean, isSubscriber: boolean): boolean => {
-    if (!isKnownLinePathType(type) || !isKnownLineStyleType(style) || style === LineStyleType.Unknown) return false;
+/**
+ * Returns whether assigning or creating a known path needs an active
+ * subscription in the current map-display context.
+ */
+export const requiresSubscriptionForLinePath = (type: LinePathType, mapEnabled: boolean): boolean =>
+    !!linePaths[type].isPro || (mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS.has(type) : MAP_NATIVE_LINE_PATHS.has(type));
 
-    const contextRestrictedPaths = mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS : MAP_NATIVE_LINE_PATHS;
-    const pathAllowed =
-        isLegacySimplePathCombination(type, style) ||
-        isSubscriber ||
-        (!linePaths[type].isPro && !contextRestrictedPaths.has(type));
-    const styleAllowed = isSubscriber || !lineStyles[style].isPro;
-    return pathAllowed && styleAllowed;
-};
+export const canUseLinePath = (type: unknown, mapEnabled: boolean, isSubscriber: boolean): type is LinePathType =>
+    isKnownLinePathType(type) && (isSubscriber || !requiresSubscriptionForLinePath(type, mapEnabled));
+
+export const canUseLineStyle = (style: unknown, isSubscriber: boolean): style is LineStyleType =>
+    isKnownLineStyleType(style) && style !== LineStyleType.Unknown && (isSubscriber || !lineStyles[style].isPro);
+
+/** Authoring requires both a known path and a known, permitted style. */
+export const canUseLine = (type: unknown, style: unknown, mapEnabled: boolean, isSubscriber: boolean): boolean =>
+    (isLegacySimplePathCombination(type, style) || canUseLinePath(type, mapEnabled, isSubscriber)) &&
+    canUseLineStyle(style, isSubscriber);
 
 /**
  * Existing unknown paths/styles remain visible for fallback rendering, but
@@ -65,12 +70,11 @@ export const isLinePolicyVisible = (
     mapEnabled: boolean,
     isSubscriber: boolean
 ): boolean => {
-    const contextRestrictedPaths = mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS : MAP_NATIVE_LINE_PATHS;
     const pathVisible =
         !isKnownLinePathType(attr.type) ||
         isSubscriber ||
         isLegacySimplePathCombination(attr.type, attr.style) ||
-        (!linePaths[attr.type].isPro && !contextRestrictedPaths.has(attr.type));
+        !requiresSubscriptionForLinePath(attr.type, mapEnabled);
     const styleVisible = !isKnownLineStyleType(attr.style) || isSubscriber || !lineStyles[attr.style].isPro;
     return pathVisible && styleVisible;
 };

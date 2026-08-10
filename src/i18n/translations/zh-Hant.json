@@ -931,6 +931,7 @@
                 "snapline": "磁性吸附到參考線",
                 "predictNextNode": "當選擇一個節點時預測下一個節點",
                 "autoChangeStationType": "自動切換基本車站與換乘車站",
+                "disableMapPerformanceOptimization": "停用地圖效能最佳化",
                 "disableWarningChangeType": "更改車站或線段類型時禁用警告"
             },
             "shortcuts": {
@@ -1082,6 +1083,7 @@
     "map": {
         "loading": "正在載入地圖",
         "loadError": "無法載入地圖底圖。",
+        "zoomInToEdit": "請放大地圖以進行編輯。",
         "style": {
             "title": "地圖樣式",
             "reset": "恢復預設",

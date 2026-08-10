@@ -1,4 +1,5 @@
 import type { LiveViewport } from '../redux/viewport/viewport-slice';
+import { getViewpointSize } from '../util/helpers';
 import { ByteLru } from './byte-lru';
 import {
     graphToWorldPixel,
@@ -7,6 +8,9 @@ import {
     MAP_BUNDLE_SIDES,
     MAP_COMMON_ZOOM,
     MAP_MAX_FETCHES,
+    MAP_RASTER_IDLE_DELAY_MS,
+    MAP_RASTER_TILE_SIZE,
+    MAP_SOURCE_TTL_MS,
     MAP_TILE_BUFFER,
     MAP_TILE_CACHE_MAX_BYTES,
     MAP_TILE_CACHE_MAX_ENTRIES,
@@ -15,6 +19,8 @@ import {
     worldPixelToGraph,
 } from './map-config';
 import { createMapAttribution, positionMapAttribution, setMapAttributionText } from './map-attribution';
+import { getMapStyleCacheKey, mapRasterCache, MapRasterCacheApi, MapSourceSession } from './map-raster-cache';
+import { createMapRasterizer, MapRasterizer } from './map-rasterizer';
 import {
     AvailabilityIndex,
     BundleAddress,
@@ -83,6 +89,24 @@ interface FetchQueueEntry<T> {
     reject: (reason: unknown) => void;
 }
 
+interface MountedTile {
+    request: TileRequest;
+    svg: SVGSVGElement;
+    rasterCacheRevision?: number;
+    rasterUnavailable?: boolean;
+    raster?: SVGImageElement;
+    rasterUrl?: string;
+}
+
+interface MountQueueEntry {
+    generation: number;
+    request: TileRequest;
+    tile: SVGSVGElement;
+    rasterCacheRevision?: number;
+    rasterUnavailable?: boolean;
+    raster?: Blob;
+}
+
 export interface MapTileControllerOptions {
     /**
      * This root is owned imperatively for the controller's entire lifetime.
@@ -94,6 +118,12 @@ export interface MapTileControllerOptions {
     getViewportSize: () => { width: number; height: number };
     onLoadingChange?: (loading: boolean, progress?: MapLoadingProgress) => void;
     fetch?: typeof globalThis.fetch;
+    styleCss?: string;
+    rasterCache?: MapRasterCacheApi | null;
+    rasterizer?: MapRasterizer | null;
+    rasterEnabled?: boolean;
+    rasterIdleDelayMs?: number;
+    now?: () => number;
 }
 
 /**
@@ -192,10 +222,16 @@ export class MapTileController {
      */
     private readonly bundleCache = new ByteLru<ParsedBundle>(MAP_BUNDLE_CACHE_MAX_BYTES);
     private readonly tileCache = new ByteLru<SVGSVGElement>(MAP_TILE_CACHE_MAX_BYTES, MAP_TILE_CACHE_MAX_ENTRIES);
+    private rasterCache: MapRasterCacheApi | undefined;
+    private rasterizer: MapRasterizer | undefined;
+    private shouldCreateRasterizer: boolean;
+    private readonly rasterIdleDelayMs: number;
+    private readonly now: () => number;
 
     // A cache only helps completed work; these maps also deduplicate concurrent requests for the same resource.
     private readonly bundleRequests = new Map<string, Promise<ParsedBundle>>();
     private readonly tileRequests = new Map<string, Promise<SVGSVGElement>>();
+    private readonly rasterRequests = new Map<string, Promise<Blob | null | undefined>>();
 
     // Fetches are queued globally across indexes and tile bundles to cap bursts caused by fast pans.
     private readonly fetchQueue: FetchQueueEntry<unknown>[] = [];
@@ -206,7 +242,7 @@ export class MapTileController {
      * finished (including failures), allowing a level switch to terminate even
      * when an individual tile cannot be loaded.
      */
-    private readonly nodes = new Map<string, SVGSVGElement>();
+    private readonly nodes = new Map<string, MountedTile>();
     private readonly pending = new Set<string>();
     private readonly settled = new Set<string>();
     private desired = new Map<string, TileRequest>();
@@ -225,13 +261,32 @@ export class MapTileController {
     // Rendering and DOM insertion are independently batched to one write per animation frame.
     private renderFrame: number | undefined;
     private mountFrame: number | undefined;
-    private mountQueue: Array<{ generation: number; request: TileRequest; tile: SVGSVGElement }> = [];
+    private mountQueue: MountQueueEntry[] = [];
+    private rasterTimer: ReturnType<typeof setTimeout> | undefined;
+    private sourceExpiryTimer: ReturnType<typeof setTimeout> | undefined;
+    private sourceSession: MapSourceSession | undefined;
+    private styleCss: string;
+    private styleKey: string;
+    private rasterEnabled: boolean;
+    private rasterRevision = 0;
+    private rasterWorkActive = false;
+    private rasterRescheduleRequested = false;
+    private interactionActive = false;
+    private lastActivityAt = 0;
     private disposed = false;
     private switching = false;
     private initialization: Promise<void> | undefined;
 
     constructor(private readonly options: MapTileControllerOptions) {
         this.fetcher = options.fetch ?? globalThis.fetch.bind(globalThis);
+        this.rasterCache = options.rasterCache === undefined ? mapRasterCache : (options.rasterCache ?? undefined);
+        this.rasterizer = options.rasterizer ?? undefined;
+        this.shouldCreateRasterizer = options.rasterizer === undefined;
+        this.rasterIdleDelayMs = options.rasterIdleDelayMs ?? MAP_RASTER_IDLE_DELAY_MS;
+        this.now = options.now ?? Date.now;
+        this.styleCss = options.styleCss ?? '';
+        this.styleKey = getMapStyleCacheKey(this.styleCss);
+        this.rasterEnabled = options.rasterEnabled ?? true;
         this.tileRoot = document.createElementNS(SVG_NAMESPACE, 'g');
         this.tileRoot.dataset.mapTiles = '';
         this.attribution = createMapAttribution();
@@ -263,6 +318,7 @@ export class MapTileController {
         this.setLoading(true);
         const manifestUrl = new URL('manifest.json', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
         this.manifestUrl = manifestUrl;
+        this.sourceSession = await this.loadSourceSession(manifestUrl.href);
         const manifest = await this.fetchJson<MapManifest>(manifestUrl);
         if (manifest.formatVersion !== 3 || !Array.isArray(manifest.levels)) {
             throw new Error('Map manifest format version must be 3');
@@ -278,6 +334,9 @@ export class MapTileController {
             this.loadLevel(zoomedManifest, manifestUrl),
         ]);
         if (this.disposed) return;
+        this.sourceSession = await this.confirmSourceSession(this.sourceSession);
+        if (this.disposed) return;
+        this.scheduleSourceExpiryCheck();
         this.levels = { overview, zoomed };
         setMapAttributionText(this.attribution, manifest.attribution);
         this.scheduleRender();
@@ -289,6 +348,7 @@ export class MapTileController {
      */
     updateViewport(viewport: LiveViewport) {
         if (this.disposed) return;
+        this.markRasterActivity();
         this.viewport = viewport;
 
         // Attribution must follow even before tile metadata is ready, because viewport updates are independent of loading.
@@ -298,6 +358,41 @@ export class MapTileController {
             if (target !== this.activeLevel) this.switchLevel(target);
         }
         this.scheduleRender();
+    }
+
+    updateStyle(styleCss: string) {
+        if (this.disposed || styleCss === this.styleCss) return;
+        this.styleCss = styleCss;
+        this.styleKey = getMapStyleCacheKey(styleCss);
+        this.rasterRevision += 1;
+        this.rasterRequests.clear();
+        // A failed raster is scoped by the style cache key, so a new style may try again.
+        this.showAllSvgTiles(true);
+        this.markRasterActivity();
+    }
+
+    setInteractionActive(active: boolean) {
+        if (this.disposed || active === this.interactionActive) return;
+        this.interactionActive = active;
+        this.markRasterActivity();
+    }
+
+    setRasterEnabled(enabled: boolean) {
+        if (this.disposed || enabled === this.rasterEnabled) return;
+        this.rasterEnabled = enabled;
+        this.rasterRevision += 1;
+        this.rasterRequests.clear();
+        if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
+        this.rasterTimer = undefined;
+
+        if (!enabled) {
+            // Disabling is expected to restore editable SVG immediately, even
+            // when a raster render or cache lookup is still finishing.
+            this.rasterRescheduleRequested = false;
+            this.showAllSvgTiles();
+            return;
+        }
+        this.markRasterActivity();
     }
 
     /**
@@ -367,14 +462,23 @@ export class MapTileController {
         for (const entry of this.fetchQueue.splice(0)) entry.reject(abortError);
         if (this.renderFrame !== undefined) cancelAnimationFrame(this.renderFrame);
         if (this.mountFrame !== undefined) cancelAnimationFrame(this.mountFrame);
+        if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
+        if (this.sourceExpiryTimer !== undefined) clearTimeout(this.sourceExpiryTimer);
         this.renderFrame = undefined;
         this.mountFrame = undefined;
+        this.rasterTimer = undefined;
+        this.sourceExpiryTimer = undefined;
         this.mountQueue = [];
-        this.nodes.clear();
+        this.clearMountedTiles();
         this.pending.clear();
         this.desired.clear();
         this.bundleCache.clear();
         this.tileCache.clear();
+        this.rasterRequests.clear();
+        this.rasterizer?.dispose();
+        this.rasterizer = undefined;
+        this.shouldCreateRasterizer = false;
+        this.rasterRescheduleRequested = false;
         this.options.root.replaceChildren();
         if (controllersByRoot.get(this.options.root) === this) controllersByRoot.delete(this.options.root);
     }
@@ -445,8 +549,9 @@ export class MapTileController {
     private switchLevel(level: MapLevel) {
         // Overlapping coordinates still refer to different source geometry, so nodes cannot be reused across levels.
         this.generation += 1;
+        this.rasterRevision += 1;
         this.activeLevel = level;
-        this.nodes.clear();
+        this.clearMountedTiles();
         this.pending.clear();
         this.settled.clear();
         this.desired.clear();
@@ -466,7 +571,7 @@ export class MapTileController {
         this.desired = nextDesired;
         for (const [key, node] of this.nodes) {
             if (!nextDesired.has(key)) {
-                node.remove();
+                this.removeMountedTile(node);
                 this.nodes.delete(key);
             }
         }
@@ -488,12 +593,7 @@ export class MapTileController {
         const size = this.options.getViewportSize();
         return this.getTilesForBounds(
             level,
-            {
-                xMin: viewport.x,
-                yMin: viewport.y,
-                xMax: viewport.x + (size.width * viewport.zoom) / 100,
-                yMax: viewport.y + (size.height * viewport.zoom) / 100,
-            },
+            getViewpointSize(viewport, viewport.zoom, size.width, size.height),
             MAP_TILE_BUFFER
         );
     }
@@ -557,9 +657,18 @@ export class MapTileController {
      */
     private requestTile(request: TileRequest) {
         const generation = this.generation;
+        const rasterRevision = this.rasterRevision;
+        const session = this.rasterEnabled ? this.sourceSession : undefined;
+        const styleKey = this.styleKey;
+        const styleCss = this.styleCss;
         this.pending.add(request.key);
-        this.loadTileTemplate(request)
-            .then(template => {
+        Promise.all([
+            this.loadTileTemplate(request),
+            session
+                ? this.loadCachedRaster(session, styleKey, styleCss, request.key)
+                : Promise.resolve<Blob | null | undefined>(undefined),
+        ])
+            .then(([template, raster]) => {
                 if (this.disposed || generation !== this.generation) return;
                 if (!this.desired.has(request.key)) {
                     this.pending.delete(request.key);
@@ -569,7 +678,23 @@ export class MapTileController {
                 // The cache retains an unmounted template; every appearance gets an independent DOM node.
                 const tile = template.cloneNode(true) as SVGSVGElement;
                 this.positionTile(tile, request);
-                this.mountQueue.push({ generation, request, tile });
+                const currentSession = this.sourceSession;
+                const rasterCacheIsCurrent =
+                    this.rasterEnabled &&
+                    session !== undefined &&
+                    currentSession !== undefined &&
+                    rasterRevision === this.rasterRevision &&
+                    currentSession.sourceKey === session.sourceKey &&
+                    currentSession.epoch === session.epoch &&
+                    currentSession.expiresAt > this.now();
+                this.mountQueue.push({
+                    generation,
+                    request,
+                    tile,
+                    rasterCacheRevision: rasterCacheIsCurrent ? rasterRevision : undefined,
+                    rasterUnavailable: rasterCacheIsCurrent && raster === null,
+                    raster: rasterCacheIsCurrent ? (raster ?? undefined) : undefined,
+                });
                 this.scheduleMount();
             })
             .catch(error => {
@@ -592,7 +717,7 @@ export class MapTileController {
             // A fragment turns a burst of completed requests into one mutation of the live SVG tree.
             const fragment = document.createDocumentFragment();
             for (const item of this.mountQueue.splice(0)) {
-                const { generation, request, tile } = item;
+                const { generation, request, tile, rasterCacheRevision, rasterUnavailable, raster } = item;
                 if (generation !== this.generation) continue;
                 if (!this.desired.has(request.key)) {
                     this.pending.delete(request.key);
@@ -600,13 +725,16 @@ export class MapTileController {
                 }
                 if (!this.nodes.has(request.key)) {
                     fragment.append(tile);
-                    this.nodes.set(request.key, tile);
+                    const mounted = { request, svg: tile, rasterCacheRevision, rasterUnavailable };
+                    this.nodes.set(request.key, mounted);
+                    if (raster) this.applyRaster(mounted, raster, true);
                 }
                 this.pending.delete(request.key);
                 this.settled.add(request.key);
             }
             this.tileRoot.append(fragment);
             this.maybeFinishSwitch();
+            this.scheduleRasterWork();
         });
     }
 
@@ -630,6 +758,7 @@ export class MapTileController {
         }
         this.switching = false;
         this.setLoading(false);
+        this.scheduleRasterWork();
     }
 
     /**
@@ -655,6 +784,31 @@ export class MapTileController {
                 if (this.tileRequests.get(request.key) === promise) this.tileRequests.delete(request.key);
             });
         this.tileRequests.set(request.key, promise);
+        return promise;
+    }
+
+    private loadCachedRaster(
+        session: MapSourceSession,
+        styleKey: string,
+        styleCss: string,
+        tileKey: string
+    ): Promise<Blob | null | undefined> {
+        const rasterCache = this.rasterCache;
+        if (!rasterCache || session.expiresAt <= this.now()) return Promise.resolve(undefined);
+        const requestKey = JSON.stringify([session.sourceKey, session.epoch, styleKey, styleCss, tileKey]);
+        const inFlight = this.rasterRequests.get(requestKey);
+        if (inFlight) return inFlight;
+        const promise = rasterCache
+            .getRaster(session, styleKey, styleCss, tileKey, this.now())
+            .catch(error => {
+                console.warn(`Failed to read cached map raster ${tileKey}`, error);
+                if (this.rasterCache === rasterCache) this.rasterCache = undefined;
+                return undefined;
+            })
+            .finally(() => {
+                if (this.rasterRequests.get(requestKey) === promise) this.rasterRequests.delete(requestKey);
+            });
+        this.rasterRequests.set(requestKey, promise);
         return promise;
     }
 
@@ -726,19 +880,301 @@ export class MapTileController {
 
     /** Converts source-level tile coordinates to graph geometry through the shared reference zoom. */
     private positionTile(tile: SVGSVGElement, request: TileRequest) {
+        this.positionTileElement(tile, request);
+        tile.setAttribute('overflow', 'hidden');
+        tile.classList.add('rmp-map-tile');
+    }
+
+    /** Keeps SVG source tiles and their raster replacements on exactly the same graph bounds. */
+    private positionTileElement(element: SVGSVGElement | SVGImageElement, request: TileRequest) {
         // Normalize every source level through the common zoom so switching detail never shifts geographic features.
         const factor = 2 ** (MAP_COMMON_ZOOM - request.level.zoom);
         const commonTileSize = MAP_TILE_SIZE * factor;
         const graphPosition = worldPixelToGraph({ x: request.x * commonTileSize, y: request.y * commonTileSize });
         const graphSize = commonTileSize / MAP_WORLD_PIXELS_PER_GRAPH_UNIT;
-        tile.setAttribute('x', String(graphPosition.x));
-        tile.setAttribute('y', String(graphPosition.y));
-        tile.setAttribute('width', String(graphSize));
-        tile.setAttribute('height', String(graphSize));
-        tile.setAttribute('overflow', 'hidden');
-        tile.classList.add('rmp-map-tile');
-        tile.dataset.level = request.level.name;
-        tile.dataset.tileKey = request.key;
+        element.setAttribute('x', String(graphPosition.x));
+        element.setAttribute('y', String(graphPosition.y));
+        element.setAttribute('width', String(graphSize));
+        element.setAttribute('height', String(graphSize));
+        element.dataset.level = request.level.name;
+        element.dataset.tileKey = request.key;
+    }
+
+    private async loadSourceSession(sourceKey: string): Promise<MapSourceSession> {
+        const now = this.now();
+        try {
+            const session = await this.rasterCache?.getSourceSession(sourceKey, now);
+            if (session) return session;
+        } catch (error) {
+            console.warn('Failed to initialize the map raster cache', error);
+            this.rasterCache = undefined;
+        }
+        return {
+            sourceKey,
+            epoch: `memory-${now}`,
+            expiresAt: now + MAP_SOURCE_TTL_MS,
+            refreshSource: true,
+        };
+    }
+
+    private async confirmSourceSession(session: MapSourceSession) {
+        try {
+            return (await this.rasterCache?.confirmSourceSession(session)) ?? { ...session, refreshSource: false };
+        } catch (error) {
+            console.warn('Failed to persist the map source cache epoch', error);
+            this.rasterCache = undefined;
+            return { ...session, refreshSource: false };
+        }
+    }
+
+    private markRasterActivity() {
+        this.lastActivityAt = this.now();
+        // Panning, editing, or a style change invalidates the visible batch.
+        this.scheduleRasterWork();
+    }
+
+    private scheduleRasterWork() {
+        if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
+        this.rasterTimer = undefined;
+        if (this.rasterWorkActive) {
+            this.rasterRescheduleRequested = true;
+            return;
+        }
+        if (this.disposed || !this.rasterEnabled || !this.sourceSession) return;
+        if (!this.rasterCache && !this.rasterizer && !this.shouldCreateRasterizer) return;
+        if (this.switching || this.interactionActive) return;
+        for (const key of this.desired.keys()) {
+            if (!this.nodes.has(key)) return;
+        }
+        const remainingDelay = Math.max(0, this.rasterIdleDelayMs - (this.now() - this.lastActivityAt));
+        this.rasterTimer = setTimeout(() => {
+            this.rasterTimer = undefined;
+            void this.processRasterWork();
+        }, remainingDelay);
+    }
+
+    private async processRasterWork() {
+        if (!this.canContinueRasterWork(this.rasterRevision) || !this.sourceSession) return;
+        this.rasterWorkActive = true;
+        const revision = this.rasterRevision;
+        const session = this.sourceSession;
+        const styleKey = this.styleKey;
+        const styleCss = this.styleCss;
+        const missing: MountedTile[] = [];
+        try {
+            for (const request of this.desired.values()) {
+                if (!this.canContinueRasterWork(revision)) return;
+                const mounted = this.nodes.get(request.key);
+                if (!mounted || mounted.raster || mounted.rasterUnavailable) continue;
+                let cached: Blob | null | undefined;
+                if (mounted.rasterCacheRevision !== revision) {
+                    cached = await this.loadCachedRaster(session, styleKey, styleCss, request.key);
+                    if (!this.canUseRasterResult(mounted, revision)) return;
+                    mounted.rasterCacheRevision = revision;
+                }
+                if (cached === null) {
+                    mounted.rasterUnavailable = true;
+                } else if (cached) {
+                    this.applyRaster(mounted, cached);
+                } else {
+                    missing.push(mounted);
+                }
+            }
+
+            if (missing.length === 0 || !this.getRasterizer()) return;
+            let completed = 0;
+            this.logRasterProgress(completed, missing.length);
+            for (const mounted of missing) {
+                const rasterizer = this.getRasterizer();
+                if (!rasterizer || !this.canContinueRasterWork(revision)) return;
+                let blob: Blob;
+                try {
+                    blob = await rasterizer.render(
+                        this.serializeTileForRaster(mounted.svg, MAP_RASTER_TILE_SIZE),
+                        MAP_RASTER_TILE_SIZE
+                    );
+                } catch (error) {
+                    if (!this.disposed) console.warn('Map rasterization failed; keeping SVG tiles', error);
+                    rasterizer.dispose();
+                    if (this.rasterizer === rasterizer) this.rasterizer = undefined;
+                    return;
+                }
+                if (!this.canUseRasterResult(mounted, revision)) return;
+                try {
+                    await this.rasterCache?.putRaster(
+                        session,
+                        styleKey,
+                        styleCss,
+                        mounted.request.key,
+                        blob,
+                        this.now()
+                    );
+                } catch (error) {
+                    console.warn(`Failed to cache map raster ${mounted.request.key}`, error);
+                    this.rasterCache = undefined;
+                }
+                if (!this.canUseRasterResult(mounted, revision)) return;
+                this.applyRaster(mounted, blob);
+                completed += 1;
+                this.logRasterProgress(completed, missing.length);
+            }
+        } finally {
+            this.rasterWorkActive = false;
+            if (this.rasterRescheduleRequested) {
+                this.rasterRescheduleRequested = false;
+                this.scheduleRasterWork();
+            }
+        }
+    }
+
+    private getRasterizer() {
+        if (!this.rasterizer && this.shouldCreateRasterizer) {
+            this.shouldCreateRasterizer = false;
+            this.rasterizer = createMapRasterizer();
+        }
+        return this.rasterizer;
+    }
+
+    private canContinueRasterWork(revision: number) {
+        if (
+            this.disposed ||
+            !this.rasterEnabled ||
+            revision !== this.rasterRevision ||
+            this.switching ||
+            this.interactionActive ||
+            !this.sourceSession ||
+            this.sourceSession.expiresAt <= this.now()
+        ) {
+            return false;
+        }
+        return this.now() - this.lastActivityAt >= this.rasterIdleDelayMs;
+    }
+
+    private canUseRasterResult(mounted: MountedTile, revision: number) {
+        return (
+            this.canContinueRasterWork(revision) &&
+            this.nodes.get(mounted.request.key) === mounted &&
+            this.desired.has(mounted.request.key)
+        );
+    }
+
+    private serializeTileForRaster(tile: SVGSVGElement, size: number) {
+        const rasterRoot = document.createElementNS(SVG_NAMESPACE, 'svg');
+        rasterRoot.setAttribute('data-map-layer', '');
+        rasterRoot.setAttribute('width', String(size));
+        rasterRoot.setAttribute('height', String(size));
+
+        const clone = tile.cloneNode(true) as SVGSVGElement;
+        clone.removeAttribute('x');
+        clone.removeAttribute('y');
+        clone.removeAttribute('overflow');
+        clone.setAttribute('width', String(size));
+        clone.setAttribute('height', String(size));
+        clone.style.removeProperty('display');
+
+        const style = document.createElementNS(SVG_NAMESPACE, 'style');
+        style.textContent = this.styleCss;
+        rasterRoot.append(style, clone);
+        return new XMLSerializer().serializeToString(rasterRoot);
+    }
+
+    private applyRaster(mounted: MountedTile, blob: Blob, hideSvgWhileLoading = false) {
+        if (!this.rasterEnabled || mounted.raster || typeof URL.createObjectURL !== 'function') return;
+        const session = this.sourceSession;
+        const styleKey = this.styleKey;
+        const styleCss = this.styleCss;
+        const image = document.createElementNS(SVG_NAMESPACE, 'image');
+        const objectUrl = URL.createObjectURL(blob);
+        this.positionRasterImage(image, mounted.request);
+        image.dataset.mapRaster = '';
+        image.style.visibility = 'hidden';
+        image.setAttribute('decoding', 'async');
+        image.setAttribute('href', objectUrl);
+        if (hideSvgWhileLoading) mounted.svg.style.display = 'none';
+        image.addEventListener(
+            'load',
+            () => {
+                if (mounted.raster !== image || this.nodes.get(mounted.request.key) !== mounted) return;
+                image.style.removeProperty('visibility');
+                mounted.svg.style.display = 'none';
+            },
+            { once: true }
+        );
+        image.addEventListener(
+            'error',
+            () => {
+                if (mounted.raster !== image) return;
+                this.clearRaster(mounted);
+                mounted.rasterUnavailable = true;
+                console.warn(`Failed to decode map raster ${mounted.request.key}; keeping SVG tile`);
+                const rasterCache = this.rasterCache;
+                if (!rasterCache || !session) return;
+                void rasterCache
+                    .putRaster(session, styleKey, styleCss, mounted.request.key, null, this.now())
+                    .catch(error => {
+                        console.warn(`Failed to cache map raster failure ${mounted.request.key}`, error);
+                        if (this.rasterCache === rasterCache) this.rasterCache = undefined;
+                    });
+            },
+            { once: true }
+        );
+        mounted.raster = image;
+        mounted.rasterUrl = objectUrl;
+        mounted.svg.after(image);
+    }
+
+    private positionRasterImage(image: SVGImageElement, request: TileRequest) {
+        this.positionTileElement(image, request);
+        image.setAttribute('preserveAspectRatio', 'none');
+    }
+
+    private showAllSvgTiles(resetRasterAvailability = false) {
+        for (const mounted of this.nodes.values()) {
+            this.clearRaster(mounted);
+            if (resetRasterAvailability) mounted.rasterUnavailable = false;
+        }
+    }
+
+    private clearMountedTiles() {
+        for (const mounted of this.nodes.values()) this.removeMountedTile(mounted);
+        this.nodes.clear();
+    }
+
+    private removeMountedTile(mounted: MountedTile) {
+        this.clearRaster(mounted);
+        mounted.svg.remove();
+    }
+
+    private clearRaster(mounted: MountedTile) {
+        mounted.raster?.remove();
+        if (mounted.rasterUrl) URL.revokeObjectURL(mounted.rasterUrl);
+        mounted.raster = undefined;
+        mounted.rasterUrl = undefined;
+        mounted.svg.style.removeProperty('display');
+    }
+
+    private scheduleSourceExpiryCheck() {
+        if (this.sourceExpiryTimer !== undefined) clearTimeout(this.sourceExpiryTimer);
+        this.sourceExpiryTimer = undefined;
+        if (!this.sourceSession || this.disposed) return;
+        const remaining = this.sourceSession.expiresAt - this.now();
+        if (remaining <= 0) {
+            this.rasterRevision += 1;
+            this.rasterRequests.clear();
+            this.showAllSvgTiles();
+            if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
+            this.rasterTimer = undefined;
+            return;
+        }
+        this.sourceExpiryTimer = setTimeout(
+            () => this.scheduleSourceExpiryCheck(),
+            Math.min(remaining, 24 * 60 * 60 * 1000)
+        );
+    }
+
+    /** Cache hits stay silent; only newly rendered tiles produce diagnostic progress. */
+    private logRasterProgress(completed: number, total: number) {
+        console.info(`Background map rasterization: ${completed} / ${total}`);
     }
 
     /** Keeps attribution at a constant visual inset and size in the interactive viewport. */
@@ -785,15 +1221,29 @@ export class MapTileController {
 
     /** Applies the controller-wide abort signal so project changes terminate manifest and index requests too. */
     private async fetchJson<T>(url: URL): Promise<T> {
-        const response = await this.fetcher(url, { signal: this.abortController.signal });
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${url.href}`);
+        const requestUrl = this.getSourceRequestUrl(url);
+        const response = await this.fetcher(requestUrl, {
+            signal: this.abortController.signal,
+            cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${requestUrl.href}`);
         return response.json() as Promise<T>;
     }
 
     /** Binary fetches share the same lifetime and HTTP failure semantics as manifest requests. */
     private async fetchArrayBuffer(url: URL) {
-        const response = await this.fetcher(url, { signal: this.abortController.signal });
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${url.href}`);
+        const requestUrl = this.getSourceRequestUrl(url);
+        const response = await this.fetcher(requestUrl, {
+            signal: this.abortController.signal,
+            cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status} for ${requestUrl.href}`);
         return response.arrayBuffer();
+    }
+
+    private getSourceRequestUrl(url: URL) {
+        const requestUrl = new URL(url);
+        if (this.sourceSession) requestUrl.searchParams.set('rmp-source-epoch', this.sourceSession.epoch);
+        return requestUrl;
     }
 }

@@ -3,9 +3,12 @@ import { lineStyles } from '../components/svgs/lines/lines';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     canUseLine,
+    canUseLinePath,
+    canUseLineStyle,
     DIAGRAM_NATIVE_LINE_PATHS,
     isLinePolicyVisible,
     MAP_NATIVE_LINE_PATHS,
+    requiresSubscriptionForLinePath,
 } from './line-path-availability';
 
 describe('contextual line subscription policy', () => {
@@ -31,33 +34,33 @@ describe('contextual line subscription policy', () => {
         expect(DIAGRAM_NATIVE_LINE_PATHS.has(LinePathType.Simple)).toBe(false);
     });
 
-    it('enforces contextual path access with a default SingleColor style', () => {
-        expect(canUseLine(LinePathType.Diagonal, LineStyleType.SingleColor, false, false)).toBe(true);
-        expect(canUseLine(LinePathType.Diagonal, LineStyleType.SingleColor, true, false)).toBe(false);
-        expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, false)).toBe(false);
-        expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, true, false)).toBe(true);
+    it('requires a subscription for paths outside the current map-display context', () => {
+        expect(requiresSubscriptionForLinePath(LinePathType.Diagonal, false)).toBe(false);
+        expect(requiresSubscriptionForLinePath(LinePathType.Diagonal, true)).toBe(true);
+        expect(requiresSubscriptionForLinePath(LinePathType.Bezier, false)).toBe(true);
+        expect(requiresSubscriptionForLinePath(LinePathType.Bezier, true)).toBe(false);
     });
 
     it('keeps statically Pro paths subscribed in both contexts', () => {
         for (const mapEnabled of [false, true]) {
-            expect(canUseLine(LinePathType.RayGuided, LineStyleType.SingleColor, mapEnabled, false)).toBe(false);
-            expect(canUseLine(LinePathType.Simple, LineStyleType.SingleColor, mapEnabled, false)).toBe(false);
+            expect(requiresSubscriptionForLinePath(LinePathType.RayGuided, mapEnabled)).toBe(true);
+            expect(requiresSubscriptionForLinePath(LinePathType.Simple, mapEnabled)).toBe(true);
         }
     });
 
     it('allows subscribers to author every known path and rejects unknown authoring', () => {
         for (const type of Object.values(LinePathType)) {
-            expect(canUseLine(type, LineStyleType.SingleColor, false, true)).toBe(true);
-            expect(canUseLine(type, LineStyleType.SingleColor, true, true)).toBe(true);
+            expect(canUseLinePath(type, false, true)).toBe(true);
+            expect(canUseLinePath(type, true, true)).toBe(true);
         }
-        expect(canUseLine('future-path', LineStyleType.SingleColor, false, true)).toBe(false);
+        expect(canUseLinePath('future-path', false, true)).toBe(false);
     });
 
     it('combines path and style policy for authoring', () => {
         expect(canUseLine(LinePathType.Diagonal, LineStyleType.SingleColor, false, false)).toBe(true);
         expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, false)).toBe(false);
         expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, true)).toBe(true);
-        expect(canUseLine(LinePathType.Diagonal, LineStyleType.Unknown, false, true)).toBe(false);
+        expect(canUseLineStyle(LineStyleType.Unknown, true)).toBe(false);
         expect(canUseLine(LinePathType.Diagonal, 'future-style', false, true)).toBe(false);
     });
 
@@ -67,6 +70,7 @@ describe('contextual line subscription policy', () => {
             expect(isLinePolicyVisible({ type: LinePathType.Simple, style }, mapEnabled, false)).toBe(true);
         }
 
+        expect(canUseLinePath(LinePathType.Simple, mapEnabled, false)).toBe(false);
         expect(canUseLine(LinePathType.Simple, LineStyleType.SingleColor, mapEnabled, false)).toBe(false);
         expect(
             isLinePolicyVisible({ type: LinePathType.Simple, style: LineStyleType.SingleColor }, mapEnabled, false)
@@ -81,11 +85,12 @@ describe('contextual line subscription policy', () => {
         style.isPro = true;
 
         try {
+            expect(canUseLineStyle(LineStyleType.Generic, false)).toBe(false);
             expect(canUseLine(LinePathType.Diagonal, LineStyleType.Generic, false, false)).toBe(false);
             expect(
                 isLinePolicyVisible({ type: LinePathType.Diagonal, style: LineStyleType.Generic }, false, false)
             ).toBe(false);
-            expect(canUseLine(LinePathType.Diagonal, LineStyleType.Generic, false, true)).toBe(true);
+            expect(canUseLineStyle(LineStyleType.Generic, true)).toBe(true);
         } finally {
             if (previous === undefined) delete style.isPro;
             else style.isPro = previous;

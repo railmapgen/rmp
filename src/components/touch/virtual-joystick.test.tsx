@@ -79,6 +79,7 @@ describe('VirtualJoystick', () => {
                     stationNames: {},
                     existsNodeTypes: new Set<NodeType>(),
                     radialTouchMenu: defaultRadialTouchMenuState,
+                    isMapOverview: false,
                     globalAlerts: {},
                 },
             },

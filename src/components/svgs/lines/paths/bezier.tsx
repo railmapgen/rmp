@@ -35,9 +35,6 @@ export const generateBezierPath: PathGenerator<BezierPathAttributes> = (
  * Hidden peers participate because visibility does not change group identity. A created endpoint with no established
  * peer starts at the path default, while an updated endpoint retains its current offset. Pending edges from the same
  * transaction are ignored so only stable or already-normalized peers can define the shared position.
- *
- * Dependency note: `lines.ts -> bezier.tsx -> bezier-endpoint.ts -> same-style.ts -> lines.ts` is an intentional ESM
- * cycle. `lineStyles` must only be read when this normalizer runs after module initialization, never at module scope.
  */
 const normalizeBezierEdgeAttrs: LinePathEdgeAttrsNormalizer = (graph, edgeId, mode, ignoredEdgeIds) => {
     const edgeAttrs = graph.getEdgeAttributes(edgeId);
