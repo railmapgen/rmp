@@ -37,7 +37,7 @@ import {
 } from '../../../redux/app/app-slice';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { canUseLine } from '../../../util/line-path-availability';
+import { canUseLine, canUseLineCombination } from '../../../util/line-path-availability';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -109,23 +109,16 @@ const ToolsPanel = () => {
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
 
-    const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
-        const style = lineStyles[styleType];
-        const pathSupported = style.metadata.supportLinePathType.includes(pathType);
-        return pathSupported && canUseLine(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD);
-    };
-    const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
-        const styleSupported = lineStyles[styleType].metadata.supportLinePathType.includes(pathType);
-        return styleSupported && canUseLine(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD);
-    };
     const handleLine = (pathType: LinePathType) => {
         let { style: currentStyle } = getLinePathAndStyle(mode);
         // When user click the background and mode becomes 'free', we try to recover last used style.
         if (!currentStyle && lastTool) currentStyle = getLinePathAndStyle(lastTool as RuntimeMode).style;
         // If current style is compatible with new path, keep it; otherwise use SingleColor
         const newStyle =
-            currentStyle && isStyleCompatible(currentStyle, pathType) ? currentStyle : LineStyleType.SingleColor;
-        if (!canUseLine(pathType, newStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) return;
+            currentStyle && canUseLineCombination(pathType, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)
+                ? currentStyle
+                : LineStyleType.SingleColor;
+        if (!canUseLineCombination(pathType, newStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) return;
         dispatch(setMode(`line-${pathType}/${newStyle}`));
     };
     const handleLineStyle = (styleType: LineStyleType) => {
@@ -134,9 +127,11 @@ const ToolsPanel = () => {
         if (!currentPath && lastTool) currentPath = getLinePathAndStyle(lastTool as RuntimeMode).path;
         // If current path is incompatible, use the first permitted path for this style.
         const newPath =
-            currentPath && isPathCompatible(currentPath, styleType)
+            currentPath && canUseLineCombination(currentPath, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
                 ? currentPath
-                : availableLinePathTypes.find(pathType => isPathCompatible(pathType, styleType));
+                : availableLinePathTypes.find(pathType =>
+                      canUseLineCombination(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
+                  );
         if (!newPath) return;
         dispatch(setMode(`line-${newPath}/${styleType}`));
     };
@@ -244,10 +239,11 @@ const ToolsPanel = () => {
                             {availableLinePathTypes.map(type => {
                                 const isProLinePath = !canUseLine(type, LineStyleType.SingleColor, mapEnabled, false);
                                 const targetStyle =
-                                    currentStyle && isStyleCompatible(currentStyle, type)
+                                    currentStyle &&
+                                    canUseLineCombination(type, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)
                                         ? currentStyle
                                         : LineStyleType.SingleColor;
-                                const isLinePathDisabled = !canUseLine(
+                                const isLinePathDisabled = !canUseLineCombination(
                                     type,
                                     targetStyle,
                                     mapEnabled,
@@ -335,7 +331,12 @@ const ToolsPanel = () => {
                                         variant="ghost"
                                         isDisabled={
                                             !availableLinePathTypes.some(pathType =>
-                                                isPathCompatible(pathType, styleType)
+                                                canUseLineCombination(
+                                                    pathType,
+                                                    styleType,
+                                                    mapEnabled,
+                                                    activeSubscriptions.RMP_CLOUD
+                                                )
                                             )
                                         }
                                         sx={buttonStyle}
