@@ -3,6 +3,7 @@ import { lineStyles } from '../components/svgs/lines/lines';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     canUseLine,
+    canUseLineCombination,
     DIAGRAM_NATIVE_LINE_PATHS,
     isLinePolicyVisible,
     MAP_NATIVE_LINE_PATHS,
@@ -59,6 +60,13 @@ describe('contextual line subscription policy', () => {
         expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, true)).toBe(true);
         expect(canUseLine(LinePathType.Diagonal, LineStyleType.Unknown, false, true)).toBe(false);
         expect(canUseLine(LinePathType.Diagonal, 'future-style', false, true)).toBe(false);
+    });
+
+    it('combines authoring policy with path and style compatibility', () => {
+        expect(canUseLine(LinePathType.Diagonal, LineStyleType.MRTTapeOut, false, true)).toBe(true);
+        expect(canUseLineCombination(LinePathType.Diagonal, LineStyleType.MRTTapeOut, false, true)).toBe(false);
+        expect(canUseLineCombination(LinePathType.Simple, LineStyleType.MRTTapeOut, false, false)).toBe(true);
+        expect(canUseLineCombination(LinePathType.Diagonal, 'future-style' as LineStyleType, false, true)).toBe(false);
     });
 
     it.each([false, true])('preserves the legacy free Simple combinations when mapEnabled is %s', mapEnabled => {

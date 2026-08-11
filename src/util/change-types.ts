@@ -22,7 +22,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
-import { canUseLine } from './line-path-availability';
+import { canUseLineCombination } from './line-path-availability';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 import { canReconcileLine } from './reconcile-ui';
 
@@ -154,28 +154,25 @@ export const changeLinePathType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    if (!canUseLine(newLinePathType, currentLineStyleType, mapEnabled, isSubscriber)) return false;
-    if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
-        const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
+    if (!canUseLineCombination(newLinePathType, currentLineStyleType, mapEnabled, isSubscriber)) return false;
+    const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
 
-        // calculate parallel index before changing the type
-        // so that makeParallelIndex won't consider this line as an existing line
-        let parallelIndex = -1;
-        if (autoParallel && supportsParallelLinePath(newLinePathType)) {
-            const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
-            const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
-            parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
-        }
-        graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
-
-        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
-        graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
-        if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
-            graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
-        }
-        return true;
+    // calculate parallel index before changing the type
+    // so that makeParallelIndex won't consider this line as an existing line
+    let parallelIndex = -1;
+    if (autoParallel && supportsParallelLinePath(newLinePathType)) {
+        const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
+        const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
+        parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
     }
-    return false;
+    graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
+
+    graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
+    graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+    if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
+        graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+    }
+    return true;
 };
 
 /**
@@ -222,32 +219,28 @@ export const changeLineStyleType = (
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    if (!canUseLine(currentLinePathType, newLineStyleType, mapEnabled, isSubscriber)) return false;
-    if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
-        const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
-        const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
-        graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
-        const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-        if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
-            (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
+    if (!canUseLineCombination(currentLinePathType, newLineStyleType, mapEnabled, isSubscriber)) return false;
+    const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
+    const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
+    graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
+    const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
+    if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
+        (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
+    else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
 
-        // do we really need each hack for each style here?
-        const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
-        if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
-            (newAttrs as { decoration: string; decorationAt: string }).decoration =
-                (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
-            (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
-                (oldAttrs as { decorationAt?: string }).decorationAt ??
-                (newAttrs as { decorationAt: string }).decorationAt;
-        }
-
-        graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
-        if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
-        else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
-        return true;
+    // do we really need each hack for each style here?
+    const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
+    if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
+        (newAttrs as { decoration: string; decorationAt: string }).decoration =
+            (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
+        (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
+            (oldAttrs as { decorationAt?: string }).decorationAt ?? (newAttrs as { decorationAt: string }).decorationAt;
     }
-    return false;
+
+    graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
+    if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
+    else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
+    return true;
 };
 
 /**

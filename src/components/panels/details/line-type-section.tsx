@@ -23,27 +23,10 @@ import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
-import { canUseLine } from '../../../util/line-path-availability';
+import { canUseLineCombination } from '../../../util/line-path-availability';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
-
-/**
- * Determine if a line path type or style type should be disabled based
- * on the current selection and subscription status.
- */
-const isLinePathAndStyleDisabled = (
-    pathType: LinePathType,
-    styleType: LineStyleType,
-    mapEnabled: boolean,
-    isSubscriber: boolean
-) => {
-    if (!canUseLine(pathType, styleType, mapEnabled, isSubscriber)) return true;
-    if (!lineStyles[styleType].metadata.supportLinePathType.includes(pathType)) {
-        return true;
-    }
-    return false;
-};
 
 export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
@@ -86,13 +69,15 @@ export default function LineTypeSection() {
         setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
     }, [selectedFirst]);
 
-    const disabledLinePathOptions = Object.values(LinePathType).filter(linePathType =>
-        isLinePathAndStyleDisabled(linePathType, currentLineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
+    const disabledLinePathOptions = Object.values(LinePathType).filter(
+        linePathType =>
+            !canUseLineCombination(linePathType, currentLineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
     );
     const disabledLineStyleOptions = Object.values(LineStyleType)
         .filter(isVisibleLineStyle)
-        .filter(lineStyleType =>
-            isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
+        .filter(
+            lineStyleType =>
+                !canUseLineCombination(currentLinePathType, lineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
         );
 
     const baseReconciledLineID = getBaseReconciledLineID(graph.current, selectedFirst as LineId);
