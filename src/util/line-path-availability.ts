@@ -61,6 +61,15 @@ export const canUseLine = (type: unknown, style: unknown, mapEnabled: boolean, i
     (isLegacySimplePathCombination(type, style) || canUseLinePath(type, mapEnabled, isSubscriber)) &&
     canUseLineStyle(style, isSubscriber);
 
+/** Authoring a line also requires the selected style to support its path geometry. */
+export const canUseLineCombination = (
+    type: LinePathType,
+    style: LineStyleType,
+    mapEnabled: boolean,
+    isSubscriber: boolean
+): boolean =>
+    canUseLine(type, style, mapEnabled, isSubscriber) && lineStyles[style].metadata.supportLinePathType.includes(type);
+
 /**
  * Existing unknown paths/styles remain visible for fallback rendering, but
  * cannot be newly authored through `canUseLine`.
