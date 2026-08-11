@@ -13,7 +13,6 @@ import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/run
 import { getDynamicContrastColor } from '../../../util/color';
 import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
-import { canUseLine } from '../../../util/line-path-availability';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
 
@@ -159,7 +158,6 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
     const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
-    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
     const { refresh, theme } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -171,14 +169,9 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     }, [dispatch]);
 
     const hasClosedPath = React.useMemo(() => !!findShortestClosedPath(graph, id as MiscNodeId), [graph, id, refresh]);
-    const canCreateShape = (shape: FillShape) => {
-        const type = getFillShapeLinePathType(shape, mapEnabled);
-        return canUseLine(type, LineStyleType.SingleColor, mapEnabled, isSubscriber);
-    };
 
     const handleCreateShape = (shape: FillShape) => {
         const type = getFillShapeLinePathType(shape, mapEnabled);
-        if (!canUseLine(type, LineStyleType.SingleColor, mapEnabled, isSubscriber)) return;
 
         const currentNodeAttrs = graph.getNodeAttributes(id);
         const { x, y } = currentNodeAttrs;
@@ -268,21 +261,15 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                 <Text fontSize="sm" color="gray.500">
                     {t('panel.details.nodes.fill.noClosedPath')}
                 </Text>
-                {canCreateShape('square') && (
-                    <Button width="50%" onClick={() => handleCreateShape('square')}>
-                        {t('panel.details.nodes.fill.createSquare')}
-                    </Button>
-                )}
-                {canCreateShape('triangle') && (
-                    <Button width="50%" onClick={() => handleCreateShape('triangle')}>
-                        {t('panel.details.nodes.fill.createTriangle')}
-                    </Button>
-                )}
-                {canCreateShape('circle') && (
-                    <Button width="50%" onClick={() => handleCreateShape('circle')}>
-                        {t('panel.details.nodes.fill.createCircle')}
-                    </Button>
-                )}
+                <Button width="50%" onClick={() => handleCreateShape('square')}>
+                    {t('panel.details.nodes.fill.createSquare')}
+                </Button>
+                <Button width="50%" onClick={() => handleCreateShape('triangle')}>
+                    {t('panel.details.nodes.fill.createTriangle')}
+                </Button>
+                <Button width="50%" onClick={() => handleCreateShape('circle')}>
+                    {t('panel.details.nodes.fill.createCircle')}
+                </Button>
             </VStack>
         );
     }
