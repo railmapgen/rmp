@@ -475,6 +475,7 @@
                     "terminal": "終着駅",
                     "terminalNameRotate": "終着駅名回転",
                     "shareTracks": "線路共有",
+                    "noTrackShare": "線路共有なし",
                     "shareTracksIndex": "線路共有索引"
                 },
                 "londonTubeInt": {

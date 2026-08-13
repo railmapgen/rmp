@@ -473,6 +473,7 @@
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
+                    "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {

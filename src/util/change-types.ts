@@ -496,16 +496,14 @@ export const autoPopulateTransfer = (
         }
     };
 
-    // Get current transfer info, defaulting to empty array if not set
+    // Get current transfer info
     const currentTransfer =
         (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer?.at(0) ?? [];
 
-    if (lineColorStr.size < 2) {
-        if (currentTransfer.length > 1) {
-            updateStationTransfer(graph, station, currentType, []);
-            return true;
-        }
-        return false;
+    if (lineColorStr.size < 2 && currentType === StationType.MTR) {
+        // MTR case: remove transfer info if fewer than 2 lines
+        updateStationTransfer(graph, station, currentType, []);
+        return true;
     }
 
     // Filter existing transfer info to keep only those still connected

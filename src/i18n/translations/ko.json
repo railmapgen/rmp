@@ -472,6 +472,7 @@
                     "terminal": "종착역",
                     "terminalNameRotate": "터미널 이름 회전",
                     "shareTracks": "선로 공유",
+                    "noTrackShare": "선로 공유 없음",
                     "shareTracksIndex": "선로 공유 지수"
                 },
                 "londonTubeInt": {
