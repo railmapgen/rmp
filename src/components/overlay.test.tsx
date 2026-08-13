@@ -28,6 +28,20 @@ const RED: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 const defaultFreeformOverlay = linePaths[LinePathType.Freeform].overlayComponent;
 const virtualNode = miscNodes[MiscNodeType.Virtual];
 const defaultVirtualOverlay = virtualNode.overlayComponent;
+const textNode = miscNodes[MiscNodeType.Text];
+const defaultTextOverlay = textNode.overlayComponent;
+const shmetroBasicStation = stations[StationType.ShmetroBasic];
+const defaultShmetroBasicOverlay = shmetroBasicStation.overlayComponent;
+const connectableMiscNodeTypes = [
+    MiscNodeType.Virtual,
+    MiscNodeType.Master,
+    MiscNodeType.Fill,
+    MiscNodeType.LondonArrow,
+    MiscNodeType.ChongqingRTNumLineBadge2021,
+    MiscNodeType.ChongqingRTTextLineBadge2021,
+    MiscNodeType.ChengduRTLineBadge,
+    MiscNodeType.GzmtrLineBadge,
+];
 
 const addLine = (id: string, type: LinePathType) => {
     window.graph.addDirectedEdgeWithKey(id, 'misc_node_a', 'misc_node_b', {
@@ -172,9 +186,27 @@ describe('Overlay', () => {
     describe('node overlays', () => {
         afterEach(() => {
             virtualNode.overlayComponent = defaultVirtualOverlay;
+            textNode.overlayComponent = defaultTextOverlay;
+            shmetroBasicStation.overlayComponent = defaultShmetroBasicOverlay;
         });
 
-        it('mounts the generic endpoint overlay registered by ShmetroIntStation', () => {
+        it('has every station definition explicitly register the shared endpoint overlay', () => {
+            expect(
+                Object.values(StationType).filter(
+                    type => stations[type].overlayComponent !== SameStyleLineEndpointOverlay
+                )
+            ).toEqual([]);
+        });
+
+        it('has every connectable miscellaneous node explicitly register the shared endpoint overlay', () => {
+            expect(
+                connectableMiscNodeTypes.filter(
+                    type => miscNodes[type].overlayComponent !== SameStyleLineEndpointOverlay
+                )
+            ).toEqual([]);
+        });
+
+        it('mounts the shared endpoint overlay for ShmetroIntStation', () => {
             window.graph = createNodeGraph();
 
             const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
@@ -184,22 +216,61 @@ describe('Overlay', () => {
             expect(controls[0].closest('.removeMe')).not.toBeNull();
         });
 
-        it('does not provide the generic overlay as a fallback for other stations', () => {
+        it('mounts the shared endpoint overlay registered by a station definition', () => {
             window.graph = createNodeGraph();
             window.graph.setNodeAttribute('stn_int', 'type', StationType.ShmetroBasic);
+
+            const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
+
+            expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
+        });
+
+        it('does not infer an endpoint overlay when a station definition has none', () => {
+            window.graph = createNodeGraph();
+            window.graph.setNodeAttribute('stn_int', 'type', StationType.ShmetroBasic);
+            shmetroBasicStation.overlayComponent = undefined;
 
             const { queryByTestId } = renderOverlay(new Set<Id>(['stn_int']));
 
             expect(queryByTestId('node-line-endpoint-control')).toBeNull();
         });
 
-        it('mounts an overlay registered by a miscellaneous node', () => {
+        it('mounts the shared endpoint overlay for a connectable miscellaneous node', () => {
             window.graph = createNodeGraph();
-            virtualNode.overlayComponent = SameStyleLineEndpointOverlay;
 
             const { getAllByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
 
             expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
+        });
+
+        it('does not mount the shared endpoint overlay for a non-connectable miscellaneous node', () => {
+            window.graph = createNodeGraph();
+            window.graph.setNodeAttribute('misc_node_other', 'type', MiscNodeType.Text);
+
+            const { queryByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+
+            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
+        });
+
+        it('continues mounting a registered overlay for a non-connectable miscellaneous node', () => {
+            window.graph = createNodeGraph();
+            window.graph.setNodeAttribute('misc_node_other', 'type', MiscNodeType.Text);
+            textNode.overlayComponent = () => <g data-testid="node-specific-overlay" />;
+
+            const { getByTestId, queryByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+
+            expect(getByTestId('node-specific-overlay')).toBeInTheDocument();
+            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
+        });
+
+        it('renders the overlay explicitly registered by a node definition', () => {
+            window.graph = createNodeGraph();
+            virtualNode.overlayComponent = () => <g data-testid="node-specific-overlay" />;
+
+            const { getByTestId, queryByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+
+            expect(getByTestId('node-specific-overlay')).toBeInTheDocument();
+            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
         });
     });
 });

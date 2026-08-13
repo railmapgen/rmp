@@ -4,6 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdSettings, MdUpload } from 'react-icons/md';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, Theme } from '../../../constants/constants';
 import { defaultMasterTransform, MasterParam, MasterSvgsElem } from '../../../constants/master';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
@@ -394,6 +395,7 @@ const masterIcon = (
 
 const masterNode: Node<MasterAttributes> = {
     component: MasterNode,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: masterIcon,
     defaultAttrs: defaultMasterAttributes,
     attrsComponent,
