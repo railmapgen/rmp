@@ -4,6 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId, Theme } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -478,6 +479,7 @@ const londonTubeBasicStationIcon = (
 
 const londonTubeBasicStation: Station<LondonTubeBasicStationAttributes> = {
     component: LondonTubeBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: londonTubeBasicStationIcon,
     defaultAttrs: defaultLondonTubeBasicStationAttributes,
     attrsComponent: londonTubeBasicAttrsComponent,
