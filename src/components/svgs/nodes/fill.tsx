@@ -4,6 +4,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode, LineId, MiscNodeId, NodeAttributes } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
@@ -312,6 +313,7 @@ const fillIcon = (
 
 const fill: Node<FillAttributes> = {
     component: Fill,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: fillIcon,
     defaultAttrs: defaultFillAttributes,
     attrsComponent: fillAttrsComponent,
