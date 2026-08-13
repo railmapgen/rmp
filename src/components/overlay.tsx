@@ -1,4 +1,5 @@
-import { LineId, NodeId } from '../constants/constants';
+import React from 'react';
+import { LineId, NodeId, OverlayProps } from '../constants/constants';
 import { useRootSelector } from '../redux';
 import { linePaths } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
@@ -7,7 +8,9 @@ import stations from './svgs/stations/stations';
 const nodeDefinitions = { ...stations, ...miscNodes };
 
 /**
- * Mounts the editor overlay registered by the single selected node or line path.
+ * Mounts editor overlays for the single selected node or line path.
+ *
+ * Node and line-path definitions own their editor capabilities; this renderer only mounts the overlay they register.
  */
 export const Overlay = () => {
     const selected = useRootSelector(state => state.runtime.selected);
@@ -32,13 +35,13 @@ export const Overlay = () => {
     if (window.graph.hasNode(selectedId)) {
         const id = selectedId as NodeId;
         const type = window.graph.getNodeAttribute(id, 'type');
-        const OverlayComponent = nodeDefinitions[type]?.overlayComponent;
+        // The graph and registry keep each node ID paired with the matching station or miscellaneous-node definition.
+        const OverlayComponent = nodeDefinitions[type]?.overlayComponent as React.FC<OverlayProps<NodeId>> | undefined;
         if (!OverlayComponent) return null;
 
         return (
             <g className="removeMe">
-                {/* @ts-ignore The graph keeps each node ID paired with its definition type. */}
-                <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+                <OverlayComponent id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
             </g>
         );
     }
