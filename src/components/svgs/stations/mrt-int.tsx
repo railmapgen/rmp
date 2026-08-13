@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -388,6 +389,7 @@ const mrtIntStationIcon = (
 
 const mrtIntStation: Station<MRTIntStationAttributes> = {
     component: MRTIntStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     postComponent: MRTIntStationPost,
     icon: mrtIntStationIcon,
     defaultAttrs: defaultMRTIntStationAttributes,
