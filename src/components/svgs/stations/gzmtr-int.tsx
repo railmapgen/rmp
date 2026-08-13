@@ -4,6 +4,7 @@ import { StationNumber as FoshanStationNumber } from '@railmapgen/svg-assets/fme
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -577,6 +578,7 @@ const gzmtrIntStationIcon = (
 
 const gzmtrIntStation: Station<GzmtrIntStationAttributes> = {
     component: GzmtrIntStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: gzmtrIntStationIcon,
     defaultAttrs: defaultGzmtrIntStationAttributes,
     attrsComponent: gzmtrIntStationAttrsComponents,
