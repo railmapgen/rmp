@@ -34,6 +34,8 @@ interface DraggingEndpointGroup {
 
 const FALLBACK_CONTROL_COLORS = ['#3182CE', '#DD6B20', '#805AD5', '#319795', '#D53F8C', '#4A5568'];
 const CONTROL_RING_GAP = 3;
+const CONTROL_STROKE_WIDTH = 3;
+const HIGHLIGHT_RADIUS = 10;
 
 /** Collect the authored colors from simple, multi-color, and layered line-style attributes. */
 const getStyleThemes = (attrs: EdgeAttributes): Theme[] => {
@@ -190,9 +192,9 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
     const screenToSvgScale = svgViewBoxZoom / 100;
     const radius = 5 * screenToSvgScale;
     const strokeWidth = 1.5 * screenToSvgScale;
+    const controlStrokeWidth = CONTROL_STROKE_WIDTH * screenToSvgScale;
     const activeLineIds = activeEdgeIds ? getVisibleRenderedLineIds(activeEdgeIds) : [];
     const nodeAttrs = window.graph.hasNode(id) ? window.graph.getNodeAttributes(id) : undefined;
-    const specificNodeAttrs = nodeAttrs?.[nodeAttrs.type] as { rotate?: number } | undefined;
     const highlightClipId = `node-line-endpoint-highlight-clip-${id}`;
     const getRenderedGroupPoint = (group: EndpointGroup) =>
         dragging?.edgeIds.some(edgeId => group.edgeIds.includes(edgeId)) ? dragging.point : group.point;
@@ -202,12 +204,14 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
             {activeLineIds.length > 0 && nodeAttrs && (
                 <>
                     <defs>
-                        <clipPath id={highlightClipId}>
-                            <use
+                        <clipPath id={highlightClipId} clipPathUnits="userSpaceOnUse">
+                            {/* Node renderers expose different core IDs and local transforms; a screen-stable window
+                                keeps the selected junction visible without coupling this shared overlay to each SVG. */}
+                            <circle
                                 data-testid="node-line-endpoint-highlight-clip"
                                 data-node-overlay-id={id}
-                                href={`#stn_core_${id}`}
-                                transform={`translate(${nodeAttrs.x}, ${nodeAttrs.y}) rotate(${specificNodeAttrs?.rotate ?? 0})`}
+                                r={HIGHLIGHT_RADIUS * screenToSvgScale}
+                                transform={`translate(${nodeAttrs.x}, ${nodeAttrs.y})`}
                             />
                         </clipPath>
                     </defs>
@@ -274,14 +278,22 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
                                 </linearGradient>
                             </defs>
                         )}
+                        {/* Only the painted ring receives pointer events, leaving the center available for node drag. */}
+                        <circle
+                            r={controlRadius}
+                            fill="none"
+                            stroke="white"
+                            strokeWidth={controlStrokeWidth + 2 * screenToSvgScale}
+                            pointerEvents="none"
+                        />
                         <circle
                             data-testid="node-line-endpoint-control"
                             data-edge-ids={group.edgeIds.join(',')}
                             r={controlRadius}
-                            stroke="white"
-                            strokeWidth={strokeWidth}
-                            fill={colors.length > 1 ? `url(#${gradientId})` : colors[0]}
-                            fillOpacity={0.9}
+                            stroke={colors.length > 1 ? `url(#${gradientId})` : colors[0]}
+                            strokeWidth={controlStrokeWidth}
+                            fill="none"
+                            pointerEvents="stroke"
                             cursor={isDragging ? 'grabbing' : 'grab'}
                             onPointerDown={event => handlePointerDown(group, event)}
                             onPointerMove={handlePointerMove}

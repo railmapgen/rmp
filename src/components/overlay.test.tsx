@@ -19,7 +19,6 @@ import { StationType } from '../constants/stations';
 import { createStore } from '../redux';
 import { render } from '../test-utils';
 import { Overlay } from './overlay';
-import { SameStyleLineEndpointOverlay } from './svgs/common/same-style-line-endpoint-overlay';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -28,6 +27,8 @@ const RED: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 const defaultFreeformOverlay = linePaths[LinePathType.Freeform].overlayComponent;
 const virtualNode = miscNodes[MiscNodeType.Virtual];
 const defaultVirtualOverlay = virtualNode.overlayComponent;
+const textNode = miscNodes[MiscNodeType.Text];
+const defaultTextOverlay = textNode.overlayComponent;
 
 const addLine = (id: string, type: LinePathType) => {
     window.graph.addDirectedEdgeWithKey(id, 'misc_node_a', 'misc_node_b', {
@@ -169,9 +170,10 @@ describe('Overlay', () => {
     describe('node overlays', () => {
         afterEach(() => {
             virtualNode.overlayComponent = defaultVirtualOverlay;
+            textNode.overlayComponent = defaultTextOverlay;
         });
 
-        it('mounts the generic endpoint overlay registered by ShmetroIntStation', () => {
+        it('mounts the shared endpoint overlay for ShmetroIntStation', () => {
             window.graph = createNodeGraph();
 
             const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
@@ -181,22 +183,52 @@ describe('Overlay', () => {
             expect(controls[0].closest('.removeMe')).not.toBeNull();
         });
 
-        it('does not provide the generic overlay as a fallback for other stations', () => {
+        it('mounts the shared endpoint overlay for a station without a registered overlay', () => {
             window.graph = createNodeGraph();
             window.graph.setNodeAttribute('stn_int', 'type', StationType.ShmetroBasic);
 
-            const { queryByTestId } = renderOverlay(new Set<Id>(['stn_int']));
+            const { getAllByTestId } = renderOverlay(new Set<Id>(['stn_int']));
 
-            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
+            expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
         });
 
-        it('mounts an overlay registered by a miscellaneous node', () => {
+        it('mounts the shared endpoint overlay for a connectable miscellaneous node', () => {
             window.graph = createNodeGraph();
-            virtualNode.overlayComponent = SameStyleLineEndpointOverlay;
 
             const { getAllByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
 
             expect(getAllByTestId('node-line-endpoint-control')).toHaveLength(1);
+        });
+
+        it('does not mount the shared endpoint overlay for a non-connectable miscellaneous node', () => {
+            window.graph = createNodeGraph();
+            window.graph.setNodeAttribute('misc_node_other', 'type', MiscNodeType.Text);
+
+            const { queryByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+
+            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
+        });
+
+        it('continues mounting a registered overlay for a non-connectable miscellaneous node', () => {
+            window.graph = createNodeGraph();
+            window.graph.setNodeAttribute('misc_node_other', 'type', MiscNodeType.Text);
+            textNode.overlayComponent = () => <g data-testid="node-specific-overlay" />;
+
+            const { getByTestId, queryByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+
+            expect(getByTestId('node-specific-overlay')).toBeInTheDocument();
+            expect(queryByTestId('node-line-endpoint-control')).toBeNull();
+        });
+
+        it('keeps a node-specific overlay above the shared endpoint overlay', () => {
+            window.graph = createNodeGraph();
+            virtualNode.overlayComponent = () => <g data-testid="node-specific-overlay" />;
+
+            const { getByTestId } = renderOverlay(new Set<Id>(['misc_node_other']));
+            const endpointControl = getByTestId('node-line-endpoint-control');
+            const nodeSpecificOverlay = getByTestId('node-specific-overlay');
+
+            expect(endpointControl.compareDocumentPosition(nodeSpecificOverlay)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
         });
     });
 });

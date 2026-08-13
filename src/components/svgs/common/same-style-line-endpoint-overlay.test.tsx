@@ -144,8 +144,17 @@ describe('SameStyleLineEndpointOverlay', () => {
         const redControl = controls.find(control => control.dataset.edgeIds?.includes('line_red_out'))!;
         const blueControl = controls.find(control => control.dataset.edgeIds === 'line_blue')!;
 
-        expect(redControl).toHaveAttribute('fill', RED[2]);
-        expect(blueControl).toHaveAttribute('fill', BLUE[2]);
+        expect(redControl).toHaveAttribute('stroke', RED[2]);
+        expect(blueControl).toHaveAttribute('stroke', BLUE[2]);
+    });
+
+    it('leaves the control center available to the selected node drag target', () => {
+        const { getAllByTestId } = renderOverlay();
+
+        for (const control of getAllByTestId('node-line-endpoint-control')) {
+            expect(control).toHaveAttribute('fill', 'none');
+            expect(control).toHaveAttribute('pointer-events', 'stroke');
+        }
     });
 
     it('renders co-located group controls as separately clickable concentric rings', () => {
@@ -177,7 +186,7 @@ describe('SameStyleLineEndpointOverlay', () => {
         expect(separateControls.map(control => control.getAttribute('r')).sort()).toEqual(['5', '5']);
     });
 
-    it('keeps the clicked group lines above the station after the pointer is released', () => {
+    it('keeps the clicked group lines above the selected node after the pointer is released', () => {
         const { getAllByTestId, getByTestId, store } = renderOverlay();
         const redControl = getAllByTestId('node-line-endpoint-control').find(control =>
             control.dataset.edgeIds?.includes('line_red_out')
@@ -192,8 +201,8 @@ describe('SameStyleLineEndpointOverlay', () => {
         expect(highlight.dataset.edgeIds?.split(',').sort()).toEqual(['line_red_in', 'line_red_out']);
         expect(highlight).toHaveAttribute('clip-path', 'url(#node-line-endpoint-highlight-clip-stn_center)');
         const highlightClip = getByTestId('node-line-endpoint-highlight-clip');
-        expect(highlightClip).toHaveAttribute('href', '#stn_core_stn_center');
-        expect(highlightClip).toHaveAttribute('transform', 'translate(10, 20) rotate(0)');
+        expect(highlightClip).toHaveAttribute('r', '10');
+        expect(highlightClip).toHaveAttribute('transform', 'translate(10, 20)');
         expect(
             getAllByTestId('node-line-endpoint-highlight-segment')
                 .map(segment => segment.getAttribute('href'))
@@ -206,7 +215,7 @@ describe('SameStyleLineEndpointOverlay', () => {
 
         window.graph.mergeNodeAttributes('stn_center', { x: 15, y: 17 });
         moveNodesAndRedrawLines(window.graph, ['stn_center'], 5, -3);
-        expect(highlightClip).toHaveAttribute('transform', 'translate(15,17) rotate(0)');
+        expect(highlightClip).toHaveAttribute('transform', 'translate(15,17)');
     });
 
     it('moves endpoint controls with the selected node during an imperative drag repaint', () => {

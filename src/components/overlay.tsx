@@ -1,5 +1,8 @@
-import { LineId, NodeId } from '../constants/constants';
+import React from 'react';
+import { LineId, NodeId, OverlayProps } from '../constants/constants';
 import { useRootSelector } from '../redux';
+import { isConnectableNodeType } from '../util/connectable-node';
+import { SameStyleLineEndpointOverlay } from './svgs/common/same-style-line-endpoint-overlay';
 import { linePaths } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
@@ -7,7 +10,10 @@ import stations from './svgs/stations/stations';
 const nodeDefinitions = { ...stations, ...miscNodes };
 
 /**
- * Mounts the editor overlay registered by the single selected node or line path.
+ * Mounts editor overlays for the single selected node or line path.
+ *
+ * Connectable nodes always receive the shared Bezier endpoint controls. A definition-specific node overlay is mounted
+ * afterwards so specialized controls retain visual and pointer priority instead of being replaced by the shared UI.
  */
 export const Overlay = () => {
     const selected = useRootSelector(state => state.runtime.selected);
@@ -32,13 +38,28 @@ export const Overlay = () => {
     if (window.graph.hasNode(selectedId)) {
         const id = selectedId as NodeId;
         const type = window.graph.getNodeAttribute(id, 'type');
-        const OverlayComponent = nodeDefinitions[type]?.overlayComponent;
-        if (!OverlayComponent) return null;
+        // The graph and registry keep each node ID paired with the matching station or miscellaneous-node definition.
+        const RegisteredOverlayComponent = nodeDefinitions[type]?.overlayComponent as
+            | React.FC<OverlayProps<NodeId>>
+            | undefined;
+        const hasEndpointOverlay = isConnectableNodeType(type);
+        const shouldRenderRegisteredOverlay =
+            RegisteredOverlayComponent &&
+            (!hasEndpointOverlay || RegisteredOverlayComponent !== SameStyleLineEndpointOverlay);
+        if (!hasEndpointOverlay && !shouldRenderRegisteredOverlay) return null;
 
         return (
             <g className="removeMe">
-                {/* @ts-ignore The graph keeps each node ID paired with its definition type. */}
-                <OverlayComponent key={id} id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+                {hasEndpointOverlay && (
+                    <SameStyleLineEndpointOverlay
+                        id={id}
+                        svgViewBoxZoom={svgViewBoxZoom}
+                        svgViewBoxMin={svgViewBoxMin}
+                    />
+                )}
+                {shouldRenderRegisteredOverlay && (
+                    <RegisteredOverlayComponent id={id} svgViewBoxZoom={svgViewBoxZoom} svgViewBoxMin={svgViewBoxMin} />
+                )}
             </g>
         );
     }
