@@ -22,7 +22,6 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
-import { isConnectableNodeType } from '../util/connectable-node';
 import { findNodesInRectangle } from '../util/graph';
 import {
     getCanvasSize,
@@ -53,6 +52,17 @@ import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lin
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
+const connectableNodesType = [
+    ...Object.values(StationType),
+    MiscNodeType.Virtual,
+    MiscNodeType.Master,
+    MiscNodeType.Fill,
+    MiscNodeType.LondonArrow,
+    MiscNodeType.ChongqingRTNumLineBadge2021,
+    MiscNodeType.ChongqingRTTextLineBadge2021,
+    MiscNodeType.ChengduRTLineBadge,
+    MiscNodeType.GzmtrLineBadge,
+];
 const connectableTargetPrefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'] as const;
 
 export const findConnectableTarget = (elements: Element[]) => {
@@ -109,7 +119,9 @@ const SvgCanvas = () => {
         y: graph.current.getNodeAttribute(node, 'y'),
     });
     const isConnectableNode = (node: string | undefined): node is NodeId =>
-        !!node && graph.current.hasNode(node) && isConnectableNodeType(graph.current.getNodeAttribute(node, 'type'));
+        !!node &&
+        graph.current.hasNode(node) &&
+        connectableNodesType.includes(graph.current.getNodeAttribute(node, 'type'));
     const getSvgPointerPosition = (event: React.PointerEvent<SVGElement>): PathPoint => {
         const bbox = document.getElementById('canvas')!.getBoundingClientRect();
         return pointerPosToSVGCoord(event.clientX - bbox.left, event.clientY - bbox.top, svgViewBoxZoom, svgViewBoxMin);

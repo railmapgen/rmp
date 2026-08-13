@@ -18,7 +18,6 @@ import { makePoint } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { createStore } from '../redux';
 import { render } from '../test-utils';
-import { CONNECTABLE_MISC_NODE_TYPES } from '../util/connectable-node';
 import { Overlay } from './overlay';
 import { SameStyleLineEndpointOverlay } from './svgs/common/same-style-line-endpoint-overlay';
 import { linePaths, lineStyles } from './svgs/lines/lines';
@@ -33,6 +32,16 @@ const textNode = miscNodes[MiscNodeType.Text];
 const defaultTextOverlay = textNode.overlayComponent;
 const shmetroBasicStation = stations[StationType.ShmetroBasic];
 const defaultShmetroBasicOverlay = shmetroBasicStation.overlayComponent;
+const connectableMiscNodeTypes = [
+    MiscNodeType.Virtual,
+    MiscNodeType.Master,
+    MiscNodeType.Fill,
+    MiscNodeType.LondonArrow,
+    MiscNodeType.ChongqingRTNumLineBadge2021,
+    MiscNodeType.ChongqingRTTextLineBadge2021,
+    MiscNodeType.ChengduRTLineBadge,
+    MiscNodeType.GzmtrLineBadge,
+];
 
 const addLine = (id: string, type: LinePathType) => {
     window.graph.addDirectedEdgeWithKey(id, 'misc_node_a', 'misc_node_b', {
@@ -188,7 +197,7 @@ describe('Overlay', () => {
 
         it('has every connectable miscellaneous node explicitly register the shared endpoint overlay', () => {
             expect(
-                [...CONNECTABLE_MISC_NODE_TYPES].filter(
+                connectableMiscNodeTypes.filter(
                     type => miscNodes[type].overlayComponent !== SameStyleLineEndpointOverlay
                 )
             ).toEqual([]);
