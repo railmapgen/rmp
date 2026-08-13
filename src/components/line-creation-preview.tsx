@@ -6,6 +6,12 @@ import { useRootSelector } from '../redux';
 import { linePaths, lineStyles } from './svgs/lines/lines';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
 
+/**
+ * Transient state shared by the canvas event loop and preview renderer for one line-drawing gesture.
+ *
+ * High-frequency pointer data and path-owned session state stay outside the graph and undo history so cancelling a
+ * gesture cannot leave a partial edge behind. The canvas owns and mutates this object; the preview only reads it.
+ */
 export interface LineDrawingGesture {
     type: LinePathType;
     source: NodeId;
@@ -20,8 +26,21 @@ interface LineCreationPreviewProps {
     gesture?: LineDrawingGesture;
 }
 
+/**
+ * Line-style components require the committed-line pointer callback even though preview geometry is non-interactive.
+ * A stable no-op lets the preview reuse those renderers without entering the line-selection flow.
+ */
 const ignorePointerDown = () => {};
 
+/**
+ * Keeps provisional line rendering on the same path and style registries as committed edges without adding a
+ * temporary edge to the graph.
+ *
+ * Endpoint-derived paths can be generated from registry defaults, while paths with a custom drawing lifecycle remain
+ * authoritative for their preview geometry through the gesture session. This boundary prevents the generic preview
+ * layer from duplicating path-specific interaction state. A gesture is also bound to the path active at pointer-down,
+ * so changing editor mode mid-gesture hides stale geometry instead of reinterpreting it as another path type.
+ */
 export const LineCreationPreview = (props: LineCreationPreviewProps) => {
     const { pointerOffset, gesture } = props;
     const mode = useRootSelector(state => state.runtime.mode);
@@ -30,6 +49,7 @@ export const LineCreationPreview = (props: LineCreationPreviewProps) => {
     const { path: linePath, style: lineStyle } = getLinePathAndStyle(mode);
     const lineStyleAttrs = React.useMemo(() => {
         if (!lineStyle) return;
+        // Registry defaults are shared configuration; clone them before applying the gesture's transient theme.
         const attrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
         // TODO: there should be some way for a style to disable auto theme injection
         if ('color' in attrs && lineStyle !== LineStyleType.River) attrs.color = theme;
@@ -70,6 +90,7 @@ export const LineCreationPreview = (props: LineCreationPreviewProps) => {
     if (gesture?.session) {
         previewPath = gesture.session.getPreviewPath(gesture.pointer);
     } else if (!linePaths[linePath].drawingBehavior) {
+        // A registered drawing behavior must provide a session; its geometry cannot be inferred from two endpoints.
         const previewEdgeAttrs = {
             visible: true,
             zIndex: 0,

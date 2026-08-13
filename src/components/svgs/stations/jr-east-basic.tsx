@@ -2,6 +2,7 @@ import { Flex, NumberInput, NumberInputField } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -510,6 +511,7 @@ const jrEastBasicStationIcon = (
 
 const jrEastBasicStation: Station<JREastBasicStationAttributes> = {
     component: JREastBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: jrEastBasicStationIcon,
     defaultAttrs: defaultJREastBasicStationAttributes,
     attrsComponent: jrEastBasicAttrsComponent,
