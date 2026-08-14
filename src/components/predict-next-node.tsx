@@ -21,8 +21,7 @@ import { AttributesWithColor, dynamicColorInjection } from './panels/details/col
 import { normalizeEdgeAttributes } from './svgs/lines/lines';
 import bezierPath from './svgs/lines/paths/bezier';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
-import type { BezierPathAttributes } from './svgs/lines/paths/bezier-model';
-import diagonalPath, { DiagonalPathAttributes } from './svgs/lines/paths/diagonal';
+import diagonalPath from './svgs/lines/paths/diagonal';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import virtual from './svgs/nodes/virtual';
@@ -32,23 +31,6 @@ const VirtualNodeComponent = virtual.component;
 const SingleColorComponent = singleColor.component;
 const OFFSET = 10;
 type PredictionPathType = LinePathType.Diagonal | LinePathType.Bezier;
-type PreviewPoint = { x: number; y: number };
-type PreviewPath =
-    | { type: LinePathType.Bezier; attrs: BezierPathAttributes }
-    | { type: LinePathType.Diagonal; attrs: DiagonalPathAttributes };
-
-/**
- * Prediction follows the visible canvas context: Diagonal without the map and
- * Bezier over the geographic map.
- */
-const getPredictionPathType = (mapEnabled: boolean): PredictionPathType =>
-    mapEnabled ? LinePathType.Bezier : LinePathType.Diagonal;
-
-/** Keep Diagonal routing attributes out of the persisted Bezier payload. */
-const makePredictionPathAttrs = (pathType: PredictionPathType, startFrom: 'from' | 'to') =>
-    pathType === LinePathType.Diagonal
-        ? { ...structuredClone(diagonalPath.defaultAttrs), startFrom }
-        : structuredClone(bezierPath.defaultAttrs);
 
 const makePredictionEdgeAttrs = (
     pathType: PredictionPathType,
@@ -59,19 +41,15 @@ const makePredictionEdgeAttrs = (
         visible: true,
         zIndex: 0,
         type: pathType,
-        [pathType]: makePredictionPathAttrs(pathType, startFrom),
+        [pathType]:
+            pathType === LinePathType.Diagonal
+                ? { ...structuredClone(diagonalPath.defaultAttrs), startFrom }
+                : structuredClone(bezierPath.defaultAttrs),
         style: LineStyleType.SingleColor,
         [LineStyleType.SingleColor]: { color },
         reconcileId: '',
         parallelIndex: -1,
     }) as EdgeAttributes;
-
-const generatePreviewPath = (source: PreviewPoint, target: PreviewPoint, path: PreviewPath) => {
-    if (path.type === LinePathType.Bezier) {
-        return bezierPath.generatePath(source.x, target.x, source.y, target.y, path.attrs);
-    }
-    return diagonalPath.generatePath(source.x, target.x, source.y, target.y, path.attrs);
-};
 
 const PredictNextNode = () => {
     const dispatch = useRootDispatch();
@@ -92,7 +70,7 @@ const PredictNextNode = () => {
         lastTool,
     } = useRootSelector(state => state.runtime);
     const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
-    const predictionPathType = getPredictionPathType(mapEnabled);
+    const predictionPathType: PredictionPathType = mapEnabled ? LinePathType.Bezier : LinePathType.Diagonal;
     const makeStationName = useMakeStationName();
 
     // must have exactly one selected, checked in the parent component
@@ -206,19 +184,16 @@ const PredictNextNode = () => {
             undefined,
             makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme)
         );
-        const previewPath = { type: predictionPathType, attrs: bezierPreviewAttrs } as const;
-        path1 = generatePreviewPath(curPos, nextPos1, previewPath);
-        path2 = generatePreviewPath(curPos, nextPos2, previewPath);
+        path1 = bezierPath.generatePath(curPos.x, nextPos1.x, curPos.y, nextPos1.y, bezierPreviewAttrs);
+        path2 = bezierPath.generatePath(curPos.x, nextPos2.x, curPos.y, nextPos2.y, bezierPreviewAttrs);
     } else {
-        const path1Attrs = makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme);
-        const path2Attrs = makePredictionEdgeAttrs(predictionPathType, path2StartFrom, mostFrequentTheme);
-        path1 = generatePreviewPath(curPos, nextPos1, {
-            type: predictionPathType,
-            attrs: path1Attrs[LinePathType.Diagonal]!,
+        path1 = diagonalPath.generatePath(curPos.x, nextPos1.x, curPos.y, nextPos1.y, {
+            ...structuredClone(diagonalPath.defaultAttrs),
+            startFrom: path1StartFrom,
         });
-        path2 = generatePreviewPath(curPos, nextPos2, {
-            type: predictionPathType,
-            attrs: path2Attrs[LinePathType.Diagonal]!,
+        path2 = diagonalPath.generatePath(curPos.x, nextPos2.x, curPos.y, nextPos2.y, {
+            ...structuredClone(diagonalPath.defaultAttrs),
+            startFrom: path2StartFrom,
         });
     }
 
