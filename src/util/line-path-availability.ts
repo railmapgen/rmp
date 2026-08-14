@@ -33,19 +33,17 @@ const legacySimplePathAvailableStyles: ReadonlySet<LineStyleType> = new Set([
     LineStyleType.MRTTapeOut,
 ]);
 
-const KNOWN_LINE_PATH_TYPES: readonly unknown[] = Object.values(LinePathType);
-const KNOWN_LINE_STYLE_TYPES: readonly unknown[] = Object.values(LineStyleType);
-
-const isKnownLinePathType = (type: unknown): type is LinePathType => KNOWN_LINE_PATH_TYPES.includes(type);
-
-const isKnownLineStyleType = (style: unknown): style is LineStyleType => KNOWN_LINE_STYLE_TYPES.includes(style);
-
-const isLegacySimplePathCombination = (type: unknown, style: unknown): style is LineStyleType =>
-    type === LinePathType.Simple && isKnownLineStyleType(style) && legacySimplePathAvailableStyles.has(style);
+const isLegacySimplePathCombination = (type: LinePathType, style: LineStyleType): boolean =>
+    type === LinePathType.Simple && legacySimplePathAvailableStyles.has(style);
 
 /** The single authoring-access check for a path/style pair. */
-export const canUseLine = (type: unknown, style: unknown, mapEnabled: boolean, isSubscriber: boolean): boolean => {
-    if (!isKnownLinePathType(type) || !isKnownLineStyleType(style) || style === LineStyleType.Unknown) return false;
+export const canUseLine = (
+    type: LinePathType,
+    style: LineStyleType,
+    mapEnabled: boolean,
+    isSubscriber: boolean
+): boolean => {
+    if (style === LineStyleType.Unknown) return false;
 
     const contextRestrictedPaths = mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS : MAP_NATIVE_LINE_PATHS;
     const pathAllowed =
@@ -65,10 +63,7 @@ export const canUseLineCombination = (
 ): boolean =>
     canUseLine(type, style, mapEnabled, isSubscriber) && lineStyles[style].metadata.supportLinePathType.includes(type);
 
-/**
- * Existing unknown paths/styles remain visible for fallback rendering, but
- * cannot be newly authored through `canUseLine`.
- */
+/** Apply the authoring policy to existing lines without mutating graph data. */
 export const isLinePolicyVisible = (
     attr: Pick<EdgeAttributes, 'type' | 'style'>,
     mapEnabled: boolean,
@@ -76,10 +71,9 @@ export const isLinePolicyVisible = (
 ): boolean => {
     const contextRestrictedPaths = mapEnabled ? DIAGRAM_NATIVE_LINE_PATHS : MAP_NATIVE_LINE_PATHS;
     const pathVisible =
-        !isKnownLinePathType(attr.type) ||
         isSubscriber ||
         isLegacySimplePathCombination(attr.type, attr.style) ||
         (!linePaths[attr.type].isPro && !contextRestrictedPaths.has(attr.type));
-    const styleVisible = !isKnownLineStyleType(attr.style) || isSubscriber || !lineStyles[attr.style].isPro;
+    const styleVisible = isSubscriber || !lineStyles[attr.style].isPro;
     return pathVisible && styleVisible;
 };
