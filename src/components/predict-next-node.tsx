@@ -22,7 +22,8 @@ import { AttributesWithColor, dynamicColorInjection } from './panels/details/col
 import { normalizeEdgeAttributes } from './svgs/lines/lines';
 import bezierPath from './svgs/lines/paths/bezier';
 import { initializeBezierEndpointOffsets } from './svgs/lines/paths/bezier-endpoint';
-import diagonalPath from './svgs/lines/paths/diagonal';
+import type { BezierPathAttributes } from './svgs/lines/paths/bezier-model';
+import diagonalPath, { DiagonalPathAttributes } from './svgs/lines/paths/diagonal';
 import singleColor from './svgs/lines/styles/single-color';
 import miscNodes from './svgs/nodes/misc-nodes';
 import virtual from './svgs/nodes/virtual';
@@ -32,6 +33,10 @@ const VirtualNodeComponent = virtual.component;
 const SingleColorComponent = singleColor.component;
 const OFFSET = 10;
 type PredictionPathType = LinePathType.Diagonal | LinePathType.Bezier;
+type PreviewPoint = { x: number; y: number };
+type PreviewPath =
+    | { type: LinePathType.Bezier; attrs: BezierPathAttributes }
+    | { type: LinePathType.Diagonal; attrs: DiagonalPathAttributes };
 
 /**
  * Prediction follows the visible canvas context: Diagonal without the map and
@@ -61,6 +66,13 @@ const makePredictionEdgeAttrs = (
         reconcileId: '',
         parallelIndex: -1,
     }) as EdgeAttributes;
+
+const generatePreviewPath = (source: PreviewPoint, target: PreviewPoint, path: PreviewPath) => {
+    if (path.type === LinePathType.Bezier) {
+        return bezierPath.generatePath(source.x, target.x, source.y, target.y, path.attrs);
+    }
+    return diagonalPath.generatePath(source.x, target.x, source.y, target.y, path.attrs);
+};
 
 const PredictNextNode = () => {
     const dispatch = useRootDispatch();
@@ -190,24 +202,30 @@ const PredictNextNode = () => {
               : false;
     const path1StartFrom = switchStartFrom ? 'from' : 'to';
     const path2StartFrom = switchStartFrom ? 'to' : 'from';
-    const bezierPreviewAttrs =
-        predictionPathType === LinePathType.Bezier
-            ? initializeBezierEndpointOffsets(
-                  window.graph,
-                  selectedID as NodeId,
-                  undefined,
-                  makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme)
-              )
-            : undefined;
-    const generatePreviewPath = (target: { x: number; y: number }, startFrom: 'from' | 'to') => {
-        if (bezierPreviewAttrs) {
-            return bezierPath.generatePath(curPos.x, target.x, curPos.y, target.y, bezierPreviewAttrs);
-        }
-        const edgeAttrs = makePredictionEdgeAttrs(LinePathType.Diagonal, startFrom, mostFrequentTheme);
-        return diagonalPath.generatePath(curPos.x, target.x, curPos.y, target.y, edgeAttrs[LinePathType.Diagonal]!);
-    };
-    const path1 = generatePreviewPath(nextPos1, path1StartFrom);
-    const path2 = generatePreviewPath(nextPos2, path2StartFrom);
+    let path1;
+    let path2;
+    if (predictionPathType === LinePathType.Bezier) {
+        const bezierPreviewAttrs = initializeBezierEndpointOffsets(
+            window.graph,
+            selectedID as NodeId,
+            undefined,
+            makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme)
+        );
+        const previewPath = { type: predictionPathType, attrs: bezierPreviewAttrs } as const;
+        path1 = generatePreviewPath(curPos, nextPos1, previewPath);
+        path2 = generatePreviewPath(curPos, nextPos2, previewPath);
+    } else {
+        const path1Attrs = makePredictionEdgeAttrs(predictionPathType, path1StartFrom, mostFrequentTheme);
+        const path2Attrs = makePredictionEdgeAttrs(predictionPathType, path2StartFrom, mostFrequentTheme);
+        path1 = generatePreviewPath(curPos, nextPos1, {
+            type: predictionPathType,
+            attrs: path1Attrs[LinePathType.Diagonal]!,
+        });
+        path2 = generatePreviewPath(curPos, nextPos2, {
+            type: predictionPathType,
+            attrs: path2Attrs[LinePathType.Diagonal]!,
+        });
+    }
 
     const handlePointerDown = async (nodeType: NodeType, e: React.PointerEvent<SVGElement>) => {
         if (!canUseLine(predictionPathType, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
