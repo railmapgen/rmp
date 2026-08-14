@@ -49,12 +49,11 @@ describe('contextual line subscription policy', () => {
         }
     });
 
-    it('allows subscribers to author every known path and rejects unknown authoring', () => {
+    it('allows subscribers to author every path', () => {
         for (const type of Object.values(LinePathType)) {
             expect(canUseLinePath(type, false, true)).toBe(true);
             expect(canUseLinePath(type, true, true)).toBe(true);
         }
-        expect(canUseLinePath('future-path', false, true)).toBe(false);
     });
 
     it('combines path and style policy for authoring', () => {
@@ -62,14 +61,12 @@ describe('contextual line subscription policy', () => {
         expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, false)).toBe(false);
         expect(canUseLine(LinePathType.Bezier, LineStyleType.SingleColor, false, true)).toBe(true);
         expect(canUseLineStyle(LineStyleType.Unknown, true)).toBe(false);
-        expect(canUseLine(LinePathType.Diagonal, 'future-style', false, true)).toBe(false);
     });
 
     it('combines authoring policy with path and style compatibility', () => {
         expect(canUseLine(LinePathType.Diagonal, LineStyleType.MRTTapeOut, false, true)).toBe(true);
         expect(canUseLineCombination(LinePathType.Diagonal, LineStyleType.MRTTapeOut, false, true)).toBe(false);
         expect(canUseLineCombination(LinePathType.Simple, LineStyleType.MRTTapeOut, false, false)).toBe(true);
-        expect(canUseLineCombination(LinePathType.Diagonal, 'future-style' as LineStyleType, false, true)).toBe(false);
     });
 
     it.each([false, true])('preserves the legacy free Simple combinations when mapEnabled is %s', mapEnabled => {
@@ -103,18 +100,5 @@ describe('contextual line subscription policy', () => {
             if (previous === undefined) delete style.isPro;
             else style.isPro = previous;
         }
-    });
-
-    it('preserves unknown existing paths for fallback rendering', () => {
-        expect(
-            isLinePolicyVisible(
-                {
-                    type: 'future-path' as LinePathType,
-                    style: LineStyleType.Unknown,
-                },
-                false,
-                false
-            )
-        ).toBe(true);
     });
 });
