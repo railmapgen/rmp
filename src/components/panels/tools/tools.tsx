@@ -113,13 +113,17 @@ const ToolsPanel = () => {
         let { style: currentStyle } = getLinePathAndStyle(mode);
         // When user click the background and mode becomes 'free', we try to recover last used style.
         if (!currentStyle && lastTool) currentStyle = getLinePathAndStyle(lastTool as RuntimeMode).style;
-        // If current style is compatible with new path, keep it; otherwise use SingleColor
-        const newStyle =
-            currentStyle && canUseLineCombination(pathType, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)
-                ? currentStyle
-                : LineStyleType.SingleColor;
-        if (!canUseLineCombination(pathType, newStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) return;
-        dispatch(setMode(`line-${pathType}/${newStyle}`));
+        if (currentStyle && canUseLineCombination(pathType, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
+            dispatch(setMode(`line-${pathType}/${currentStyle}`));
+            return;
+        }
+        if (
+            currentStyle === LineStyleType.SingleColor ||
+            !canUseLineCombination(pathType, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)
+        ) {
+            return;
+        }
+        dispatch(setMode(`line-${pathType}/${LineStyleType.SingleColor}`));
     };
     const handleLineStyle = (styleType: LineStyleType) => {
         let { path: currentPath } = getLinePathAndStyle(mode);
@@ -129,8 +133,10 @@ const ToolsPanel = () => {
         const newPath =
             currentPath && canUseLineCombination(currentPath, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
                 ? currentPath
-                : availableLinePathTypes.find(pathType =>
-                      canUseLineCombination(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
+                : availableLinePathTypes.find(
+                      pathType =>
+                          pathType !== currentPath &&
+                          canUseLineCombination(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
                   );
         if (!newPath) return;
         dispatch(setMode(`line-${newPath}/${styleType}`));
@@ -238,17 +244,23 @@ const ToolsPanel = () => {
 
                             {availableLinePathTypes.map(type => {
                                 const isProLinePath = !canUseLine(type, LineStyleType.SingleColor, mapEnabled, false);
-                                const targetStyle =
-                                    currentStyle &&
-                                    canUseLineCombination(type, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)
-                                        ? currentStyle
-                                        : LineStyleType.SingleColor;
-                                const isLinePathDisabled = !canUseLineCombination(
-                                    type,
-                                    targetStyle,
-                                    mapEnabled,
-                                    activeSubscriptions.RMP_CLOUD
-                                );
+                                const canUseCurrentStyle =
+                                    !!currentStyle &&
+                                    canUseLineCombination(
+                                        type,
+                                        currentStyle,
+                                        mapEnabled,
+                                        activeSubscriptions.RMP_CLOUD
+                                    );
+                                const isLinePathDisabled =
+                                    !canUseCurrentStyle &&
+                                    (currentStyle === LineStyleType.SingleColor ||
+                                        !canUseLineCombination(
+                                            type,
+                                            LineStyleType.SingleColor,
+                                            mapEnabled,
+                                            activeSubscriptions.RMP_CLOUD
+                                        ));
 
                                 return (
                                     <Flex key={type} w="100%" align="stretch">
