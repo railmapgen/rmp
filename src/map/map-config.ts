@@ -30,7 +30,7 @@ export const MAP_WORLD_ORIGIN = {
     y: 856_904.1184932864,
 } as const;
 
-export const MAP_WORLD_PIXELS_PER_GRAPH_UNIT = 0.5;
+export const MAP_WORLD_PIXELS_PER_GRAPH_UNIT = 1;
 
 // These values describe geographic scale in the stable world-pixel space.
 // Deriving graph-space zoom from the coordinate ratio keeps the same visible
