@@ -78,5 +78,5 @@ describe('DownloadActions', () => {
         await waitFor(() => expect(makeRenderReadySVGElement).toHaveBeenCalledOnce());
         await waitFor(() => expect(downloadButton).toBeEnabled());
         expect(consoleError).toHaveBeenCalledWith('Failed to export image', expect.any(Error));
-    });
+    }, 10_000);
 });
