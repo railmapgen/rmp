@@ -73,12 +73,19 @@ export default function LineTypeSection() {
         linePathType =>
             !canUseLineCombination(linePathType, currentLineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
     );
-    const disabledLineStyleOptions = Object.values(LineStyleType)
-        .filter(isVisibleLineStyle)
-        .filter(
-            lineStyleType =>
-                !canUseLineCombination(currentLinePathType, lineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
-        );
+    const disabledLineStyleOptions = linePaths[currentLinePathType]
+        ? Object.values(LineStyleType)
+              .filter(isVisibleLineStyle)
+              .filter(
+                  lineStyleType =>
+                      !canUseLineCombination(
+                          currentLinePathType,
+                          lineStyleType,
+                          mapEnabled,
+                          activeSubscriptions.RMP_CLOUD
+                      )
+              )
+        : [];
 
     const baseReconciledLineID = getBaseReconciledLineID(graph.current, selectedFirst as LineId);
     const isReconciledStyleDisabled = baseReconciledLineID !== selectedFirst;
