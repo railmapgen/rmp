@@ -79,7 +79,7 @@ export default function DownloadActions() {
     };
     const [svgVersion, setSvgVersion] = React.useState(2 as 1.1 | 2);
     const [maxArea, setMaxArea] = React.useState({ width: 1, height: 1, benchmark: 0.001 });
-    const [scale, setScale] = React.useState(200);
+    const [scale, setScale] = React.useState(param.present.mapEnabled ? 400 : 200);
     const scales = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
     const [resvgScaleOptions, setResvgScaleOptions] = React.useState<number[]>([]);
@@ -128,6 +128,8 @@ export default function DownloadActions() {
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
     const isRmpInfoForced = shouldForceRmpInfo(existsNodeTypes, RMP_EXPORT);
+
+    React.useEffect(() => setScale(param.present.mapEnabled ? 400 : 200), [param.present.mapEnabled]);
 
     // calculate the max canvas area the current browser can support
     React.useEffect(() => {
