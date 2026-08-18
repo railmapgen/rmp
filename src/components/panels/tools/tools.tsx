@@ -37,7 +37,7 @@ import {
 } from '../../../redux/app/app-slice';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { canUseLine, canUseLineCombination } from '../../../util/line-path-availability';
+import { canUseLineCombination, requiresSubscriptionForLinePath } from '../../../util/line-path-availability';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -243,7 +243,7 @@ const ToolsPanel = () => {
                             </Flex>
 
                             {availableLinePathTypes.map(type => {
-                                const isProLinePath = !canUseLine(type, LineStyleType.SingleColor, mapEnabled, false);
+                                const isProLinePath = requiresSubscriptionForLinePath(type, mapEnabled);
                                 const canUseCurrentStyle =
                                     !!currentStyle &&
                                     canUseLineCombination(

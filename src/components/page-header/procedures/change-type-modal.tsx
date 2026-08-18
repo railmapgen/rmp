@@ -37,7 +37,7 @@ import {
 } from '../../../util/change-types';
 import { findThemes } from '../../../util/color';
 import { usePaletteTheme } from '../../../util/hooks';
-import { canUseLine } from '../../../util/line-path-availability';
+import { canUseLinePath, canUseLineStyle } from '../../../util/line-path-availability';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
@@ -102,14 +102,13 @@ export const ChangeTypeModal = (props: {
         ) as { [k in StationType]: string }),
     };
     const defaultNewLinePathType =
-        Object.values(LinePathType).find(type =>
-            canUseLine(type, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)
-        ) ?? LinePathType.Diagonal;
+        Object.values(LinePathType).find(type => canUseLinePath(type, mapEnabled, activeSubscriptions.RMP_CLOUD)) ??
+        LinePathType.Diagonal;
     const disabledTargetLinePathOptions = Object.values(LinePathType).filter(
-        type => !canUseLine(type, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)
+        type => !canUseLinePath(type, mapEnabled, activeSubscriptions.RMP_CLOUD)
     );
     const disabledTargetLineStyleOptions = Object.values(LineStyleType).filter(
-        style => !canUseLine(defaultNewLinePathType, style, mapEnabled, activeSubscriptions.RMP_CLOUD)
+        style => !canUseLineStyle(style, activeSubscriptions.RMP_CLOUD)
     );
 
     const defaultSelectedTheme: ChangeTypeTheme = {
