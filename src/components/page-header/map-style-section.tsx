@@ -166,7 +166,6 @@ export const MapStyleSection = () => {
                         variant="ghost"
                         aria-label={t('map.style.reset')}
                         icon={<MdRestartAlt />}
-                        isDisabled={!isSubscriber}
                         onClick={() => saveStyle(structuredClone(DEFAULT_MAP_STYLE))}
                     />
                 </Tooltip>

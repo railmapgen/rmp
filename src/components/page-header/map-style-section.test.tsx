@@ -1,6 +1,7 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { createStore } from '../../redux';
 import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { render } from '../../test-utils';
@@ -134,7 +135,8 @@ describe('MapStyleSection', () => {
     it('lets free users toggle labels and railway layers while keeping appearance controls subscribed', () => {
         const store = renderSection(false);
 
-        expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled();
+        const resetButton = screen.getByRole('button', { name: 'Reset' });
+        expect(resetButton).toBeEnabled();
 
         const roadRow = within(screen.getByTestId('map-style-road-path'));
         expect(roadRow.getByRole('checkbox', { name: 'Path Show' })).toBeDisabled();
@@ -161,5 +163,8 @@ describe('MapStyleSection', () => {
         expect(majorPlaceRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
         fireEvent.click(majorPlaceSwitch);
         expect(store.getState().param.present.mapStyle.labels.categories['place-major'].enabled).toBe(false);
+
+        fireEvent.click(resetButton);
+        expect(store.getState().param.present.mapStyle).toEqual(DEFAULT_MAP_STYLE);
     });
 });

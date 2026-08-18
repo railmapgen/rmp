@@ -80,7 +80,7 @@ export default function DownloadActions() {
         svg: t('header.download.svg'),
     };
     const [svgVersion, setSvgVersion] = React.useState(2 as 1.1 | 2);
-    const [scale, setScale] = React.useState(200);
+    const [scale, setScale] = React.useState(param.present.mapEnabled ? 400 : 200);
     const scaleOptions: { [k: number]: string } = Object.fromEntries(PNG_EXPORT_SCALES.map(v => [v, `${v}%`]));
     const [isCanvasSizeSupported, setIsCanvasSizeSupported] = React.useState<boolean>();
     const [isTransparent, setIsTransparent] = React.useState(false);
@@ -135,6 +135,11 @@ export default function DownloadActions() {
     const [isDownloadRunning, setIsDownloadRunning] = React.useState(false);
     const [isToRmgOpen, setIsToRmgOpen] = React.useState(false);
     const isRmpInfoForced = shouldForceRmpInfo(existsNodeTypes, RMP_EXPORT);
+
+    React.useEffect(() => {
+        setScale(param.present.mapEnabled ? 400 : 200);
+        setIsCanvasSizeSupported(undefined);
+    }, [param.present.mapEnabled]);
 
     React.useEffect(() => {
         if (!isDownloadModalOpen || format !== 'png') return;

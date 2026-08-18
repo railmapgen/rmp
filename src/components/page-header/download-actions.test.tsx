@@ -1,6 +1,6 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { MultiDirectedGraph } from 'graphology';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
 import { render } from '../../test-utils';
@@ -48,6 +48,33 @@ describe('DownloadActions', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+    });
+
+    it.each([
+        [false, '200'],
+        [true, '400'],
+    ])('uses the mapEnabled=%s image scale default of %s%%', async (mapEnabled, expectedScale) => {
+        const initialParam = createStore().getState().param;
+        const testStore = createStore({
+            param: {
+                ...initialParam,
+                present: { ...initialParam.present, mapEnabled },
+            },
+        });
+
+        render(
+            <RmgThemeProvider>
+                <DownloadActions />
+            </RmgThemeProvider>,
+            { store: testStore }
+        );
+
+        fireEvent.click(document.querySelector<HTMLButtonElement>('#menu-button-download')!);
+        fireEvent.click(await screen.findByText('Export image'));
+        await waitFor(() => expect(testExportCanvasSize).toHaveBeenCalledOnce());
+
+        const scaleField = screen.getByRole('group', { name: 'Scale' });
+        expect(within(scaleField).getByRole('combobox')).toHaveValue(expectedScale);
     });
 
     it('clears the running state when preparing the SVG fails', async () => {
