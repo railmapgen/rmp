@@ -4,12 +4,15 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
+import { setFullState as setTimelineFullState } from '../../redux/timeline/timeline-slice';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
+import { normalizeTimelineDocument } from '../../util/timeline';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
@@ -59,10 +62,13 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleOpenWork = async (rmpSave: RMPSave) => {
         // works may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
+        const { version, images, timeline, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
+        dispatch(
+            setTimelineFullState({ present: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()) })
+        );
 
         // reset graph with new data
         graph.current.clear();

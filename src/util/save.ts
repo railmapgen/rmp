@@ -39,6 +39,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { TimelineDocument } from '../constants/timeline';
 import { ParamState } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
@@ -54,10 +55,11 @@ export interface RMPSave {
     graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     svgViewBoxZoom: number;
     svgViewBoxMin: { x: number; y: number };
+    timeline?: TimelineDocument;
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 77;
+export const CURRENT_VERSION = 78;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -165,9 +167,14 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 /**
  * Return a valid save string from ParamState.
  */
-export const stringifyParam = (paramState: ParamState) => {
+export const stringifyParam = (
+    paramState: ParamState,
+    timeline: TimelineDocument,
+    images?: { id: string; base64: string }[]
+) => {
     const { present, past, future, ...param } = paramState;
-    const save: RMPSave = { ...param, graph: present, version: CURRENT_VERSION };
+    const save: RMPSave = { ...param, graph: present, timeline, version: CURRENT_VERSION };
+    if (images) save.images = images;
     return JSON.stringify(save);
 };
 
@@ -1034,4 +1041,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    77: param =>
+        // Bump save version to add top-level timeline data to the project save.
+        JSON.stringify({ ...JSON.parse(param), version: 78 }),
 };
