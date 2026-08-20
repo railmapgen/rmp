@@ -270,7 +270,7 @@ describe('MapTileController', () => {
         svg.remove();
     });
 
-    it('mounts SVG for cache misses but returns to cached tiles without showing SVG', async () => {
+    it('mounts SVG before cached raster work and keeps it visible until decode', async () => {
         stubAnimationFrame();
         const NativeUrl = URL;
         class TestUrl extends NativeUrl {}
@@ -371,18 +371,31 @@ describe('MapTileController', () => {
         controller.setInteractionActive(true);
         controller.updateViewport({ ...initialViewport, x: 1_000_000, y: 1_000_000 });
         await vi.waitFor(() => expect(root.querySelector('.rmp-map-tile')).toBeNull());
+        let resolveReturnedRaster: (blob: Blob | undefined) => void = () => undefined;
+        rasterCache.getRaster.mockImplementationOnce(
+            () =>
+                new Promise<Blob | undefined>(resolve => {
+                    resolveReturnedRaster = resolve;
+                })
+        );
         controller.updateViewport(initialViewport);
-        await vi.waitFor(() => expect(root.querySelector('[data-map-raster]')).not.toBeNull());
+        await vi.waitFor(() => expect(root.querySelector('.rmp-map-tile')).not.toBeNull());
         svgTile = root.querySelector<SVGSVGElement>('.rmp-map-tile')!;
+        expect(svgTile.style.display).toBe('');
+        expect(root.querySelector('[data-map-raster]')).toBeNull();
+        expect(rasterCache.getRaster).toHaveBeenCalledTimes(cacheReadsBeforeReturn);
+
+        controller.setInteractionActive(false);
+        await vi.waitFor(() => expect(rasterCache.getRaster).toHaveBeenCalledTimes(cacheReadsBeforeReturn + 1));
+        resolveReturnedRaster(new Blob(['cached'], { type: 'image/webp' }));
+        await vi.waitFor(() => expect(root.querySelector('[data-map-raster]')).not.toBeNull());
         const returnedRaster = root.querySelector<SVGImageElement>('[data-map-raster]')!;
-        expect(rasterCache.getRaster).toHaveBeenCalledTimes(cacheReadsBeforeReturn + 1);
         expect(rasterizer.render).toHaveBeenCalledOnce();
-        expect(svgTile.style.display).toBe('none');
+        expect(svgTile.style.display).toBe('');
         expect(returnedRaster.style.visibility).toBe('hidden');
         returnedRaster.dispatchEvent(new Event('load'));
         expect(returnedRaster.style.visibility).toBe('');
         expect(svgTile.style.display).toBe('none');
-        controller.setInteractionActive(false);
 
         controller.updateStyle('[data-map-layer] .rmp-map-tile .road { stroke: #abcdef; }');
         expect(root.querySelector('[data-map-raster]')).toBeNull();

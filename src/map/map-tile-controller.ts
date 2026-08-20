@@ -103,9 +103,6 @@ interface MountQueueEntry {
     generation: number;
     request: TileRequest;
     tile: SVGSVGElement;
-    rasterCacheRevision?: number;
-    rasterUnavailable?: boolean;
-    raster?: Blob;
 }
 
 export interface MapTileControllerOptions {
@@ -672,23 +669,14 @@ export class MapTileController {
     }
 
     /**
-     * Separates async decode from frame-batched mounting and captures the current
-     * level generation so a late completion cannot reintroduce stale geometry.
+     * Mounts the authoritative SVG independently from optional raster-cache work,
+     * while capturing the generation so late completions cannot restore stale geometry.
      */
     private requestTile(request: TileRequest) {
         const generation = this.generation;
-        const rasterRevision = this.rasterRevision;
-        const session = this.rasterEnabled ? this.sourceSession : undefined;
-        const styleKey = this.styleKey;
-        const styleCss = this.styleCss;
         this.pending.add(request.key);
-        Promise.all([
-            this.loadTileTemplate(request),
-            session
-                ? this.loadCachedRaster(session, styleKey, styleCss, request.key)
-                : Promise.resolve<Blob | null | undefined>(undefined),
-        ])
-            .then(([template, raster]) => {
+        this.loadTileTemplate(request)
+            .then(template => {
                 if (this.disposed || generation !== this.generation) return;
                 if (!this.desired.has(request.key)) {
                     this.pending.delete(request.key);
@@ -698,23 +686,7 @@ export class MapTileController {
                 // The cache retains an unmounted template; every appearance gets an independent DOM node.
                 const tile = template.cloneNode(true) as SVGSVGElement;
                 this.positionTile(tile, request);
-                const currentSession = this.sourceSession;
-                const rasterCacheIsCurrent =
-                    this.rasterEnabled &&
-                    session !== undefined &&
-                    currentSession !== undefined &&
-                    rasterRevision === this.rasterRevision &&
-                    currentSession.sourceKey === session.sourceKey &&
-                    currentSession.epoch === session.epoch &&
-                    currentSession.expiresAt > this.now();
-                this.mountQueue.push({
-                    generation,
-                    request,
-                    tile,
-                    rasterCacheRevision: rasterCacheIsCurrent ? rasterRevision : undefined,
-                    rasterUnavailable: rasterCacheIsCurrent && raster === null,
-                    raster: rasterCacheIsCurrent ? (raster ?? undefined) : undefined,
-                });
+                this.mountQueue.push({ generation, request, tile });
                 this.scheduleMount();
             })
             .catch(error => {
@@ -737,7 +709,7 @@ export class MapTileController {
             // A fragment turns a burst of completed requests into one mutation of the live SVG tree.
             const fragment = document.createDocumentFragment();
             for (const item of this.mountQueue.splice(0)) {
-                const { generation, request, tile, rasterCacheRevision, rasterUnavailable, raster } = item;
+                const { generation, request, tile } = item;
                 if (generation !== this.generation) continue;
                 if (!this.desired.has(request.key)) {
                     this.pending.delete(request.key);
@@ -745,9 +717,7 @@ export class MapTileController {
                 }
                 if (!this.nodes.has(request.key)) {
                     fragment.append(tile);
-                    const mounted = { request, svg: tile, rasterCacheRevision, rasterUnavailable };
-                    this.nodes.set(request.key, mounted);
-                    if (raster) this.applyRaster(mounted, raster, true);
+                    this.nodes.set(request.key, { request, svg: tile });
                 }
                 this.pending.delete(request.key);
                 this.settled.add(request.key);
@@ -1098,7 +1068,7 @@ export class MapTileController {
         return new XMLSerializer().serializeToString(rasterRoot);
     }
 
-    private applyRaster(mounted: MountedTile, blob: Blob, hideSvgWhileLoading = false) {
+    private applyRaster(mounted: MountedTile, blob: Blob) {
         if (!this.rasterEnabled || mounted.raster || typeof URL.createObjectURL !== 'function') return;
         const session = this.sourceSession;
         const styleKey = this.styleKey;
@@ -1110,7 +1080,6 @@ export class MapTileController {
         image.style.visibility = 'hidden';
         image.setAttribute('decoding', 'async');
         image.setAttribute('href', objectUrl);
-        if (hideSvgWhileLoading) mounted.svg.style.display = 'none';
         image.addEventListener(
             'load',
             () => {
