@@ -22,6 +22,7 @@ import {
     makeRoundedTurnPath,
     makeSharpTurnPath,
 } from '../constants/path';
+import { distanceBetweenPoints } from './geometry';
 
 /** Narrow raw commands back to the small SVG subset used by the structured path model. */
 const isLineTo = (command: PathCommand): command is LineTo => command.cmd === 'L';
@@ -29,6 +30,14 @@ const isCubicTo = (command: PathCommand): command is CubicTo => command.cmd === 
 const isClosePath = (command: PathCommand): command is ClosePath => command.cmd === 'Z';
 const isLineOnlyOpenPath = (commands: OpenPathCommands): commands is readonly [MoveTo, LineTo, ...LineTo[]] =>
     commands.slice(1).every(isLineTo);
+const hasNoPolylineBacktracking = (points: readonly PathPoint[]) => {
+    const chordLength = distanceBetweenPoints(points[0]!, points.at(-1)!);
+    const polylineLength = points
+        .slice(1)
+        .reduce((length, point, index) => length + distanceBetweenPoints(points[index]!, point), 0);
+    const tolerance = 1e-9 * Math.max(1, chordLength, polylineLength);
+    return Math.abs(polylineLength - chordLength) <= tolerance;
+};
 
 /**
  * Reconstruct the narrowest path kind from a command list.
@@ -46,10 +55,8 @@ export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath =
         return makeCubicPath(commands[0].to, commands[1].c1, commands[1].c2, commands[1].to);
     }
 
-    if (isLineOnlyOpenPath(commands) && arePointsCollinear(commands.map(command => command.to))) {
-        // Collapsing a collinear chain that reverses direction would change the rendered geometry,
-        // but the path generators used in this project do not emit those non-monotonic cases.
-        // non-monotonic example: A(0) -> B(10) -> C(5)
+    const points = commands.map(command => command.to);
+    if (isLineOnlyOpenPath(commands) && arePointsCollinear(points) && hasNoPolylineBacktracking(points)) {
         return makeLinearPath(commands[0].to, commands.at(-1)!.to);
     }
 
