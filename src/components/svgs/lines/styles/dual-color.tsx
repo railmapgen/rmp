@@ -161,6 +161,7 @@ const dualColor: LineStyle<DualColorAttributes> = {
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

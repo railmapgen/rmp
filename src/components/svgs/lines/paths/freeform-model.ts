@@ -1,5 +1,5 @@
 import { PathPoint } from '../../../../constants/path';
-import { distanceBetweenPoints as distance } from '../../../../util/geometry';
+import { distanceBetweenPoints as distance, fromChordCoordinates, toChordCoordinates } from '../../../../util/geometry';
 import { clamp, isFiniteNumber } from '../../../../util/number';
 
 type FreeformStartCap = 'round' | 'flat';
@@ -71,6 +71,8 @@ export const MIN_FREEFORM_WIDTH = 0.5;
 export const DEFAULT_FREEFORM_WIDTH = 5;
 export const DEFAULT_FREEFORM_SMOOTHING = 0.65;
 export const FREEFORM_EPSILON = 1e-6;
+
+const FREEFORM_SOURCE = { x: 0, y: 0 };
 
 export const defaultFreeformPathAttributes: FreeformPathAttributes = {
     points: [
@@ -171,20 +173,15 @@ export const normalizeFreeformPathAttributes = (value: unknown): FreeformPathAtt
  * The source-to-target vector is the local x basis and its 90-degree rotation is the local y basis. Because both
  * basis vectors have the chord length, persisted coordinates scale and rotate with the connected endpoints.
  */
-const resolveFreeformPoint = (point: PathPoint, targetRelative: PathPoint): PathPoint => ({
-    x: point.x * targetRelative.x - point.y * targetRelative.y,
-    y: point.x * targetRelative.y + point.y * targetRelative.x,
-});
+export const resolveFreeformPoint = (point: PathPoint, targetRelative: PathPoint): PathPoint =>
+    fromChordCoordinates(point, FREEFORM_SOURCE, targetRelative);
 
 /** Convert one source-local SVG point back into the persisted chord-relative percentage coordinate system. */
 export const persistFreeformPoint = (point: PathPoint, targetRelative: PathPoint): PathPoint | undefined => {
     const lengthSquared = targetRelative.x * targetRelative.x + targetRelative.y * targetRelative.y;
     if (lengthSquared < FREEFORM_EPSILON * FREEFORM_EPSILON) return undefined;
 
-    return {
-        x: (point.x * targetRelative.x + point.y * targetRelative.y) / lengthSquared,
-        y: (-point.x * targetRelative.y + point.y * targetRelative.x) / lengthSquared,
-    };
+    return toChordCoordinates(point, FREEFORM_SOURCE, targetRelative);
 };
 
 /**
@@ -198,7 +195,7 @@ export const resolveFreeformPathAttributes = (
     targetRelative: PathPoint
 ): ResolvedFreeformPathAttributes | undefined => {
     const attrs = normalizeFreeformPathAttributes(value);
-    if (!attrs || distance({ x: 0, y: 0 }, targetRelative) < FREEFORM_EPSILON) return undefined;
+    if (!attrs || distance(FREEFORM_SOURCE, targetRelative) < FREEFORM_EPSILON) return undefined;
 
     return {
         ...attrs,

@@ -7,6 +7,7 @@ import {
     makeCompoundClosedAreaPath,
     makeClosedAreaPath,
     makeEmptyOpenPath,
+    makeCubicPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
@@ -106,6 +107,7 @@ describe('getEndPoint', () => {
 describe('path kind guards', () => {
     it('distinguishes open centerlines from filled areas', () => {
         const open = makeLinearPath(makePoint(0, 0), makePoint(10, 0));
+        const cubic = makeCubicPath(makePoint(0, 0), makePoint(3, 5), makePoint(7, 5), makePoint(10, 0));
         const area = makeClosedAreaPath([
             moveTo(makePoint(0, 0)),
             lineTo(makePoint(10, 0)),
@@ -114,6 +116,7 @@ describe('path kind guards', () => {
         ]);
 
         expect(isOpenPath(open)).toBe(true);
+        expect(isOpenPath(cubic)).toBe(true);
         expect(isAreaPath(open)).toBe(false);
         expect(isOpenPath(area)).toBe(false);
         expect(isAreaPath(area)).toBe(true);

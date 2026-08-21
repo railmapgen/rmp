@@ -77,6 +77,7 @@ const londonIFSCloudCableCar: LineStyle<LondonIFSCloudCableCarAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

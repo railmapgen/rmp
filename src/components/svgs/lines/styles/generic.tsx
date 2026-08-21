@@ -93,6 +93,20 @@ const defaultGenericAttributes: GenericAttributes = {
     layers: [makeDefaultGenericLayer()],
 };
 
+const isSameGenericStyle = (a: GenericAttributes, b: GenericAttributes) =>
+    a.layers.length === b.layers.length &&
+    a.layers.every((layer, index) => {
+        const other = b.layers[index];
+        return (
+            layer.color[2] === other.color[2] &&
+            layer.width === other.width &&
+            layer.opacity === other.opacity &&
+            layer.linecap === other.linecap &&
+            layer.dash === other.dash &&
+            layer.gap === other.gap
+        );
+    });
+
 interface GenericLayerItemProps {
     index: number;
     total: number;
@@ -321,6 +335,8 @@ const generic: LineStyle<GenericAttributes> = {
     component: Generic,
     defaultAttrs: defaultGenericAttributes,
     attrsComponent: genericAttrsComponent,
+    // Layer IDs are editor identities; only properties that affect rendering define whether two Generic styles match.
+    isSameStyle: isSameGenericStyle,
     metadata: {
         displayName: 'panel.details.lines.generic.displayName',
         supportLinePathType: [
@@ -330,6 +346,7 @@ const generic: LineStyle<GenericAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

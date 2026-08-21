@@ -602,6 +602,11 @@
                 "rayGuided": {
                     "displayName": "任意角度経路"
                 },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "線方向の位置",
+                    "normal": "法線オフセット"
+                },
                 "freeform": {
                     "displayName": "フリーフォーム経路",
                     "outlineSettingsUnavailable": "可変幅および両端のキャップ設定は、現在まだ利用できません。",

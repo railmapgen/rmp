@@ -16,6 +16,7 @@ import {
     RoundedTurnPath,
     ShortOpenPath,
     makeComplexOpenPath,
+    makeCubicPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
@@ -39,6 +40,10 @@ const isLineOnlyOpenPath = (commands: OpenPathCommands): commands is readonly [M
 export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath => {
     if (commands.length === 2 && isLineTo(commands[1])) {
         return makeLinearPath(commands[0].to, commands[1].to);
+    }
+
+    if (commands.length === 2 && isCubicTo(commands[1])) {
+        return makeCubicPath(commands[0].to, commands[1].c1, commands[1].c2, commands[1].to);
     }
 
     if (isLineOnlyOpenPath(commands) && arePointsCollinear(commands.map(command => command.to))) {
@@ -78,7 +83,11 @@ export const makeOpenPathFromCommands = (commands: OpenPathCommands): OpenPath =
 
 /** Narrow the renderer-wide path union before applying algorithms that require a source-to-target centerline. */
 export const isOpenPath = (path: Path): path is OpenPath =>
-    path.kind === 'ml' || path.kind === 'mll' || path.kind === 'mlcl' || path.kind === 'complex-open';
+    path.kind === 'ml' ||
+    path.kind === 'mc' ||
+    path.kind === 'mll' ||
+    path.kind === 'mlcl' ||
+    path.kind === 'complex-open';
 
 /** Filled paths are painted as areas rather than stroked as centerlines. */
 export const isAreaPath = (path: Path): path is ClosedAreaPath | CompoundClosedAreaPath =>

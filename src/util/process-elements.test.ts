@@ -43,7 +43,35 @@ const makeRiverLineAttrs = (reconcileId: string): EdgeAttributes => ({
     },
 });
 
+const makeBezierLineAttrs = (normal: number): EdgeAttributes => ({
+    ...makeLineAttrs(''),
+    type: LinePathType.Bezier,
+    [LinePathType.Bezier]: { along: 0.5, normal },
+});
+
 describe('getLines', () => {
+    it('renders a straight Bezier as a linear path without changing its authored type', () => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 0, 0);
+        addNode(graph, 'misc_node_b', 100, 0);
+        graph.addDirectedEdgeWithKey('line_a', 'misc_node_a', 'misc_node_b', makeBezierLineAttrs(0));
+
+        const [element] = getLines(graph);
+
+        expect(element.line?.path.kind).toBe('ml');
+        expect(element.line?.attr.type).toBe(LinePathType.Bezier);
+        expect(graph.getEdgeAttribute('line_a', LinePathType.Bezier)).toEqual({ along: 0.5, normal: 0 });
+    });
+
+    it('keeps a shallow unsnapped Bezier as a cubic path', () => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 0, 0);
+        addNode(graph, 'misc_node_b', 100, 0);
+        graph.addDirectedEdgeWithKey('line_a', 'misc_node_a', 'misc_node_b', makeBezierLineAttrs(Number.EPSILON));
+
+        expect(getLines(graph)[0].line?.path.kind).toBe('mc');
+    });
+
     it('returns dangling reconcile lines with the unknown style', () => {
         const graph = makeGraph();
         addNode(graph, 'misc_node_a', 0, 0);

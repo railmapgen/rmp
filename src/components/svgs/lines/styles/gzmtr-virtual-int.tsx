@@ -45,6 +45,7 @@ const gzmtrVirtualInt: LineStyle<GzmtrVirtualIntAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

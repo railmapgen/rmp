@@ -599,6 +599,11 @@
                 "rayGuided": {
                     "displayName": "任意角度線段"
                 },
+                "bezier": {
+                    "displayName": "貝塞爾曲線",
+                    "along": "沿線位置",
+                    "normal": "法向偏移"
+                },
                 "freeform": {
                     "displayName": "自由繪製線段",
                     "outlineSettingsUnavailable": "可變寬度與兩端端頭設定暫未開放。",

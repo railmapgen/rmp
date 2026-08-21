@@ -600,6 +600,11 @@
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
                 },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along position",
+                    "normal": "Normal offset"
+                },
                 "freeform": {
                     "displayName": "Freeform path",
                     "outlineSettingsUnavailable": "Variable width and start/end cap settings are not available yet.",

@@ -59,4 +59,12 @@ describe('reconcileSelectedEdges', () => {
         expect(graph.getEdgeAttribute('line_a', 'reconcileId')).toBe('');
         expect(graph.getEdgeAttribute('line_b', 'reconcileId')).toBe('');
     });
+
+    it('does not reconcile Bezier paths even when their style supports reconcile', () => {
+        const graph = makeGraph(LinePathType.Bezier);
+
+        expect(reconcileSelectedEdges(graph, new Set(['line_a', 'line_b']))).toBe(false);
+        expect(graph.getEdgeAttribute('line_a', 'reconcileId')).toBe('');
+        expect(graph.getEdgeAttribute('line_b', 'reconcileId')).toBe('');
+    });
 });

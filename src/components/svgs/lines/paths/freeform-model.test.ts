@@ -59,6 +59,8 @@ describe('freeform path model', () => {
             endCap: 'arrow',
             arrow: { length: 12, width: 9 },
         });
+        expect(resolveFreeformPathAttributes(persisted, { x: 0, y: 0 })).toBeUndefined();
+        expect(persistFreeformPathAttributes(resolved, { x: 0, y: 0 })).toBeUndefined();
     });
 
     it('provides a usable width stop and outline defaults when they are absent', () => {

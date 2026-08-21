@@ -70,6 +70,7 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

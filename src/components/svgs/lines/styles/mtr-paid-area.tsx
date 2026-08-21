@@ -45,6 +45,7 @@ const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

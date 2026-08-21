@@ -90,6 +90,11 @@ export interface LinearPath extends BasePath<readonly [MoveTo, LineTo]> {
     readonly kind: 'ml';
 }
 
+/** Single cubic Bezier open path: M C. */
+export interface CubicPath extends BasePath<readonly [MoveTo, CubicTo]> {
+    readonly kind: 'mc';
+}
+
 /** Sharp corner open path: `M L L`. */
 export interface SharpTurnPath extends BasePath<readonly [MoveTo, LineTo, LineTo]> {
     readonly kind: 'mll';
@@ -116,7 +121,7 @@ export interface CompoundClosedAreaPath extends BasePath<CompoundClosedAreaComma
     readonly subpaths: readonly [ClosedSubpathCommands, ...ClosedSubpathCommands[]];
 }
 
-export type OpenPath = LinearPath | SharpTurnPath | RoundedTurnPath | ComplexOpenPath;
+export type OpenPath = LinearPath | CubicPath | SharpTurnPath | RoundedTurnPath | ComplexOpenPath;
 
 export type Path = OpenPath | ClosedAreaPath | CompoundClosedAreaPath | EmptyOpenPath;
 
@@ -178,6 +183,9 @@ const makeBasePath = <TKind extends Path['kind'], TCommands extends readonly Pat
 /** Convenience constructors keep the structured shape and serialized SVG path in sync. */
 export const makeLinearPath = (start: PathPoint, end: PathPoint): LinearPath =>
     makeBasePath('ml', [moveTo(start), lineTo(end)] as const);
+
+export const makeCubicPath = (start: PathPoint, c1: PathPoint, c2: PathPoint, end: PathPoint): CubicPath =>
+    makeBasePath('mc', [moveTo(start), cubicTo(c1, c2, end)] as const);
 
 export const makeSharpTurnPath = (start: PathPoint, corner: PathPoint, end: PathPoint): SharpTurnPath =>
     makeBasePath('mll', [moveTo(start), lineTo(corner), lineTo(end)] as const);

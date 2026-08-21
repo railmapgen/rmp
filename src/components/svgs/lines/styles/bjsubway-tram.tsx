@@ -73,6 +73,7 @@ const bjsubwayTram: LineStyle<BjsubwayTramAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

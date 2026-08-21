@@ -188,6 +188,7 @@ const mrtTapeOut: LineStyle<MRTTapeOutAttributes> = {
     pathGenerator: mrtTapeOutPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.mrtTapeOut.displayName',
+        // Bezier needs arc-length splitting here; otherwise color B completely covers color A.
         supportLinePathType: [LinePathType.Simple],
         supportsReconcile: true,
     },

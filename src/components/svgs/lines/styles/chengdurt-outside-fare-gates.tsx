@@ -52,6 +52,7 @@ const chengduRTOutsideFareGates: LineStyle<ChengduRTOutsideFareGatesAttributes> 
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },
