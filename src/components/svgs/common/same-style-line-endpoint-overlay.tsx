@@ -278,7 +278,7 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
                                 </linearGradient>
                             </defs>
                         )}
-                        {/* Only the painted ring receives pointer events, leaving the center available for node drag. */}
+                        {/* The visible control interior and stroke both receive pointer events for a forgiving hitbox. */}
                         <circle
                             r={controlRadius}
                             fill="none"
@@ -293,7 +293,7 @@ export const SameStyleLineEndpointOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin
                             stroke={colors.length > 1 ? `url(#${gradientId})` : colors[0]}
                             strokeWidth={controlStrokeWidth}
                             fill="none"
-                            pointerEvents="stroke"
+                            pointerEvents="all"
                             cursor={isDragging ? 'grabbing' : 'grab'}
                             onPointerDown={event => handlePointerDown(group, event)}
                             onPointerMove={handlePointerMove}

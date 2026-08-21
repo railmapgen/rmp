@@ -148,12 +148,12 @@ describe('SameStyleLineEndpointOverlay', () => {
         expect(blueControl).toHaveAttribute('stroke', BLUE[2]);
     });
 
-    it('leaves the control center available to the selected node drag target', () => {
+    it('makes the control interior and stroke available to the endpoint drag target', () => {
         const { getAllByTestId } = renderOverlay();
 
         for (const control of getAllByTestId('node-line-endpoint-control')) {
             expect(control).toHaveAttribute('fill', 'none');
-            expect(control).toHaveAttribute('pointer-events', 'stroke');
+            expect(control).toHaveAttribute('pointer-events', 'all');
         }
     });
 
