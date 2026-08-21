@@ -9,9 +9,6 @@ import {
     Button,
     Checkbox,
     Flex,
-    HStack,
-    Icon,
-    Link,
     SystemStyleObject,
     Text,
     Tooltip,
@@ -20,8 +17,7 @@ import {
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconContext } from 'react-icons';
-import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
+import { MdExpandLess, MdExpandMore } from 'react-icons/md';
 import { getLinePathAndStyle, RuntimeMode, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
@@ -43,6 +39,7 @@ import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
+import LearnHowToAdd from './learn-how-to-add';
 import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
 import { LineStyleLeftIcon } from './line-style-left-icon';
 
@@ -486,30 +483,3 @@ const ToolsPanel = () => {
 };
 
 export default ToolsPanel;
-
-const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean }) => {
-    const { type, expand } = props;
-    const { t } = useTranslation();
-
-    const doc = type === 'misc-node' ? 'nodes' : type;
-
-    return (
-        <HStack>
-            <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
-                <MdCode />
-            </IconContext.Provider>
-            {expand && (
-                <>
-                    <Link
-                        color="teal.500"
-                        href={`https://github.com/railmapgen/rmp/blob/main/docs/${doc}.md`}
-                        isExternal
-                    >
-                        {t(`panel.tools.learnHowToAdd.${type}`)}
-                    </Link>
-                    <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
-                </>
-            )}
-        </HStack>
-    );
-};
