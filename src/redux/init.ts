@@ -1,6 +1,7 @@
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { GlobalAlertId } from '../constants/global-alerts';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
@@ -131,7 +132,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -148,7 +151,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -165,7 +170,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },

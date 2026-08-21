@@ -473,6 +473,7 @@
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
+                    "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
@@ -1035,8 +1036,8 @@
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
-            "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "zulip": "Zulip community",
+            "zulipContent": "Join our community on Zulip!"
         }
     },
 

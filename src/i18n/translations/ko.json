@@ -472,6 +472,7 @@
                     "terminal": "종착역",
                     "terminalNameRotate": "터미널 이름 회전",
                     "shareTracks": "선로 공유",
+                    "noTrackShare": "선로 공유 없음",
                     "shareTracksIndex": "선로 공유 지수"
                 },
                 "londonTubeInt": {
@@ -1034,8 +1035,8 @@
             "contactUs": "우리에게 연락하기",
             "github": "프로젝트 저장소",
             "githubContent": "무슨 문제라도 있나요? 여기서 문제를 검색하거나 제기하십시오!",
-            "slack": "슬랙 그룹",
-            "slackContent": "이 슬랙 채널에서 채팅해요!"
+            "zulip": "Zulip 커뮤니티",
+            "zulipContent": "Zulip에서 커뮤니티에 참여하세요!"
         }
     },
 
