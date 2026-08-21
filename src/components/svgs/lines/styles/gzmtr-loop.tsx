@@ -69,6 +69,7 @@ const gzmtrLoop: LineStyle<GZMTRLoopAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.gzmtrLoop.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

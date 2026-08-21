@@ -17,10 +17,14 @@ import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeOpenPathParallel } from '../../../../util/bezier-parallel';
-import { OpenPath } from '../../../../constants/path';
+import { Path, makeEmptyOpenPath } from '../../../../constants/path';
+import { isOpenPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
-const dualColorPathGenerator = (path: OpenPath, type: LinePathType, attrs: DualColorAttributes) => {
+const dualColorPathGenerator = (path: Path, type: LinePathType, attrs: DualColorAttributes) => {
+    if (!isOpenPath(path)) {
+        return { pathA: makeEmptyOpenPath(), pathB: makeEmptyOpenPath() };
+    }
     const [pathA, pathB] = makeOpenPathParallel(path, -1.25, 1.25);
     return { pathA, pathB };
 };
@@ -152,7 +156,12 @@ const dualColor: LineStyle<DualColorAttributes> = {
     isSameStyle: (a, b) => a.colorA[2] === b.colorA[2] && a.colorB[2] === b.colorB[2],
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Freeform,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+        ],
         supportsReconcile: true,
     },
 };

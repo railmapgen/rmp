@@ -9,7 +9,8 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { OpenPath } from '../../../../constants/path';
+import { Path, makeEmptyOpenPath } from '../../../../constants/path';
+import { isOpenPath } from '../../../../util/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,
@@ -19,11 +20,20 @@ import {
     makeJREastDecorationFields,
 } from './jr-east-single-color-utils';
 
-const jrEastSingleColorPathGenerator = (path: OpenPath) => ({
-    border: path,
-    main: path,
-    decorationMarker: path,
-});
+const jrEastSingleColorPathGenerator = (path: Path) => {
+    if (!isOpenPath(path)) {
+        return {
+            border: makeEmptyOpenPath(),
+            main: makeEmptyOpenPath(),
+            decorationMarker: makeEmptyOpenPath(),
+        };
+    }
+    return {
+        border: path,
+        main: path,
+        decorationMarker: path,
+    };
+};
 
 const JREastSingleColorPre = (props: LineStyleComponentProps<JREastSingleColorAttributes>) => {
     const { id, path, newLine, handlePointerDown } = props;
@@ -116,6 +126,7 @@ const jrEastSingleColor: LineStyle<JREastSingleColorAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.jrEastSingleColor.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

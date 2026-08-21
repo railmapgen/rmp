@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    arcTo,
     closePath,
     cubicTo,
     lineTo,
@@ -11,7 +12,7 @@ import {
     makeRoundedTurnPath,
     moveTo,
 } from '../constants/path';
-import { concatOpenPaths, getEndPoint, parseRoundedTurnPath } from './path';
+import { concatOpenPaths, getEndPoint, isAreaPath, isOpenPath, parseRoundedTurnPath } from './path';
 
 describe('concatOpenPaths', () => {
     it('should collapse collinear linear segments back into a linear path', () => {
@@ -99,5 +100,23 @@ describe('getEndPoint', () => {
 
     it('should reject an empty open path', () => {
         expect(() => getEndPoint(makeEmptyOpenPath())).toThrow('Empty path does not have an endpoint.');
+    });
+});
+
+describe('path kind guards', () => {
+    it('distinguishes open centerlines from filled areas', () => {
+        const open = makeLinearPath(makePoint(0, 0), makePoint(10, 0));
+        const area = makeClosedAreaPath([
+            moveTo(makePoint(0, 0)),
+            lineTo(makePoint(10, 0)),
+            arcTo(5, 5, 0, false, false, makePoint(0, 0)),
+            closePath(),
+        ]);
+
+        expect(isOpenPath(open)).toBe(true);
+        expect(isAreaPath(open)).toBe(false);
+        expect(isOpenPath(area)).toBe(false);
+        expect(isAreaPath(area)).toBe(true);
+        expect(area.d).toBe('M 0 0 L 10 0 A 5 5 0 0 0 0 0 Z');
     });
 });

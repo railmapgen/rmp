@@ -24,6 +24,17 @@ export interface CubicTo {
     to: PathPoint;
 }
 
+/** Elliptical SVG arc segment used when closing filled outlines with round caps. */
+export interface ArcTo {
+    cmd: 'A';
+    rx: number;
+    ry: number;
+    xAxisRotation: number;
+    largeArc: boolean;
+    sweep: boolean;
+    to: PathPoint;
+}
+
 /** SVG close-path command for filled outlines. */
 export interface ClosePath {
     cmd: 'Z';
@@ -31,8 +42,10 @@ export interface ClosePath {
 
 /** Drawable commands allowed after the initial `M` in an open path. */
 export type OpenPathDrawCommand = LineTo | CubicTo;
+/** Filled outlines may use arcs without exposing them to algorithms that operate on open centerlines. */
+export type AreaPathDrawCommand = OpenPathDrawCommand | ArcTo;
 /** Minimal SVG command subset used by RailMapPainter path utilities. */
-export type PathCommand = MoveTo | OpenPathDrawCommand | ClosePath;
+export type PathCommand = MoveTo | AreaPathDrawCommand | ClosePath;
 /** Any open SVG path command stream supported by the structured model: `M` followed by one or more `L`/`C` draws. */
 export type OpenPathCommands = readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[]];
 /** Multi-segment open SVG path command stream: `M` followed by at least two `L`/`C` draws. */
@@ -42,10 +55,18 @@ export type MultiSegmentOpenPathCommands = readonly [
     OpenPathDrawCommand,
     ...OpenPathDrawCommand[],
 ];
-/** Closed subpath command stream: `M`, one or more draws, then `Z`. */
-export type ClosedSubpathCommands = readonly [MoveTo, OpenPathDrawCommand, ...OpenPathDrawCommand[], ClosePath];
+/** One closed filled outline: `M`, one or more area draw commands, then `Z`. */
+export type ClosedSubpathCommands = readonly [MoveTo, AreaPathDrawCommand, ...AreaPathDrawCommand[], ClosePath];
+/** A closed area with enough segments to enclose a non-degenerate region. */
+export type ClosedAreaCommands = readonly [
+    MoveTo,
+    AreaPathDrawCommand,
+    AreaPathDrawCommand,
+    ...AreaPathDrawCommand[],
+    ClosePath,
+];
 /** Compound closed path command stream with one or more `M ... Z` subpaths serialized in sequence. */
-export type CompoundClosedAreaCommands = readonly [MoveTo, OpenPathDrawCommand, ...PathCommand[]];
+export type CompoundClosedAreaCommands = readonly [MoveTo, AreaPathDrawCommand, ...PathCommand[]];
 
 /**
  * Structured path model used across the renderer.
@@ -85,7 +106,7 @@ export interface ComplexOpenPath extends BasePath<MultiSegmentOpenPathCommands> 
 }
 
 /** Closed filled geometry, typically derived from offset/outline helpers. */
-export interface ClosedAreaPath extends BasePath<readonly [...MultiSegmentOpenPathCommands, ClosePath]> {
+export interface ClosedAreaPath extends BasePath<ClosedAreaCommands> {
     readonly kind: 'closed-area';
 }
 
@@ -109,6 +130,15 @@ export const lineTo = (to: PathPoint): LineTo => ({ cmd: 'L', to });
 
 export const cubicTo = (c1: PathPoint, c2: PathPoint, to: PathPoint): CubicTo => ({ cmd: 'C', c1, c2, to });
 
+export const arcTo = (
+    rx: number,
+    ry: number,
+    xAxisRotation: number,
+    largeArc: boolean,
+    sweep: boolean,
+    to: PathPoint
+): ArcTo => ({ cmd: 'A', rx, ry, xAxisRotation, largeArc, sweep, to });
+
 export const closePath = (): ClosePath => ({ cmd: 'Z' });
 
 /** Keep number stringification in one place so every serialized path uses the same formatting. */
@@ -125,6 +155,10 @@ const serializeCommand = (command: PathCommand): string => {
             return `C ${formatNumber(command.c1.x)} ${formatNumber(command.c1.y)} ${formatNumber(command.c2.x)} ${formatNumber(
                 command.c2.y
             )} ${formatNumber(command.to.x)} ${formatNumber(command.to.y)}`;
+        case 'A':
+            return `A ${formatNumber(command.rx)} ${formatNumber(command.ry)} ${formatNumber(command.xAxisRotation)} ${
+                command.largeArc ? 1 : 0
+            } ${command.sweep ? 1 : 0} ${formatNumber(command.to.x)} ${formatNumber(command.to.y)}`;
         case 'Z':
             return 'Z';
     }
@@ -161,12 +195,12 @@ export const makeRoundedTurnPath = (
 export const makeComplexOpenPath = (commands: MultiSegmentOpenPathCommands): ComplexOpenPath =>
     makeBasePath('complex-open', commands);
 
-export const makeClosedAreaPath = (commands: readonly [...MultiSegmentOpenPathCommands, ClosePath]): ClosedAreaPath =>
+export const makeClosedAreaPath = (commands: ClosedAreaCommands): ClosedAreaPath =>
     makeBasePath('closed-area', commands);
 
 /** Close an existing open outline by appending `Z` without rebuilding its drawable commands. */
 export const makeClosedAreaPathFromOpenCommands = (commands: MultiSegmentOpenPathCommands): ClosedAreaPath =>
-    makeClosedAreaPath([...commands, closePath()] as const);
+    makeClosedAreaPath([...commands, closePath()] as ClosedAreaCommands);
 
 /** Serialize a list of closed subpaths into one SVG `d` while keeping subpath boundaries explicit. */
 export const makeCompoundClosedAreaPath = (

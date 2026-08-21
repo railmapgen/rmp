@@ -23,6 +23,7 @@ import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
+import { canReconcileLine } from './reconcile-ui';
 
 const stationsWithoutNameOffset = [
     StationType.ShmetroBasic2020,
@@ -161,6 +162,9 @@ export const changeLinePathType = (
 
         graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
         graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+        if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
+            graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+        }
     }
 };
 
@@ -275,7 +279,10 @@ export const changeLinesColorInBatch = (
                     color[2] == currentLineColor[2] &&
                     color[3] == currentLineColor[3])
             ) {
-                graph.mergeEdgeAttributes(edge, { [attr.style]: { color: newLineColor } });
+                graph.setEdgeAttribute(edge, attr.style, {
+                    ...(attr[attr.style] as AttributesWithColor),
+                    color: structuredClone(newLineColor),
+                });
             }
         });
 
@@ -530,11 +537,13 @@ export const autoPopulateTransfer = (
  *
  * @param graph Graph instance
  * @param station Station ID
+ * @returns Whether the station type or transfer attributes changed.
  */
 export const checkAndChangeStationIntType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
 ) => {
-    autoUpdateStationType(graph, station);
-    autoPopulateTransfer(graph, station);
+    const typeChanged = autoUpdateStationType(graph, station);
+    const transferChanged = autoPopulateTransfer(graph, station);
+    return typeChanged || transferChanged;
 };

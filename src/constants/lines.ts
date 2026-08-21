@@ -6,6 +6,7 @@ import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diag
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform-model';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
@@ -41,7 +42,7 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
-import type { OpenPath, Path } from './path';
+import type { Path, PathPoint } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -49,6 +50,7 @@ export enum LinePathType {
     RotatePerpendicular = 'ro-perp',
     RayGuided = 'ray-guided',
     Simple = 'simple',
+    Freeform = 'freeform',
 }
 
 export interface ExternalLinePathAttributes {
@@ -57,6 +59,7 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
     [LinePathType.RayGuided]?: RayGuidedPathAttributes;
+    [LinePathType.Freeform]?: FreeformPathAttributes;
 }
 
 export enum LineStyleType {
@@ -167,7 +170,11 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: OpenPath;
+    /**
+     * The path-owned geometry to paint. Styles must inspect its kind before applying algorithms that require an open
+     * centerline; filled path types can provide their outline directly as a closed area.
+     */
+    path: Path;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -220,6 +227,45 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 }
 
 export interface LinePathAttributes {}
+
+/** Viewport context supplied to a path-owned editor overlay. */
+export interface LinePathOverlayProps {
+    /** The single selected edge whose path-specific geometry is being edited. */
+    id: LineId;
+    /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
+    svgViewBoxZoom: number;
+    /** Used to convert pointer positions from the screen into the edge's SVG coordinate system. */
+    svgViewBoxMin: PathPoint;
+}
+
+/** Mutable, gesture-scoped state owned by a path with a custom drawing lifecycle. */
+export interface LinePathDrawingSession<T extends LinePathAttributes> {
+    /** Receives each pointer move forwarded by the canvas in absolute SVG coordinates. */
+    pointerMove: (pointer: PathPoint) => void;
+    /**
+     * Builds the persisted attributes after release over a connectable target.
+     * Returning `undefined` cancels creation, for example when the sampled path is too short to be meaningful.
+     */
+    createAttrs: (target: PathPoint, pointer: PathPoint) => T | undefined;
+    /**
+     * Produces transient path geometry from the latest absolute SVG pointer without mutating the graph.
+     *
+     * Returning geometry instead of rendered JSX lets the selected line style paint previews with the same
+     * centerline-vs-area policy used by committed lines.
+     */
+    getPreviewPath: (pointer: PathPoint) => Path | undefined;
+}
+
+/**
+ * Lets a path retain gesture-specific pointer data without putting transient drawing state into React or the graph.
+ * The canvas creates one session on pointer down and discards it on pointer up, so implementations may mutate their
+ * private session data but must not treat it as persisted state.
+ */
+export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
+    /** Starts a drawing session with the source and initial pointer in absolute SVG coordinates. */
+    createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
+}
+
 /**
  * The type a line path should export.
  */
@@ -238,6 +284,25 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      */
     attrsComponent: React.FC<LinePathAttrsProps<T>>;
     /**
+     * Optional direct-manipulation UI for path geometry that cannot be edited conveniently in the details panel,
+     * such as control points or width handles.
+     *
+     * The canvas mounts it only when exactly one edge of this path type is selected and renders it after the normal
+     * line layer. An overlay should therefore render transient controls rather than another source-of-truth line,
+     * stop pointer events that must not reach canvas selection, and explicitly save/refresh any graph mutations.
+     */
+    overlayComponent?: React.FC<LinePathOverlayProps>;
+    /**
+     * Optional drawing lifecycle for paths whose attributes depend on the full pointer trajectory rather than only
+     * the source and target nodes.
+     *
+     * The session receives absolute SVG coordinates, owns high-frequency transient samples, supplies its own preview,
+     * and creates the final path attributes only after release on a valid target. When omitted, the canvas previews
+     * the path with `generatePath` and persists a clone of `defaultAttrs`, which is appropriate for endpoint-derived
+     * paths. Implementations may return `undefined` from `createAttrs` to reject an invalid gesture.
+     */
+    drawingBehavior?: LinePathDrawingBehavior<T>;
+    /**
      * Metadata for this line path.
      */
     metadata: {
@@ -245,6 +310,12 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
          * The name displayed in the tools and details panels. In react-i18next index format.
          */
         displayName: string;
+        /**
+         * Whether this path geometry can participate in a reconciled line.
+         *
+         * A line is eligible only when both its path and style support reconcile.
+         */
+        supportsReconcile: boolean;
     };
 }
 
@@ -313,11 +384,11 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => OpenPath;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
 
 /**
  * The generator type of a line style.
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (path: OpenPath, type: LinePathType, attrs: T) => Record<string, Path>;
+export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;

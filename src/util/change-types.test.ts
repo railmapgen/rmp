@@ -3,13 +3,55 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import {
     autoPopulateTransfer,
     autoUpdateStationType,
+    changeLinePathType,
+    changeLinesColorInBatch,
     changeStationType,
     checkAndChangeStationIntType,
 } from './change-types';
+
+describe('changeLinePathType', () => {
+    it('clears a reconcile group when the new path does not support reconcile', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_a', {
+            x: 0,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        graph.addNode('misc_node_b', {
+            x: 100,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        graph.addDirectedEdgeWithKey('line_selected', 'misc_node_a', 'misc_node_b', {
+            type: LinePathType.Simple,
+            style: LineStyleType.SingleColor,
+            zIndex: 0,
+            reconcileId: 'reconcile_group',
+            visible: true,
+            parallelIndex: -1,
+            [LinePathType.Simple]: { offset: 0 },
+            [LineStyleType.SingleColor]: {
+                color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+            },
+        });
+
+        changeLinePathType(graph, 'line_selected', LinePathType.Freeform, false);
+
+        expect(graph.getEdgeAttribute('line_selected', 'type')).toBe(LinePathType.Freeform);
+        expect(graph.getEdgeAttribute('line_selected', 'reconcileId')).toBe('');
+    });
+});
 
 describe('changeStationType', () => {
     it('should deep clone nested default attrs when changing to JR East basic stations', () => {
@@ -120,7 +162,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        checkAndChangeStationIntType(graph, 'stn_1');
+        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
 
         // Verify the station type changed to interchange
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
@@ -188,7 +230,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        checkAndChangeStationIntType(graph, 'stn_1');
+        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
 
         // Verify the station type changed to basic
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrBasic);
@@ -222,7 +264,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        checkAndChangeStationIntType(graph, 'stn_1');
+        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(false);
 
         // Verify the station type remains the same
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrBasic);
@@ -291,7 +333,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        checkAndChangeStationIntType(graph, 'stn_1');
+        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
 
         // Verify the station type remains MTR (no basic/int pair)
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.MTR);
@@ -302,6 +344,52 @@ describe('checkAndChangeStationIntType', () => {
         expect(attrs!.transfer).toBeDefined();
         expect(attrs!.transfer[0]).toBeDefined();
         expect(attrs!.transfer[0].length).toBe(2);
+    });
+});
+
+describe('changeLinesColorInBatch', () => {
+    it('preserves non-color style attributes when recoloring a line', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_a', {
+            x: 0,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        graph.addNode('misc_node_b', {
+            x: 100,
+            y: 0,
+            type: MiscNodeType.Virtual,
+            zIndex: 0,
+            visible: true,
+            [MiscNodeType.Virtual]: {},
+        });
+        const originalColor: Theme = [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black];
+        const replacementColor: Theme = [CityCode.Tokyo, 'jk', '#00B2E5', MonoColour.black];
+        graph.addDirectedEdgeWithKey('line_jr', 'misc_node_a', 'misc_node_b', {
+            type: LinePathType.Simple,
+            style: LineStyleType.JREastSingleColor,
+            zIndex: 0,
+            reconcileId: '',
+            visible: true,
+            parallelIndex: -1,
+            [LinePathType.Simple]: { offset: 0 },
+            [LineStyleType.JREastSingleColor]: {
+                color: originalColor,
+                decoration: 'thin-tail',
+                decorationAt: 'from',
+            },
+        });
+
+        changeLinesColorInBatch(graph, originalColor, replacementColor, ['line_jr']);
+
+        expect(graph.getEdgeAttribute('line_jr', LineStyleType.JREastSingleColor)).toEqual({
+            color: replacementColor,
+            decoration: 'thin-tail',
+            decorationAt: 'from',
+        });
     });
 });
 

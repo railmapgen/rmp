@@ -39,6 +39,7 @@ const mtrUnpaidArea: LineStyle<MTRUnpaidAreaAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.mtrUnpaidArea.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,

@@ -599,6 +599,24 @@
                 "rayGuided": {
                     "displayName": "任意角度線段"
                 },
+                "freeform": {
+                    "displayName": "自由繪製線段",
+                    "outlineSettingsUnavailable": "可變寬度與兩端端頭設定暫未開放。",
+                    "controlPointHint": "拖動藍色控制點可調整線路走向；雙擊線路可在對應位置新增控制點，右擊藍色控制點可將其刪除。",
+                    "widthStops": "寬度點",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "位置 (%)",
+                    "widthStopWidth": "寬度 (px)",
+                    "baseWidthHint": "5px 是線段基準寬度",
+                    "smoothing": "平滑度",
+                    "startCap": "起點端帽",
+                    "endCap": "終點端帽",
+                    "round": "圓形",
+                    "flat": "平直",
+                    "arrow": "箭頭",
+                    "arrowLength": "箭頭長度",
+                    "arrowWidth": "箭頭寬度"
+                },
                 "singleColor": {
                     "displayName": "純色樣式"
                 },

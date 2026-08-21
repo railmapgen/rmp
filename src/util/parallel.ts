@@ -5,15 +5,15 @@ import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from 
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { makeOpenPathParallel } from './bezier-parallel';
-import { isShortOpenPath } from './path';
+import { isOpenPath, isShortOpenPath } from './path';
 
-type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided>;
+type ParallelLinePathType = Exclude<LinePathType, LinePathType.Simple | LinePathType.RayGuided | LinePathType.Freeform>;
 export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;
 
 const MIN_ROUND_CORNER_FACTOR = 1;
 
 export const supportsParallelLinePath = (type: LinePathType): type is ParallelLinePathType =>
-    type !== LinePathType.Simple && type !== LinePathType.RayGuided;
+    type !== LinePathType.Simple && type !== LinePathType.RayGuided && type !== LinePathType.Freeform;
 
 /**
  * Classify all the lines between source and target of the provided line
@@ -86,7 +86,7 @@ const checkPathFlip = (type: LinePathType, x1: number, y1: number, x2: number, y
 
 export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeAttributes>[]) => {
     let baseLineEntry = parallelLines.at(0);
-    if (!baseLineEntry) return {};
+    if (!baseLineEntry) return;
     for (const lineEntry of parallelLines) {
         if (lineEntry.attributes.parallelIndex < baseLineEntry.attributes.parallelIndex) {
             baseLineEntry = lineEntry;
@@ -106,6 +106,7 @@ export const makeParallelPaths = (parallelLines: EdgeEntry<NodeAttributes, EdgeA
         ...attr,
         roundCornerFactor: baseRoundCornerFactor,
     } as any);
+    if (!isOpenPath(basePath)) return;
     // console.log(basePath, x1, y1, x2, y2);
 
     const pathFlip = checkPathFlip(type, x1, y1, x2, y2);

@@ -59,15 +59,15 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: Path) => {
+const updatePathDRecursive = (id: string, path: Path) => {
     const root = document.getElementById(id);
-    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
-        updatePathD(path, pathD);
+    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(pathElement => {
+        updatePathD(pathElement, path);
     });
 };
 
-const updatePathD = (elem: SVGPathElement, pathD: Path) => {
-    elem.setAttribute('d', pathD.d);
+const updatePathD = (elem: SVGPathElement, path: Path) => {
+    elem.setAttribute('d', path.d);
 };
 
 const isLineElement = (element: Element): element is LineElement => element.type === 'line' && !!element.line;
@@ -104,6 +104,7 @@ export const moveNodesAndRedrawLines = (
         .forEach(element => {
             const { id, line } = element;
             const style = line.attr.style;
+
             if (lineStyles[style].pathGenerator) {
                 const path = lineStyles[style].pathGenerator!(
                     line.path,

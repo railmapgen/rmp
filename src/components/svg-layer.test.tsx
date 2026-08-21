@@ -6,10 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { CityCode, EdgeAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { makeLinearPath, makePoint } from '../constants/path';
+import { lineTo, makeComplexOpenPath, makeLinearPath, makePoint, moveTo } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
 import SvgLayer from './svg-layer';
+import { lineStyles } from './svgs/lines/lines';
 
 const makeLineAttrs = (): EdgeAttributes => ({
     visible: true,
@@ -39,6 +40,56 @@ const makeStationAttrs = (): NodeAttributes => ({
 });
 
 describe('SvgLayer', () => {
+    it('renders second-batch generated styles from a complex freeform centerline', () => {
+        const centerline = makeComplexOpenPath([
+            moveTo(makePoint(0, 0)),
+            lineTo(makePoint(50, 20)),
+            lineTo(makePoint(100, 0)),
+        ]);
+        const styles = [
+            LineStyleType.DualColor,
+            LineStyleType.JREastSingleColor,
+            LineStyleType.JREastSingleColorPattern,
+            LineStyleType.Shinkansen,
+        ];
+        const elements: Element[] = styles.map((style, index) => ({
+            id: `line_generated_${index}`,
+            type: 'line',
+            line: {
+                attr: {
+                    ...makeLineAttrs(),
+                    type: LinePathType.Freeform,
+                    style,
+                    [style]: structuredClone(lineStyles[style].defaultAttrs),
+                } as EdgeAttributes,
+                path: centerline,
+            },
+        }));
+
+        const { container } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    handlePointerDown={vi.fn()}
+                    handlePointerMove={vi.fn()}
+                    handlePointerUp={vi.fn()}
+                    handleEdgePointerDown={vi.fn()}
+                    handleEdgeDoubleClick={vi.fn()}
+                />
+            </svg>
+        );
+
+        styles.forEach((_, index) => {
+            const renderedPaths = [
+                ...container.querySelectorAll(
+                    `#line_generated_${index} path[d], [id="line_generated_${index}.pre"] path[d]`
+                ),
+            ];
+            expect(renderedPaths.some(path => path.getAttribute('d'))).toBe(true);
+        });
+    });
+
     it('renders unknown line style with UnknownLineStyle', () => {
         const elements: Element[] = [
             {

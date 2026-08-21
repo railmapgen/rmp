@@ -25,6 +25,7 @@ import {
 import { getOpenPathLength, getPointAtPrimitiveArcLength } from '../../../../util/open-path-length';
 import { getOpenPathPrimitives } from '../../../../util/open-path-primitives';
 import { slicePrimitivesByArcLength } from '../../../../util/open-path-slice';
+import { isOpenPath } from '../../../../util/path';
 import {
     defaultJREastSingleColorDecorationAttributes,
     getJREastDecorationMarkerProps,
@@ -121,10 +122,15 @@ export const makeShinkansenArrowsPath = (
         : makeEmptyOpenPath();
 };
 
-const shinkansenPathGenerator = (path: OpenPath): Record<string, Path> => ({
-    main: path,
-    arrows: makeShinkansenArrowsPath(path),
-});
+const shinkansenPathGenerator = (path: Path): Record<string, Path> => {
+    if (!isOpenPath(path)) {
+        return { main: makeEmptyOpenPath(), arrows: makeEmptyOpenPath() };
+    }
+    return {
+        main: path,
+        arrows: makeShinkansenArrowsPath(path),
+    };
+};
 
 const ShinkansenPre = (props: LineStyleComponentProps<ShinkansenAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
@@ -216,6 +222,7 @@ const shinkansen: LineStyle<ShinkansenAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.shinkansen.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,

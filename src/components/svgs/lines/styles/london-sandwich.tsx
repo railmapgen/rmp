@@ -86,6 +86,7 @@ const londonSandwich: LineStyle<LondonSandwichAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonSandwich.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
