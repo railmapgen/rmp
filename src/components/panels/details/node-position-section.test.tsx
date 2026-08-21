@@ -35,7 +35,7 @@ describe('NodePositionSection', () => {
         const mockStore = createStore({
             param: {
                 ...realState.param,
-                present: window.graph.export(),
+                present: { ...realState.param.present, graph: window.graph.export() },
             },
             runtime: {
                 ...realState.runtime,
@@ -56,15 +56,15 @@ describe('NodePositionSection', () => {
 
         expect(xInput).toHaveValue('10');
         expect(window.graph.getNodeAttribute('stn_test', 'x')).toBe(10);
-        expect(getSavedCoordinate(mockStore.getState().param.present, 'x')).toBe(10);
-        expect(JSON.stringify(mockStore.getState().param.present)).not.toContain('"x":null');
+        expect(getSavedCoordinate(mockStore.getState().param.present.graph, 'x')).toBe(10);
+        expect(JSON.stringify(mockStore.getState().param.present.graph)).not.toContain('"x":null');
     });
 
     it('commits valid coordinates on blur', async () => {
         const mockStore = createStore({
             param: {
                 ...realState.param,
-                present: window.graph.export(),
+                present: { ...realState.param.present, graph: window.graph.export() },
             },
             runtime: {
                 ...realState.runtime,
@@ -83,6 +83,6 @@ describe('NodePositionSection', () => {
 
         expect(xInput).toHaveValue('25.5');
         expect(window.graph.getNodeAttribute('stn_test', 'x')).toBe(25.5);
-        expect(getSavedCoordinate(mockStore.getState().param.present, 'x')).toBe(25.5);
+        expect(getSavedCoordinate(mockStore.getState().param.present.graph, 'x')).toBe(25.5);
     });
 });

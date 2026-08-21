@@ -127,16 +127,16 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(149);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 0, y: 0 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 0, y: 0 });
         expect(store.getState().viewport.liveViewport).toEqual({ x: 40, y: 50, zoom: 60 });
 
         act(() => {
             vi.advanceTimersByTime(1);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(60);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 40, y: 50 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(60);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 40, y: 50 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -156,8 +156,8 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(200);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(90);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 5, y: 15 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(90);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 5, y: 15 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -181,8 +181,8 @@ describe('useViewportController', () => {
             ref.current?.panEnd({ x: 100, y: 40 });
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: -100, y: -40 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -100, y: -40 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -238,16 +238,16 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(149);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 0, y: 0 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 0, y: 0 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
 
         act(() => {
             vi.advanceTimersByTime(1);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(60);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 40, y: 50 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(60);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 40, y: 50 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 

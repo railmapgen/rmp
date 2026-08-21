@@ -24,7 +24,7 @@ import {
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
 } from './app/app-slice';
-import { ParamState, setFullState } from './param/param-slice';
+import { initializeProject } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 
@@ -100,13 +100,15 @@ export const initStore = async (store: RootStore) => {
         store.dispatch(setActiveSubscriptions(loginState.activeSubscriptions));
     }
 
-    // Upgrade param and inject to ParamState.
+    // Upgrade the serialized save, then initialize the current project without
+    // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(graph);
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
-    store.dispatch(setFullState(state));
+    const { version, ...project } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(project.graph);
+    store.dispatch(initializeProject(project));
+    // TODO(graph-mutation-pipeline): Route initialization through one explicit
+    // refresh request; see docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 

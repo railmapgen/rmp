@@ -36,7 +36,7 @@ describe('InfoSection visibility', () => {
         const mockStore = createStore({
             param: {
                 ...realState.param,
-                present: window.graph.export(),
+                present: { ...realState.param.present, graph: window.graph.export() },
             },
             runtime: {
                 ...realState.runtime,
@@ -57,7 +57,7 @@ describe('InfoSection visibility', () => {
         await waitFor(() => {
             expect(window.graph.getNodeAttribute('misc_node_visible', 'visible')).toBe(false);
         });
-        expect(getSavedVisible(mockStore.getState().param.present, 'misc_node_visible')).toBe(false);
+        expect(getSavedVisible(mockStore.getState().param.present.graph, 'misc_node_visible')).toBe(false);
         expect(mockStore.getState().runtime.refresh.nodes).not.toBe(1);
         expect(mockStore.getState().runtime.refresh.edges).toBe(2);
     });

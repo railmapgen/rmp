@@ -64,7 +64,7 @@ export const useDraggableStationName = <T extends StationAttributes>(
     const handleAttrsUpdate = useStationAttrsUpdate<T>(id, type);
     const selected = useRootSelector(state => state.runtime.selected);
     const mode = useRootSelector(state => state.runtime.mode);
-    const svgViewBoxZoom = useRootSelector(state => state.param.svgViewBoxZoom);
+    const svgViewBoxZoom = useRootSelector(state => state.param.present.svgViewBoxZoom);
 
     const dragRef = React.useRef<DragState | null>(null);
     const [previewPreciseNameOffsets, setPreviewPreciseNameOffsets] = React.useState<NameLayout | null>(null);

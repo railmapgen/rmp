@@ -95,7 +95,7 @@ describe('ColorField', () => {
         const testStore = createStore({
             param: {
                 ...realState.param,
-                present: graph.export(),
+                present: { ...realState.param.present, graph: graph.export() },
             },
             runtime: {
                 ...realState.runtime,
@@ -112,7 +112,7 @@ describe('ColorField', () => {
             x: 11,
             y: 12,
         });
-        const savedGraph = MultiDirectedGraph.from(testStore.getState().param.present) as Graph;
+        const savedGraph = MultiDirectedGraph.from(testStore.getState().param.present.graph) as Graph;
         expect(savedGraph.getEdgeAttribute('line_selected', LinePathType.Bezier)?.sourceOffset).toEqual({
             x: 11,
             y: 12,

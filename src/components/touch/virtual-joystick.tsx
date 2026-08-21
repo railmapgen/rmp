@@ -23,7 +23,7 @@ import { useWindowSize } from '../../util/hooks';
 export const VirtualJoystick: React.FC = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const { selected } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();

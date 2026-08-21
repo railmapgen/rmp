@@ -1,13 +1,15 @@
 import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from '@chakra-ui/react';
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
+import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
-import { Events, LocalStorageKey } from '../../constants/constants';
+import { EdgeAttributes, Events, GraphAttributes, LocalStorageKey, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
 import { useRootDispatch } from '../../redux';
-import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { replaceProject } from '../../redux/project-history';
+import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
@@ -28,53 +30,49 @@ export default function OpenActions() {
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
 
-    const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
     const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
-    const refreshAndSave = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
-
     const handleNew = () => {
-        dispatch(clearSelected());
-        graph.current.clear();
-        dispatch(setSvgViewBoxZoom(100));
-        dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
-        refreshAndSave();
+        dispatch(
+            replaceProject({
+                graph: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+                svgViewBoxZoom: 100,
+                svgViewBoxMin: { x: 0, y: 0 },
+            })
+        );
     };
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
         const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
-        // details panel will complain about unknown nodes or edges if the last selected is not cleared
-        dispatch(clearSelected());
-
-        // reset graph with new data
-        graph.current.clear();
-        graph.current.import(save.graph);
+        const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        nextGraph.import(save.graph);
 
         // save images to indexedDB if they exist
         if (Array.isArray(images) && images.length > 0) {
-            await saveImagesFromParam(graph.current, images);
+            await saveImagesFromParam(nextGraph, images);
         }
-        // ensure all server images used in the graph are available in IndexedDB
-        dispatch(pullServerImages());
-
-        // hard refresh the canvas
-        refreshAndSave();
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
-        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
-        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
-            dispatch(setSvgViewBoxMin(svgViewBoxMin));
+        dispatch(
+            replaceProject({
+                graph: nextGraph.export(),
+                svgViewBoxZoom: typeof svgViewBoxZoom === 'number' ? svgViewBoxZoom : 100,
+                svgViewBoxMin:
+                    typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'
+                        ? svgViewBoxMin
+                        : { x: 0, y: 0 },
+            })
+        );
+
+        // ensure all server images used in the graph are available in IndexedDB
+        dispatch(pullServerImages());
     };
 
     const handleConfirmLoad = async () => {

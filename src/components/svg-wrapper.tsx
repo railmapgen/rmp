@@ -13,7 +13,8 @@ import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
-import { redoAction, saveGraph, undoAction } from '../redux/param/param-slice';
+import { saveGraph } from '../redux/param/param-slice';
+import { redoAction, undoAction } from '../redux/project-history';
 import {
     clearSelected,
     refreshEdgesThunk,
@@ -73,7 +74,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const {
         selected,
         active,
@@ -324,8 +325,6 @@ const SvgWrapper = () => {
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {

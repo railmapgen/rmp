@@ -95,7 +95,7 @@ const SvgCanvas = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const {
         selected,
         pointerPosition,

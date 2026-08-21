@@ -12,7 +12,7 @@ import { setSvgViewBoxZoom } from '../../redux/param/param-slice';
 export const ZoomPopover = () => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param.present);
     const dispatch = useRootDispatch();
 
     const fields: RmgFieldsField[] = [

@@ -16,7 +16,7 @@ import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
-import { redoAction, undoAction } from '../param/param-slice';
+import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -129,6 +129,8 @@ const initialState: RuntimeState = {
 
 /**
  * Thunk middleware to sum the master nodes count.
+ * The graph refresh thunks dispatch their derived updates as separate actions.
+ * https://stackoverflow.com/questions/63516716/redux-toolkit-is-it-possible-to-dispatch-other-actions-from-the-same-slice-in-o
  */
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
@@ -224,6 +226,21 @@ const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOp
         return 'show';
     }
     return 'close';
+};
+
+/**
+ * Clears transient UI state that may refer to entities from another project
+ * after a whole-project replacement or restore. Graph-scoped history keeps this
+ * state as part of the current editing session rather than recording it in history.
+ */
+const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
+    state.selected = new Set<Id>();
+    state.pointerPosition = undefined;
+    state.active = undefined;
+    state.mode = 'free';
+    state.lastTool = undefined;
+    state.isDetailsOpen = 'close';
+    state.radialTouchMenu = defaultRadialTouchMenuState;
 };
 
 const runtimeSlice = createSlice({
@@ -348,14 +365,21 @@ const runtimeSlice = createSlice({
         },
     },
     extraReducers: builder => {
+        // All history restores invalidate graph consumers. Only project-scoped
+        // restores clear transient interaction state that can reference the old project.
         builder
-            .addCase(undoAction, state => {
+            .addCase(applyUndoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
             })
-            .addCase(redoAction, state => {
+            .addCase(applyRedoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
+            })
+            .addCase(replaceProjectState, state => {
+                resetProjectInteractionState(state);
             });
     },
 });

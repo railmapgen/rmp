@@ -1,13 +1,13 @@
 import { CloseButton, SystemStyleObject, useDisclosure } from '@chakra-ui/react';
 import { RmgAppClip } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
+import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Events } from '../../constants/constants';
+import { EdgeAttributes, Events, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
+import { replaceProject } from '../../redux/project-history';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
@@ -49,40 +49,33 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     } = useRootSelector(state => state.app);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
-    const graph = React.useRef(window.graph);
-
-    const refreshAndSave = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
-
     const handleOpenWork = async (rmpSave: RMPSave) => {
         // works may be obsolete and require upgrades
         const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
-        // details panel will complain about unknown nodes or edges if the last selected is not cleared
-        dispatch(clearSelected());
-
-        // reset graph with new data
-        graph.current.clear();
-        graph.current.import(save.graph);
+        const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        nextGraph.import(save.graph);
 
         // save images to indexedDB if they exist
         if (Array.isArray(images) && images.length > 0) {
-            await saveImagesFromParam(graph.current, images);
+            await saveImagesFromParam(nextGraph, images);
         }
-        // ensure all server images used in the graph are available in IndexedDB
-        dispatch(pullServerImages());
-
-        // hard refresh the canvas
-        refreshAndSave();
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
-        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
-        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
-            dispatch(setSvgViewBoxMin(svgViewBoxMin));
+        dispatch(
+            replaceProject({
+                graph: nextGraph.export(),
+                svgViewBoxZoom: typeof svgViewBoxZoom === 'number' ? svgViewBoxZoom : 100,
+                svgViewBoxMin:
+                    typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'
+                        ? svgViewBoxMin
+                        : { x: 0, y: 0 },
+            })
+        );
+
+        // ensure all server images used in the graph are available in IndexedDB
+        dispatch(pullServerImages());
     };
 
     const handleConfirmOpen = async () => {
