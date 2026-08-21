@@ -85,6 +85,7 @@ const OsakaMetroStationIcon = (
             fill="currentColor"
         />
         <text
+            {...getLangStyle(TextLanguage.berlin)}
             x="12"
             y="12"
             transform={`translate(0, ${LAYOUT_CONSTANTS.STATION.FONT_SIZE * LAYOUT_CONSTANTS.ICON_RATIO * 0.4})`}
@@ -113,6 +114,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
                 fill={bgColor}
             />
             <text
+                {...getLangStyle(TextLanguage.berlin)}
                 y={(LAYOUT_CONSTANTS.STATION.HEIGHT - LAYOUT_CONSTANTS.STATION.FONT_SIZE) / 2}
                 textAnchor="middle"
                 fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE}
@@ -134,6 +136,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
             />
             {lineCode.length === 1 ? (
                 <text
+                    {...getLangStyle(TextLanguage.berlin)}
                     y={(LAYOUT_CONSTANTS.STATION.HEIGHT - LAYOUT_CONSTANTS.STATION.FONT_SIZE) / 2 - 0.5}
                     textAnchor="middle"
                     fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}
@@ -145,6 +148,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
             ) : (
                 <>
                     <text
+                        {...getLangStyle(TextLanguage.berlin)}
                         textAnchor="middle"
                         fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}
                         fontWeight={LAYOUT_CONSTANTS.STATION.FONT_WEIGHT}
@@ -153,6 +157,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
                         {lineCode.toUpperCase()}
                     </text>
                     <text
+                        {...getLangStyle(TextLanguage.berlin)}
                         y={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2.75}
                         textAnchor="middle"
                         fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}

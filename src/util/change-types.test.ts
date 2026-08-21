@@ -555,6 +555,54 @@ describe('autoUpdateStationType and autoPopulateTransfer', () => {
         // Verify station type remains unchanged (we didn't call autoUpdateStationType)
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
     });
+
+    it('should clear MTR transfer info when only one line color is connected', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const lineColor: Theme = [CityCode.Hongkong, 'twl', '#FF0000', MonoColour.white];
+
+        graph.addNode('stn_1', {
+            x: 0,
+            y: 0,
+            type: StationType.MTR,
+            zIndex: 0,
+            visible: true,
+            [StationType.MTR]: {
+                names: ['Central'],
+                nameOffsetX: 'right' as const,
+                nameOffsetY: 'top' as const,
+                rotate: 0,
+                transfer: [
+                    [
+                        [CityCode.Hongkong, 'twl', '#FF0000', MonoColour.white, '', ''],
+                        [CityCode.Hongkong, 'isl', '#0000FF', MonoColour.white, '', ''],
+                    ],
+                ],
+            },
+        });
+        graph.addNode('stn_2', { x: 100, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
+        graph.addDirectedEdge('stn_1', 'stn_2', {
+            type: LinePathType.Diagonal,
+            style: LineStyleType.SingleColor,
+            zIndex: 0,
+            reconcileId: '',
+            visible: true,
+            parallelIndex: -1,
+            [LinePathType.Diagonal]: {
+                startFrom: 'from',
+                offsetFrom: 0,
+                offsetTo: 0,
+                roundCornerFactor: 0,
+            },
+            [LineStyleType.SingleColor]: {
+                color: lineColor,
+            },
+        });
+
+        const updated = autoPopulateTransfer(graph, 'stn_1');
+
+        expect(updated).toBe(true);
+        expect(graph.getNodeAttribute('stn_1', StationType.MTR)!.transfer).toEqual([[]]);
+    });
 });
 
 describe('Bezier endpoint alignment after line type changes', () => {
