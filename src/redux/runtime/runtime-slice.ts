@@ -6,6 +6,7 @@ import type { Draft } from 'immer';
 import { RootState } from '..';
 import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
 import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -90,7 +91,9 @@ interface RuntimeState {
      */
     existsNodeTypes: Set<NodeType>;
     radialTouchMenu: RadialTouchMenuState;
-    globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    globalAlerts: Partial<
+        Record<GlobalAlertId, { status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+    >;
 }
 
 const initialState: RuntimeState = {
@@ -157,10 +160,14 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     if (masters > maximumMasterNodes) {
         dispatch(
             setGlobalAlert({
+                id: GlobalAlertId.MasterNodeLimitExceeded,
                 status: 'warning',
                 message: `${i18n.t('header.settings.proLimitExceed.master')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // The warning describes current graph validity, so it must not outlive the condition that created it.
+        dispatch(closeGlobalAlert(GlobalAlertId.MasterNodeLimitExceeded));
     }
 
     const existsNodeTypes = Object.keys(existsNodeTypesCount) as NodeType[];
@@ -190,10 +197,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     if (parallelLinesCount > maximumParallelLines) {
         dispatch(
             setGlobalAlert({
+                id: GlobalAlertId.ParallelLineLimitExceeded,
                 status: 'warning',
                 message: `${i18n.t('header.settings.proLimitExceed.parallel')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // A stable ID lets this refresh clear only its own recovered limit without touching other warnings.
+        dispatch(closeGlobalAlert(GlobalAlertId.ParallelLineLimitExceeded));
     }
 });
 
@@ -338,12 +349,18 @@ const runtimeSlice = createSlice({
          */
         setGlobalAlert: (
             state,
-            action: PayloadAction<{ status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+            action: PayloadAction<{
+                id: GlobalAlertId;
+                status: AlertStatus;
+                message: string;
+                url?: string;
+                linkedApp?: string;
+            }>
         ) => {
-            const { status, message, url, linkedApp } = action.payload;
-            state.globalAlerts[status] = { message, url, linkedApp };
+            const { id, status, message, url, linkedApp } = action.payload;
+            state.globalAlerts[id] = { status, message, url, linkedApp };
         },
-        closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
+        closeGlobalAlert: (state, action: PayloadAction<GlobalAlertId>) => {
             delete state.globalAlerts[action.payload];
         },
     },

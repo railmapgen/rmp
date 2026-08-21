@@ -214,13 +214,13 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const isTextTerminal = terminal && rotate !== terminalNameRotate;
     const textDx =
         (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
-        Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
+        Math.cos(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
         (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
-        Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
+        Math.sin(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
-        -((Math.max(...transfer[0].map(_ => _[4])) + Math.min(...transfer[0].map(_ => _[4]))) / 2) * X_HEIGHT;
+        -((Math.max(0, ...transfer[0].map(_ => _[4])) + Math.min(0, ...transfer[0].map(_ => _[4]))) / 2) * X_HEIGHT;
     const accessibleDX = Math.sin((rotate * Math.PI) / 180) * accessibleD;
     const accessibleDY = Math.cos((rotate * Math.PI) / 180) * accessibleD;
 
@@ -246,18 +246,30 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             >
                 {stepFreeAccess === 'none' ? (
-                    transfer[0].map(info => (
+                    transfer[0].length > 0 ? (
+                        transfer[0].map(info => (
+                            <rect
+                                id={`stn_core_${id}`}
+                                key={`${id}_${info[2]}_${info[4]}`}
+                                x={(-X_HEIGHT * 0.66) / 2}
+                                y={-X_HEIGHT * 0.66 - X_HEIGHT / 2 - X_HEIGHT * info[4]}
+                                width={X_HEIGHT * 0.66}
+                                height={height}
+                                stroke="none"
+                                fill={info[2]}
+                            />
+                        ))
+                    ) : (
                         <rect
                             id={`stn_core_${id}`}
-                            key={`${id}_${info[2]}_${info[4]}`}
                             x={(-X_HEIGHT * 0.66) / 2}
-                            y={-X_HEIGHT * 0.66 - X_HEIGHT / 2 - X_HEIGHT * info[4]}
+                            y={-X_HEIGHT * 0.66 - X_HEIGHT / 2}
                             width={X_HEIGHT * 0.66}
                             height={height}
                             stroke="none"
-                            fill={info[2]}
+                            fill="#9fa9b6"
                         />
-                    ))
+                    )
                 ) : (
                     <AccessibleIcon
                         key={`stn_core_${id}`}
@@ -517,7 +529,7 @@ function InterchangeCard(props: InterchangeCardProps) {
             {interchangeList.length === 0 && (
                 <HStack spacing={0.5} data-testid={`interchange-card-stack`}>
                     <Text as="i" flex={1} align="center" fontSize="md" colorScheme="gray">
-                        {t('panel.details.stations.interchange.noTrackShare')}
+                        {t('panel.details.stations.londonTubeBasic.noTrackShare')}
                     </Text>
 
                     <IconButton

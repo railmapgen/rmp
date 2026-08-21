@@ -32,6 +32,7 @@ export const Node2Font: {
     [StationType.JREastImportant]: [TextLanguage.jreast_ja, TextLanguage.jreast_en],
     [StationType.TokyoMetroBasic]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
     [StationType.TokyoMetroInt]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
+    [StationType.OsakaMetro]: [TextLanguage.tokyo_ja, TextLanguage.berlin],
     [StationType.LondonTubeBasic]: [TextLanguage.tube],
     [StationType.LondonTubeInt]: [TextLanguage.tube],
     [MiscNodeType.BerlinSBahnLineBadge]: [TextLanguage.berlin],
