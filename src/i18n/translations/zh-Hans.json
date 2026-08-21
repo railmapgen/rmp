@@ -472,6 +472,7 @@
                     "terminal": "终点站",
                     "terminalNameRotate": "终点站名旋转",
                     "shareTracks": "轨道共享",
+                    "noTrackShare": "无轨道共享",
                     "shareTracksIndex": "轨道共享索引"
                 },
                 "londonTubeInt": {
@@ -1029,8 +1030,8 @@
             "contactUs": "联系我们",
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
-            "slack": "Slack群组",
-            "slackContent": "在这些Slack频道中讨论!"
+            "zulip": "Zulip 社区",
+            "zulipContent": "加入我们的 Zulip 社区！"
         }
     },
 
