@@ -23,10 +23,26 @@ const makeGraph = () => {
     return graph;
 };
 
-const renderPreview = (linePath: LinePathType, gesture?: LineDrawingGesture) => {
+const renderPreview = (
+    linePath: LinePathType,
+    gesture?: LineDrawingGesture,
+    options: { mapEnabled?: boolean; isSubscriber?: boolean } = {}
+) => {
     window.graph = makeGraph();
     const initialState = createStore().getState();
+    const { mapEnabled = false, isSubscriber = true } = options;
     const store = createStore({
+        account: {
+            ...initialState.account,
+            activeSubscriptions: {
+                ...initialState.account.activeSubscriptions,
+                RMP_CLOUD: isSubscriber,
+            },
+        },
+        param: {
+            ...initialState.param,
+            present: { ...initialState.param.present, mapEnabled },
+        },
         runtime: {
             ...initialState.runtime,
             active: 'stn_source',
@@ -71,5 +87,14 @@ describe('LineCreationPreview', () => {
         expect(session.getPreviewPath).toHaveBeenCalledWith(pointer);
         expect(container.querySelector('g')).toHaveAttribute('opacity', '0.65');
         expect(container.querySelector('path')).toHaveAttribute('d', previewPath.d);
+    });
+
+    it('does not preview a line that is unavailable in the current map context', () => {
+        const { container } = renderPreview(LinePathType.Diagonal, undefined, {
+            mapEnabled: true,
+            isSubscriber: false,
+        });
+
+        expect(container.querySelector('path')).not.toBeInTheDocument();
     });
 });

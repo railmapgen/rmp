@@ -17,42 +17,66 @@ import {
     checkAndChangeStationIntType,
 } from './change-types';
 
+const makeLineGraph = () => {
+    const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+    graph.addNode('stn_1', { x: 0, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
+    graph.addNode('stn_2', { x: 100, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
+    graph.addDirectedEdgeWithKey('line_1', 'stn_1', 'stn_2', {
+        type: LinePathType.Simple,
+        style: LineStyleType.SingleColor,
+        zIndex: 0,
+        reconcileId: '',
+        visible: true,
+        parallelIndex: -1,
+        [LinePathType.Simple]: { offset: 0 },
+        [LineStyleType.SingleColor]: {
+            color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+        },
+    });
+    return graph;
+};
+
 describe('changeLinePathType', () => {
+    it('rejects a diagram-native path for a free user while the map is shown', () => {
+        const graph = makeLineGraph();
+
+        changeLinePathType(graph, 'line_1', LinePathType.Diagonal, true, false, false);
+
+        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Simple);
+        expect(graph.hasEdgeAttribute('line_1', LinePathType.Simple)).toBe(true);
+        expect(graph.hasEdgeAttribute('line_1', LinePathType.Diagonal)).toBe(false);
+    });
+
+    it('allows a free user to convert a restricted existing line to an allowed target', () => {
+        const graph = makeLineGraph();
+
+        changeLinePathType(graph, 'line_1', LinePathType.Diagonal, false, false, false);
+
+        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Diagonal);
+        expect(graph.hasEdgeAttribute('line_1', LinePathType.Simple)).toBe(false);
+        expect(graph.hasEdgeAttribute('line_1', LinePathType.Diagonal)).toBe(true);
+    });
+
     it('clears a reconcile group when the new path does not support reconcile', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        graph.addNode('misc_node_a', {
-            x: 0,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            zIndex: 0,
-            visible: true,
-            [MiscNodeType.Virtual]: {},
-        });
-        graph.addNode('misc_node_b', {
-            x: 100,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            zIndex: 0,
-            visible: true,
-            [MiscNodeType.Virtual]: {},
-        });
-        graph.addDirectedEdgeWithKey('line_selected', 'misc_node_a', 'misc_node_b', {
-            type: LinePathType.Simple,
-            style: LineStyleType.SingleColor,
-            zIndex: 0,
-            reconcileId: 'reconcile_group',
-            visible: true,
-            parallelIndex: -1,
-            [LinePathType.Simple]: { offset: 0 },
-            [LineStyleType.SingleColor]: {
-                color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
-            },
-        });
+        const graph = makeLineGraph();
+        graph.setEdgeAttribute('line_1', 'reconcileId', 'reconcile_group');
 
-        changeLinePathType(graph, 'line_selected', LinePathType.Freeform, false);
+        changeLinePathType(graph, 'line_1', LinePathType.Freeform, true, false, false);
 
-        expect(graph.getEdgeAttribute('line_selected', 'type')).toBe(LinePathType.Freeform);
-        expect(graph.getEdgeAttribute('line_selected', 'reconcileId')).toBe('');
+        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Freeform);
+        expect(graph.getEdgeAttribute('line_1', 'reconcileId')).toBe('');
+    });
+});
+
+describe('changeLineStyleType', () => {
+    it.each([false, true])('allows a free user to apply a legacy style to Simple when mapEnabled is %s', mapEnabled => {
+        const graph = makeLineGraph();
+        const theme: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
+
+        expect(changeLineStyleType(graph, 'line_1', LineStyleType.ShmetroVirtualInt, theme, mapEnabled, false)).toBe(
+            true
+        );
+        expect(graph.getEdgeAttribute('line_1', 'style')).toBe(LineStyleType.ShmetroVirtualInt);
     });
 });
 
@@ -679,7 +703,7 @@ describe('Bezier endpoint alignment after line type changes', () => {
         );
         graph.addDirectedEdgeWithKey('line_selected', 'stn_source', 'stn_target', makeDiagonalEdgeAttrs(RED));
 
-        expect(changeLinePathType(graph, 'line_selected', LinePathType.Bezier, false)).toBe(true);
+        expect(changeLinePathType(graph, 'line_selected', LinePathType.Bezier, true, false, false)).toBe(true);
         normalizeEdgeAttributes(graph, ['line_selected']);
 
         expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
@@ -707,7 +731,7 @@ describe('Bezier endpoint alignment after line type changes', () => {
             makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 }, true, LineStyleType.Unknown)
         );
 
-        expect(changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED)).toBe(true);
+        expect(changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED, true, false)).toBe(true);
         normalizeEdgeAttributes(graph, ['line_selected']);
 
         expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({

@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
 import { calculateCanvasSize, roundToMultiple } from './helpers';
 
 describe('unit tests for round to multiple function', () => {
@@ -71,5 +72,31 @@ describe('calculateCanvasSize', () => {
             xMax: 100,
             yMax: 100,
         });
+    });
+
+    it('excludes policy-hidden elements from export bounds', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('hidden', {
+            visible: true,
+            zIndex: 0,
+            x: 1000,
+            y: 1000,
+            type: MiscNodeType.Virtual,
+        });
+        const hidden = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        hidden.id = 'hidden';
+        hidden.classList.add('removeMe');
+        document.body.append(hidden);
+
+        try {
+            expect(calculateCanvasSize(graph)).toEqual({
+                xMin: 0,
+                yMin: 0,
+                xMax: 100,
+                yMax: 100,
+            });
+        } finally {
+            hidden.remove();
+        }
     });
 });

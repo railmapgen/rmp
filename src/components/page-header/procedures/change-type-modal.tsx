@@ -37,6 +37,7 @@ import {
 } from '../../../util/change-types';
 import { findThemes } from '../../../util/color';
 import { usePaletteTheme } from '../../../util/hooks';
+import { canUseLinePath, canUseLineStyle } from '../../../util/line-path-availability';
 import ThemeButton from '../../panels/theme-button';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
@@ -66,6 +67,7 @@ export const ChangeTypeModal = (props: {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { selected } = useRootSelector(state => state.runtime);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const {
         preference: { autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
@@ -73,11 +75,17 @@ export const ChangeTypeModal = (props: {
 
     const graph = React.useRef(window.graph);
 
-    const availableLinePathOptions = {
+    const allLinePathOptions = {
         any: t('header.settings.procedures.changeType.any'),
         ...(Object.fromEntries(
             Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-        ) as { [k in LinePathType]: string }),
+        ) as Record<LinePathType, string>),
+    };
+    const targetLinePathOptions = {
+        any: t('header.settings.procedures.changeType.any'),
+        ...(Object.fromEntries(
+            Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+        ) as Record<LinePathType, string>),
     };
     const availableLineStyleOptions = {
         any: t('header.settings.procedures.changeType.any'),
@@ -93,6 +101,15 @@ export const ChangeTypeModal = (props: {
             Object.entries(stations).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
         ) as { [k in StationType]: string }),
     };
+    const defaultNewLinePathType =
+        Object.values(LinePathType).find(type => canUseLinePath(type, mapEnabled, activeSubscriptions.RMP_CLOUD)) ??
+        LinePathType.Diagonal;
+    const disabledTargetLinePathOptions = Object.values(LinePathType).filter(
+        type => !canUseLinePath(type, mapEnabled, activeSubscriptions.RMP_CLOUD)
+    );
+    const disabledTargetLineStyleOptions = Object.values(LineStyleType).filter(
+        style => !canUseLineStyle(style, activeSubscriptions.RMP_CLOUD)
+    );
 
     const defaultSelectedTheme: ChangeTypeTheme = {
         id: 'any',
@@ -110,7 +127,7 @@ export const ChangeTypeModal = (props: {
     const [newLineStyleType, setNewLineStyleType] = React.useState(LineStyleType.SingleColor);
     const [isLinePathTypeSwitch, setIsLinePathTypeSwitch] = React.useState(false);
     const [currentLinePathType, setCurrentLinePathType] = React.useState<LinePathType | 'any'>('any');
-    const [newLinePathType, setNewLinePathType] = React.useState(LinePathType.Diagonal);
+    const [newLinePathType, setNewLinePathType] = React.useState(defaultNewLinePathType);
     const [isColorSwitch, setIsColorSwitch] = React.useState(false);
     const [selectedColor, setSelectedColor] = React.useState(defaultSelectedTheme);
 
@@ -173,7 +190,7 @@ export const ChangeTypeModal = (props: {
                     label: t('header.settings.procedures.changeLineStyleType.changeTo'),
                     options: availableLineStyleOptions,
                     value: newLineStyleType,
-                    disabledOptions: ['any', currentLineStyleType],
+                    disabledOptions: ['any', currentLineStyleType, ...disabledTargetLineStyleOptions],
                     onChange: value => setNewLineStyleType(value as LineStyleType),
                 },
             ],
@@ -186,7 +203,7 @@ export const ChangeTypeModal = (props: {
                 {
                     type: 'select',
                     label: t('header.settings.procedures.changeLinePathType.changeFrom'),
-                    options: availableLinePathOptions,
+                    options: allLinePathOptions,
                     value: currentLinePathType,
                     disabledOptions: [newLinePathType],
                     onChange: value => setCurrentLinePathType(value as LinePathType | 'any'),
@@ -194,9 +211,9 @@ export const ChangeTypeModal = (props: {
                 {
                     type: 'select',
                     label: t('header.settings.procedures.changeLinePathType.changeTo'),
-                    options: availableLinePathOptions,
+                    options: targetLinePathOptions,
                     value: newLinePathType,
-                    disabledOptions: ['any', 'simple', currentLinePathType],
+                    disabledOptions: ['any', currentLinePathType, ...disabledTargetLinePathOptions],
                     onChange: value => setNewLinePathType(value as LinePathType),
                 },
             ],
@@ -249,6 +266,8 @@ export const ChangeTypeModal = (props: {
             setIsStationTypeSwitch(false);
             setIsLineStyleTypeSwitch(false);
             setIsLinePathTypeSwitch(false);
+            setCurrentLinePathType('any');
+            setNewLinePathType(defaultNewLinePathType);
             setIsColorSwitch(false);
             setZIndex(0);
             setThemeList([
@@ -270,7 +289,7 @@ export const ChangeTypeModal = (props: {
             ]);
             setSelectedColor(defaultSelectedTheme);
         }
-    }, [isOpen]);
+    }, [isOpen, mapEnabled, activeSubscriptions.RMP_CLOUD]);
 
     const handleChange = async () => {
         const stations = filter?.includes('station')
@@ -295,12 +314,28 @@ export const ChangeTypeModal = (props: {
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
             changedLines.push(
-                ...changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines)
+                ...changeLineStyleTypeInBatch(
+                    graph.current,
+                    currentLineStyleType,
+                    newLineStyleType,
+                    newTheme,
+                    lines,
+                    mapEnabled,
+                    activeSubscriptions.RMP_CLOUD
+                )
             );
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
             changedLines.push(
-                ...changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel)
+                ...changeLinePathTypeInBatch(
+                    graph.current,
+                    currentLinePathType,
+                    newLinePathType,
+                    lines,
+                    mapEnabled,
+                    activeSubscriptions.RMP_CLOUD,
+                    autoParallel
+                )
             );
         }
         if (isColorSwitch) {

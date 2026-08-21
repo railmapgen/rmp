@@ -59,9 +59,13 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             lineEntry.targetAttributes.x,
             lineEntry.targetAttributes.y,
         ];
+        if (!Object.hasOwn(linePaths, type)) {
+            cachedGeneratedPaths[lineID] = makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
+            continue;
+        }
         const attr = lineEntry.attributes[type] as NonNullableExternalLinePathAttribute;
         cachedSimplePathAvailability[lineID] = checkSimplePathAvailability(type, x1, y1, x2, y2, attr);
-        cachedGeneratedPaths[lineID] = linePaths[type]!.generatePath(x1, x2, y1, y2, attr as any);
+        cachedGeneratedPaths[lineID] = linePaths[type].generatePath(x1, x2, y1, y2, attr as any);
     }
 
     // Generalize all the lines into parallel, reconcile, simple, and normal lines.
@@ -199,7 +203,7 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             lineEntry.targetAttributes.x,
             lineEntry.targetAttributes.y,
         ];
-        if (!(type in linePaths)) {
+        if (!Object.hasOwn(linePaths, type)) {
             // unknown line path type
             resolvedLines.push({
                 id: lineID,

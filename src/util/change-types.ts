@@ -22,6 +22,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MasterParam } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { ExternalStationAttributes, StationType } from '../constants/stations';
+import { canUseLineCombination } from './line-path-availability';
 import { makeParallelIndex, ParallelLinePathAttributes, supportsParallelLinePath } from './parallel';
 import { canReconcileLine } from './reconcile-ui';
 
@@ -138,37 +139,40 @@ export const changeStationsTypeInBatch = (
  * @param graph Graph.
  * @param selectedFirst Current line's id.
  * @param newLinePathType New line's path type.
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
+ * @param autoParallel Whether parallel line indexes should be assigned automatically.
  * @returns Whether the edge was changed.
  */
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
     newLinePathType: LinePathType,
+    mapEnabled: boolean,
+    isSubscriber: boolean,
     autoParallel: boolean
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    if (lineStyles[currentLineStyleType].metadata.supportLinePathType.includes(newLinePathType)) {
-        const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
+    if (!canUseLineCombination(newLinePathType, currentLineStyleType, mapEnabled, isSubscriber)) return false;
+    const newAttrs = structuredClone(linePaths[newLinePathType].defaultAttrs);
 
-        // calculate parallel index before changing the type
-        // so that makeParallelIndex won't consider this line as an existing line
-        let parallelIndex = -1;
-        if (autoParallel && supportsParallelLinePath(newLinePathType)) {
-            const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
-            const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
-            parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
-        }
-        graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
-
-        graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
-        graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
-        if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
-            graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
-        }
-        return true;
+    // calculate parallel index before changing the type
+    // so that makeParallelIndex won't consider this line as an existing line
+    let parallelIndex = -1;
+    if (autoParallel && supportsParallelLinePath(newLinePathType)) {
+        const [source, target] = graph.extremities(selectedFirst) as [NodeId, NodeId];
+        const startFrom = (newAttrs as ParallelLinePathAttributes).startFrom;
+        parallelIndex = makeParallelIndex(graph, newLinePathType, source, target, startFrom);
     }
-    return false;
+    graph.setEdgeAttribute(selectedFirst, 'parallelIndex', parallelIndex);
+
+    graph.removeEdgeAttribute(selectedFirst, currentLinePathType);
+    graph.mergeEdgeAttributes(selectedFirst, { type: newLinePathType, [newLinePathType]: newAttrs });
+    if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
+        graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
+    }
+    return true;
 };
 
 /**
@@ -177,6 +181,9 @@ export const changeLinePathType = (
  * @param currentLinePathType Current lines' path type.
  * @param newLinePathType New lines' path type.
  * @param lines Selected lines. (undefined for all)
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
+ * @param autoParallel Whether parallel line indexes should be assigned automatically.
  * @returns Changed edge IDs.
  */
 export const changeLinePathTypeInBatch = (
@@ -184,11 +191,13 @@ export const changeLinePathTypeInBatch = (
     currentLinePathType: LinePathType | 'any',
     newLinePathType: LinePathType,
     lines: LineId[],
+    mapEnabled: boolean,
+    isSubscriber: boolean,
     autoParallel: boolean
 ) =>
     lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
-        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, autoParallel));
+        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, mapEnabled, isSubscriber, autoParallel));
 
 /**
  * Change a line's style type.
@@ -196,41 +205,42 @@ export const changeLinePathTypeInBatch = (
  * @param selectedFirst Current line's id.
  * @param newLineStyleType New line's style type.
  * @param theme A handy helper to override color to current theme.
+ * @param mapEnabled Whether the map layer is displayed.
+ * @param isSubscriber Whether the user may use subscribed line features.
  * @returns Whether the edge was changed.
  */
 export const changeLineStyleType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selectedFirst: string,
     newLineStyleType: LineStyleType,
-    theme: Theme
+    theme: Theme,
+    mapEnabled: boolean,
+    isSubscriber: boolean
 ) => {
     const currentLinePathType = graph.getEdgeAttribute(selectedFirst, 'type');
     const currentLineStyleType = graph.getEdgeAttribute(selectedFirst, 'style');
-    if (lineStyles[newLineStyleType].metadata.supportLinePathType.includes(currentLinePathType)) {
-        const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
-        const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
-        graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
-        const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
-        if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
-            (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
-        else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
+    if (!canUseLineCombination(currentLinePathType, newLineStyleType, mapEnabled, isSubscriber)) return false;
+    const oldZIndex = graph.getEdgeAttribute(selectedFirst, 'zIndex');
+    const oldAttrs = graph.getEdgeAttribute(selectedFirst, currentLineStyleType);
+    graph.removeEdgeAttribute(selectedFirst, currentLineStyleType);
+    const newAttrs = structuredClone(lineStyles[newLineStyleType].defaultAttrs);
+    if (dynamicColorInjection.has(currentLineStyleType) && dynamicColorInjection.has(newLineStyleType))
+        (newAttrs as AttributesWithColor).color = (oldAttrs as AttributesWithColor).color;
+    else if (dynamicColorInjection.has(newLineStyleType)) (newAttrs as AttributesWithColor).color = theme;
 
-        // do we really need each hack for each style here?
-        const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
-        if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
-            (newAttrs as { decoration: string; decorationAt: string }).decoration =
-                (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
-            (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
-                (oldAttrs as { decorationAt?: string }).decorationAt ??
-                (newAttrs as { decorationAt: string }).decorationAt;
-        }
-
-        graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
-        if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
-        else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
-        return true;
+    // do we really need each hack for each style here?
+    const jrEastStyleTypes = new Set([LineStyleType.JREastSingleColor, LineStyleType.JREastSingleColorPattern]);
+    if (jrEastStyleTypes.has(currentLineStyleType) && jrEastStyleTypes.has(newLineStyleType)) {
+        (newAttrs as { decoration: string; decorationAt: string }).decoration =
+            (oldAttrs as { decoration?: string }).decoration ?? (newAttrs as { decoration: string }).decoration;
+        (newAttrs as { decoration: string; decorationAt: string }).decorationAt =
+            (oldAttrs as { decorationAt?: string }).decorationAt ?? (newAttrs as { decorationAt: string }).decorationAt;
     }
-    return false;
+
+    graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
+    if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
+    else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
+    return true;
 };
 
 /**
@@ -247,13 +257,15 @@ export const changeLineStyleTypeInBatch = (
     currentLineStyleType: LineStyleType | 'any',
     newLineStyleType: LineStyleType,
     theme: Theme,
-    lines: LineId[]
+    lines: LineId[],
+    mapEnabled: boolean,
+    isSubscriber: boolean
 ) =>
     lines
         .filter(
             edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
-        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme));
+        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme, mapEnabled, isSubscriber));
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch

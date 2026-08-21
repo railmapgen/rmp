@@ -4,6 +4,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { createStore } from '../../redux';
+import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { setMapEnabled, setMapStyle, setSvgViewport } from '../../redux/param/param-slice';
 import { render } from '../../test-utils';
 import { stringifyParam } from '../../util/save';
@@ -39,6 +40,22 @@ describe('OpenActions', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+    });
+
+    it('offers RMG import to free users while the map is enabled', async () => {
+        const store = createStore();
+        store.dispatch(setMapEnabled(true));
+        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: false }));
+        const { container } = render(
+            <RmgThemeProvider>
+                <OpenActions />
+            </RmgThemeProvider>,
+            { store }
+        );
+
+        fireEvent.click(container.querySelector('button')!);
+
+        expect(await screen.findByText('Import from RMG project')).toBeInTheDocument();
     });
 
     it('starts a new project with the map hidden while preserving its style in project history', async () => {

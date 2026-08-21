@@ -7,11 +7,11 @@
 
 ## Background
 
-Bezier paths are currently available in map projects, but
+Bezier paths are currently available to free users while the map is shown, but
 `supportsParallelLinePath(LinePathType.Bezier)` deliberately returns `false`.
 This is not a limitation of the map canvas. Parallel paths are resolved from the
-graph before line styles render, so the same mechanism can be used in diagram and
-map projects.
+graph before line styles render, so the same mechanism can be used with the map
+shown or hidden.
 
 Most of the geometry support already exists:
 
@@ -230,8 +230,8 @@ No save migration is expected:
 * subscription limits count supported parallel lines generically and can include
   Bezier after `supportsParallelLinePath()` is enabled.
 
-Bezier remains map-only through the existing line-path availability filtering.
-Parallel support itself should not check project type.
+Bezier remains contextually restricted through the centralized line-access
+policy. Parallel support itself should not check map visibility.
 
 ## Test plan
 
@@ -282,7 +282,7 @@ git diff --check
 
 The implementation is complete when:
 
-1. A map project can assign parallel indices to same-direction Bezier edges.
+1. A map-enabled canvas can assign parallel indices to same-direction Bezier edges.
 2. Index `0` follows the authored Bezier and higher indices visibly follow its
    curvature at the standard five-unit spacing.
 3. Reversed edges do not unexpectedly join the group.
