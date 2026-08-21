@@ -1,6 +1,7 @@
 /* eslint-disable import/order */
+import type { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { AttrsProps, LineId } from './constants';
+import { AttrsProps, EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, OverlayProps } from './constants';
 import type { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
@@ -231,16 +232,6 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 
 export interface LinePathAttributes {}
 
-/** Viewport context supplied to a path-owned editor overlay. */
-export interface LinePathOverlayProps {
-    /** The single selected edge whose path-specific geometry is being edited. */
-    id: LineId;
-    /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
-    svgViewBoxZoom: number;
-    /** Used to convert pointer positions from the screen into the edge's SVG coordinate system. */
-    svgViewBoxMin: PathPoint;
-}
-
 /** Mutable, gesture-scoped state owned by a path with a custom drawing lifecycle. */
 export interface LinePathDrawingSession<T extends LinePathAttributes> {
     /** Receives each pointer move forwarded by the canvas in absolute SVG coordinates. */
@@ -270,6 +261,35 @@ export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
 }
 
 /**
+ * Describes why an edge is entering path-owned normalization.
+ *
+ * A newly authored edge may need path defaults when no compatible neighbour exists, while an existing edge update
+ * must preserve its authored path attributes in that situation. Import/load flows do not use either mode because
+ * serialized attributes must be preserved verbatim.
+ */
+export type LinePathEdgeAttrsNormalizationMode = 'created' | 'updated';
+
+/**
+ * Maintains a LinePath-specific invariant after an edge exists in the graph but before that change is persisted.
+ *
+ * Implementations are synchronous and mutate only the current edge's path-owned attributes. They must not dispatch,
+ * save the graph, refresh the UI, or rewrite peer edges; the transaction coordinator owns those steps. Looking up
+ * adjacent peers is allowed, but peers in `ignoredEdgeIds` must not be used as source-of-truth data.
+ *
+ * The coordinator processes a complete semantic change set in a stable order. `ignoredEdgeIds` contains the current
+ * edge and every changed edge that has not been normalized yet, preventing partially updated data from becoming an
+ * anchor. An earlier normalized edge is removed from the set and may then anchor a later edge. Newly created edges may
+ * initialize path-owned attributes from adjacent peers; updated edges preserve their current attributes when no
+ * matching peer exists.
+ */
+export type LinePathEdgeAttrsNormalizer = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    edgeId: LineId,
+    mode: LinePathEdgeAttrsNormalizationMode,
+    ignoredEdgeIds: ReadonlySet<LineId>
+) => void;
+
+/**
  * The type a line path should export.
  */
 export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
@@ -294,7 +314,7 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * line layer. An overlay should therefore render transient controls rather than another source-of-truth line,
      * stop pointer events that must not reach canvas selection, and explicitly save/refresh any graph mutations.
      */
-    overlayComponent?: React.FC<LinePathOverlayProps>;
+    overlayComponent?: React.FC<OverlayProps<LineId>>;
     /**
      * Optional drawing lifecycle for paths whose attributes depend on the full pointer trajectory rather than only
      * the source and target nodes.
@@ -305,6 +325,14 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      * paths. Implementations may return `undefined` from `createAttrs` to reject an invalid gesture.
      */
     drawingBehavior?: LinePathDrawingBehavior<T>;
+    /**
+     * Optional normalization for path-owned attributes after semantic edge creation or mutation.
+     *
+     * Loading and copying existing data should not invoke it. Generic graph-editing code calls the registered hook
+     * without knowing the path-specific attributes it maintains. The hook runs in place before the graph is saved;
+     * it should only maintain invariants owned by this LinePath and must not perform persistence or UI work.
+     */
+    normalizeEdgeAttrs?: LinePathEdgeAttrsNormalizer;
     /**
      * Metadata for this line path.
      */

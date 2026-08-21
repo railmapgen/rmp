@@ -37,9 +37,8 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             const updatedParam = await updateColors(param);
             graph.current.clear();
             graph.current.import(updatedParam);
-            dispatch(saveGraph(graph.current.export()));
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
+            dispatch(saveGraph(updatedParam));
+            await Promise.all([dispatch(refreshEdgesThunk()).unwrap(), dispatch(refreshNodesThunk()).unwrap()]);
             toast({
                 title: t('header.settings.procedures.updateColor.success'),
                 status: 'success' as const,

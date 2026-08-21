@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LinePathOverlayProps } from '../../../../constants/lines';
+import { LineId, OverlayProps } from '../../../../constants/constants';
 import { makePoint } from '../../../../constants/path';
 import { useRootDispatch } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
@@ -19,7 +19,7 @@ type FreeformDrag = { edgeId: string; id: string } | undefined;
  * Graph mutation and coordinate normalization remain in the controller so this component is a thin SVG interaction
  * layer.
  */
-export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
+export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: OverlayProps<LineId>) => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const [freeformDrag, setFreeformDrag] = React.useState<FreeformDrag>();

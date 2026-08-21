@@ -22,9 +22,9 @@ Most of the geometry support already exists:
 
 The missing work is mainly in the parallel grouping contract. The current
 implementation assumes every supported path has `startFrom` and
-`roundCornerFactor`, while Bezier only stores `along` and `normal`. Merely
-removing Bezier from the exclusion list would therefore be unsafe and would
-still render straight fallback paths.
+`roundCornerFactor`, while Bezier uses `along`, `normal`, and optional source
+and target XY offsets. Merely removing Bezier from the exclusion list would
+therefore be unsafe and would still render straight fallback paths.
 
 ## Goal
 
@@ -81,9 +81,10 @@ not affect rendering while those members are subordinate. This matches the
 existing parallel implementation and allows a line to recover its own shape if
 parallel mode is later disabled.
 
-The Bezier `along` and `normal` fields, as well as its drag overlay, should be
-disabled for subordinate members. Editing them would otherwise appear to do
-nothing because rendering uses the base member's attributes.
+The Bezier `along`, `normal`, and endpoint-offset fields, as well as its drag
+overlays, should be disabled for subordinate members. Editing them would
+otherwise appear to do nothing because rendering uses the base member's
+attributes.
 
 ### Offset side
 
@@ -144,7 +145,7 @@ by corner-based paths, not by Bezier.
 Split base-path generation by capability:
 
 * retain the minimum round-corner behavior for existing path types;
-* pass Bezier's saved `along` and `normal` directly to its generator.
+* pass Bezier's saved `along`, `normal`, and endpoint offsets directly to its generator.
 
 The result should still be checked with `isOpenPath()` before offsetting. This
 keeps the parallel resolver safe if another path type later produces an area
@@ -187,7 +188,7 @@ Follow the existing parallel path UI pattern in
 `src/components/svgs/lines/paths/`:
 
 * use `getBaseParallelLineID()` to identify the geometry owner;
-* disable Bezier's `along` and `normal` inputs on subordinate members;
+* disable Bezier's geometry inputs on subordinate members;
 * show the existing message and action that selects the base line;
 * do not show an editable Bezier control handle for a subordinate member.
 
@@ -213,7 +214,7 @@ both operate in graph coordinates before the map viewport transform.
 graph Bezier edges
     → build type-aware parallel group identity
     → choose lowest-index geometry owner
-    → generate one cubic OpenPath from along/normal
+    → generate one cubic OpenPath from along/normal and endpoint offsets
     → offset it for each positive parallelIndex
     → validate or use straight fallback
     → pass each resolved OpenPath to its existing line style
@@ -224,7 +225,7 @@ graph Bezier edges
 No save migration is expected:
 
 * every edge already has `parallelIndex`;
-* Bezier already saves `along` and `normal`;
+* Bezier already saves `along` and `normal`, while missing endpoint offsets default to zero;
 * old projects keep Bezier at `parallelIndex: -1`;
 * subscription limits count supported parallel lines generically and can include
   Bezier after `supportsParallelLinePath()` is enabled.
@@ -290,4 +291,3 @@ The implementation is complete when:
 5. Subordinate geometry cannot be edited or used as a tangent snap candidate.
 6. Degenerate controls never produce an invalid SVG path.
 7. Existing parallel path types retain their grouping and rendering behavior.
-

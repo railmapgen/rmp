@@ -14,6 +14,21 @@ export function defaultIsSameStyle(a: Record<string, unknown>, b: Record<string,
     return (ca as string[])[2] === (cb as string[])[2];
 }
 
+/** Compare two edges using the exact LineStyleType + isSameStyle contract shared by editor features. */
+export function areSameLineStyles(a: EdgeAttributes, b: EdgeAttributes): boolean {
+    if (a.style !== b.style) return false;
+
+    const aStyleAttrs = a[a.style];
+    const bStyleAttrs = b[b.style];
+    if (!aStyleAttrs || !bStyleAttrs) return false;
+
+    const styleEntry = lineStyles[a.style as keyof typeof lineStyles];
+    if (!styleEntry) return false;
+    const isSame = styleEntry.isSameStyle ?? defaultIsSameStyle;
+    // @ts-expect-error both attrs belong to the same LineStyleType after the equality check above
+    return isSame(aStyleAttrs, bStyleAttrs);
+}
+
 /**
  * BFS from targetEdgeId, collecting all connected edges with the same style.
  * Two edges are "connected" if they share a node, and both match the target's
@@ -24,11 +39,7 @@ export function findConnectedSameStyleEdges(
     targetEdgeId: LineId
 ): LineId[] {
     const targetAttrs = graph.getEdgeAttributes(targetEdgeId);
-    const targetStyle = targetAttrs.style;
-    const targetStyleAttrs = targetAttrs[targetStyle];
-    if (!targetStyleAttrs) return [targetEdgeId];
-    const styleEntry = lineStyles[targetStyle as keyof typeof lineStyles];
-    const isSame = styleEntry.isSameStyle ?? defaultIsSameStyle;
+    if (!targetAttrs[targetAttrs.style]) return [targetEdgeId];
 
     const visitedEdges = new Set<LineId>([targetEdgeId]);
     const visitedNodes = new Set<NodeId>();
@@ -44,11 +55,8 @@ export function findConnectedSameStyleEdges(
         for (const edge of graph.edges(node)) {
             if (visitedEdges.has(edge as LineId)) continue;
             const edgeAttrs = graph.getEdgeAttributes(edge);
-            if (edgeAttrs.style !== targetStyle) continue;
             if (!edgeAttrs.visible) continue;
-            const edgeStyleAttrs = edgeAttrs[edgeAttrs.style];
-            // @ts-expect-error both are of the same LineStyleType
-            if (!edgeStyleAttrs || !isSame(targetStyleAttrs, edgeStyleAttrs)) continue;
+            if (!areSameLineStyles(targetAttrs, edgeAttrs)) continue;
 
             visitedEdges.add(edge as LineId);
             const [s, t] = graph.extremities(edge) as [NodeId, NodeId];

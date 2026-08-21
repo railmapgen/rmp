@@ -602,7 +602,14 @@
                 "bezier": {
                     "displayName": "贝塞尔曲线",
                     "along": "沿线位置",
-                    "normal": "法向偏移"
+                    "normal": "法向偏移",
+                    "sourceOffset": "起点偏移",
+                    "targetOffset": "终点偏移",
+                    "linkedOffset": "联动的端点偏移",
+                    "sourceOffsetX": "起点 X 偏移",
+                    "sourceOffsetY": "起点 Y 偏移",
+                    "targetOffsetX": "终点 X 偏移",
+                    "targetOffsetY": "终点 Y 偏移"
                 },
                 "freeform": {
                     "displayName": "自由绘制线段",

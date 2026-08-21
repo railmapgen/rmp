@@ -3,8 +3,27 @@ import { fromChordCoordinates, toChordCoordinates } from '../../../../util/geome
 import { BezierPathAttributes, defaultBezierPathAttributes } from './bezier-model';
 
 /**
- * Convert saved chord-local attributes back to the absolute tangent
- * intersection used by the overlay and path generator.
+ * Resolve graph-node coordinates into the visual endpoints persisted by a Bezier.
+ *
+ * Offsets are node-relative and optional at runtime so Beziers from older saves remain valid.
+ */
+export const getBezierEffectiveEndpoints = (
+    source: PathPoint,
+    target: PathPoint,
+    attrs: BezierPathAttributes = defaultBezierPathAttributes
+): { source: PathPoint; target: PathPoint } => {
+    const sourceOffset = attrs.sourceOffset ?? defaultBezierPathAttributes.sourceOffset;
+    const targetOffset = attrs.targetOffset ?? defaultBezierPathAttributes.targetOffset;
+    return {
+        source: makePoint(source.x + sourceOffset.x, source.y + sourceOffset.y),
+        target: makePoint(target.x + targetOffset.x, target.y + targetOffset.y),
+    };
+};
+
+/**
+ * Convert saved chord-local attributes back to the absolute tangent intersection.
+ *
+ * `source` and `target` are the effective visual endpoints; endpoint offsets must already be applied.
  */
 export const getBezierControlPoint = (
     source: PathPoint,
@@ -22,11 +41,16 @@ export const getBezierLocalCoordinates = (
     source: PathPoint,
     target: PathPoint,
     control: PathPoint
-): BezierPathAttributes => {
+): Pick<BezierPathAttributes, 'along' | 'normal'> => {
     const coordinates = toChordCoordinates(control, source, target);
     // A zero-length edge has no stable chord basis. Falling back prevents NaN
     // attributes from being saved if two connected nodes temporarily overlap.
-    if (!coordinates) return { ...defaultBezierPathAttributes };
+    if (!coordinates) {
+        return {
+            along: defaultBezierPathAttributes.along,
+            normal: defaultBezierPathAttributes.normal,
+        };
+    }
 
     return {
         along: coordinates.x,
@@ -47,11 +71,18 @@ export const makeBezierPath = (
     target: PathPoint,
     attrs: BezierPathAttributes = defaultBezierPathAttributes
 ): OpenPath => {
-    const control = getBezierControlPoint(source, target, attrs);
+    const effective = getBezierEffectiveEndpoints(source, target, attrs);
+    const control = getBezierControlPoint(effective.source, effective.target, attrs);
     // A quadratic Bezier with control `control` is represented as a cubic so
     // styles can treat Bezier paths like all other OpenPath-based line paths.
-    const c1 = makePoint(source.x + (2 / 3) * (control.x - source.x), source.y + (2 / 3) * (control.y - source.y));
-    const c2 = makePoint(target.x + (2 / 3) * (control.x - target.x), target.y + (2 / 3) * (control.y - target.y));
+    const c1 = makePoint(
+        effective.source.x + (2 / 3) * (control.x - effective.source.x),
+        effective.source.y + (2 / 3) * (control.y - effective.source.y)
+    );
+    const c2 = makePoint(
+        effective.target.x + (2 / 3) * (control.x - effective.target.x),
+        effective.target.y + (2 / 3) * (control.y - effective.target.y)
+    );
 
-    return makeCubicPath(source, c1, c2, target);
+    return makeCubicPath(effective.source, c1, c2, effective.target);
 };

@@ -603,7 +603,14 @@
                 "bezier": {
                     "displayName": "Bezier curve",
                     "along": "Along position",
-                    "normal": "Normal offset"
+                    "normal": "Normal offset",
+                    "sourceOffset": "Source offset",
+                    "targetOffset": "Target offset",
+                    "linkedOffset": "Linked endpoint offset",
+                    "sourceOffsetX": "Source X offset",
+                    "sourceOffsetY": "Source Y offset",
+                    "targetOffsetX": "Target X offset",
+                    "targetOffsetY": "Target Y offset"
                 },
                 "freeform": {
                     "displayName": "Freeform path",

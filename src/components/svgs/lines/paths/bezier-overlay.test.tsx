@@ -8,7 +8,7 @@ import { makePoint } from '../../../../constants/path';
 import { createStore } from '../../../../redux';
 import { setSnapLines } from '../../../../redux/app/app-slice';
 import { render } from '../../../../test-utils';
-import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
+import { getBezierControlPoint, getBezierEffectiveEndpoints, getBezierLocalCoordinates } from './bezier-geometry';
 import { BezierPathAttributes } from './bezier-model';
 import { BezierLineOverlay } from './bezier-overlay';
 
@@ -52,8 +52,8 @@ const renderOverlay = (snapLines: boolean, editedAttrs?: BezierPathAttributes) =
     );
 };
 
-const dragOverlayTo = (snapLines: boolean, pointer = makePoint(20, 8)) => {
-    const { container } = renderOverlay(snapLines);
+const dragOverlayTo = (snapLines: boolean, pointer = makePoint(20, 8), editedAttrs?: BezierPathAttributes) => {
+    const { container } = renderOverlay(snapLines, editedAttrs);
     const group = container.querySelector('g')!;
     const handle = container.querySelector('circle')!;
     handle.setPointerCapture = vi.fn();
@@ -62,10 +62,11 @@ const dragOverlayTo = (snapLines: boolean, pointer = makePoint(20, 8)) => {
     fireEvent.pointerMove(group, { clientX: pointer.x, clientY: pointer.y, pointerId: 1 });
 
     const attrs = window.graph.getEdgeAttribute('line_edited', LinePathType.Bezier)!;
+    const effective = getBezierEffectiveEndpoints(makePoint(0, 0), makePoint(100, 100), attrs);
     return {
         attrs,
         container,
-        control: getBezierControlPoint(makePoint(0, 0), makePoint(100, 100), attrs),
+        control: getBezierControlPoint(effective.source, effective.target, attrs),
     };
 };
 
@@ -87,6 +88,24 @@ describe('BezierLineOverlay tangent snapping', () => {
 
         expect(control.x).toBeCloseTo(20);
         expect(control.y).toBeCloseTo(8);
+    });
+
+    it('uses effective endpoints and preserves their offsets while moving the control point', () => {
+        const initialAttrs: BezierPathAttributes = {
+            along: 0.5,
+            normal: -0.35,
+            sourceOffset: { x: 10, y: 5 },
+            targetOffset: { x: -20, y: 15 },
+        };
+        const { attrs, container } = dragOverlayTo(false, makePoint(30, 40), initialAttrs);
+        const guides = Array.from(container.querySelectorAll('line'));
+
+        expect(attrs.sourceOffset).toEqual(initialAttrs.sourceOffset);
+        expect(attrs.targetOffset).toEqual(initialAttrs.targetOffset);
+        expect(guides[0]).toHaveAttribute('x1', '10');
+        expect(guides[0]).toHaveAttribute('y1', '5');
+        expect(guides[1]).toHaveAttribute('x1', '80');
+        expect(guides[1]).toHaveAttribute('y1', '115');
     });
 
     it('highlights only the aligned overlay guide line while snapped', () => {

@@ -24,7 +24,7 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
 
 const legacySimplePathAvailableStyles = new Set([
@@ -60,10 +60,6 @@ const isLinePathAndStyleDisabled = (pathType: LinePathType, styleType: LineStyle
 export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
-    const hardRefresh = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
@@ -115,16 +111,24 @@ export default function LineTypeSection() {
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {
         if (newLinePathType) {
-            changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
+            const changed = changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
-            hardRefresh();
+            if (changed) {
+                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
         }
     };
     const handleChangeLineStyleType = (newLineStyleType: LineStyleType) => {
         if (newLineStyleType) {
-            changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
+            const changed = changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
             setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
-            hardRefresh();
+            if (changed) {
+                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
+                dispatch(saveGraph(graph.current.export()));
+                dispatch(refreshEdgesThunk());
+            }
         }
     };
     const handleClose = (proceed: boolean) => {

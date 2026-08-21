@@ -1,3 +1,5 @@
+import type { PathPoint } from '../../../../constants/path';
+
 /**
  * Saved attributes for Bezier's single editable tangent intersection.
  *
@@ -11,11 +13,17 @@ export interface BezierPathAttributes {
     along: number;
     /** Signed perpendicular offset, normalized by the chord length. */
     normal: number;
+    /** Visual displacement of the path start from the graph source node. Missing in older saves means zero. */
+    sourceOffset?: PathPoint;
+    /** Visual displacement of the path end from the graph target node. Missing in older saves means zero. */
+    targetOffset?: PathPoint;
 }
 
-export const defaultBezierPathAttributes: BezierPathAttributes = {
+export const defaultBezierPathAttributes: Required<BezierPathAttributes> = {
     along: 0.5,
     normal: -0.35,
+    sourceOffset: { x: 0, y: 0 },
+    targetOffset: { x: 0, y: 0 },
 };
 
 /**

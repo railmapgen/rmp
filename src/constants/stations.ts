@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import React from 'react';
-import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId } from './constants';
+import { AttrsProps, CanvasType, CategoriesType, CityCode, OverlayProps, StnId } from './constants';
 import type { ShmetroBasicStationAttributes } from '../components/svgs/stations/shmetro-basic';
 import type { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
 import type { ShmetroIntStationAttributes } from '../components/svgs/stations/shmetro-int';
@@ -183,6 +183,13 @@ export interface Station<T extends StationAttributes> {
      * Note it will be under other elements that have a bigger zIndex.
      */
     postComponent?: React.FC<StationComponentProps>;
+    /**
+     * Optional direct-manipulation UI shown above the normal graph layers while this station is singly selected.
+     *
+     * Station implementations may register a shared overlay or provide station-specific controls. Overlays are editor
+     * UI only and must explicitly save and refresh graph mutations.
+     */
+    overlayComponent?: React.FC<OverlayProps<StnId>>;
     /**
      * The icon displayed in the tools panel.
      */

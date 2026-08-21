@@ -38,7 +38,7 @@ import {
 import { findThemes } from '../../../util/color';
 import { usePaletteTheme } from '../../../util/hooks';
 import ThemeButton from '../../panels/theme-button';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 
 export type FilterType = 'station' | 'misc-node' | 'line';
@@ -71,11 +71,6 @@ export const ChangeTypeModal = (props: {
     } = useRootSelector(state => state.app);
     const { activeSubscriptions } = useRootSelector(state => state.account);
 
-    const hardRefresh = React.useCallback(() => {
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshNodesThunk());
-        dispatch(refreshEdgesThunk());
-    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph]);
     const graph = React.useRef(window.graph);
 
     const availableLinePathOptions = {
@@ -277,7 +272,7 @@ export const ChangeTypeModal = (props: {
         }
     }, [isOpen]);
 
-    const handleChange = () => {
+    const handleChange = async () => {
         const stations = filter?.includes('station')
             ? ([...selected].filter(node => node.startsWith('stn')) as StnId[])
             : isSelect
@@ -291,24 +286,34 @@ export const ChangeTypeModal = (props: {
         const lines = isSelect
             ? ([...selected].filter(edge => edge.startsWith('line')) as LineId[])
             : (graph.current.edges() as LineId[]);
+        // Only edges actually mutated by this operation enter normalization. Unchanged same-style neighbours must
+        // remain eligible as established anchors rather than being treated as pending members of the change set.
+        const changedLines: LineId[] = [];
         if ((!filter || filter.includes('station')) && isStationTypeSwitch) {
             changeStationsTypeInBatch(graph.current, currentStationType, newStationType, stations);
             if (autoChangeStationType) stations.forEach(s => checkAndChangeStationIntType(graph.current, s as StnId));
         }
         if ((!filter || filter.includes('line')) && isLineStyleTypeSwitch) {
-            changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines);
+            changedLines.push(
+                ...changeLineStyleTypeInBatch(graph.current, currentLineStyleType, newLineStyleType, newTheme, lines)
+            );
         }
         if ((!filter || filter.includes('line')) && isLinePathTypeSwitch) {
-            changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel);
+            changedLines.push(
+                ...changeLinePathTypeInBatch(graph.current, currentLinePathType, newLinePathType, lines, autoParallel)
+            );
         }
         if (isColorSwitch) {
-            if (!filter || filter.includes('line'))
-                changeLinesColorInBatch(
-                    graph.current,
-                    selectedColor.id === 'any' ? 'any' : selectedColor.theme,
-                    newTheme,
-                    lines
+            if (!filter || filter.includes('line')) {
+                changedLines.push(
+                    ...changeLinesColorInBatch(
+                        graph.current,
+                        selectedColor.id === 'any' ? 'any' : selectedColor.theme,
+                        newTheme,
+                        lines
+                    )
                 );
+            }
             if (!filter || filter.includes('misc-node') || filter.includes('station'))
                 changeNodesColorInBatch(
                     graph.current,
@@ -327,7 +332,10 @@ export const ChangeTypeModal = (props: {
                 zIndex
             );
         }
-        hardRefresh();
+        normalizeEdgeAttributes(graph.current, changedLines);
+        dispatch(saveGraph(graph.current.export()));
+        await dispatch(refreshEdgesThunk()).unwrap();
+        await dispatch(refreshNodesThunk()).unwrap();
         onClose();
     };
 

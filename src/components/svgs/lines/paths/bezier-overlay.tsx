@@ -1,13 +1,13 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LineId } from '../../../../constants/constants';
-import { LinePathOverlayProps, LinePathType } from '../../../../constants/lines';
+import { LineId, OverlayProps } from '../../../../constants/constants';
+import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { pointerPosToSVGCoord } from '../../../../util/helpers';
-import { getBezierControlPoint, getBezierLocalCoordinates } from './bezier-geometry';
+import { getBezierControlPoint, getBezierEffectiveEndpoints, getBezierLocalCoordinates } from './bezier-geometry';
 import { defaultBezierPathAttributes, isStraightBezierPathAttributes } from './bezier-model';
 import {
     type BezierEndpoint,
@@ -78,10 +78,16 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
     const [sourceId, targetId] = window.graph.extremities(id);
     const sourceAttrs = window.graph.getNodeAttributes(sourceId);
     const targetAttrs = window.graph.getNodeAttributes(targetId);
+    const attrs = edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes;
+    const effective = getBezierEffectiveEndpoints(
+        makePoint(sourceAttrs.x, sourceAttrs.y),
+        makePoint(targetAttrs.x, targetAttrs.y),
+        attrs
+    );
     return {
-        attrs: edgeAttrs[LinePathType.Bezier] ?? defaultBezierPathAttributes,
-        source: makePoint(sourceAttrs.x, sourceAttrs.y),
-        target: makePoint(targetAttrs.x, targetAttrs.y),
+        attrs,
+        source: effective.source,
+        target: effective.target,
     };
 };
 
@@ -90,7 +96,7 @@ const getBezierEditable = (id: LineId): BezierEditable | undefined => {
  * handle. The graph is refreshed during dragging for live feedback, but the
  * undoable save entry is written only when the drag finishes.
  */
-export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePathOverlayProps) => {
+export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: OverlayProps<LineId>) => {
     const dispatch = useRootDispatch();
     const snapLines = useRootSelector(state => state.app.preference.snapLines);
     const [dragging, setDragging] = React.useState(false);
@@ -154,12 +160,14 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: LinePat
         setSnapEndpoints(snap ? getBezierSnapEndpoints(snap.endpoints) : INACTIVE_BEZIER_SNAP_ENDPOINTS);
         // Save local chord coordinates rather than absolute control coordinates
         // so subsequent node movement preserves the intended curve shape.
-        const attrs = getBezierLocalCoordinates(current.source, current.target, snap?.point ?? pointer);
+        const localCoordinates = getBezierLocalCoordinates(current.source, current.target, snap?.point ?? pointer);
         // Projection arithmetic can leave a tiny residual. Persist exact zero
         // so the render pipeline can distinguish authored curves from a
         // deliberate straight snap without applying its own fuzzy threshold.
-        if (snap?.kind === 'straight') attrs.normal = 0;
-        window.graph.mergeEdgeAttributes(id, { [LinePathType.Bezier]: attrs });
+        if (snap?.kind === 'straight') localCoordinates.normal = 0;
+        window.graph.mergeEdgeAttributes(id, {
+            [LinePathType.Bezier]: { ...current.attrs, ...localCoordinates },
+        });
         dispatch(refreshEdgesThunk());
     });
 

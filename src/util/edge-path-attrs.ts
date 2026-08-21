@@ -31,6 +31,7 @@ export const reverseEdgePathAttrs = (type: LinePathType, attrs: EdgePathAttrs): 
         const bezier = attrs as BezierPathAttributes;
         bezier.along = 1 - bezier.along;
         bezier.normal = -bezier.normal;
+        [bezier.sourceOffset, bezier.targetOffset] = [bezier.targetOffset, bezier.sourceOffset];
     }
     // simple path is symmetrical; no flip needed
 };

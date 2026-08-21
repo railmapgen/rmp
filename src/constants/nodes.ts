@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import React from 'react';
-import { AttrsProps, MiscNodeId } from './constants';
+import { AttrsProps, MiscNodeId, OverlayProps } from './constants';
 import type { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import type { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import type { TextAttributes } from '../components/svgs/nodes/text';
@@ -131,6 +131,13 @@ export interface Node<T> {
      * Note it will be under other elements that have a bigger zIndex.
      */
     postComponent?: React.FC<NodeComponentProps<T>>;
+    /**
+     * Optional direct-manipulation UI shown above the normal graph layers while this node is singly selected.
+     *
+     * Node implementations may register a shared overlay or provide node-specific controls. Overlays are editor UI
+     * only and must explicitly save and refresh graph mutations.
+     */
+    overlayComponent?: React.FC<OverlayProps<MiscNodeId>>;
     /**
      * The icon displayed in the tools panel.
      */

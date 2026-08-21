@@ -13,9 +13,6 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { useRootDispatch, useRootSelector } from '../../../../redux';
-import { saveGraph } from '../../../../redux/param/param-slice';
-import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { Path, makeEmptyOpenPath } from '../../../../constants/path';
 import { isLinearPath, isOpenPath, splitLinearPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
@@ -115,30 +112,15 @@ const defaultMRTTapeOutAttributes: MRTTapeOutAttributes = {
     colorB: [CityCode.Shanghai, 'maglevB', '#F5A74E', MonoColour.white],
 };
 
-const MRTTapeOutSwitch = () => {
+const MRTTapeOutSwitch = ({ id, attrs, handleAttrsUpdate }: AttrsProps<MRTTapeOutAttributes>) => {
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
-
-    const { selected } = useRootSelector(state => state.runtime);
-    const [selectedFirst] = selected;
-    const graph = React.useRef(window.graph);
 
     return (
         <IconButton
             aria-label={t('panel.details.lines.mrtTapeOut.swap')}
             icon={<MdOutlineSwapVert />}
             size="sm"
-            onClick={() => {
-                const attrs =
-                    graph.current.getEdgeAttribute(selectedFirst, LineStyleType.MRTTapeOut) ??
-                    defaultMRTTapeOutAttributes;
-                const tmp = attrs.colorA;
-                attrs.colorA = attrs.colorB;
-                attrs.colorB = tmp;
-                graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.MRTTapeOut]: attrs });
-                dispatch(saveGraph(graph.current.export()));
-                dispatch(refreshEdgesThunk());
-            }}
+            onClick={() => handleAttrsUpdate(id, { ...attrs, colorA: attrs.colorB, colorB: attrs.colorA })}
         />
     );
 };
@@ -150,7 +132,7 @@ const mrtTapeOutAttrsComponent = (props: AttrsProps<MRTTapeOutAttributes>) => {
         {
             type: 'custom',
             label: t('panel.details.lines.dualColor.swap'),
-            component: <MRTTapeOutSwitch />,
+            component: <MRTTapeOutSwitch {...props} />,
             minW: 'full',
         },
         {

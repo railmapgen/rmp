@@ -5,11 +5,14 @@ import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { defaultBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
+import { normalizeEdgeAttributes } from '../components/svgs/lines/lines';
 import {
     autoPopulateTransfer,
     autoUpdateStationType,
     changeLinePathType,
     changeLinesColorInBatch,
+    changeLineStyleType,
     changeStationType,
     checkAndChangeStationIntType,
 } from './change-types';
@@ -599,5 +602,145 @@ describe('autoUpdateStationType and autoPopulateTransfer', () => {
 
         expect(updated).toBe(true);
         expect(graph.getNodeAttribute('stn_1', StationType.MTR)!.transfer).toEqual([[]]);
+    });
+});
+
+describe('Bezier endpoint alignment after line type changes', () => {
+    type Graph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+
+    const RED: Theme = [CityCode.Other, 'red', '#ff0000', MonoColour.white];
+    const BLUE: Theme = [CityCode.Other, 'blue', '#0000ff', MonoColour.white];
+
+    const addNode = (graph: Graph, id: `stn_${string}` | `misc_node_${string}`, x: number) => {
+        graph.addNode(id, {
+            visible: true,
+            zIndex: 0,
+            x,
+            y: 0,
+            type: StationType.ShmetroBasic,
+        });
+    };
+
+    const makeBezierEdgeAttrs = (
+        color: Theme,
+        sourceOffset = { x: 0, y: 0 },
+        targetOffset = { x: 0, y: 0 },
+        visible = true,
+        style = LineStyleType.SingleColor
+    ): EdgeAttributes => ({
+        visible,
+        zIndex: 0,
+        type: LinePathType.Bezier,
+        [LinePathType.Bezier]: {
+            ...structuredClone(defaultBezierPathAttributes),
+            sourceOffset,
+            targetOffset,
+        },
+        style,
+        [style]: style === LineStyleType.SingleColor ? { color } : {},
+        reconcileId: '',
+        parallelIndex: -1,
+    });
+
+    const makeDiagonalEdgeAttrs = (color: Theme): EdgeAttributes => ({
+        visible: true,
+        zIndex: 0,
+        type: LinePathType.Diagonal,
+        [LinePathType.Diagonal]: {
+            startFrom: 'from',
+            offsetFrom: 0,
+            offsetTo: 0,
+            roundCornerFactor: 0,
+        },
+        style: LineStyleType.SingleColor,
+        [LineStyleType.SingleColor]: { color },
+        reconcileId: '',
+        parallelIndex: -1,
+    });
+
+    it('aligns default Bezier attrs to hidden same-style peers when changing the path type', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'stn_source', 0);
+        addNode(graph, 'stn_target', 100);
+        addNode(graph, 'misc_node_source_peer', -100);
+        addNode(graph, 'misc_node_target_peer', 200);
+
+        graph.addDirectedEdgeWithKey(
+            'line_source_peer',
+            'misc_node_source_peer',
+            'stn_source',
+            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 11, y: 12 }, false)
+        );
+        graph.addDirectedEdgeWithKey(
+            'line_target_peer',
+            'stn_target',
+            'misc_node_target_peer',
+            makeBezierEdgeAttrs(RED, { x: 21, y: 22 })
+        );
+        graph.addDirectedEdgeWithKey('line_selected', 'stn_source', 'stn_target', makeDiagonalEdgeAttrs(RED));
+
+        expect(changeLinePathType(graph, 'line_selected', LinePathType.Bezier, false)).toBe(true);
+        normalizeEdgeAttributes(graph, ['line_selected']);
+
+        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 11, y: 12 },
+            targetOffset: { x: 21, y: 22 },
+        });
+    });
+
+    it('aligns a Bezier edge when changing its style type into an existing group', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'stn_center', 0);
+        addNode(graph, 'misc_node_peer', -100);
+        addNode(graph, 'misc_node_target', 100);
+
+        graph.addDirectedEdgeWithKey(
+            'line_peer',
+            'misc_node_peer',
+            'stn_center',
+            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 31, y: 32 })
+        );
+        graph.addDirectedEdgeWithKey(
+            'line_selected',
+            'stn_center',
+            'misc_node_target',
+            makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 }, true, LineStyleType.Unknown)
+        );
+
+        expect(changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED)).toBe(true);
+        normalizeEdgeAttributes(graph, ['line_selected']);
+
+        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 31, y: 32 },
+            targetOffset: { x: 3, y: 4 },
+        });
+    });
+
+    it('aligns a Bezier edge when a batch color change moves it into an existing group', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        addNode(graph, 'stn_center', 0);
+        addNode(graph, 'misc_node_peer', -100);
+        addNode(graph, 'misc_node_target', 100);
+
+        graph.addDirectedEdgeWithKey(
+            'line_peer',
+            'misc_node_peer',
+            'stn_center',
+            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 41, y: 42 }, false)
+        );
+        graph.addDirectedEdgeWithKey(
+            'line_selected',
+            'stn_center',
+            'misc_node_target',
+            makeBezierEdgeAttrs(BLUE, { x: 5, y: 6 }, { x: 7, y: 8 })
+        );
+
+        expect(changeLinesColorInBatch(graph, BLUE, RED, ['line_peer', 'line_selected'])).toEqual(['line_selected']);
+        normalizeEdgeAttributes(graph, ['line_selected']);
+
+        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
+            sourceOffset: { x: 41, y: 42 },
+            targetOffset: { x: 7, y: 8 },
+        });
     });
 });

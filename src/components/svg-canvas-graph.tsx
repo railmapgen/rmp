@@ -4,7 +4,7 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
-import { LinePathAttributes, LinePathDrawingSession, LinePathType, LineStyleType } from '../constants/lines';
+import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
 import { StationType } from '../constants/stations';
@@ -44,10 +44,11 @@ import {
     isNodeSupportSnapLine,
     makeSnapLinesPath,
 } from '../util/snap-lines';
+import { LineCreationPreview, type LineDrawingGesture } from './line-creation-preview';
+import { Overlay } from './overlay';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
-import { LinePathOverlayLayer } from './line-path-overlay-layer';
-import { linePaths, lineStyles } from './svgs/lines/lines';
+import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
 
@@ -81,14 +82,6 @@ export const findConnectableTarget = (elements: Element[]) => {
         }
     }
 };
-
-interface LineDrawingGesture {
-    type: LinePathType;
-    source: NodeId;
-    sourcePoint: PathPoint;
-    pointer: PathPoint;
-    session?: LinePathDrawingSession<LinePathAttributes>;
-}
 
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
@@ -387,6 +380,8 @@ const SvgCanvas = () => {
             if (gesture && gesture.type === getLinePathAndStyle(mode).path) {
                 const pointer = getSvgPointerPosition(e);
                 gesture.pointer = pointer;
+                const target = getConnectableNodeFromPointer(e);
+                gesture.target = target === gesture.source ? undefined : target;
                 gesture.session?.pointerMove(pointer);
             }
         }
@@ -442,6 +437,7 @@ const SvgCanvas = () => {
 
                     dispatch(setSelected(new Set([newLineId])));
                     if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
+                    normalizeEdgeAttributes(graph.current, [newLineId], 'created');
                     dispatch(saveGraph(graph.current.export()));
                     dispatch(refreshEdgesThunk());
                     if (nodesChanged) dispatch(refreshNodesThunk());
@@ -526,7 +522,9 @@ const SvgCanvas = () => {
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
-            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, source, id, {
+            const firstSplitEdgeId = `line_${nanoid(10)}` as LineId;
+            const secondSplitEdgeId = `line_${nanoid(10)}` as LineId;
+            graph.current.addDirectedEdgeWithKey(firstSplitEdgeId, source, id, {
                 visible: true,
                 zIndex,
                 type: linePathType,
@@ -536,7 +534,7 @@ const SvgCanvas = () => {
                 reconcileId: '',
                 parallelIndex,
             });
-            graph.current.addDirectedEdgeWithKey(`line_${nanoid(10)}`, id, target, {
+            graph.current.addDirectedEdgeWithKey(secondSplitEdgeId, id, target, {
                 visible: true,
                 zIndex,
                 type: linePathType,
@@ -546,6 +544,7 @@ const SvgCanvas = () => {
                 reconcileId: '',
                 parallelIndex,
             });
+            normalizeEdgeAttributes(graph.current, [firstSplitEdgeId, secondSplitEdgeId], 'created');
             graph.current.dropEdge(edge);
             refreshAndSave();
             if (isAllowProjectTelemetry) {
@@ -569,28 +568,6 @@ const SvgCanvas = () => {
         [refreshEdges, refreshNodes]
     );
 
-    // Prepare line style component and attributes for the line being created.
-    const { path, style } = getLinePathAndStyle(mode);
-    const linePath = path || LinePathType.Diagonal;
-    const lineStyle = style || LineStyleType.SingleColor;
-    const LineStyleComponent = lineStyles[lineStyle].component;
-    const lineStyleAttrs = structuredClone(lineStyles[lineStyle].defaultAttrs);
-    // TODO: there should be some way for a style to disable auto theme injection
-    if ('color' in lineStyleAttrs && lineStyle !== LineStyleType.River) lineStyleAttrs.color = theme;
-
-    const drawingSourcePoint =
-        active && active !== 'background' && graph.current.hasNode(active) ? getNodePoint(active) : undefined;
-    const drawingPointer = drawingSourcePoint
-        ? {
-              x: drawingSourcePoint.x - pointerOffset.dx,
-              y: drawingSourcePoint.y - pointerOffset.dy,
-          }
-        : undefined;
-    const drawingPreviewPath =
-        drawingGesture.current?.session && drawingPointer
-            ? drawingGesture.current.session.getPreviewPath(drawingGesture.current.pointer)
-            : undefined;
-
     return (
         <>
             <SvgLayer
@@ -602,43 +579,8 @@ const SvgCanvas = () => {
                 handleEdgePointerDown={handleEdgePointerDown}
                 handleEdgeDoubleClick={handleEdgeDoubleClick}
             />
-            {mode.startsWith('line') &&
-                drawingSourcePoint &&
-                drawingPointer &&
-                (!drawingGesture.current || drawingGesture.current.type === linePath) &&
-                (drawingGesture.current?.session ? (
-                    drawingPreviewPath ? (
-                        <g opacity={0.65}>
-                            <LineStyleComponent
-                                id="line_create_in_progress___no_use"
-                                type={linePath}
-                                path={drawingPreviewPath}
-                                // @ts-expect-error line style attributes are selected from the same registry key.
-                                styleAttrs={lineStyleAttrs}
-                                newLine
-                                handlePointerDown={() => {}}
-                            />
-                        </g>
-                    ) : null
-                ) : linePaths[linePath].drawingBehavior ? null : (
-                    <LineStyleComponent
-                        id="line_create_in_progress___no_use"
-                        type={linePath}
-                        path={linePaths[linePath].generatePath(
-                            drawingSourcePoint.x,
-                            drawingPointer.x,
-                            drawingSourcePoint.y,
-                            drawingPointer.y,
-                            // @ts-expect-error
-                            linePaths[linePath].defaultAttrs
-                        )}
-                        // @ts-expect-error
-                        styleAttrs={lineStyleAttrs}
-                        newLine
-                        handlePointerDown={() => {}} // no use
-                    />
-                ))}
-            <LinePathOverlayLayer />
+            <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
+            <Overlay />
             {activeSnapLines.length !== 0 &&
                 activeSnapLines.map(p => (
                     <path

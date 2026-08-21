@@ -138,6 +138,7 @@ export const changeStationsTypeInBatch = (
  * @param graph Graph.
  * @param selectedFirst Current line's id.
  * @param newLinePathType New line's path type.
+ * @returns Whether the edge was changed.
  */
 export const changeLinePathType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -165,7 +166,9 @@ export const changeLinePathType = (
         if (!canReconcileLine(newLinePathType, currentLineStyleType)) {
             graph.setEdgeAttribute(selectedFirst, 'reconcileId', '');
         }
+        return true;
     }
+    return false;
 };
 
 /**
@@ -174,7 +177,7 @@ export const changeLinePathType = (
  * @param currentLinePathType Current lines' path type.
  * @param newLinePathType New lines' path type.
  * @param lines Selected lines. (undefined for all)
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLinePathTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -185,9 +188,7 @@ export const changeLinePathTypeInBatch = (
 ) =>
     lines
         .filter(edge => currentLinePathType === 'any' || graph.getEdgeAttribute(edge, 'type') === currentLinePathType)
-        .forEach(edgeId => {
-            changeLinePathType(graph, edgeId, newLinePathType, autoParallel);
-        });
+        .filter(edgeId => changeLinePathType(graph, edgeId, newLinePathType, autoParallel));
 
 /**
  * Change a line's style type.
@@ -195,6 +196,7 @@ export const changeLinePathTypeInBatch = (
  * @param selectedFirst Current line's id.
  * @param newLineStyleType New line's style type.
  * @param theme A handy helper to override color to current theme.
+ * @returns Whether the edge was changed.
  */
 export const changeLineStyleType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -226,7 +228,9 @@ export const changeLineStyleType = (
         graph.mergeEdgeAttributes(selectedFirst, { style: newLineStyleType, [newLineStyleType]: newAttrs });
         if (newLineStyleType === LineStyleType.River) graph.setEdgeAttribute(selectedFirst, 'zIndex', -5);
         else graph.setEdgeAttribute(selectedFirst, 'zIndex', oldZIndex ?? 0);
+        return true;
     }
+    return false;
 };
 
 /**
@@ -236,7 +240,7 @@ export const changeLineStyleType = (
  * @param newLineStyleType New lines' type.
  * @param theme New theme.
  * @param lines Selected lines. (undefined for all)
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLineStyleTypeInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -249,9 +253,7 @@ export const changeLineStyleTypeInBatch = (
         .filter(
             edge => currentLineStyleType === 'any' || graph.getEdgeAttribute(edge, 'style') === currentLineStyleType
         )
-        .forEach(edgeId => {
-            changeLineStyleType(graph, edgeId, newLineStyleType, theme);
-        });
+        .filter(edgeId => changeLineStyleType(graph, edgeId, newLineStyleType, theme));
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch
@@ -259,14 +261,15 @@ export const changeLineStyleTypeInBatch = (
  * @param currentLineColor current theme.
  * @param newLineColor new theme.
  * @param lines selected lines.
- * @returns Nothing.
+ * @returns Changed edge IDs.
  */
 export const changeLinesColorInBatch = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     currentLineColor: Theme | 'any',
     newLineColor: Theme,
     lines: LineId[]
-) =>
+) => {
+    const changed: LineId[] = [];
     lines
         .filter(edge => dynamicColorInjection.has(graph.getEdgeAttribute(edge, 'style')))
         .forEach(edge => {
@@ -283,8 +286,11 @@ export const changeLinesColorInBatch = (
                     ...(attr[attr.style] as AttributesWithColor),
                     color: structuredClone(newLineColor),
                 });
+                changed.push(edge);
             }
         });
+    return changed;
+};
 
 /**
  * Change lines' color from currentLineColor to newLineColor in batch

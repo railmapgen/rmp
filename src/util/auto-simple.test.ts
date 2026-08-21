@@ -12,6 +12,17 @@ describe('checkSimplePathAvailability for Bezier', () => {
         ).toEqual({ x1: 0, y1: 0, x2: 100, y2: 0, offset: 0 });
     });
 
+    it('uses the effective offset endpoints for an exactly straight Bezier', () => {
+        expect(
+            checkSimplePathAvailability(LinePathType.Bezier, 0, 0, 100, 0, {
+                along: 0.5,
+                normal: 0,
+                sourceOffset: { x: 5, y: 10 },
+                targetOffset: { x: -15, y: 20 },
+            })
+        ).toEqual({ x1: 5, y1: 10, x2: 85, y2: 20, offset: 0 });
+    });
+
     it('keeps even a very shallow unsnapped curve as Bezier geometry', () => {
         expect(
             checkSimplePathAvailability(LinePathType.Bezier, 0, 0, 100, 0, {
