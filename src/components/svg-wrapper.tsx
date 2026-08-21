@@ -11,6 +11,7 @@ import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
+import { MAP_MAX_VIEWBOX_ZOOM } from '../map/map-config';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
 import { saveGraph } from '../redux/param/param-slice';
@@ -50,6 +51,7 @@ import { rotateSelectedNodes } from '../util/transform';
 import { useViewportController } from '../util/use-viewport-controller';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
+import MapCanvas, { type MapCanvasHandle } from './map-canvas';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -74,7 +76,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const { svgViewBoxZoom, svgViewBoxMin, mapEnabled } = useRootSelector(state => state.param.present);
     const {
         selected,
         active,
@@ -89,6 +91,18 @@ const SvgWrapper = () => {
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
+    const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
+    const [isMapOverview, setIsMapOverview] = React.useState(false);
+
+    /**
+     * Intermediate pan/zoom frames bypass Redux for interaction performance.
+     * This narrow bridge keeps the sibling map layer synchronized without
+     * teaching the reusable viewport controller about maps or tile loading.
+     */
+    const handleViewportChange = React.useCallback(
+        (viewport: { x: number; y: number; zoom: number }) => mapCanvasRef.current?.updateViewport(viewport),
+        []
+    );
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled =
@@ -110,6 +124,7 @@ const SvgWrapper = () => {
         panEnd,
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
+        onViewportChange: handleViewportChange,
     });
 
     const makeStationName = useMakeStationName();
@@ -238,7 +253,10 @@ const SvgWrapper = () => {
         const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
 
         let newZoom = currentViewport.zoom * scaleMultiplier;
-        newZoom = Math.max(1, Math.min(newZoom, 400));
+        // A visible map needs a city-scale overview. Keep the established cap
+        // while the map is hidden.
+        const maxZoom = mapEnabled ? MAP_MAX_VIEWBOX_ZOOM : 400;
+        newZoom = Math.max(1, Math.min(newZoom, maxZoom));
         if (newZoom === currentViewport.zoom) return;
 
         const { x, y } = getMousePosition(e);
@@ -481,32 +499,43 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
-                    {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
-                    {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                    <utils.SvgAssetsContextProvider>
-                        <SvgCanvas />
-                    </utils.SvgAssetsContextProvider>
-                    {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                        <rect
-                            x={selectCoord.sx}
-                            y={selectCoord.sy}
-                            width={selectCoord.ex - selectCoord.sx}
-                            height={selectCoord.ey - selectCoord.sy}
-                            rx="2"
-                            stroke="#b5b5b6"
-                            strokeWidth="2"
-                            strokeOpacity="0.4"
-                            fill="#b5b5b6"
-                            opacity="0.75"
-                        />
-                    )}
-                    {isTouchClient() &&
-                        [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
-                            <VirtualJoystick />
+                    {/*
+                     * MapCanvas is a sibling of the editor content so it can own and clear its
+                     * imperative tile root without taking ownership of SvgCanvas's React tree.
+                     */}
+                    <MapCanvas ref={mapCanvasRef} onOverviewChange={setIsMapOverview} />
+                    {/*
+                     * At geographic overview scale, editor geometry is too dense to be useful.
+                     * Keep it mounted to preserve editor state, but exclude it from rendering.
+                     */}
+                    <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
+                        {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
+                        {isTouchClient() && mode === 'free' && <TouchOverlay />}
+                        {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
+                        {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                        <utils.SvgAssetsContextProvider>
+                            <SvgCanvas />
+                        </utils.SvgAssetsContextProvider>
+                        {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                            <rect
+                                x={selectCoord.sx}
+                                y={selectCoord.sy}
+                                width={selectCoord.ex - selectCoord.sx}
+                                height={selectCoord.ey - selectCoord.sy}
+                                rx="2"
+                                stroke="#b5b5b6"
+                                strokeWidth="2"
+                                strokeOpacity="0.4"
+                                fill="#b5b5b6"
+                                opacity="0.75"
+                            />
                         )}
-                    <RadialTouchMenu />
+                        {isTouchClient() &&
+                            [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                                <VirtualJoystick />
+                            )}
+                        <RadialTouchMenu />
+                    </g>
                 </g>
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />

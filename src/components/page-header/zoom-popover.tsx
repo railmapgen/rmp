@@ -2,8 +2,12 @@ import React from 'react';
 import { IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { MdZoomOut, MdZoomIn } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
+import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
 import { useRootSelector, useRootDispatch } from '../../redux/index';
 import { setSvgViewBoxZoom } from '../../redux/param/param-slice';
+
+const MAP_HIDDEN_MAX_ZOOM = 400;
+const ZOOM_SLIDER_MARGIN = 10;
 
 /**
  * A zoom control displayed in popover component.
@@ -12,18 +16,19 @@ import { setSvgViewBoxZoom } from '../../redux/param/param-slice';
 export const ZoomPopover = () => {
     const [isOpen, setIsOpen] = React.useState(false);
 
-    const { svgViewBoxZoom } = useRootSelector(state => state.param.present);
+    const { mapEnabled, svgViewBoxZoom } = useRootSelector(state => state.param.present);
     const dispatch = useRootDispatch();
+    const maxZoom = mapEnabled ? MAP_MAX_VIEWBOX_ZOOM : MAP_HIDDEN_MAX_ZOOM;
 
     const fields: RmgFieldsField[] = [
         {
             type: 'slider',
             label: '',
-            value: 400 - svgViewBoxZoom,
-            min: 10,
-            max: 390,
+            value: maxZoom - svgViewBoxZoom,
+            min: ZOOM_SLIDER_MARGIN,
+            max: maxZoom - ZOOM_SLIDER_MARGIN,
             step: 1,
-            onChange: value => dispatch(setSvgViewBoxZoom(400 - value)),
+            onChange: value => dispatch(setSvgViewBoxZoom(maxZoom - value)),
             leftIcon: <MdZoomOut />,
             rightIcon: <MdZoomIn />,
             minW: 160,

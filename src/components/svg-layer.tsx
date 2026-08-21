@@ -50,7 +50,7 @@ const SvgLayer = React.memo(
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
-                const visible = element.line!.attr.visible ?? true;
+                const visible = element.line!.attr.visible;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
@@ -118,7 +118,7 @@ const SvgLayer = React.memo(
                 const id = element.id as StnId;
                 const attr = element.station!;
                 const type = attr.type as StationType;
-                const visible = attr.visible ?? true;
+                const visible = attr.visible;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
@@ -186,7 +186,7 @@ const SvgLayer = React.memo(
                 const id = element.id as MiscNodeId;
                 const attr = element.miscNode!;
                 const type = attr.type as MiscNodeType;
-                const visible = attr.visible ?? true;
+                const visible = attr.visible;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',

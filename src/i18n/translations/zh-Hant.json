@@ -790,6 +790,10 @@
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜尋車站",
+        "mapToggle": {
+            "show": "顯示地理地圖",
+            "hide": "隱藏地理地圖"
+        },
         "open": {
             "new": "新項目",
             "config": "讀入項目",
@@ -907,6 +911,7 @@
             },
             "preference": {
                 "title": "偏好",
+                "mapEnabled": "顯示地理地圖圖層",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
                 "autoParallel": "自動將新段線設置為與現有線段平行",
                 "randomStationNames": {
@@ -1074,5 +1079,68 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
+    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
+    "map": {
+        "loading": "正在載入地圖",
+        "loadError": "無法載入地圖底圖。",
+        "style": {
+            "title": "地圖樣式",
+            "reset": "恢復預設",
+            "type": "類型",
+            "enabled": "顯示",
+            "widthScale": "寬度倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "描邊",
+                "color": "路面",
+                "path": "小徑",
+                "local": "支路",
+                "collector": "次幹路",
+                "arterial": "主幹路"
+            },
+            "rails": {
+                "title": "鐵路",
+                "metro": "地鐵",
+                "national": "國鐵"
+            },
+            "labels": {
+                "title": "標籤",
+                "enabled": "顯示全部標籤",
+                "sizeScale": "字號倍率",
+                "color": "文字",
+                "strokeColor": "描邊",
+                "groups": {
+                    "places": "地名",
+                    "roads": "道路",
+                    "buildings": "建築",
+                    "areas": "區域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地名",
+                    "place-medium": "中等地名",
+                    "place-minor": "次要地名",
+                    "road-arterial": "主幹路",
+                    "road-collector": "次幹路",
+                    "building": "建築",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅區",
+                    "area-commercial": "商業區",
+                    "area-industrial": "工業區",
+                    "area-education": "教育設施",
+                    "area-healthcare": "醫療設施",
+                    "transport-airport": "機場",
+                    "transport-rail": "國鐵車站",
+                    "transport-metro": "地鐵車站",
+                    "transport-platform": "月台",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    }
 }

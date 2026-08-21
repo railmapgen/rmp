@@ -38,6 +38,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
@@ -53,7 +54,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 77;
+export const CURRENT_VERSION = 78;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1031,4 +1032,12 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    /** The unreleased real-map schema starts with the map hidden for existing saves. */
+    77: param =>
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        }),
 };

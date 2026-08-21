@@ -19,7 +19,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
-import { useRootDispatch } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { replaceProject } from '../../redux/project-history';
 import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
 import { convertAARCToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
@@ -32,6 +32,7 @@ interface ImportFromAarcProps {
 export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps) {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
+    const { mapEnabled, mapStyle } = useRootSelector(state => state.param.present);
     const [text, setText] = React.useState('');
     const [step, setStep] = React.useState<1 | 2>(1);
     const [mode, setMode] = React.useState<StationTypeOption>(StationTypeOption.Suzhou);
@@ -78,7 +79,9 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
             });
         dispatch(
             replaceProject({
+                mapEnabled,
                 graph: graphNew.current.export(),
+                mapStyle,
                 svgViewBoxZoom: 100,
                 svgViewBoxMin: { x: 0, y: 0 },
             })

@@ -127,12 +127,38 @@ export const defaultFillAttributes: FillAttributes = {
     selectedPatterns: ['logo'],
 };
 
+type FillShape = 'square' | 'triangle' | 'circle';
+type FillShapeLinePathType = LinePathType.Diagonal | LinePathType.Perpendicular | LinePathType.Bezier;
+
+const getFillShapeLinePathType = (shape: FillShape, mapEnabled: boolean): FillShapeLinePathType =>
+    mapEnabled ? LinePathType.Bezier : shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
+
+const makeFillShapeLinePathAttrs = (shape: FillShape, type: FillShapeLinePathType, edgeIndex: number, size: number) => {
+    if (type === LinePathType.Bezier) {
+        return {
+            ...structuredClone(linePaths[LinePathType.Bezier].defaultAttrs),
+            along: 0.5,
+            // Straight Beziers preserve polygon edges. Four outward quadratic
+            // segments reproduce the existing rounded circle construction.
+            normal: shape === 'circle' ? -0.5 : 0,
+        };
+    }
+
+    const attrs = structuredClone(linePaths[type].defaultAttrs);
+    if (shape === 'circle') {
+        if (edgeIndex % 2 === 0) attrs.startFrom = 'to';
+        attrs.roundCornerFactor = size;
+    }
+    return attrs;
+};
+
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const { refresh, theme } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -145,7 +171,9 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
 
     const hasClosedPath = React.useMemo(() => !!findShortestClosedPath(graph, id as MiscNodeId), [graph, id, refresh]);
 
-    const handleCreateShape = (shape: 'square' | 'triangle' | 'circle') => {
+    const handleCreateShape = (shape: FillShape) => {
+        const type = getFillShapeLinePathType(shape, mapEnabled);
+
         const currentNodeAttrs = graph.getNodeAttributes(id);
         const { x, y } = currentNodeAttrs;
         const size = 200; // The size of the shape to create
@@ -212,17 +240,12 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             const source = nodeIds[i];
             const target = nodeIds[(i + 1) % nodeIds.length]; // Wrap around to close the loop
             const newLineId: LineId = `line_${nanoid(10)}`;
-            const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
-            const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
-            if (shape === 'circle') {
-                if (i % 2 === 0) attrs.startFrom = 'to';
-                attrs.roundCornerFactor = size;
-            }
+            const pathAttrs = makeFillShapeLinePathAttrs(shape, type, i, size);
             graph.addDirectedEdgeWithKey(newLineId, source, target, {
                 visible: true,
                 zIndex: 0,
                 type,
-                [type]: attrs,
+                [type]: pathAttrs,
                 style: LineStyleType.SingleColor,
                 [LineStyleType.SingleColor]: { color: theme },
                 reconcileId: '',

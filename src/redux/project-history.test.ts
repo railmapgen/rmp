@@ -1,10 +1,19 @@
 import { MultiDirectedGraph } from 'graphology';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { defaultRadialTouchMenuState } from '../components/touch/radial-touch-menu';
 import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { defaultRadialTouchMenuState } from '../components/touch/radial-touch-menu';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '.';
-import { initializeProject, ParamGraph, ProjectSnapshot, saveGraph, setSvgViewport } from './param/param-slice';
+import {
+    initializeProject,
+    ParamGraph,
+    ProjectSnapshot,
+    saveGraph,
+    setMapEnabled,
+    setMapStyle,
+    setSvgViewport,
+} from './param/param-slice';
 import { redoAction, replaceProject, undoAction } from './project-history';
 import {
     setActive,
@@ -30,11 +39,21 @@ const createGraph = (nodeId?: string): ParamGraph => {
     return graph.export();
 };
 
+const createMapStyle = (arterialColor: string) => {
+    const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+    mapStyle.roads.arterial.color = arterialColor;
+    return mapStyle;
+};
+
 const createProject = (
+    mapEnabled: boolean,
     nodeId: string,
+    arterialColor: string,
     svgViewBoxZoom: number,
     svgViewBoxMin: { x: number; y: number }
 ): ProjectSnapshot => ({
+    mapEnabled,
+    mapStyle: createMapStyle(arterialColor),
     graph: createGraph(nodeId),
     svgViewBoxZoom,
     svgViewBoxMin,
@@ -48,8 +67,7 @@ const createProjectStore = (project: ProjectSnapshot) => {
 };
 
 const expectCurrentProject = (testStore: ReturnType<typeof createStore>, project: ProjectSnapshot) => {
-    const param = testStore.getState().param;
-    expect(param.present).toEqual(project);
+    expect(testStore.getState().param.present).toEqual(project);
     expect(window.graph.export()).toEqual(project.graph);
 };
 
@@ -89,9 +107,9 @@ describe('project history', () => {
         window.matchMedia = vi.fn().mockReturnValue({ matches: false });
     });
 
-    it('undoes and redoes a complete project replacement', async () => {
-        const previousProject = createProject('previous', 25, { x: 300, y: 400 });
-        const nextProject = createProject('next', 50, { x: 500, y: 600 });
+    it('undoes and redoes all persistent project fields while resetting transient state', async () => {
+        const previousProject = createProject(false, 'previous', '#111111', 25, { x: 300, y: 400 });
+        const nextProject = createProject(true, 'next', '#222222', 50, { x: 500, y: 600 });
         const testStore = createProjectStore(previousProject);
 
         setTransientInteractionState(testStore);
@@ -117,22 +135,29 @@ describe('project history', () => {
         expectTransientInteractionStateReset(testStore);
     });
 
-    it('keeps the current viewport and transient interaction state when undoing a graph edit', async () => {
-        const projectBeforeEdit = createProject('before', 25, { x: 10, y: 20 });
+    it('keeps map settings, viewport, and transient state for graph-only undo', async () => {
+        const projectBeforeEdit = createProject(true, 'before', '#777777', 25, { x: 10, y: 20 });
         const graphAfterEdit = createGraph('after');
+        const styleAfterEdit = createMapStyle('#888888');
         const testStore = createProjectStore(projectBeforeEdit);
 
         window.graph.clear();
         window.graph.import(graphAfterEdit);
         testStore.dispatch(saveGraph(graphAfterEdit));
+        testStore.dispatch(setMapEnabled(false));
+        testStore.dispatch(setMapStyle(styleAfterEdit));
         testStore.dispatch(setSvgViewport({ zoom: 75, min: { x: 30, y: 40 } }));
         setTransientInteractionState(testStore);
 
         await testStore.dispatch(undoAction());
 
-        expect(testStore.getState().param.present.graph).toEqual(projectBeforeEdit.graph);
-        expect(testStore.getState().param.present.svgViewBoxZoom).toBe(75);
-        expect(testStore.getState().param.present.svgViewBoxMin).toEqual({ x: 30, y: 40 });
+        expect(testStore.getState().param.present).toEqual({
+            ...projectBeforeEdit,
+            mapEnabled: false,
+            mapStyle: styleAfterEdit,
+            svgViewBoxZoom: 75,
+            svgViewBoxMin: { x: 30, y: 40 },
+        });
         expect(testStore.getState().runtime.selected).toEqual(new Set<Id>(['misc_node_stale']));
         expect(testStore.getState().runtime.pointerPosition).toEqual({ x: 10, y: 20 });
         expect(testStore.getState().runtime.active).toBe('background');
@@ -144,9 +169,9 @@ describe('project history', () => {
     });
 
     it('keeps graph and project entries ordered across mixed undo and redo operations', async () => {
-        const projectBeforeEdit = createProject('project-before', 25, { x: 10, y: 20 });
+        const projectBeforeEdit = createProject(false, 'project-before', '#333333', 25, { x: 10, y: 20 });
         const graphAfterFirstEdit = createGraph('first-edit');
-        const replacementProject = createProject('replacement', 50, { x: 30, y: 40 });
+        const replacementProject = createProject(true, 'replacement', '#444444', 50, { x: 30, y: 40 });
         const graphAfterSecondEdit = createGraph('second-edit');
         const testStore = createProjectStore(projectBeforeEdit);
 
@@ -162,35 +187,45 @@ describe('project history', () => {
         expectCurrentProject(testStore, replacementProject);
 
         await testStore.dispatch(undoAction());
-        expect(testStore.getState().param.present.graph).toEqual(graphAfterFirstEdit);
-        expect(testStore.getState().param.present.svgViewBoxZoom).toBe(projectBeforeEdit.svgViewBoxZoom);
-        expect(testStore.getState().param.present.svgViewBoxMin).toEqual(projectBeforeEdit.svgViewBoxMin);
+        expect(testStore.getState().param.present).toEqual({
+            ...projectBeforeEdit,
+            graph: graphAfterFirstEdit,
+        });
 
         await testStore.dispatch(undoAction());
         expectCurrentProject(testStore, projectBeforeEdit);
 
         await testStore.dispatch(redoAction());
-        expect(testStore.getState().param.present.graph).toEqual(graphAfterFirstEdit);
+        expect(testStore.getState().param.present).toEqual({
+            ...projectBeforeEdit,
+            graph: graphAfterFirstEdit,
+        });
 
         await testStore.dispatch(redoAction());
         expectCurrentProject(testStore, replacementProject);
 
         await testStore.dispatch(redoAction());
-        expect(testStore.getState().param.present.graph).toEqual(graphAfterSecondEdit);
+        expect(testStore.getState().param.present).toEqual({
+            ...replacementProject,
+            graph: graphAfterSecondEdit,
+        });
         expect(window.graph.export()).toEqual(graphAfterSecondEdit);
     });
 
-    it('validates a replacement before clearing the current graph', () => {
-        const currentProject = createProject('current', 100, { x: 0, y: 0 });
+    it('validates a replacement before changing the current project or transient state', () => {
+        const currentProject = createProject(true, 'current', '#555555', 100, { x: 0, y: 0 });
         const testStore = createProjectStore(currentProject);
         const invalidGraph = {
             ...createGraph(),
             edges: [{ key: 'invalid', source: 'missing-a', target: 'missing-b', attributes: {} }],
         } as ParamGraph;
+        setTransientInteractionState(testStore);
 
         expect(() =>
             testStore.dispatch(
                 replaceProject({
+                    mapEnabled: false,
+                    mapStyle: createMapStyle('#666666'),
                     graph: invalidGraph,
                     svgViewBoxZoom: 10,
                     svgViewBoxMin: { x: 1, y: 2 },
@@ -200,5 +235,7 @@ describe('project history', () => {
 
         expectCurrentProject(testStore, currentProject);
         expect(testStore.getState().param.past).toEqual([]);
+        expect(testStore.getState().runtime.selected).toEqual(new Set<Id>(['misc_node_stale']));
+        expect(testStore.getState().viewport.liveViewport).toEqual({ x: 700, y: 800, zoom: 90 });
     });
 });

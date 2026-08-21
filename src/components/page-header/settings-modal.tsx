@@ -45,10 +45,12 @@ import {
     setTelemetryProject,
 } from '../../redux/app/app-slice';
 import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
+import { setMapEnabled } from '../../redux/param/param-slice';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import { MapStyleSection } from './map-style-section';
 import { MasterManager } from './master-manager';
 import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
@@ -86,6 +88,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         keepLastPath,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
@@ -270,8 +273,17 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         }
                                     />
                                 </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                    />
+                                </HStack>
                             </VStack>
                         </Box>
+
+                        {mapEnabled && <MapStyleSection />}
 
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">

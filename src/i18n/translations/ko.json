@@ -790,6 +790,10 @@
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
         "search": "방송국 검색",
+        "mapToggle": {
+            "show": "지리 지도 표시",
+            "hide": "지리 지도 숨기기"
+        },
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",
@@ -907,6 +911,7 @@
             },
             "preference": {
                 "title": "선호",
+                "mapEnabled": "지리 지도 레이어 표시",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
                 "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
                 "randomStationNames": {
@@ -1074,5 +1079,68 @@
         }
     },
 
-    "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다."
+    "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다.",
+    "map": {
+        "loading": "지도 불러오는 중",
+        "loadError": "지도 배경을 불러올 수 없습니다.",
+        "style": {
+            "title": "지도 스타일",
+            "reset": "기본값 복원",
+            "type": "유형",
+            "enabled": "표시",
+            "widthScale": "너비 배율",
+            "roads": {
+                "title": "도로",
+                "casingColor": "윤곽선",
+                "color": "노면",
+                "path": "보행로",
+                "local": "지선도로",
+                "collector": "보조간선도로",
+                "arterial": "간선도로"
+            },
+            "rails": {
+                "title": "철도",
+                "metro": "도시철도",
+                "national": "일반철도"
+            },
+            "labels": {
+                "title": "라벨",
+                "enabled": "모든 라벨 표시",
+                "sizeScale": "글자 크기 배율",
+                "color": "문자",
+                "strokeColor": "윤곽선",
+                "groups": {
+                    "places": "지명",
+                    "roads": "도로",
+                    "buildings": "건물",
+                    "areas": "구역",
+                    "transport": "교통"
+                },
+                "categories": {
+                    "place-major": "주요 지명",
+                    "place-medium": "중간 지명",
+                    "place-minor": "소규모 지명",
+                    "road-arterial": "간선도로",
+                    "road-collector": "보조간선도로",
+                    "building": "건물",
+                    "area-water": "수역",
+                    "area-park": "공원",
+                    "area-grass": "초지",
+                    "area-forest": "산림",
+                    "area-farmland": "농지",
+                    "area-cemetery": "묘지",
+                    "area-residential": "주거 지역",
+                    "area-commercial": "상업 지역",
+                    "area-industrial": "공업 지역",
+                    "area-education": "교육 시설",
+                    "area-healthcare": "의료 시설",
+                    "transport-airport": "공항",
+                    "transport-rail": "일반철도역",
+                    "transport-metro": "도시철도역",
+                    "transport-platform": "승강장",
+                    "transport-entrance": "출입구"
+                }
+            }
+        }
+    }
 }

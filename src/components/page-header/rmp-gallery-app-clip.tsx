@@ -61,11 +61,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
             await saveImagesFromParam(nextGraph, images);
         }
 
-        // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         dispatch(
             replaceProject({
+                mapEnabled: save.mapEnabled,
                 graph: nextGraph.export(),
+                mapStyle: save.mapStyle,
                 svgViewBoxZoom: typeof svgViewBoxZoom === 'number' ? svgViewBoxZoom : 100,
                 svgViewBoxMin:
                     typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'

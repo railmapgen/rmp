@@ -123,7 +123,10 @@ export const initStore = async (store: RootStore) => {
             // comparison will always return true on dragging a node.
             return (
                 currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
+                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
+                // Map style has no graph refresh thunk, so it must independently trigger save persistence.
+                currentState.param.present.mapStyle !== previousState.param.present.mapStyle ||
+                currentState.param.present.mapEnabled !== previousState.param.present.mapEnabled
             );
         },
         effect: (_action, listenerApi) => {

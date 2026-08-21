@@ -96,6 +96,7 @@ describe('VirtualJoystick', () => {
         );
         const rootGroup = container.querySelector('svg > g');
         expect(rootGroup).toBeTruthy();
+        expect(rootGroup?.getAttribute('class')).toBe('removeMe');
         const childGroups = rootGroup?.querySelectorAll(':scope > g');
         expect(childGroups?.length).toBe(6); // 4 directional + 2 action
     });

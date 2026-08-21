@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { EdgeAttributes, Events, GraphAttributes, LocalStorageKey, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
-import { useRootDispatch } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { replaceProject } from '../../redux/project-history';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
@@ -23,6 +23,7 @@ import RmpGalleryAppClip from './rmp-gallery-app-clip';
 export default function OpenActions() {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
+    const mapStyle = useRootSelector(state => state.param.present.mapStyle);
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
     const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
@@ -37,9 +38,12 @@ export default function OpenActions() {
     const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
     const handleNew = () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
         dispatch(
             replaceProject({
-                graph: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+                mapEnabled: false,
+                graph,
+                mapStyle,
                 svgViewBoxZoom: 100,
                 svgViewBoxMin: { x: 0, y: 0 },
             })
@@ -58,11 +62,12 @@ export default function OpenActions() {
             await saveImagesFromParam(nextGraph, images);
         }
 
-        // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
         dispatch(
             replaceProject({
+                mapEnabled: save.mapEnabled,
                 graph: nextGraph.export(),
+                mapStyle: save.mapStyle,
                 svgViewBoxZoom: typeof svgViewBoxZoom === 'number' ? svgViewBoxZoom : 100,
                 svgViewBoxMin:
                     typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'

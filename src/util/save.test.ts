@@ -1,9 +1,26 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
-import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { createStore } from '../redux';
+import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
+    it('serializes mapEnabled without a top-level project type', () => {
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.arterial.color = '#123456';
+        const initialParam = createStore().getState().param;
+        const param = {
+            ...initialParam,
+            present: { ...initialParam.present, mapEnabled: true, mapStyle },
+        };
+        const save = JSON.parse(stringifyParam(param));
+
+        expect(save.mapEnabled).toBe(true);
+        expect(save.mapStyle).toEqual(mapStyle);
+        expect(Object.hasOwn(save, 'type')).toBe(false);
+    });
+
     it('upgrade will return the default tutorial if originalParam is null', async () => {
         const save = await upgrade(null);
         expect(save).toContain('人民广场');
@@ -1069,5 +1086,24 @@ describe('Unit tests for param upgrade function', () => {
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_gd_ir","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["番禺","Panyu"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false,"secondaryNames":["",""]}}},{"key":"stn_gd_ir_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["花都","Huadu"],"nameOffsetX":"left","nameOffsetY":"bottom","secondaryNames":["广州北站","Guangzhoubei Railway Station"],"interchange":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":77}';
         expect(newParam).toEqual(expectParam);
+    });
+
+    it('77 -> 78', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":77}';
+        const newParam = UPGRADE_COLLECTION[77](oldParam);
+        expect(JSON.parse(newParam)).toEqual({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        });
     });
 });

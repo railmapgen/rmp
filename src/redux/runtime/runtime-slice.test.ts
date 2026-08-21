@@ -2,13 +2,19 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
-import { LinePathType } from '../../constants/lines';
+import { LinePathType, LineStyleType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { MAX_PARALLEL_LINES_FREE } from '../../util/parallel';
 import store, { createStore } from '../index';
-import { applyRedoAction, applyUndoAction } from '../param/param-slice';
-import appReducer, { closeGlobalAlert, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime-slice';
+import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
+import appReducer, {
+    closeGlobalAlert,
+    refreshEdgesThunk,
+    refreshNodesThunk,
+    setGlobalAlert,
+    setMode,
+} from './runtime-slice';
 
 const realStore = store.getState();
 
@@ -23,6 +29,65 @@ describe('ParamSlice', () => {
         const nextState = appReducer(realStore.runtime, applyRedoAction('graph'));
         expect(nextState.refresh.nodes).not.toEqual(realStore.runtime.refresh.nodes);
         expect(nextState.refresh.edges).not.toEqual(realStore.runtime.refresh.edges);
+    });
+
+    it.each([false, true])('resets drawing tools when replacing a project with mapEnabled=%s', mapEnabled => {
+        const firstDrawingState = appReducer(
+            realStore.runtime,
+            setMode(`line-${LinePathType.Diagonal}/${LineStyleType.SingleColor}`)
+        );
+        const secondDrawingState = appReducer(
+            firstDrawingState,
+            setMode(`line-${LinePathType.Freeform}/${LineStyleType.SingleColor}`)
+        );
+        const nextState = appReducer(
+            secondDrawingState,
+            replaceProjectState({
+                mapEnabled,
+                graph: realStore.param.present.graph,
+                mapStyle: realStore.param.present.mapStyle,
+                svgViewBoxZoom: realStore.param.present.svgViewBoxZoom,
+                svgViewBoxMin: realStore.param.present.svgViewBoxMin,
+            })
+        );
+
+        expect(nextState.mode).toBe('free');
+        expect(nextState.lastTool).toBeUndefined();
+    });
+
+    it('resets project-specific interaction state for project undo and redo', () => {
+        const withActiveTool = appReducer(
+            appReducer(realStore.runtime, setMode(`line-${LinePathType.Freeform}/${LineStyleType.SingleColor}`)),
+            setMode('free')
+        );
+        const interactiveState = {
+            ...withActiveTool,
+            selected: new Set(['misc_node_test'] as const),
+            active: 'background' as const,
+            pointerPosition: { x: 10, y: 20 },
+        };
+
+        for (const action of [applyUndoAction('project'), applyRedoAction('project')]) {
+            const nextState = appReducer(interactiveState, action);
+
+            expect(nextState.mode).toBe('free');
+            expect(nextState.lastTool).toBeUndefined();
+            expect(nextState.selected.size).toBe(0);
+            expect(nextState.active).toBeUndefined();
+            expect(nextState.pointerPosition).toBeUndefined();
+            expect(nextState.isDetailsOpen).toBe('close');
+        }
+    });
+
+    it('preserves interaction state for graph-only undo', () => {
+        const withActiveTool = appReducer(
+            appReducer(realStore.runtime, setMode(`line-${LinePathType.Freeform}/${LineStyleType.SingleColor}`)),
+            setMode('free')
+        );
+        const nextState = appReducer(withActiveTool, applyUndoAction('graph'));
+
+        expect(nextState.mode).toBe('free');
+        expect(nextState.lastTool).toBe(`line-${LinePathType.Freeform}/${LineStyleType.SingleColor}`);
     });
 });
 
