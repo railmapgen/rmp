@@ -22,7 +22,9 @@ import {
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
+import { roundToRotateAngle } from '../../../util/helpers';
 import ThemeButton from '../../panels/theme-button';
+import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
@@ -212,11 +214,13 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const textRotate = terminal ? terminalNameRotate : rotate;
     // whether the text in the terminal station is positioned other than the rotation
     const isTextTerminal = terminal && rotate !== terminalNameRotate;
+    // Free rotation keeps the exact SVG angle, while text metrics reuse the nearest layout template.
+    const rotateConst = ROTATE_CONST[roundToRotateAngle(textRotate)];
     const textDx =
-        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
+        (isTextTerminal ? rotateConst.textTerminalDx : rotateConst.textDx) + // fixed dx for each rotation
         Math.cos(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
-        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
+        (isTextTerminal ? rotateConst.textTerminalDy : rotateConst.textDy) + // fixed dy for each rotation
         Math.sin(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
@@ -227,7 +231,7 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const defaultNameLayout: NameLayout = {
         x: textDx,
         y: textDy,
-        anchor: ROTATE_CONST[textRotate].textAnchor ?? 'start',
+        anchor: rotateConst.textAnchor ?? 'start',
     };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
         id,
@@ -291,8 +295,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE}
                     lineHeight={LINE_HEIGHT}
-                    dominantBaseline={ROTATE_CONST[textRotate].dominantBaseline}
-                    grow={ROTATE_CONST[textRotate].grow}
+                    dominantBaseline={rotateConst.dominantBaseline}
+                    grow={rotateConst.grow}
                     baseOffset={0}
                     {...getLangStyle(TextLanguage.tube)}
                 />
@@ -353,17 +357,24 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: rotateSelect.value,
-            options: rotateSelect.options,
-            disabledOptions: rotateSelect.disabledOptions,
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
-                delete attrs.preciseNameOffsets;
-                handleAttrsUpdate(id, attrs);
-            },
+            component: (
+                <RotateField
+                    type={StationType.LondonTubeBasic}
+                    defaultAttributes={defaultLondonTubeBasicStationAttributes}
+                    getNextAttributes={nextAttributes => {
+                        if (nextAttributes.terminal) {
+                            return {
+                                ...nextAttributes,
+                                terminalNameRotate: nextAttributes.rotate,
+                            };
+                        }
+                        return nextAttributes;
+                    }}
+                    rotateSelect={rotateSelect}
+                />
+            ),
             minW: 'full',
         },
         {

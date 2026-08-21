@@ -49,6 +49,16 @@ export const roundToMultiple = (value: number, base: number): number => {
 };
 
 /**
+ * Rounds a number to the nearest multiple of a rotate angle.
+ * @param value The number to round
+ * @returns The rounded value with precise decimal handling
+ */
+export const roundToRotateAngle = (value: number): number => {
+    const rounded = roundToMultiple(value, 45);
+    return ((rounded % 360) + 360) % 360;
+};
+
+/**
  * Calculate the canvas size from DOMRect of each node.
  * @param graph The graph.
  * @param svgViewBoxMin The viewport relative to each DOMRect.
