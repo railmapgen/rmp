@@ -7,6 +7,7 @@ import { createMapAttribution } from '../map/map-attribution';
 import {
     makeRenderReadySVGElement,
     positionMapAttributionForExport,
+    restoreMapSvgTilesForExport,
     rmpInfoSpecificNodeExists,
     shouldForceRmpInfo,
 } from './download';
@@ -27,6 +28,22 @@ describe('download RMP info rules', () => {
 });
 
 describe('map export attribution', () => {
+    it('exports original SVG tiles instead of live raster overlays', () => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const tile = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        tile.classList.add('rmp-map-tile');
+        tile.style.display = 'none';
+        const raster = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        raster.dataset.mapRaster = '';
+        svg.append(tile, raster);
+
+        restoreMapSvgTilesForExport(svg);
+
+        expect(svg.querySelector('[data-map-raster]')).toBeNull();
+        expect(tile.style.display).toBe('');
+        expect(tile.hasAttribute('style')).toBe(false);
+    });
+
     it('keeps attribution inside the exported graph bounds without waiting for tiles', () => {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const attribution = createMapAttribution();

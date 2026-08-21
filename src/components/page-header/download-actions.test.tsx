@@ -1,18 +1,12 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import canvasSize from 'canvas-size';
 import { MultiDirectedGraph } from 'graphology';
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
 import { render } from '../../test-utils';
 import { makeRenderReadySVGElement } from '../../util/download';
+import { testExportCanvasSize } from '../../util/export-canvas';
 import DownloadActions from './download-actions';
-
-vi.mock('canvas-size', () => ({
-    default: {
-        maxArea: vi.fn(),
-    },
-}));
 
 vi.mock('../../util/download', async importOriginal => {
     const actual = await importOriginal<typeof import('../../util/download')>();
@@ -22,11 +16,19 @@ vi.mock('../../util/download', async importOriginal => {
     };
 });
 
+vi.mock('../../util/export-canvas', async importOriginal => {
+    const actual = await importOriginal<typeof import('../../util/export-canvas')>();
+    return {
+        ...actual,
+        testExportCanvasSize: vi.fn(),
+    };
+});
+
 describe('DownloadActions', () => {
     beforeEach(() => {
         window.graph = new MultiDirectedGraph();
         HTMLElement.prototype.scrollTo = vi.fn();
-        vi.mocked(canvasSize.maxArea).mockResolvedValue({ width: 10_000, height: 10_000, benchmark: 1 });
+        vi.mocked(testExportCanvasSize).mockResolvedValue(true);
         vi.mocked(makeRenderReadySVGElement).mockReset();
         vi.stubGlobal(
             'matchMedia',
@@ -67,9 +69,9 @@ describe('DownloadActions', () => {
             { store: testStore }
         );
 
-        await waitFor(() => expect(canvasSize.maxArea).toHaveBeenCalledOnce());
         fireEvent.click(document.querySelector<HTMLButtonElement>('#menu-button-download')!);
         fireEvent.click(await screen.findByText('Export image'));
+        await waitFor(() => expect(testExportCanvasSize).toHaveBeenCalledOnce());
 
         const scaleField = screen.getByRole('group', { name: 'Scale' });
         expect(within(scaleField).getByRole('combobox')).toHaveValue(expectedScale);
@@ -86,11 +88,9 @@ describe('DownloadActions', () => {
             { store: createStore() }
         );
 
-        await waitFor(() => expect(canvasSize.maxArea).toHaveBeenCalledOnce());
-        await act(async () => Promise.resolve());
-
         fireEvent.click(document.querySelector<HTMLButtonElement>('#menu-button-download')!);
         fireEvent.click(await screen.findByText('Export image'));
+        await waitFor(() => expect(testExportCanvasSize).toHaveBeenCalledOnce());
 
         const agreeTerms = document.querySelector<HTMLInputElement>('#agree_terms');
         expect(agreeTerms).not.toBeNull();

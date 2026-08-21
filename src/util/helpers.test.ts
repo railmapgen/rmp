@@ -2,7 +2,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
-import { calculateCanvasSize, roundToMultiple, roundToRotateAngle } from './helpers';
+import { calculateCanvasSize, roundToMultiple, roundToRotateAngle, transformedBoundingBox } from './helpers';
 
 describe('unit tests for round to multiple function', () => {
     // Test rounding to the nearest integer when base=1
@@ -115,5 +115,37 @@ describe('calculateCanvasSize', () => {
         } finally {
             hidden.remove();
         }
+    });
+});
+
+describe('transformedBoundingBox', () => {
+    it('preserves bounds located entirely in negative coordinates', () => {
+        const identityMatrix = {
+            inverse: () => identityMatrix,
+            multiply: () => identityMatrix,
+        };
+        const createPoint = () => ({
+            x: 0,
+            y: 0,
+            matrixTransform() {
+                return { x: this.x, y: this.y };
+            },
+        });
+        const parent = {
+            getScreenCTM: () => identityMatrix,
+        };
+        const element = {
+            getBBox: () => ({ x: -20, y: -30, width: 5, height: 6 }),
+            ownerSVGElement: { createSVGPoint: createPoint },
+            parentNode: parent,
+            getScreenCTM: () => identityMatrix,
+        } as unknown as SVGSVGElement;
+
+        expect(transformedBoundingBox(element)).toEqual({
+            x: -20,
+            y: -30,
+            width: 5,
+            height: 6,
+        });
     });
 });

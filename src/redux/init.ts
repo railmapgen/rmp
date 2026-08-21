@@ -10,6 +10,7 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
@@ -64,6 +65,8 @@ export const initStore = async (store: RootStore) => {
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
         if ('autoChangeStationType' in appState.preference)
             store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
+        if ('disableMapPerformanceOptimization' in appState.preference)
+            store.dispatch(setDisableMapPerformanceOptimization(appState.preference.disableMapPerformanceOptimization));
         if ('disableWarning' in appState.preference) {
             if ('changeType' in appState.preference.disableWarning)
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
@@ -115,23 +118,10 @@ export const initStore = async (store: RootStore) => {
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
 
     startRootListening({
-        predicate: (_action, currentState, previousState) => {
-            // TODO: check if the refresh nodes and edges will be dispatched in batch, otherwise
-            // there might be a performance issue.
-            // TODO: Dragging a node will trigger the refreshNodesThunk, however, the actual
-            // graph is not preserved as we want to reduce the number of refreshes. But this
-            // comparison will always return true on dragging a node.
-            return (
-                currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
-                // Map style has no graph refresh thunk, so it must independently trigger save persistence.
-                currentState.param.present.mapStyle !== previousState.param.present.mapStyle ||
-                currentState.param.present.mapEnabled !== previousState.param.present.mapEnabled
-            );
-        },
+        predicate: (_action, currentState, previousState) => currentState.param.present !== previousState.param.present,
         effect: (_action, listenerApi) => {
             try {
-                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
+                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(listenerApi.getState().param));
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {

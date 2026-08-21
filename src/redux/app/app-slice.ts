@@ -49,6 +49,8 @@ export interface AppState {
         snapLines: boolean;
         predictNextNode: boolean;
         autoChangeStationType: boolean;
+        /** Whether map tiles should remain as SVG instead of being rasterized while the editor is idle. */
+        disableMapPerformanceOptimization: boolean;
         /**
          * Whether to disable warnings.
          */
@@ -87,6 +89,7 @@ export const initialState: AppState = {
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
+        disableMapPerformanceOptimization: false,
         disableWarning: {
             changeType: false,
         },
@@ -132,6 +135,9 @@ const appSlice = createSlice({
         },
         setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
             state.preference.autoChangeStationType = action.payload;
+        },
+        setDisableMapPerformanceOptimization: (state, action: PayloadAction<boolean>) => {
+            state.preference.disableMapPerformanceOptimization = action.payload;
         },
         setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
             state.preference.disableWarning.changeType = action.payload;
@@ -185,6 +191,7 @@ export const {
     setSnapLines,
     setPredictNextNode,
     setAutoChangeStationType,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setShowOnlyFavorites,
     toggleFavoriteLinePath,

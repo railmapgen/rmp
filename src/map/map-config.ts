@@ -1,6 +1,7 @@
 import { map_tile_base_url } from '../constants/server';
 
 export const MAP_TILE_SIZE = 256;
+export const MAP_RASTER_TILE_SIZE = 4096;
 
 /**
  * All map levels are projected into one Web Mercator pixel space before they
@@ -55,6 +56,10 @@ export const MAP_MAX_FETCHES = 16;
 export const MAP_BUNDLE_CACHE_MAX_BYTES = 64 * 1024 * 1024;
 export const MAP_TILE_CACHE_MAX_BYTES = 32 * 1024 * 1024;
 export const MAP_TILE_CACHE_MAX_ENTRIES = 512;
+// Keep rasterization out of the user's interaction window; cached SVG remains visible while this timer runs.
+export const MAP_RASTER_IDLE_DELAY_MS = 5_000;
+export const MAP_SOURCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+export const MAP_RASTER_CACHE_MAX_BYTES = 256 * 1024 * 1024;
 
 export const MAP_TILE_BASE_URL = map_tile_base_url;
 

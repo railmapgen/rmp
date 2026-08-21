@@ -58,7 +58,7 @@ export const LineSpecificAttributes = () => {
 
     const { type, style, parallelIndex, reconcileId } = window.graph.getEdgeAttributes(id);
     const attrs = (window.graph.getEdgeAttribute(id, type) ?? {}) as any;
-    const PathAttrsComponent = type in linePaths && linePaths[type].attrsComponent;
+    const PathAttrsComponent = Object.hasOwn(linePaths, type) && linePaths[type].attrsComponent;
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
     const baseReconciledLineID = getBaseReconciledLineID(window.graph, id as LineId);

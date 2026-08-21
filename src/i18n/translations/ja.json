@@ -935,6 +935,8 @@
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
                 "predictNextNode": "節点を選択したときに次の節点を予測する",
                 "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
+                "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
+                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
             },
             "shortcuts": {
@@ -1085,6 +1087,7 @@
     "map": {
         "loading": "地図を読み込み中",
         "loadError": "地図の背景を読み込めません。",
+        "zoomInToEdit": "地図を編集するには拡大してください。",
         "style": {
             "title": "地図スタイル",
             "reset": "初期設定に戻す",

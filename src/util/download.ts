@@ -64,6 +64,7 @@ export const makeRenderReadySVGElement = async (
     elem.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
     elem.removeAttribute('style');
     elem.removeAttribute('tabindex');
+    restoreMapSvgTilesForExport(elem);
     // copy attributes from css to each elem in the newly cloned svg
     // this is necessary as styles stated in css will be missing in the cloned svg dom
     // only styles other than fonts need to be stated here, fonts are handled below
@@ -150,6 +151,14 @@ export const makeRenderReadySVGElement = async (
     }
 
     return { elem, width, height };
+};
+
+export const restoreMapSvgTilesForExport = (svg: SVGSVGElement) => {
+    svg.querySelectorAll('[data-map-raster]').forEach(raster => raster.remove());
+    svg.querySelectorAll<SVGSVGElement>('.rmp-map-tile').forEach(tile => {
+        tile.style.removeProperty('display');
+        if (tile.getAttribute('style') === '') tile.removeAttribute('style');
+    });
 };
 
 /**

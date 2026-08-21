@@ -53,16 +53,13 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     for (const lineEntry of graph.edgeEntries()) {
         const lineID = lineEntry.edge as LineId;
         const type = lineEntry.attributes.type;
+        if (!Object.hasOwn(linePaths, type)) continue;
         const [x1, y1, x2, y2] = [
             lineEntry.sourceAttributes.x,
             lineEntry.sourceAttributes.y,
             lineEntry.targetAttributes.x,
             lineEntry.targetAttributes.y,
         ];
-        if (!Object.hasOwn(linePaths, type)) {
-            cachedGeneratedPaths[lineID] = makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
-            continue;
-        }
         const attr = lineEntry.attributes[type] as NonNullableExternalLinePathAttribute;
         cachedSimplePathAvailability[lineID] = checkSimplePathAvailability(type, x1, y1, x2, y2, attr);
         cachedGeneratedPaths[lineID] = linePaths[type].generatePath(x1, x2, y1, y2, attr as any);
@@ -74,6 +71,20 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
         let simplePathAvailability = cachedSimplePathAvailability[lineID];
 
         const { parallelIndex, type, style } = lineEntry.attributes;
+        if (!Object.hasOwn(linePaths, type)) {
+            resolvedLines.push({
+                id: lineID,
+                type: 'line',
+                line: {
+                    attr: lineEntry.attributes,
+                    path: makeLinearPath(
+                        makePoint(lineEntry.sourceAttributes.x, lineEntry.sourceAttributes.y),
+                        makePoint(lineEntry.targetAttributes.x, lineEntry.targetAttributes.y)
+                    ),
+                },
+            });
+            continue;
+        }
         const generatedPath = cachedGeneratedPaths[lineID];
         if (generatedPath && !isOpenPath(generatedPath)) {
             // parallel, reconcile, and auto-simple operations cannot handle area path geometry
@@ -203,18 +214,6 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             lineEntry.targetAttributes.x,
             lineEntry.targetAttributes.y,
         ];
-        if (!Object.hasOwn(linePaths, type)) {
-            // unknown line path type
-            resolvedLines.push({
-                id: lineID,
-                type: 'line',
-                line: {
-                    attr,
-                    path: makeLinearPath(makePoint(x1, y1), makePoint(x2, y2)),
-                },
-            });
-            continue;
-        }
 
         // regular line path type, call the corresponding generatePath function
         resolvedLines.push({

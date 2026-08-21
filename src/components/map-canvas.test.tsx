@@ -5,6 +5,7 @@ import { GlobalAlertId } from '../constants/global-alerts';
 import { MAP_ZOOMED_SWITCH_THRESHOLD } from '../map/map-config';
 import type { MapTileControllerOptions } from '../map/map-tile-controller';
 import { createStore } from '../redux';
+import { setDisableMapPerformanceOptimization } from '../redux/app/app-slice';
 import { setMapEnabled } from '../redux/param/param-slice';
 import { closeGlobalAlert } from '../redux/runtime/runtime-slice';
 import { render } from '../test-utils';
@@ -14,6 +15,9 @@ interface MockController {
     options: MapTileControllerOptions;
     initialize: ReturnType<typeof vi.fn>;
     updateViewport: ReturnType<typeof vi.fn>;
+    updateStyle: ReturnType<typeof vi.fn>;
+    setInteractionActive: ReturnType<typeof vi.fn>;
+    setRasterEnabled: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
 }
 
@@ -23,6 +27,9 @@ vi.mock('../map/map-tile-controller', () => ({
     MapTileController: class {
         initialize = vi.fn().mockResolvedValue(undefined);
         updateViewport = vi.fn();
+        updateStyle = vi.fn();
+        setInteractionActive = vi.fn();
+        setRasterEnabled = vi.fn();
         dispose = vi.fn();
 
         constructor(public readonly options: MapTileControllerOptions) {
@@ -37,19 +44,19 @@ const renderMapCanvas = () => {
         param: { ...initialParam, present: { ...initialParam.present, mapEnabled: true } },
     });
     const ref = React.createRef<MapCanvasHandle>();
-    const onOverviewChange = vi.fn();
     const result = render(
         <svg data-testid="root-svg">
-            <MapCanvas ref={ref} onOverviewChange={onOverviewChange} />
+            <MapCanvas ref={ref} />
         </svg>,
         { store }
     );
 
-    return { ...result, onOverviewChange, ref, store };
+    return { ...result, ref, store };
 };
 
 describe('MapCanvas', () => {
     afterEach(() => {
+        vi.useRealTimers();
         mockControllers.length = 0;
     });
 
@@ -63,6 +70,8 @@ describe('MapCanvas', () => {
 
         const controller = mockControllers[0];
         expect(controller.options.root).toBe(mapLayer);
+        expect(controller.options.styleCss).toBe(container.querySelector('[data-map-style]')?.textContent);
+        expect(controller.options.rasterEnabled).toBe(true);
         expect(controller.initialize).toHaveBeenCalledOnce();
 
         const svg = getByTestId('root-svg');
@@ -76,8 +85,8 @@ describe('MapCanvas', () => {
         expect(controller.dispose).toHaveBeenCalledOnce();
     });
 
-    it('forwards transient viewport changes and reports overview transitions', () => {
-        const { onOverviewChange, ref } = renderMapCanvas();
+    it('publishes overview transitions and keeps a dismissed edit hint closed until re-entry', () => {
+        const { ref, store, unmount } = renderMapCanvas();
         const controller = mockControllers[0];
         controller.updateViewport.mockClear();
 
@@ -85,7 +94,15 @@ describe('MapCanvas', () => {
         act(() => ref.current?.updateViewport({ x: 10, y: 20, zoom: overviewZoom }));
 
         expect(controller.updateViewport).toHaveBeenLastCalledWith({ x: 10, y: 20, zoom: overviewZoom });
-        expect(onOverviewChange).toHaveBeenLastCalledWith(true);
+        expect(store.getState().runtime.isMapOverview).toBe(true);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toMatchObject({
+            status: 'info',
+            message: 'Zoom in to edit the map.',
+        });
+
+        act(() => store.dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit)));
+        act(() => ref.current?.updateViewport({ x: 20, y: 30, zoom: overviewZoom + 50 }));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
 
         act(() => ref.current?.updateViewport({ x: 30, y: 40, zoom: MAP_ZOOMED_SWITCH_THRESHOLD }));
 
@@ -94,7 +111,15 @@ describe('MapCanvas', () => {
             y: 40,
             zoom: MAP_ZOOMED_SWITCH_THRESHOLD,
         });
-        expect(onOverviewChange).toHaveBeenLastCalledWith(false);
+        expect(store.getState().runtime.isMapOverview).toBe(false);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
+
+        act(() => ref.current?.updateViewport({ x: 40, y: 50, zoom: overviewZoom }));
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeDefined();
+
+        unmount();
+        expect(store.getState().runtime.isMapOverview).toBe(false);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
     });
 
     it('reports visible tile progress through one replaceable global alert', () => {
@@ -126,8 +151,16 @@ describe('MapCanvas', () => {
         });
     });
 
+    it('stops raster optimization when the preference is disabled', () => {
+        const { store } = renderMapCanvas();
+        const controller = mockControllers[0];
+
+        act(() => store.dispatch(setDisableMapPerformanceOptimization(true)));
+        expect(controller.setRasterEnabled).toHaveBeenLastCalledWith(false);
+    });
+
     it('disposes the map layer and restores the editor when the map is hidden', () => {
-        const { container, onOverviewChange, ref, store } = renderMapCanvas();
+        const { container, ref, store } = renderMapCanvas();
         const controller = mockControllers[0];
 
         act(() =>
@@ -144,8 +177,22 @@ describe('MapCanvas', () => {
         expect(container.querySelector('[data-map-layer]')).toBeNull();
         expect(container.querySelector('[data-map-style]')).toBeNull();
         expect(controller.dispose).toHaveBeenCalledOnce();
-        expect(onOverviewChange).toHaveBeenLastCalledWith(false);
+        expect(store.getState().runtime.isMapOverview).toBe(false);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toBeUndefined();
         expect(store.getState().param.present.graph).toBe(graphBeforeToggle);
+    });
+
+    it('defers raster work until wheel interaction becomes idle', () => {
+        vi.useFakeTimers();
+        const { ref } = renderMapCanvas();
+        const controller = mockControllers[0];
+        controller.setInteractionActive.mockClear();
+
+        act(() => ref.current?.markViewportInteraction());
+        expect(controller.setInteractionActive).toHaveBeenLastCalledWith(true);
+
+        act(() => vi.advanceTimersByTime(200));
+        expect(controller.setInteractionActive).toHaveBeenLastCalledWith(false);
     });
 });

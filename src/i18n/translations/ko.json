@@ -932,6 +932,8 @@
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
                 "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
                 "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환",
+                "disableMapPerformanceOptimization": "지도 성능 최적화 비활성화",
+                "mapPerformanceOptimizationProgress": "최적화됨: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화"
             },
             "shortcuts": {
@@ -1083,6 +1085,7 @@
     "map": {
         "loading": "지도 불러오는 중",
         "loadError": "지도 배경을 불러올 수 없습니다.",
+        "zoomInToEdit": "지도를 편집하려면 확대하세요.",
         "style": {
             "title": "지도 스타일",
             "reset": "기본값 복원",

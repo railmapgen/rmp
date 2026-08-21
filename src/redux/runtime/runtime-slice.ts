@@ -91,6 +91,11 @@ interface RuntimeState {
      */
     existsNodeTypes: Set<NodeType>;
     radialTouchMenu: RadialTouchMenuState;
+    /**
+     * Whether the map is showing geographic overview tiles instead of the
+     * editable zoom level. Tools and hints will change in overview and zoomed.
+     */
+    isMapOverview: boolean;
     globalAlerts: Partial<
         Record<GlobalAlertId, { status: AlertStatus; message: string; url?: string; linkedApp?: string }>
     >;
@@ -124,6 +129,7 @@ const initialState: RuntimeState = {
     stationNames: {},
     radialTouchMenu: defaultRadialTouchMenuState,
     existsNodeTypes: new Set<NodeType>(),
+    isMapOverview: false,
     globalAlerts: {},
 };
 
@@ -342,6 +348,9 @@ const runtimeSlice = createSlice({
         closeRadialTouchMenu: state => {
             state.radialTouchMenu = defaultRadialTouchMenuState;
         },
+        setMapOverview: (state, action: PayloadAction<boolean>) => {
+            state.isMapOverview = action.payload;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -408,6 +417,7 @@ export const {
     setExistsNodeTypes,
     setRadialTouchMenu,
     closeRadialTouchMenu,
+    setMapOverview,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

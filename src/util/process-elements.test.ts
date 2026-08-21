@@ -49,7 +49,35 @@ const makeBezierLineAttrs = (normal: number): EdgeAttributes => ({
     [LinePathType.Bezier]: { along: 0.5, normal },
 });
 
+const FUTURE_LINE_PATH = 'future-line-path' as LinePathType;
+
+const makeFutureLineAttrs = (): EdgeAttributes =>
+    ({
+        ...makeLineAttrs('future-reconcile'),
+        type: FUTURE_LINE_PATH,
+        [FUTURE_LINE_PATH]: { futureGeometry: true },
+        parallelIndex: 0,
+    }) as EdgeAttributes;
+
 describe('getLines', () => {
+    it('renders an unknown future path as a straight line without rewriting its authored data', () => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 0, 0);
+        addNode(graph, 'misc_node_b', 100, 50);
+        graph.addDirectedEdgeWithKey('line_future', 'misc_node_a', 'misc_node_b', makeFutureLineAttrs());
+
+        const [element] = getLines(graph);
+
+        expect(element.line?.path.kind).toBe('ml');
+        expect(element.line?.attr.type).toBe(FUTURE_LINE_PATH);
+        expect(graph.getEdgeAttributes('line_future')).toMatchObject({
+            type: FUTURE_LINE_PATH,
+            [FUTURE_LINE_PATH]: { futureGeometry: true },
+            reconcileId: 'future-reconcile',
+            parallelIndex: 0,
+        });
+    });
+
     it('renders a straight Bezier as a linear path without changing its authored type', () => {
         const graph = makeGraph();
         addNode(graph, 'misc_node_a', 0, 0);

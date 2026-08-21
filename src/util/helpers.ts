@@ -171,7 +171,12 @@ export const transformedBoundingBox = (el: SVGSVGElement) => {
     pts[3].y = bb.y + bb.height;
 
     // Transform each into the space of the parent, and calculate the min/max points from that.
-    let [xMin, yMin, xMax, yMax] = [Number.MAX_VALUE, Number.MAX_VALUE, Number.MIN_VALUE, Number.MIN_VALUE];
+    let [xMin, yMin, xMax, yMax] = [
+        Number.POSITIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+        Number.NEGATIVE_INFINITY,
+    ];
     pts.forEach(pt => {
         pt = pt.matrixTransform(m);
         xMin = Math.min(xMin, pt.x);

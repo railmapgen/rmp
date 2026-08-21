@@ -933,6 +933,8 @@
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "disableMapPerformanceOptimization": "Disable map performance optimization",
+                "mapPerformanceOptimizationProgress": "Optimized: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {
@@ -1084,6 +1086,7 @@
     "map": {
         "loading": "Loading map",
         "loadError": "Unable to load the map background.",
+        "zoomInToEdit": "Zoom in to edit the map.",
         "style": {
             "title": "Map style",
             "reset": "Reset",

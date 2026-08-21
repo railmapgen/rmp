@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { lineStyles } from '../components/svgs/lines/lines';
+import { lineStyles } from '../components/svgs/lines/line-styles';
 import { isTheme } from './color';
 
 /**

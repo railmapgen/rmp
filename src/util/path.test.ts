@@ -27,6 +27,16 @@ describe('concatOpenPaths', () => {
         expect(path.d).toBe('M 0 0 L 20 0');
     });
 
+    it('should preserve a collinear chain that reverses direction', () => {
+        const path = concatOpenPaths([
+            makeLinearPath(makePoint(0, 0), makePoint(20, 0)),
+            makeLinearPath(makePoint(20, 0), makePoint(10, 0)),
+        ]);
+
+        expect(path.kind).toBe('mll');
+        expect(path.d).toBe('M 0 0 L 20 0 L 10 0');
+    });
+
     it('should keep non-collinear joined segments as a sharp turn', () => {
         const path = concatOpenPaths([
             makeLinearPath(makePoint(0, 0), makePoint(10, 0)),
