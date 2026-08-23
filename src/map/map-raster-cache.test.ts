@@ -58,6 +58,22 @@ describe('MapRasterCache', () => {
         ).toBeUndefined();
     });
 
+    it('isolates the same logical tile through the existing source key', async () => {
+        const cache = makeCache();
+        const china = await cache.getSourceSession('https://cn.tiles.example/manifest.json', 1_000);
+        const japan = await cache.getSourceSession('https://jp.tiles.example/manifest.json', 1_000);
+        await cache.confirmSourceSession(china);
+        await cache.confirmSourceSession(japan);
+        const styleCss = '.road { stroke: #123456; }';
+        const styleKey = getMapStyleCacheKey(styleCss);
+        const raster = new Blob(['china'], { type: 'image/webp' });
+
+        await cache.putRaster(china, styleKey, styleCss, '13/1/2', raster, 2_000);
+
+        expect(await cache.getRaster(china, styleKey, styleCss, '13/1/2', 3_000)).toBeDefined();
+        expect(await cache.getRaster(japan, styleKey, styleCss, '13/1/2', 3_000)).toBeUndefined();
+    });
+
     it('persists a null blob as a failed raster result', async () => {
         const cache = makeCache();
         const session = await cache.getSourceSession('https://tiles.example/', 1_000);

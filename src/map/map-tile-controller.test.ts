@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MAP_COMMON_ZOOM, MAP_TILE_SIZE, MAP_ZOOMED_SWITCH_THRESHOLD, worldPixelToGraph } from './map-config';
+import { decodeMapRouting } from './map-routing';
 import {
     getMapOptimizationProgress,
     MapTileController,
@@ -44,6 +45,7 @@ const bundle = (zoom: number, x: number, y: number) => {
 };
 
 const BASE_URL = 'https://tiles.example/';
+const JAPAN_BASE_URL = 'https://jp.tiles.example/';
 const OVERVIEW_TILE = { zoom: 8, x: 214, y: 104 } as const;
 const ZOOMED_TILE = { zoom: 13, x: 6860, y: 3347 } as const;
 const makeOverviewViewport = (width: number, height: number) => {
@@ -83,6 +85,18 @@ const createMapSourceFixture = (options?: {
     const overviewMaxX = Math.max(...overviewXs);
     const overviewWidth = overviewMaxX - OVERVIEW_TILE.x + 1;
     const overviewBits = overviewXs.reduce((bits, x) => bits | (1 << (x - OVERVIEW_TILE.x)), 0);
+    const routing = decodeMapRouting({
+        formatVersion: 1,
+        ownerZoom: 8,
+        regions: [{ id: 'fixture', ownerId: 1, origin: new URL(BASE_URL).origin }],
+        runs: [
+            {
+                start: OVERVIEW_TILE.y * 256 + OVERVIEW_TILE.x,
+                length: overviewWidth,
+                ownerId: 1,
+            },
+        ],
+    });
     const manifest = {
         formatVersion: 3,
         projection: { name: 'WebMercatorQuad', tileSize: 256 },
@@ -167,6 +181,118 @@ const createMapSourceFixture = (options?: {
     return {
         fetcher: fetcherMock as typeof fetch,
         fetcherMock,
+        routing,
+    };
+};
+
+const createRegionalMapSourceFixture = (options?: {
+    failJapanManifest?: boolean;
+    failJapanOverviewBundle?: boolean;
+}) => {
+    const chinaOverview = OVERVIEW_TILE;
+    const japanOverview = { ...OVERVIEW_TILE, x: OVERVIEW_TILE.x + 1 };
+    const chinaZoomed = ZOOMED_TILE;
+    const japanZoomed = { ...ZOOMED_TILE, x: (OVERVIEW_TILE.x + 1) * 32 };
+    const routing = decodeMapRouting({
+        formatVersion: 1,
+        ownerZoom: 8,
+        regions: [
+            { id: 'china', ownerId: 1, origin: new URL(BASE_URL).origin },
+            { id: 'japan', ownerId: 2, origin: new URL(JAPAN_BASE_URL).origin },
+        ],
+        runs: [
+            { start: chinaOverview.y * 256 + chinaOverview.x, length: 1, ownerId: 1 },
+            { start: japanOverview.y * 256 + japanOverview.x, length: 1, ownerId: 2 },
+        ],
+    });
+    const responses = new Map<string, BodyInit>();
+
+    const addSource = (
+        baseUrl: string,
+        overview: { zoom: number; x: number; y: number },
+        zoomed: { zoom: number; x: number; y: number }
+    ) => {
+        const manifest = {
+            formatVersion: 3,
+            projection: { name: 'WebMercatorQuad', tileSize: 256 },
+            attribution: 'OpenStreetMap contributors / ODbL',
+            levels: [
+                {
+                    name: 'overview',
+                    zoom: overview.zoom,
+                    bundleFormat: 'RMPB1',
+                    bundleIndex: 'bundle-index/z8.json',
+                    bundleTemplate: 'bundles/overview/8/{side}/{x}/{y}.rmpb',
+                    availability: 'availability/z8.bin',
+                    tileBounds: { minX: overview.x, minY: overview.y, maxX: overview.x, maxY: overview.y },
+                },
+                {
+                    name: 'zoomed',
+                    zoom: zoomed.zoom,
+                    bundleFormat: 'RMPB1',
+                    bundleIndex: 'bundle-index/z13.json',
+                    bundleTemplate: 'bundles/zoomed/13/{side}/{x}/{y}.rmpb',
+                    availability: 'availability/z13.bin',
+                    tileBounds: { minX: zoomed.x, minY: zoomed.y, maxX: zoomed.x, maxY: zoomed.y },
+                },
+            ],
+        };
+        responses.set(`${baseUrl}manifest.json`, JSON.stringify(manifest));
+        responses.set(`${baseUrl}availability/z8.bin`, availability(overview.zoom, overview.x, overview.y));
+        responses.set(`${baseUrl}availability/z13.bin`, availability(zoomed.zoom, zoomed.x, zoomed.y));
+        responses.set(
+            `${baseUrl}bundle-index/z8.json`,
+            JSON.stringify({
+                formatVersion: 1,
+                level: 'overview',
+                zoom: overview.zoom,
+                bundles: [{ side: 1, x: overview.x, y: overview.y }],
+            })
+        );
+        responses.set(
+            `${baseUrl}bundle-index/z13.json`,
+            JSON.stringify({
+                formatVersion: 1,
+                level: 'zoomed',
+                zoom: zoomed.zoom,
+                bundles: [{ side: 1, x: zoomed.x, y: zoomed.y }],
+            })
+        );
+        responses.set(
+            `${baseUrl}bundles/overview/8/1/${overview.x}/${overview.y}.rmpb`,
+            bundle(overview.zoom, overview.x, overview.y)
+        );
+        responses.set(
+            `${baseUrl}bundles/zoomed/13/1/${zoomed.x}/${zoomed.y}.rmpb`,
+            bundle(zoomed.zoom, zoomed.x, zoomed.y)
+        );
+    };
+
+    addSource(BASE_URL, chinaOverview, chinaZoomed);
+    addSource(JAPAN_BASE_URL, japanOverview, japanZoomed);
+    const fetcherMock = vi.fn(async (input: URL | RequestInfo) => {
+        const requestUrl = new URL(input instanceof URL ? input.href : String(input));
+        requestUrl.searchParams.delete('rmp-source-epoch');
+        if (options?.failJapanManifest && requestUrl.href === `${JAPAN_BASE_URL}manifest.json`) {
+            return new Response(null, { status: 503 });
+        }
+        if (
+            options?.failJapanOverviewBundle &&
+            requestUrl.href === `${JAPAN_BASE_URL}bundles/overview/8/1/${japanOverview.x}/${japanOverview.y}.rmpb`
+        ) {
+            return new Response(null, { status: 503 });
+        }
+        const body = responses.get(requestUrl.href);
+        return body === undefined ? new Response(null, { status: 404 }) : new Response(body, { status: 200 });
+    });
+    return {
+        chinaOverview,
+        chinaZoomed,
+        fetcher: fetcherMock as typeof fetch,
+        fetcherMock,
+        japanOverview,
+        japanZoomed,
+        routing,
     };
 };
 
@@ -174,6 +300,158 @@ describe('MapTileController', () => {
     afterEach(() => {
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+    });
+
+    it('mounts tiles from two routed regional origins in one viewport', async () => {
+        stubAnimationFrame();
+        const { chinaOverview, chinaZoomed, fetcher, fetcherMock, japanOverview, japanZoomed, routing } =
+            createRegionalMapSourceFixture();
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 3_000, height: 1_000 }),
+            fetch: fetcher,
+            rasterCache: null,
+        });
+        controller.updateViewport({ x: -4_000, y: -5_500, zoom: 800 });
+        await controller.initialize();
+
+        await vi.waitFor(() => {
+            expect(root.querySelector(`[data-tile-key="8/${chinaOverview.x}/${chinaOverview.y}"]`)).not.toBeNull();
+            expect(root.querySelector(`[data-tile-key="8/${japanOverview.x}/${japanOverview.y}"]`)).not.toBeNull();
+        });
+        const requestedOrigins = new Set(
+            fetcherMock.mock.calls.map(([input]) => new URL(input instanceof URL ? input.href : String(input)).origin)
+        );
+        expect(requestedOrigins).toEqual(new Set([new URL(BASE_URL).origin, new URL(JAPAN_BASE_URL).origin]));
+
+        const commonOverviewTileSize = MAP_TILE_SIZE * 2 ** (MAP_COMMON_ZOOM - chinaOverview.zoom);
+        const exportMin = worldPixelToGraph({
+            x: chinaOverview.x * commonOverviewTileSize,
+            y: chinaOverview.y * commonOverviewTileSize,
+        });
+        const exportMax = worldPixelToGraph({
+            x: (japanOverview.x + 1) * commonOverviewTileSize - 1,
+            y: (japanOverview.y + 1) * commonOverviewTileSize - 1,
+        });
+        const exportRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        await renderMapLayerForExport(root, exportRoot, {
+            xMin: exportMin.x,
+            yMin: exportMin.y,
+            xMax: exportMax.x,
+            yMax: exportMax.y,
+        });
+        expect(exportRoot.querySelector(`[data-tile-key="8/${chinaOverview.x}/${chinaOverview.y}"]`)).not.toBeNull();
+        expect(exportRoot.querySelector(`[data-tile-key="8/${japanOverview.x}/${japanOverview.y}"]`)).not.toBeNull();
+
+        controller.updateViewport({ x: -100, y: -100, zoom: MAP_ZOOMED_SWITCH_THRESHOLD });
+        await vi.waitFor(() => {
+            expect(root.querySelector(`[data-tile-key="13/${chinaZoomed.x}/${chinaZoomed.y}"]`)).not.toBeNull();
+            expect(root.querySelector(`[data-tile-key="13/${japanZoomed.x}/${japanZoomed.y}"]`)).not.toBeNull();
+        });
+        expect(root.querySelector('[data-tile-key^="8/"]')).toBeNull();
+
+        controller.dispose();
+        svg.remove();
+    });
+
+    it('keeps a healthy regional source visible when another source fails', async () => {
+        stubAnimationFrame();
+        const { chinaOverview, fetcher, fetcherMock, routing } = createRegionalMapSourceFixture({
+            failJapanManifest: true,
+        });
+        const onSourceError = vi.fn();
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 3_000, height: 1_000 }),
+            fetch: fetcher,
+            onSourceError,
+            rasterCache: null,
+        });
+        controller.updateViewport({ x: -4_000, y: -5_500, zoom: 800 });
+        await controller.initialize();
+
+        await vi.waitFor(() =>
+            expect(root.querySelector(`[data-tile-key="8/${chinaOverview.x}/${chinaOverview.y}"]`)).not.toBeNull()
+        );
+        expect(onSourceError).toHaveBeenCalledOnce();
+        expect(onSourceError.mock.calls[0][0]).toMatchObject({ id: 'japan', ownerId: 2 });
+        expect(String(onSourceError.mock.calls[0][1])).toContain('HTTP 503');
+        expect(
+            fetcherMock.mock.calls.filter(
+                ([input]) =>
+                    new URL(input instanceof URL ? input.href : String(input)).origin === new URL(BASE_URL).origin
+            ).length
+        ).toBeGreaterThan(0);
+
+        controller.dispose();
+        svg.remove();
+    });
+
+    it('does not fall back to another origin after the routed bundle fails', async () => {
+        stubAnimationFrame();
+        const { chinaOverview, fetcher, fetcherMock, japanOverview, routing } = createRegionalMapSourceFixture({
+            failJapanOverviewBundle: true,
+        });
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 3_000, height: 1_000 }),
+            fetch: fetcher,
+            rasterCache: null,
+        });
+        controller.updateViewport({ x: -4_000, y: -5_500, zoom: 800 });
+        await controller.initialize();
+
+        await vi.waitFor(() =>
+            expect(root.querySelector(`[data-tile-key="8/${chinaOverview.x}/${chinaOverview.y}"]`)).not.toBeNull()
+        );
+        await vi.waitFor(() =>
+            expect(consoleError).toHaveBeenCalledWith(
+                `Map tile failed: 8/${japanOverview.x}/${japanOverview.y}`,
+                expect.any(Error)
+            )
+        );
+        const requestedUrls = fetcherMock.mock.calls.map(([input]) => {
+            const url = new URL(input instanceof URL ? input.href : String(input));
+            url.searchParams.delete('rmp-source-epoch');
+            return url.href;
+        });
+        expect(requestedUrls).toContain(
+            `${JAPAN_BASE_URL}bundles/overview/8/1/${japanOverview.x}/${japanOverview.y}.rmpb`
+        );
+        expect(requestedUrls).not.toContain(
+            `${BASE_URL}bundles/overview/8/1/${japanOverview.x}/${japanOverview.y}.rmpb`
+        );
+        expect(root.querySelector(`[data-tile-key="8/${japanOverview.x}/${japanOverview.y}"]`)).toBeNull();
+
+        controller.dispose();
+        svg.remove();
+    });
+
+    it('does not request any regional source for an unowned viewport', async () => {
+        stubAnimationFrame();
+        const { fetcher, fetcherMock, routing } = createRegionalMapSourceFixture();
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 100, height: 100 }),
+            fetch: fetcher,
+            rasterCache: null,
+        });
+        controller.updateViewport({ x: 1_000_000, y: 1_000_000, zoom: 800 });
+        await controller.initialize();
+        await Promise.resolve();
+
+        expect(fetcherMock).not.toHaveBeenCalled();
+        controller.dispose();
+        svg.remove();
     });
 
     it('imperatively replaces overview with zoomed tiles and reports switching', async () => {
@@ -186,7 +464,7 @@ describe('MapTileController', () => {
             releaseOverviewBundle = resolve;
         });
         const parseSpy = vi.spyOn(DOMParser.prototype, 'parseFromString');
-        const { fetcher, fetcherMock } = createMapSourceFixture({
+        const { fetcher, fetcherMock, routing } = createMapSourceFixture({
             exportOnlyOverviewX,
             beforeResponse: async url => {
                 if (url.includes('/bundles/overview/')) await overviewBundleGate;
@@ -196,7 +474,7 @@ describe('MapTileController', () => {
         const { svg, root } = createSvgRoot();
         const controller = new MapTileController({
             root,
-            baseUrl: BASE_URL,
+            routing,
             getViewportSize: () => ({ width: 100, height: 100 }),
             onLoadingChange: (value, progress) => loading.push([value, progress]),
             fetch: fetcher,
@@ -278,7 +556,7 @@ describe('MapTileController', () => {
         TestUrl.revokeObjectURL = vi.fn();
         vi.stubGlobal('URL', TestUrl);
 
-        const { fetcher } = createMapSourceFixture();
+        const { fetcher, routing } = createMapSourceFixture();
         const sourceSession = {
             sourceKey: `${BASE_URL}manifest.json`,
             epoch: '1000',
@@ -318,7 +596,7 @@ describe('MapTileController', () => {
         const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => undefined);
         const controller = new MapTileController({
             root,
-            baseUrl: BASE_URL,
+            routing,
             getViewportSize: () => ({ width: 100, height: 100 }),
             fetch: fetcher,
             styleCss,
@@ -463,7 +741,7 @@ describe('MapTileController', () => {
         TestUrl.revokeObjectURL = vi.fn();
         vi.stubGlobal('URL', TestUrl);
 
-        const { fetcher } = createMapSourceFixture();
+        const { fetcher, routing } = createMapSourceFixture();
         const sourceSession = {
             sourceKey: `${BASE_URL}manifest.json`,
             epoch: '1000',
@@ -503,7 +781,7 @@ describe('MapTileController', () => {
         const { svg, root } = createSvgRoot();
         const controller = new MapTileController({
             root,
-            baseUrl: BASE_URL,
+            routing,
             getViewportSize: () => ({ width: 100, height: 100 }),
             fetch: fetcher,
             rasterCache,
