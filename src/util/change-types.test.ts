@@ -138,7 +138,7 @@ describe('checkAndChangeStationIntType', () => {
         expect(colors).toContain('#97D700');
     });
 
-    it('should change station to basic type and clear transfer when only one line color is connected', () => {
+    it('should keep interchange type and preserve transfer when only one line color is connected', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
         // Add station nodes
@@ -190,12 +190,17 @@ describe('checkAndChangeStationIntType', () => {
         // Call the function
         checkAndChangeStationIntType(graph, 'stn_1');
 
-        // Verify the station type changed to basic
-        expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrBasic);
+        // Verify the station type remains interchange (smart downgrade is disabled)
+        expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
 
-        // Verify the transfer property is cleared (should use default)
-        const attrs = graph.getNodeAttribute('stn_1', StationType.GzmtrBasic);
+        // Verify the transfer property is preserved (not-yet-connected line colors must not disappear)
+        const attrs = graph.getNodeAttribute('stn_1', StationType.GzmtrInt);
         expect(attrs).toBeDefined();
+        expect(attrs!.transfer).toBeDefined();
+        expect(attrs!.transfer[0].length).toBe(2);
+        const colors = attrs!.transfer[0].map(t => t[2]);
+        expect(colors).toContain('#F3D03E');
+        expect(colors).toContain('#97D700');
     });
 
     it('should not change station type when no lines are connected', () => {

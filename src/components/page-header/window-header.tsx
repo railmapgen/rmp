@@ -4,8 +4,8 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
-import { Events } from '../../constants/constants';
+import { MdHelp, MdRedo, MdSettings, MdTimeline, MdTranslate, MdUndo } from 'react-icons/md';
+import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/param/param-slice';
 import { useScreenOrientation } from '../../util/hooks';
@@ -16,10 +16,17 @@ import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
 
-export default function WindowHeader() {
+interface WindowHeaderProps {
+    onTimelineClick: () => void;
+}
+
+export default function WindowHeader({ onTimelineClick }: WindowHeaderProps) {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { past, future } = useRootSelector(state => state.param);
+    const timelineUndoLen = useRootSelector(state => state.timeline.undoStack.length);
+    const timelineRedoLen = useRootSelector(state => state.timeline.redoStack.length);
+    const { timelineFeatureEnabled } = useRootSelector(state => state.app.preference);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
@@ -38,6 +45,7 @@ export default function WindowHeader() {
 
     const handleChangeLanguage = (language: LanguageCode) => {
         rmgRuntime.getI18nInstance().changeLanguage(language);
+        localStorage.setItem(LocalStorageKey.LANGUAGE, language);
     };
     const handleUndo = () => {
         dispatch(undoAction());
@@ -81,7 +89,7 @@ export default function WindowHeader() {
                         variant="ghost"
                         aria-label="Undo"
                         icon={<MdUndo />}
-                        isDisabled={past.length === 0}
+                        isDisabled={past.length === 0 && timelineUndoLen === 0}
                         onClick={handleUndo}
                     />
                     <IconButton
@@ -89,7 +97,7 @@ export default function WindowHeader() {
                         variant="ghost"
                         aria-label="Redo"
                         icon={<MdRedo />}
-                        isDisabled={future.length === 0}
+                        isDisabled={future.length === 0 && timelineRedoLen === 0}
                         onClick={handleRedo}
                     />
 
@@ -98,6 +106,16 @@ export default function WindowHeader() {
                     <OpenActions />
 
                     <DownloadActions />
+
+                    {timelineFeatureEnabled && (
+                        <IconButton
+                            size="sm"
+                            variant="ghost"
+                            aria-label={t('header.timeline.title')}
+                            icon={<MdTimeline />}
+                            onClick={onTimelineClick}
+                        />
+                    )}
 
                     {rmgRuntime.isStandaloneWindow() && (
                         <Menu>

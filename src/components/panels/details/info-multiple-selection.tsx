@@ -48,6 +48,14 @@ export default function InfoMultipleSection() {
         isIndeterminate: visibleCount > 0 && hiddenCount > 0,
     };
 
+    const stationValues = [...selected]
+        .filter(id => graph.current.hasNode(id))
+        .map(id => graph.current.getNodeAttribute(id, 'isStation') ?? id.startsWith('stn_'));
+    const stationState = {
+        isChecked: stationValues.length > 0 && stationValues.every(Boolean),
+        isIndeterminate: stationValues.some(Boolean) && stationValues.some(value => !value),
+    };
+
     const handleVisibleChange = (checked: boolean) => {
         const initialVisibleValues = [...initialVisibilityRef.current!.visibleById.values()];
         const hasInitialMixedVisibility = initialVisibleValues.some(Boolean) && initialVisibleValues.some(val => !val);
@@ -86,6 +94,19 @@ export default function InfoMultipleSection() {
         dispatch(saveGraph(graph.current.export()));
         if (hasNode) dispatch(refreshNodesThunk());
         if (hasEdge) dispatch(refreshEdgesThunk());
+    };
+
+    const handleStationFlagChange = (isStation: boolean) => {
+        let hasNode = false;
+        selected.forEach(id => {
+            if (!graph.current.hasNode(id)) return;
+            graph.current.setNodeAttribute(id, 'isStation', isStation);
+            hasNode = true;
+        });
+        if (hasNode) {
+            dispatch(saveGraph(graph.current.export()));
+            dispatch(refreshNodesThunk());
+        }
     };
 
     const getName = (id: string) => {
@@ -135,6 +156,16 @@ export default function InfoMultipleSection() {
                 >
                     {t('panel.details.info.visible')}
                 </Checkbox>
+                <HStack width="100%">
+                    <Checkbox
+                        isChecked={stationState.isChecked}
+                        isIndeterminate={stationState.isIndeterminate}
+                        onChange={e => handleStationFlagChange(e.target.checked)}
+                    />
+                    <Heading as="h5" size="xs" flex={1}>
+                        {t('timeline.isStation', '视为车站')}
+                    </Heading>
+                </HStack>
                 <HStack w="100%">
                     <Heading as="h5" size="xs" w="100%">
                         {t('panel.details.multipleSelection.show')}

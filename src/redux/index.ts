@@ -6,6 +6,7 @@ import appReducer from './app/app-slice';
 import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
+import timelineReducer from './timeline/timeline-slice';
 import viewportReducer from './viewport/viewport-slice';
 
 enableMapSet();
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
     param: paramReducer,
     runtime: runtimeReducer,
     fonts: fontsReducer,
+    timeline: timelineReducer,
     viewport: viewportReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;

@@ -12,10 +12,37 @@ interface BaseAttributes {
 }
 
 export type NodeType = StationType | MiscNodeType;
+
+/**
+ * Historical version of a node.
+ * Used to represent the same node at different stages (e.g. before/after line opening).
+ */
+export interface NodeVersion extends Partial<ExternalStationAttributes>, Partial<MiscNodeAttributes> {
+    version: number;
+    /** 版本名称，初始版本默认为 "basic" */
+    name: string;
+    x: number;
+    y: number;
+    type: NodeType;
+}
+
 export type NodeAttributes = BaseAttributes & {
     x: number;
     y: number;
     type: NodeType;
+    /**
+     * Historical versions of this node. If undefined, only the current version (v1) exists.
+     */
+    versions?: NodeVersion[];
+    /**
+     * The version number that is currently applied to this node.
+     * Defaults to 1 (basic) when not set or when the node is in its original state.
+     */
+    currentVersion?: number;
+    /**
+     * 时间线属性：是否视为车站，勾选后参与车站数统计。
+     */
+    isStation?: boolean;
 } & Partial<ExternalStationAttributes> &
     Partial<MiscNodeAttributes>;
 
@@ -31,17 +58,25 @@ export type EdgeAttributes = BaseAttributes & {
      * Index for the line position in a parallel group. Leave it -1 for deactivation of parallel.
      */
     parallelIndex: number;
+    /**
+     * 时间线属性：里程长度（公里）。
+     */
+    mileage?: number;
+    /**
+     * 时间线动画属性：线是否正在绘制中。
+     */
+    isDrawing?: boolean;
+    /**
+     * 时间线动画属性：出现动画的方向。
+     */
+    appearDirection?: 'forward' | 'backward';
+    /**
+     * 时间线动画属性：消失动画的方向。
+     */
+    disappearDirection?: 'forward' | 'backward';
 } & Partial<ExternalLinePathAttributes> &
     Partial<ExternalLineStyleAttributes>;
 
-export type GraphAttributes = {
-    name?: string;
-};
-
-/**
- * A props interface for all specific attributes components
- * that give users an input (UI) to change attributes.
- */
 export interface AttrsProps<T> {
     /**
      * Type should be StnId | LineId | MiscNodeId, need another generic parameter.
@@ -71,9 +106,20 @@ export type NodeId = StnId | MiscNodeId;
 
 export type Id = NodeId | LineId;
 
-/**
- * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)
- */
+export interface TimelineEntry {
+    id: Id;
+    reverse?: boolean;
+    /**
+     * Historical version of the node to use at this timeline position.
+     * Only applicable when id is a node. If undefined, the current version (v1) is used.
+     */
+    version?: number;
+}
+
+export type GraphAttributes = {
+    name?: string;
+    timeline?: Array<Id | TimelineEntry>;
+};
 export type ActiveType = Id | 'background';
 
 /**
@@ -146,6 +192,7 @@ export enum LocalStorageKey {
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
     ACCOUNT = 'rmg-home__account',
+    LANGUAGE = 'rmp__language',
 }
 
 export enum CityCode {

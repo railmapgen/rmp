@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
 import { RMGParam } from '../../constants/rmg';
+import { rmgAppsBaseUrl } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
@@ -47,7 +48,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
 
     const [appClipId] = useState(crypto.randomUUID());
     const frameUrl =
-        '/rmg/#/import?' +
+        `${rmgAppsBaseUrl}/rmg/#/import?` +
         new URLSearchParams({
             parentComponent: rmgRuntime.getAppName(),
             parentId: appClipId,

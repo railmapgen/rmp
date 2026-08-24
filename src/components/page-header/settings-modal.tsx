@@ -37,16 +37,21 @@ import {
     setAutoChangeStationType,
     setAutoParallel,
     setDisableWarningChangeType,
+    setEnableActionDateFormatValidation,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
     setStationNameTranslationMode,
     setTelemetryProject,
+    setTimelineFeatureEnabled,
 } from '../../redux/app/app-slice';
 import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
+import { saveGraph } from '../../redux/param/param-slice';
+import { normalizeTimelineStationFlags } from '../../util/save';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
-import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
+import { clearTimelineData } from '../../redux/timeline/timeline-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { MasterManager } from './master-manager';
@@ -68,6 +73,7 @@ const macKeyStyle: SystemStyleObject = {
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
+    const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
@@ -80,13 +86,44 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
             predictNextNode,
             autoChangeStationType,
             disableWarning: { changeType: disableWarningChangeType },
+            timelineFeatureEnabled,
+            enableActionDateFormatValidation,
         },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
-    const dispatch = useRootDispatch();
+
+    const handleTimelineFeatureToggle = (enabled: boolean) => {
+        dispatch(setTimelineFeatureEnabled(enabled));
+        if (!enabled) {
+            window.graph.forEachNode(node => {
+                if (window.graph.getNodeAttribute(node, 'isStation') !== undefined) {
+                    window.graph.removeNodeAttribute(node, 'isStation');
+                }
+            });
+            window.graph.forEachEdge(edge => {
+                if (window.graph.getEdgeAttribute(edge, 'mileage') !== undefined) {
+                    window.graph.removeEdgeAttribute(edge, 'mileage');
+                }
+            });
+            dispatch(clearTimelineData());
+            dispatch(saveGraph(window.graph.export()));
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
+            return;
+        }
+        window.graph.forEachEdge(edge => {
+            const mileage = window.graph.getEdgeAttribute(edge, 'mileage');
+            if (typeof mileage !== 'number' || !Number.isFinite(mileage)) {
+                window.graph.setEdgeAttribute(edge, 'mileage', 1);
+            }
+        });
+        normalizeTimelineStationFlags(window.graph);
+        dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
+    };
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
 
@@ -111,6 +148,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     };
     const handleStationNameTranslationModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setStationNameTranslationMode(event.target.value as StationNameTranslationMode));
+    };
+
+    const handleDateFormatToggle = (checked: boolean) => {
+        dispatch(setEnableActionDateFormatValidation(checked));
     };
 
     return (
@@ -270,6 +311,22 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         }
                                     />
                                 </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.timelineFeature')}</Text>
+                                    <Switch
+                                        isChecked={timelineFeatureEnabled}
+                                        onChange={({ target: { checked } }) => handleTimelineFeatureToggle(checked)}
+                                    />
+                                </HStack>
+                                {timelineFeatureEnabled && (
+                                    <HStack mb="1">
+                                        <Text flex="1">{t('header.settings.preference.enableActionDateFormat')}</Text>
+                                        <Switch
+                                            isChecked={enableActionDateFormatValidation}
+                                            onChange={e => handleDateFormatToggle(e.currentTarget.checked)}
+                                        />
+                                    </HStack>
+                                )}
                             </VStack>
                         </Box>
 

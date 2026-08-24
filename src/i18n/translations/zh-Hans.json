@@ -9,6 +9,10 @@
     "pasteAttrs": "粘贴独特属性",
     "remove": "移除",
     "close": "关闭",
+    "confirm": "确定",
+    "edit": "编辑",
+    "back": "返回",
+    "ok": "确定",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
 
@@ -751,6 +755,25 @@
             },
             "footer": {
                 "duplicate": "重复"
+            },
+            "nodeVersion": {
+                "title": "历史版本",
+                "current": "(当前)",
+                "rename": "重命名",
+                "apply": "应用",
+                "remove": "删除",
+                "add": "添加新版本",
+                "placing": "请放置该版本的节点……",
+                "pleaseSelectNode": "请选择新建的版本节点",
+                "placingNew": "正在编辑此节点，完成后请点击确定按钮。",
+                "placingNewWithId": "正在编辑节点{{id}}，完成后请点击确定按钮。",
+                "nameVersion": "命名版本",
+                "namePlaceholder": "输入版本名称",
+                "enterName": "输入版本名称",
+                "enterNameDesc": "请为新版本输入一个名称（可选，留空将使用默认名称）",
+                "versionName": "版本名称",
+                "versionNotFound": "版本不存在或无法获取",
+                "applySuccess": "已应用版本 {version}"
             }
         }
     },
@@ -839,7 +862,47 @@
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些节点需要显示此信息。",
-            "confirm": "下载"
+            "confirm": "下载",
+            "video": "导出视频",
+            "videoExport": {
+                "title": "导出视频",
+                "fps": "每秒帧数 (FPS)",
+                "duration": "时长（秒）",
+                "quality": "视频质量",
+                "generating": "正在生成视频...",
+                "progress": "进度：{{progress}}%",
+                "description": "此功能会导出一个动画视频，展示节点和线路逐步绘制的过程。",
+                "shareInfo1": "当我分享此视频时我会附上",
+                "shareInfo2": "和它的链接。",
+                "format": "视频格式",
+                "error": "视频导出失败，请重试。",
+                "closeConfirmTitle": "导出进行中",
+                "closeConfirmDesc": "视频正在导出中，请选择操作：",
+                "cancelExport": "取消导出",
+                "backgroundExport": "后台导出",
+                "preview": "预览",
+                "previewTitle": "视频预览",
+                "previewDesc": "您可以拖动进度条或点击进度条上任意处自由查看任意时刻的动画画面。",
+                "previewPlay": "播放",
+                "previewPause": "暂停",
+                "previewLoading": "渲染中…",
+                "previewFullscreen": "全屏"
+            }
+        },
+        "timeline": {
+            "title": "动画时间线",
+            "empty": "暂无时间线，点击「添加节点」开始构建。",
+            "addSegment": "添加节点",
+            "clearAll": "清空",
+            "pickStart": "在画布上点击一个节点作为起点……",
+            "pickEnd": "在画布上点击一个节点作为终点……",
+            "selectTheme": "选择线路：",
+            "noPath": "未找到所选节点之间的路径。",
+            "unadded": "有 {{count}} 个节点未加入时间线",
+            "addStationOnly": "仅添加此节点",
+            "reverse": "反向",
+            "reverseSelected": "反向选中线路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐赠",
@@ -896,7 +959,9 @@
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
-                "disableWarningChangeType": "更改车站或线段类型时禁用警告"
+                "disableWarningChangeType": "更改车站或线段类型时禁用警告",
+                "timelineFeature": "启用动画时间线功能",
+                "enableActionDateFormat": "启用动作日期格式校验"
             },
             "shortcuts": {
                 "title": "快捷键",
@@ -1043,5 +1108,89 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
+    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
+
+    "timeline": {
+        "editor": {
+            "title": "动画时间线"
+        },
+        "totalDuration": "总时长",
+        "second": "秒",
+        "undo": "撤销",
+        "redo": "重做",
+        "lines": "线路列表",
+        "actions": "动作列表",
+        "segments": "段",
+        "segment": "线路段",
+        "addLine": "添加线路",
+        "addAction": "添加动作",
+        "addSegment": "添加线路段",
+        "noGroups": "暂无线路",
+        "noSegments": "暂无线路段",
+        "noActions": "暂无动作",
+        "addBelow": "在下方添加",
+        "drag": "拖动",
+        "newLine": "新线路",
+        "modify": "修改",
+        "elements": "元素",
+        "segmentRemark": "线路段备注名",
+        "segmentRemarkPlaceholder": "输入线路段备注名",
+        "segmentRemarkRequired": "请输入线路段备注名",
+        "addElement": "添加元素",
+        "reverseAll": "全部反转",
+        "noElements": "暂无元素，请点击\"添加元素\"",
+        "pickElement": "请在画布上点击要添加的元素",
+        "addSegmentPath": "整段添加",
+        "pickStartNode": "请在画布上点击路径起点",
+        "pickEndNode": "请在画布上点击路径终点",
+        "selectTheme": "选择线路颜色",
+        "selectThemeHint": "请选择路径使用的线条颜色",
+        "noLines": "暂无线路",
+        "start": "开始",
+        "end": "结束",
+        "isStation": "视为车站",
+        "mileage": "里程长度",
+        "savedAtTimePoint": "变更已保存到当前时间点",
+        "futurePointsAffected": "后续时间点将受影响",
+        "attrs": {
+            "title": "时间线属性"
+        },
+        "line": {
+            "name": "线路名称",
+            "color": "颜色"
+        },
+        "action": {
+            "type": "类型",
+            "open": "开通",
+            "close": "停运",
+            "overview": "全览",
+            "wait": "等待",
+            "focus": "聚焦",
+            "focusTargetMissing": "聚焦没有找到后续目标线路段",
+            "remark": "备注",
+            "lineSegment": "目标线路段",
+            "selectSegment": "选择线路段",
+            "duration": "时长",
+            "activeLines": "已开通线路",
+            "selectLines": "选择线路",
+            "selectActiveLines": "选择已开通线路",
+            "unsaved": "未保存",
+            "invalidDateFormat": "日期格式无效，请输入 YYYY-MM-DD，或在设置中关闭动作日期格式校验",
+            "dateFormatEnabled": "动作日期格式校验已启用，仅接受 YYYY-MM-DD 格式",
+            "batchInvalidDateFormat": "已自动清空 {{count}} 个不符合 YYYY-MM-DD 格式的日期"
+        },
+        "player": {
+            "play": "播放",
+            "stop": "停止",
+            "pause": "暂停",
+            "export": "导出视频",
+            "stations": "车站数",
+            "mileage": "里程",
+            "date": "日期",
+            "activeLines": "已开通线路",
+            "bad": "暂不支持此样式",
+            "noEdges": "时间线中无可绘制的边",
+            "prepare": "准备中..."
+        }
+    }
 }

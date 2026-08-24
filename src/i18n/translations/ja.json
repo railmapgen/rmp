@@ -11,6 +11,10 @@
     "pasteAttrs": "独自属性を貼り付け",
     "remove": "削除",
     "close": "閉じる",
+    "confirm": "確認",
+    "edit": "編集",
+    "back": "戻る",
+    "ok": "OK",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
 
@@ -754,6 +758,25 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "nodeVersion": {
+                "title": "履歴バージョン",
+                "current": "(現在)",
+                "rename": "名前変更",
+                "apply": "適用",
+                "remove": "削除",
+                "add": "新バージョンを追加",
+                "placing": "このバージョンのノードを配置...",
+                "pleaseSelectNode": "新しいバージョンノードを選択してください",
+                "placingNew": "このノードを編集しています。完了したらOKをクリックしてください。",
+                "placingNewWithId": "ノード{{id}}を編集しています。完了したらOKをクリックしてください。",
+                "nameVersion": "バージョン名",
+                "namePlaceholder": "バージョン名を入力",
+                "enterName": "バージョン名を入力",
+                "enterNameDesc": "新しいバージョンの名前を入力してください（任意。空の場合はデフォルト名を使用します）",
+                "versionName": "バージョン名",
+                "versionNotFound": "バージョンが存在しないか、取得できません",
+                "applySuccess": "バージョン {version} を適用しました"
             }
         }
     },
@@ -842,7 +865,47 @@
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
             "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
-            "confirm": "ダウンロード"
+            "confirm": "ダウンロード",
+            "video": "ビデオをエクスポート",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "fps": "フレームレート（FPS）",
+                "duration": "長さ（秒）",
+                "quality": "ビデオ品質",
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "動画形式",
+                "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
+                "closeConfirmTitle": "書き出し中",
+                "closeConfirmDesc": "ビデオを書き出しています。操作を選択してください：",
+                "cancelExport": "書き出しをキャンセル",
+                "backgroundExport": "バックグラウンドで書き出し",
+                "preview": "プレビュー",
+                "previewTitle": "ビデオプレビュー",
+                "previewDesc": "スライダーをクリックするだけで、任意の瞬間のアニメーションを確認できます。",
+                "previewPlay": "再生",
+                "previewPause": "一時停止",
+                "previewLoading": "レンダリング中…",
+                "previewFullscreen": "全画面"
+            }
+        },
+        "timeline": {
+            "title": "アニメーションタイムライン",
+            "empty": "タイムラインがありません。「ノード追加」をクリックして開始します。",
+            "addSegment": "ノード追加",
+            "clearAll": "すべてクリア",
+            "pickStart": "キャンバス上のノードをクリックして始点を選択...",
+            "pickEnd": "キャンバス上のノードをクリックして終点を選択...",
+            "selectTheme": "路線を選択：",
+            "noPath": "選択したノード間のルートが見つかりません。",
+            "unadded": "{{count}}個のノードがタイムラインに未追加",
+            "addStationOnly": "このノードのみ追加",
+            "reverse": "反転",
+            "reverseSelected": "選択した線を反転",
+            "reversed": "反転済み"
         },
         "donation": {
             "title": "寄付",
@@ -899,7 +962,9 @@
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
                 "predictNextNode": "節点を選択したときに次の節点を予測する",
                 "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
-                "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
+                "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする",
+                "timelineFeature": "アニメーションタイムライン機能を有効にする",
+                "enableActionDateFormat": "アクションの日付形式バリデーションを有効にする"
             },
             "shortcuts": {
                 "title": "ショートカット",
@@ -1042,6 +1107,90 @@
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
             "invalidOrIncompatible": "クリップボードのデータが無効か、現在のバージョンと互換性がありません。",
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
+        }
+    },
+
+    "timeline": {
+        "editor": {
+            "title": "アニメーションタイムライン"
+        },
+        "totalDuration": "総時間",
+        "second": "秒",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "lines": "路線リスト",
+        "actions": "アクションリスト",
+        "segments": "区間",
+        "segment": "路線区間",
+        "addLine": "路線を追加",
+        "addAction": "アクションを追加",
+        "addSegment": "路線区間を追加",
+        "noGroups": "路線がありません",
+        "noSegments": "路線区間がありません",
+        "noActions": "アクションがありません",
+        "addBelow": "下に追加",
+        "drag": "ドラッグ",
+        "newLine": "新路線",
+        "modify": "修正",
+        "elements": "要素",
+        "segmentRemark": "区間の備考",
+        "segmentRemarkPlaceholder": "区間の備考を入力",
+        "segmentRemarkRequired": "区間の備考を入力してください",
+        "addElement": "要素を追加",
+        "reverseAll": "すべて反転",
+        "noElements": "要素がありません。「要素を追加」をクリック",
+        "pickElement": "キャンバス上の要素をクリックして追加",
+        "addSegmentPath": "経路追加",
+        "pickStartNode": "キャンバス上の開始ノードをクリック",
+        "pickEndNode": "キャンバス上の終了ノードをクリック",
+        "selectTheme": "路線色を選択",
+        "selectThemeHint": "経路に使用する線の色を選択してください",
+        "noLines": "路線区間がありません",
+        "start": "開始",
+        "end": "終了",
+        "isStation": "駅として扱う",
+        "mileage": "距離",
+        "savedAtTimePoint": "現在の時点に変更を保存しました",
+        "futurePointsAffected": "以降の時点に影響します",
+        "attrs": {
+            "title": "タイムライン属性"
+        },
+        "line": {
+            "name": "路線名",
+            "color": "色"
+        },
+        "action": {
+            "type": "タイプ",
+            "open": "開通",
+            "close": "廃止",
+            "overview": "全体表示",
+            "wait": "待機",
+            "focus": "フォーカス",
+            "focusTargetMissing": "フォーカス対象の後続区間がありません",
+            "remark": "備考",
+            "lineSegment": "目標路線区間",
+            "selectSegment": "路線区間を選択",
+            "duration": "時間",
+            "activeLines": "開通済み路線",
+            "selectLines": "路線を選択",
+            "selectActiveLines": "開通済み路線を選択",
+            "unsaved": "未保存",
+            "invalidDateFormat": "日付形式が無効です。YYYY-MM-DD を入力するか、設定で日付形式の検証を無効にしてください",
+            "dateFormatEnabled": "日付形式の検証が有効になりました。YYYY-MM-DD 形式のみ受け付けます",
+            "batchInvalidDateFormat": "YYYY-MM-DD 形式に準拠していない {{count}} 件の日付を自動クリアしました"
+        },
+        "player": {
+            "play": "再生",
+            "stop": "停止",
+            "pause": "一時停止",
+            "export": "動画をエクスポート",
+            "stations": "駅数",
+            "mileage": "距離",
+            "date": "日付",
+            "activeLines": "開通済み路線",
+            "bad": "このスタイルはまだサポートされていません",
+            "noEdges": "タイムラインに描画可能な辺がありません",
+            "prepare": "準備中..."
         }
     },
 

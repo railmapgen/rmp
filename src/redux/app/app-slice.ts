@@ -67,6 +67,14 @@ export interface AppState {
             stations: StationType[];
             miscNodes: MiscNodeType[];
         };
+        /**
+         * Whether to enable the animation timeline feature.
+         */
+        timelineFeatureEnabled: boolean;
+        /**
+         * Whether to enable date format validation for action rows.
+         */
+        enableActionDateFormatValidation: boolean;
     };
 }
 
@@ -96,6 +104,8 @@ export const initialState: AppState = {
             stations: [],
             miscNodes: [],
         },
+        timelineFeatureEnabled: false,
+        enableActionDateFormatValidation: true,
     },
 };
 
@@ -171,6 +181,12 @@ const appSlice = createSlice({
                 state.preference.favorites.miscNodes.splice(index, 1);
             }
         },
+        setTimelineFeatureEnabled: (state, action: PayloadAction<boolean>) => {
+            state.preference.timelineFeatureEnabled = action.payload;
+        },
+        setEnableActionDateFormatValidation: (state, action: PayloadAction<boolean>) => {
+            state.preference.enableActionDateFormatValidation = action.payload;
+        },
     },
 });
 
@@ -191,5 +207,7 @@ export const {
     toggleFavoriteLineStyle,
     toggleFavoriteStation,
     toggleFavoriteMiscNode,
+    setTimelineFeatureEnabled,
+    setEnableActionDateFormatValidation,
 } = appSlice.actions;
 export default appSlice.reducer;

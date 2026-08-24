@@ -7,13 +7,15 @@ import { useTranslation } from 'react-i18next';
 import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
-import { Events, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
+import { Events, getLinePathAndStyle, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
+import { MAP_MAX_VIEWBOX_ZOOM } from '../map/map-config';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
-import { redoAction, saveGraph, undoAction } from '../redux/param/param-slice';
+import { saveGraph } from '../redux/param/param-slice';
+import { redoAction, undoAction } from '../redux/project-history';
 import {
     clearSelected,
     refreshEdgesThunk,
@@ -37,6 +39,7 @@ import {
     roundToMultiple,
 } from '../util/helpers';
 import { useFonts, useWindowSize } from '../util/hooks';
+import { canUseLine } from '../util/line-path-availability';
 import { sendErrorNotification } from '../util/notifications';
 import {
     makeParallelIndex,
@@ -49,6 +52,7 @@ import { rotateSelectedNodes } from '../util/transform';
 import { useViewportController } from '../util/use-viewport-controller';
 import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
+import MapCanvas, { type MapCanvasHandle } from './map-canvas';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
@@ -73,7 +77,7 @@ const SvgWrapper = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { gridLines, snapLines, predictNextNode, autoParallel, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin, mapEnabled } = useRootSelector(state => state.param.present);
     const {
         selected,
         active,
@@ -82,12 +86,24 @@ const SvgWrapper = () => {
         lastTool,
         keepLastPath,
         theme,
+        isMapOverview,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
+    const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
+
+    /**
+     * Intermediate pan/zoom frames bypass Redux for interaction performance.
+     * This narrow bridge keeps the sibling map layer synchronized without
+     * teaching the reusable viewport controller about maps or tile loading.
+     */
+    const handleViewportChange = React.useCallback(
+        (viewport: { x: number; y: number; zoom: number }) => mapCanvasRef.current?.updateViewport(viewport),
+        []
+    );
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
     const isParallelDisabled =
@@ -109,6 +125,7 @@ const SvgWrapper = () => {
         panEnd,
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
+        onViewportChange: handleViewportChange,
     });
 
     const makeStationName = useMakeStationName();
@@ -232,12 +249,16 @@ const SvgWrapper = () => {
     });
 
     const handleBackgroundWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
+        mapCanvasRef.current?.markViewportInteraction();
         const currentViewport = viewportGetLatest();
         const zoomIntensity = e.ctrlKey || e.metaKey ? 0.0009 : 0.0015;
         const scaleMultiplier = Math.exp(e.deltaY * zoomIntensity);
 
         let newZoom = currentViewport.zoom * scaleMultiplier;
-        newZoom = Math.max(1, Math.min(newZoom, 400));
+        // A visible map needs a city-scale overview. Keep the established cap
+        // while the map is hidden.
+        const maxZoom = mapEnabled ? MAP_MAX_VIEWBOX_ZOOM : 400;
+        newZoom = Math.max(1, Math.min(newZoom, maxZoom));
         if (newZoom === currentViewport.zoom) return;
 
         const { x, y } = getMousePosition(e);
@@ -320,12 +341,13 @@ const SvgWrapper = () => {
                 });
             }
         } else if (e.key === 'f' && lastTool) {
-            dispatch(setMode(lastTool as RuntimeMode));
+            const { path, style } = getLinePathAndStyle(lastTool as RuntimeMode);
+            if (!path || !style || canUseLine(path, style, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
+                dispatch(setMode(lastTool as RuntimeMode));
+            }
         } else if (e.key === 'z' && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
             if (isMacClient) e.preventDefault(); // Cmd Z will step backward in safari and chrome
             dispatch(undoAction());
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
         } else if (e.key === 's') {
             dispatch(setMode('select'));
         } else if ((e.key === 'c' || e.key === 'x') && (isMacClient ? e.metaKey && !e.shiftKey : e.ctrlKey)) {
@@ -467,6 +489,14 @@ const SvgWrapper = () => {
                         <rect x="0" y="0" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                         <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="black" fillOpacity="50%" />
                     </pattern>
+                    <filter id="invisible" colorInterpolationFilters="sRGB">
+                        <feColorMatrix type="saturate" values="0" />
+                        <feComponentTransfer>
+                            <feFuncR type="table" tableValues="0.42 0.84" />
+                            <feFuncG type="table" tableValues="0.45 0.86" />
+                            <feFuncB type="table" tableValues="0.54 0.92" />
+                        </feComponentTransfer>
+                    </filter>
                 </defs>
 
                 <g
@@ -474,32 +504,43 @@ const SvgWrapper = () => {
                     // this group in updateViewportTransform, so all its children will be transformed accordingly.
                     ref={viewportRef}
                 >
-                    {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
-                    {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                    {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
-                    {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                    <utils.SvgAssetsContextProvider>
-                        <SvgCanvas />
-                    </utils.SvgAssetsContextProvider>
-                    {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                        <rect
-                            x={selectCoord.sx}
-                            y={selectCoord.sy}
-                            width={selectCoord.ex - selectCoord.sx}
-                            height={selectCoord.ey - selectCoord.sy}
-                            rx="2"
-                            stroke="#b5b5b6"
-                            strokeWidth="2"
-                            strokeOpacity="0.4"
-                            fill="#b5b5b6"
-                            opacity="0.75"
-                        />
-                    )}
-                    {isTouchClient() &&
-                        [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
-                            <VirtualJoystick />
+                    {/*
+                     * MapCanvas is a sibling of the editor content so it can own and clear its
+                     * imperative tile root without taking ownership of SvgCanvas's React tree.
+                     */}
+                    <MapCanvas ref={mapCanvasRef} />
+                    {/*
+                     * At geographic overview scale, editor geometry is too dense to be useful.
+                     * Keep it mounted to preserve editor state, but exclude it from rendering.
+                     */}
+                    <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
+                        {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
+                        {isTouchClient() && mode === 'free' && <TouchOverlay />}
+                        {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
+                        {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                        <utils.SvgAssetsContextProvider>
+                            <SvgCanvas />
+                        </utils.SvgAssetsContextProvider>
+                        {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                            <rect
+                                x={selectCoord.sx}
+                                y={selectCoord.sy}
+                                width={selectCoord.ex - selectCoord.sx}
+                                height={selectCoord.ey - selectCoord.sy}
+                                rx="2"
+                                stroke="#b5b5b6"
+                                strokeWidth="2"
+                                strokeOpacity="0.4"
+                                fill="#b5b5b6"
+                                opacity="0.75"
+                            />
                         )}
-                    <RadialTouchMenu />
+                        {isTouchClient() &&
+                            [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
+                                <VirtualJoystick />
+                            )}
+                        <RadialTouchMenu />
+                    </g>
                 </g>
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />

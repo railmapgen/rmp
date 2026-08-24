@@ -9,6 +9,10 @@
     "pasteAttrs": "고유 속성 붙여넣기",
     "remove": "삭제",
     "close": "다시",
+    "confirm": "확인",
+    "edit": "편집",
+    "back": "뒤로",
+    "ok": "확인",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
 
@@ -751,6 +755,25 @@
             },
             "footer": {
                 "duplicate": "복사"
+            },
+            "nodeVersion": {
+                "title": "이전 버전",
+                "current": "(현재)",
+                "rename": "이름 변경",
+                "apply": "적용",
+                "remove": "삭제",
+                "add": "새 버전 추가",
+                "placing": "이 버전의 노드를 배치하세요...",
+                "pleaseSelectNode": "새 버전 노드를 선택하세요",
+                "placingNew": "이 노드를 편집 중입니다. 완료되면 확인을 클릭하세요.",
+                "placingNewWithId": "노드 {{id}}를 편집 중입니다. 완료되면 확인을 클릭하세요.",
+                "nameVersion": "버전 이름",
+                "namePlaceholder": "버전 이름 입력",
+                "enterName": "버전 이름 입력",
+                "enterNameDesc": "새 버전의 이름을 입력하세요 (선택 사항. 비워두면 기본 이름이 사용됩니다)",
+                "versionName": "버전 이름",
+                "versionNotFound": "버전이 존재하지 않거나 검색할 수 없습니다",
+                "applySuccess": "버전 {version}이(가) 적용되었습니다"
             }
         }
     },
@@ -839,7 +862,47 @@
             "termsAndConditionsInfo": "동의",
             "period": ".",
             "rmpInfoSpecificNodeExists": "일부 노드는 이 정보를 표시해야 합니다.",
-            "confirm": "다운로드"
+            "confirm": "다운로드",
+            "video": "비디오 내보내기",
+            "videoExport": {
+                "title": "비디오 내보내기",
+                "fps": "프레임 속도 (FPS)",
+                "duration": "길이 (초)",
+                "quality": "비디오 품질",
+                "generating": "비디오를 생성하는 중...",
+                "progress": "진행률: {{progress}}%",
+                "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "shareInfo1": "이 동영상을 공유할 때",
+                "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
+                "format": "비디오 형식",
+                "error": "비디오 내보내기에 실패했습니다. 다시 시도해주세요.",
+                "closeConfirmTitle": "내보내기 진행 중",
+                "closeConfirmDesc": "비디오가 내보내지고 있습니다. 작업을 선택하세요:",
+                "cancelExport": "내보내기 취소",
+                "backgroundExport": "백그라운드 내보내기",
+                "preview": "미리 보기",
+                "previewTitle": "비디오 미리 보기",
+                "previewDesc": "슬라이더를 클릭하여 애니메이션을 확인할 수 있습니다 (전체 비디오는 내보내지 않습니다).",
+                "previewPlay": "재생",
+                "previewPause": "일시정지",
+                "previewLoading": "렌더링 중…",
+                "previewFullscreen": "전체 화면"
+            }
+        },
+        "timeline": {
+            "title": "애니메이션 타임라인",
+            "empty": "타임라인이 없습니다. \"노드 추가\"를 클릭하여 시작하세요.",
+            "addSegment": "노드 추가",
+            "clearAll": "모두 지우기",
+            "pickStart": "캔버스에서 노드를 클릭하여 시작점 선택...",
+            "pickEnd": "캔버스에서 노드를 클릭하여 종점 선택...",
+            "selectTheme": "노선 선택:",
+            "noPath": "선택한 노드 사이의 경로를 찾을 수 없습니다.",
+            "unadded": "{{count}}개 노드가 타임라인에 미추가",
+            "addStationOnly": "이 노드만 추가",
+            "reverse": "반전",
+            "reverseSelected": "선택한 선 반전",
+            "reversed": "반전됨"
         },
         "donation": {
             "title": "기부",
@@ -896,7 +959,9 @@
                 "snapline": "가이드 라인과 포인트에 자동 스냅",
                 "predictNextNode": "노드를 선택했을 때 다음 노드를 예측하기",
                 "autoChangeStationType": "기본 역과 환승 역을 자동으로 전환",
-                "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화"
+                "disableWarningChangeType": "역 또는 노선 유형을 변경할 때 경고 비활성화",
+                "timelineFeature": "애니메이션 타임라인 기능 활성화",
+                "enableActionDateFormat": "액션 날짜 형식 검증 활성화"
             },
             "shortcuts": {
                 "title": "바로 가기",
@@ -1040,6 +1105,90 @@
             "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
             "invalidOrIncompatible": "클립보드 데이터가 잘못되었거나 현재 버전과 호환되지 않습니다.",
             "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
+        }
+    },
+
+    "timeline": {
+        "editor": {
+            "title": "애니메이션 타임라인"
+        },
+        "totalDuration": "총 시간",
+        "second": "초",
+        "undo": "실행 취소",
+        "redo": "다시 실행",
+        "lines": "노선 목록",
+        "actions": "액션 목록",
+        "segments": "구간",
+        "segment": "노선 구간",
+        "addLine": "노선 추가",
+        "addAction": "액션 추가",
+        "addSegment": "노선 구간 추가",
+        "noGroups": "노선이 없습니다",
+        "noSegments": "노선 구간이 없습니다",
+        "noActions": "액션이 없습니다",
+        "addBelow": "아래에 추가",
+        "drag": "드래그",
+        "newLine": "새 노선",
+        "modify": "수정",
+        "elements": "요소",
+        "segmentRemark": "구간 메모",
+        "segmentRemarkPlaceholder": "구간 메모 입력",
+        "segmentRemarkRequired": "구간 메모를 입력하세요",
+        "addElement": "요소 추가",
+        "reverseAll": "모두 반전",
+        "noElements": "요소가 없습니다. \"요소 추가\"를 클릭하세요",
+        "pickElement": "캔버스에서 추가할 요소를 클릭하세요",
+        "addSegmentPath": "경로 추가",
+        "pickStartNode": "캔버스에서 시작 노드를 클릭하세요",
+        "pickEndNode": "캔버스에서 종료 노드를 클릭하세요",
+        "selectTheme": "노선 색상 선택",
+        "selectThemeHint": "경로에 사용할 선 색상을 선택하세요",
+        "noLines": "노선 구간이 없습니다",
+        "start": "시작",
+        "end": "종료",
+        "isStation": "역으로 간주",
+        "mileage": "거리",
+        "savedAtTimePoint": "현재 시점에 변경 사항 저장됨",
+        "futurePointsAffected": "이후 시점에 영향을 미칩니다",
+        "attrs": {
+            "title": "타임라인 속성"
+        },
+        "line": {
+            "name": "노선 이름",
+            "color": "색상"
+        },
+        "action": {
+            "type": "유형",
+            "open": "개통",
+            "close": "폐지",
+            "overview": "전체 보기",
+            "wait": "대기",
+            "focus": "포커스",
+            "focusTargetMissing": "포커스할 다음 구간이 없습니다",
+            "remark": "비고",
+            "lineSegment": "대상 구간",
+            "selectSegment": "구간 선택",
+            "duration": "시간",
+            "activeLines": "개통된 노선",
+            "selectLines": "노선 선택",
+            "selectActiveLines": "개통 노선 선택",
+            "unsaved": "저장되지 않음",
+            "invalidDateFormat": "날짜 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력하거나 설정에서 날짜 형식 검증을 비활성화하세요",
+            "dateFormatEnabled": "날짜 형식 검증이 활성화되었습니다. YYYY-MM-DD 형식만 허용됩니다",
+            "batchInvalidDateFormat": "YYYY-MM-DD 형식에 맞지 않는 {{count}}개의 날짜를 자동으로 지웠습니다"
+        },
+        "player": {
+            "play": "재생",
+            "stop": "정지",
+            "pause": "일시 정지",
+            "export": "비디오 내보내기",
+            "stations": "역 수",
+            "mileage": "거리",
+            "date": "날짜",
+            "activeLines": "개통된 노선",
+            "bad": "이 스타일은 아직 지원되지 않습니다",
+            "noEdges": "타임라인에 그릴 수 있는 선이 없습니다",
+            "prepare": "준비 중..."
         }
     },
 

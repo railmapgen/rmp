@@ -29,4 +29,5 @@ yarn-error.log*
 # environment
 /.vscode
 /.idea
+/.trae
 .env

@@ -40,6 +40,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { ParamState } from '../redux/param/param-slice';
+import type { DateRow, LineGroup, TimelineLine, ActionRow, TimelineDiff } from '../constants/timeline';
 import { TextLanguage } from './fonts';
 
 /**
@@ -55,6 +56,19 @@ export interface RMPSave {
     svgViewBoxZoom: number;
     svgViewBoxMin: { x: number; y: number };
     images?: { id: string; base64: string }[];
+    /** Timeline state for animation (optional, older saves may not have it) */
+    timeline?: {
+        enabled: boolean;
+        totalDuration: number;
+        currentTime: number;
+        dateRows: DateRow[];
+        groups: LineGroup[];
+        lines: TimelineLine[];
+        actionRows: ActionRow[];
+        diffs: TimelineDiff[];
+        /** Base graph state at time 0 before any diffs are applied */
+        baseGraph?: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    };
 }
 
 export const CURRENT_VERSION = 77;
@@ -113,6 +127,19 @@ export const parseVersionFromSave = (saveStr: string): number => {
  */
 export const getInitialParam = async () => JSON.stringify((await import('../saves/tutorial.json')).default);
 
+export const normalizeTimelineStationFlags = <
+    TNode extends { id?: string; isStation?: boolean },
+    TGraph extends { forEachNode: (callback: (node: string, attributes: TNode) => void) => void },
+>(
+    graph: TGraph
+): void => {
+    graph.forEachNode((node, attributes) => {
+        if (attributes.isStation === undefined) {
+            attributes.isStation = node.startsWith('stn_');
+        }
+    });
+};
+
 /**
  * Upgrade the passed param to the latest format.
  */
@@ -163,11 +190,27 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Return a valid save string from ParamState.
+ * Return a valid save string from ParamState and optional timeline state.
  */
-export const stringifyParam = (paramState: ParamState) => {
+export const stringifyParam = (
+    paramState: ParamState,
+    timelineState?: {
+        enabled: boolean;
+        totalDuration: number;
+        currentTime: number;
+        dateRows: DateRow[];
+        groups: LineGroup[];
+        lines: TimelineLine[];
+        actionRows: ActionRow[];
+        diffs: TimelineDiff[];
+        baseGraph?: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    }
+) => {
     const { present, past, future, ...param } = paramState;
     const save: RMPSave = { ...param, graph: present, version: CURRENT_VERSION };
+    if (timelineState) {
+        save.timeline = timelineState;
+    }
     return JSON.stringify(save);
 };
 
@@ -910,8 +953,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any as
-                    | BjsubwayBasicStationAttributes
-                    | BjsubwayIntStationAttributes;
+                    BjsubwayBasicStationAttributes | BjsubwayIntStationAttributes;
                 if (typeof (attr as any).scale !== 'number') {
                     (attr as any).scale = 1;
                     graph.mergeNodeAttributes(node, { [type]: attr });

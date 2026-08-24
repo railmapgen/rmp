@@ -18,6 +18,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { defaultMasterTransform, MasterParam } from '../../constants/master';
+import { rmgAppsBaseUrl } from '../../constants/server';
 import { getContrastingColor, getRandomHexColor } from '../../util/color';
 import { getMasterNodeTypes } from '../../util/graph';
 
@@ -263,7 +264,10 @@ const MasterImportGalleryAppClip = (props: {
     source: 'DESIGNER' | 'GALLERY';
 }) => {
     const { isOpen, onClose, source } = props;
-    const url = source === 'DESIGNER' ? '/rmp-designer/#/export' : '/rmp-gallery/?tabId=2&master=true';
+    const url =
+        source === 'DESIGNER'
+            ? `${rmgAppsBaseUrl}/rmp-designer/#/export`
+            : `${rmgAppsBaseUrl}/rmp-gallery/?tabId=2&master=true`;
 
     return (
         <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>

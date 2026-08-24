@@ -5,7 +5,16 @@ import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 import { RootState } from '..';
 import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
-import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
+import {
+    CityCode,
+    Id,
+    NodeId,
+    NodeType,
+    NodeVersion,
+    RuntimeMode,
+    StationCity,
+    Theme,
+} from '../../constants/constants';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -91,6 +100,17 @@ interface RuntimeState {
     existsNodeTypes: Set<NodeType>;
     radialTouchMenu: RadialTouchMenuState;
     globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    /**
+     * When placing a historical node version on canvas.
+     * Set when user clicks "add new version" in details panel.
+     * Contains the original (v1) state to restore on cancel or after confirm.
+     */
+    placingNodeVersion?: {
+        nodeId: NodeId;
+        version: number;
+        savedState: NodeVersion;
+        versionName?: string;
+    };
 }
 
 const initialState: RuntimeState = {
@@ -274,6 +294,7 @@ const runtimeSlice = createSlice({
         },
         closePaletteAppClip: state => {
             state.paletteAppClip.input = undefined;
+            state.paletteAppClip.output = undefined;
         },
         onPaletteAppClipEmit: (state, action: PayloadAction<Theme>) => {
             state.paletteAppClip.input = undefined;
@@ -329,6 +350,21 @@ const runtimeSlice = createSlice({
         closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
             delete state.globalAlerts[action.payload];
         },
+        startPlacingNodeVersion: (
+            state,
+            action: PayloadAction<{ nodeId: NodeId; version: number; savedState: NodeVersion }>
+        ) => {
+            state.placingNodeVersion = action.payload;
+            // Ensure the node is selected so the user can see it on canvas
+            state.selected = new Set<Id>([action.payload.nodeId]);
+            state.isDetailsOpen = getIsDetailsOpen(state);
+        },
+        confirmPlacingNodeVersion: state => {
+            state.placingNodeVersion = undefined;
+        },
+        cancelPlacingNodeVersion: state => {
+            state.placingNodeVersion = undefined;
+        },
     },
     extraReducers: builder => {
         builder
@@ -369,5 +405,8 @@ export const {
     closeRadialTouchMenu,
     setGlobalAlert,
     closeGlobalAlert,
+    startPlacingNodeVersion,
+    confirmPlacingNodeVersion,
+    cancelPlacingNodeVersion,
 } = runtimeSlice.actions;
 export default runtimeSlice.reducer;

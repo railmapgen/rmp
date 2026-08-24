@@ -4,7 +4,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
-import { shared_work_endpoint } from '../../constants/server';
+import { rmgAppsBaseUrl, shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
@@ -94,7 +94,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     };
 
     const fetchAndApplyWork = async (id: string, host?: string) => {
-        const urlPrefix = host ? `https://${host}` : '';
+        const urlPrefix = host ? `https://${host}` : rmgAppsBaseUrl;
         const work = (await (
             (
                 await Promise.allSettled([
@@ -199,7 +199,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
     return (
         <>
             <RmgAppClip isOpen={isOpen} onClose={onClose} size="full" sx={styles}>
-                <iframe src="/rmp-gallery/" loading="lazy" />
+                <iframe src={`${rmgAppsBaseUrl}/rmp-gallery/`} loading="lazy" />
                 <CloseButton onClick={onClose} position="fixed" top="5px" right="15px" />
             </RmgAppClip>
             <ConfirmOverwriteDialog

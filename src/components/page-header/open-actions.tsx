@@ -4,14 +4,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { Events, LocalStorageKey } from '../../constants/constants';
-import { useRootDispatch } from '../../redux';
+import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { loadTimeline } from '../../redux/timeline/timeline-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
-import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
+import {
+    normalizeTimelineStationFlags,
+    getInitialParam,
+    parseVersionFromSave,
+    RMPSave,
+    upgrade,
+} from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -19,6 +26,7 @@ import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
 export default function OpenActions() {
     const dispatch = useRootDispatch();
+    const timelineFeatureEnabled = useRootSelector(state => state.app.preference.timelineFeatureEnabled);
     const { t } = useTranslation();
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
@@ -50,7 +58,7 @@ export default function OpenActions() {
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, timeline: timelineSave, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         // details panel will complain about unknown nodes or edges if the last selected is not cleared
         dispatch(clearSelected());
@@ -58,6 +66,9 @@ export default function OpenActions() {
         // reset graph with new data
         graph.current.clear();
         graph.current.import(save.graph);
+        if (timelineFeatureEnabled) {
+            normalizeTimelineStationFlags(graph.current);
+        }
 
         // save images to indexedDB if they exist
         if (Array.isArray(images) && images.length > 0) {
@@ -68,6 +79,38 @@ export default function OpenActions() {
 
         // hard refresh the canvas
         refreshAndSave();
+
+        // restore timeline state if present
+        if (timelineSave) {
+            dispatch(
+                loadTimeline({
+                    enabled: timelineSave.enabled,
+                    totalDuration: timelineSave.totalDuration,
+                    currentTime: timelineSave.currentTime,
+                    dateRows: timelineSave.dateRows ?? [],
+                    groups: timelineSave.groups ?? [],
+                    lines: timelineSave.lines ?? [],
+                    actionRows: timelineSave.actionRows ?? [],
+                    diffs: timelineSave.diffs ?? [],
+                    baseGraph: (timelineSave.baseGraph ?? save.graph) as any,
+                })
+            );
+        } else {
+            // No timeline data, disable timeline and clear it
+            dispatch(
+                loadTimeline({
+                    enabled: false,
+                    totalDuration: 60,
+                    currentTime: 0,
+                    dateRows: [],
+                    groups: [],
+                    lines: [],
+                    actionRows: [],
+                    diffs: [],
+                    baseGraph: save.graph as any,
+                })
+            );
+        }
 
         // load svg view box related settings from the save
         const { svgViewBoxZoom, svgViewBoxMin } = save;
@@ -177,9 +220,6 @@ export default function OpenActions() {
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenGallery(true)}>
                         {t('header.open.gallery')}
-                        <Badge ml="1" colorScheme="green">
-                            New
-                        </Badge>
                     </MenuItem>
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>

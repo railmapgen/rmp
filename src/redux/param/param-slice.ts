@@ -1,9 +1,40 @@
 import { ActionReducerMapBuilder, createAction, createSlice, original, PayloadAction } from '@reduxjs/toolkit';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
-import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
+import { NodeAttributes, EdgeAttributes, GraphAttributes, NodeVersion } from '../../constants/constants';
 
 export const MAX_UNDO_SIZE = 49;
+
+export const syncAppliedNodeVersionSnapshots = (
+    graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
+): SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> => {
+    const nodes = graph.nodes.map(node => {
+        const currentVersion = node.attributes.currentVersion ?? 1;
+        const versions = node.attributes.versions;
+        if (!versions || !versions.some(version => version.version === currentVersion)) return node;
+
+        const { x, y, type } = node.attributes;
+        const typeAttrs = node.attributes[type];
+        const snapshot: NodeVersion = {
+            version: currentVersion,
+            name: versions.find(version => version.version === currentVersion)!.name,
+            x,
+            y,
+            type,
+            ...(typeAttrs ? { [type]: structuredClone(typeAttrs) } : {}),
+        } as NodeVersion;
+
+        return {
+            ...node,
+            attributes: {
+                ...node.attributes,
+                versions: versions.map(version => (version.version === currentVersion ? snapshot : version)),
+            },
+        };
+    });
+
+    return { ...graph, nodes };
+};
 
 /**
  * ParamState contains all the data that a save has, except for the `version` key.
@@ -68,7 +99,7 @@ const paramSlice = createSlice({
             state.past.push(state.present);
             // limit the maximum undo stack size to prevent insane memory usage
             if (state.past.length > MAX_UNDO_SIZE) state.past.shift();
-            state.present = structuredClone(action.payload);
+            state.present = structuredClone(syncAppliedNodeVersionSnapshots(action.payload));
         },
         setSvgViewport: (state, action: PayloadAction<{ zoom: number; min: { x: number; y: number } }>) => {
             state.svgViewBoxZoom = action.payload.zoom;

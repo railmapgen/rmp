@@ -446,19 +446,23 @@ export const autoUpdateStationType = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     station: StnId
 ): boolean => {
-    const { lineColorStr, lineColor } = getStationLineColors(graph, station);
+    const { lineColorStr } = getStationLineColors(graph, station);
 
     if (lineColorStr.size > 1) {
         const type = makeStationType(graph, station, 'int');
         if (type) {
-            changeStationType(graph, station, type);
-            return true;
-        }
-    } else if (lineColorStr.size === 1) {
-        const type = makeStationType(graph, station, 'basic');
-        if (type) {
-            changeStationType(graph, station, type);
-            changeNodesColorInBatch(graph, 'any', lineColor[0], [station], []);
+            const currentType = graph.getNodeAttribute(station, 'type') as StationType;
+            if (currentType !== type) {
+                // changeStationType 会用 defaultAttrs 重建属性并清空 transfer，
+                // 切换前保存旧 transfer，切换后恢复，避免尚未接入线路的换乘圆点丢失
+                const oldTransfer = (
+                    graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange | undefined
+                )?.transfer;
+                changeStationType(graph, station, type);
+                if (oldTransfer && oldTransfer.length > 0) {
+                    graph.updateNodeAttribute(station, type, attrs => ({ ...attrs, transfer: oldTransfer }));
+                }
+            }
             return true;
         }
     }
@@ -484,7 +488,7 @@ export const autoPopulateTransfer = (
         return false;
     }
 
-    const { lineColorStr, lineColor } = getStationLineColors(graph, station);
+    const { lineColor } = getStationLineColors(graph, station);
     const currentType = graph.getNodeAttribute(station, 'type') as StationType;
 
     const getColorStr = (theme: Theme) => {
@@ -499,8 +503,7 @@ export const autoPopulateTransfer = (
     const currentTransfer =
         (graph.getNodeAttribute(station, currentType) as StationAttributesWithInterchange).transfer?.at(0) ?? [];
 
-    // Filter existing transfer info to keep only those still connected
-    const existTransferInfo = currentTransfer.filter(t => lineColorStr.has(getColorStr(t as Theme)));
+    const existTransferInfo = currentTransfer;
 
     // Create transfer info for new lines not already in transfer
     const newTransferInfo = createTransferInfo(

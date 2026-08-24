@@ -9,6 +9,10 @@
     "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
+    "confirm": "確定",
+    "edit": "編輯",
+    "back": "返回",
+    "ok": "確定",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
 
@@ -751,6 +755,25 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "nodeVersion": {
+                "title": "歷史版本",
+                "current": "(目前)",
+                "rename": "重新命名",
+                "apply": "套用",
+                "remove": "刪除",
+                "add": "新增版本",
+                "placing": "請放置該版本的節點……",
+                "pleaseSelectNode": "請選擇新的版本節點",
+                "placingNew": "正在編輯此節點，完成後請點擊確定按鈕。",
+                "placingNewWithId": "正在編輯節點{{id}}，完成後請點擊確定按鈕。",
+                "nameVersion": "命名版本",
+                "namePlaceholder": "輸入版本名稱",
+                "enterName": "輸入版本名稱",
+                "enterNameDesc": "請為新版本輸入一個名稱（可選，留空將使用預設名稱）",
+                "versionName": "版本名稱",
+                "versionNotFound": "版本不存在或無法取得",
+                "applySuccess": "已套用版本 {version}"
             }
         }
     },
@@ -839,7 +862,47 @@
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
-            "confirm": "下載"
+            "confirm": "下載",
+            "video": "匯出影片",
+            "videoExport": {
+                "title": "匯出影片",
+                "fps": "每秒影格數 (FPS)",
+                "duration": "時長（秒）",
+                "quality": "影片品質",
+                "generating": "正在產生影片...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "影片格式",
+                "error": "影片匯出失敗，請重試。",
+                "closeConfirmTitle": "匯出進行中",
+                "closeConfirmDesc": "影片正在匯出中，請選擇操作：",
+                "cancelExport": "取消匯出",
+                "backgroundExport": "後台匯出",
+                "preview": "預覽",
+                "previewTitle": "影片預覽",
+                "previewDesc": "您可以點擊進度條上任意處自由查看任意時刻的動畫畫面。",
+                "previewPlay": "播放",
+                "previewPause": "暫停",
+                "previewLoading": "渲染中…",
+                "previewFullscreen": "全螢幕"
+            }
+        },
+        "timeline": {
+            "title": "動畫時間線",
+            "empty": "暫無時間線，點擊「添加節點」開始構建。",
+            "addSegment": "添加節點",
+            "clearAll": "清空",
+            "pickStart": "在畫布上點擊一個節點作為起點……",
+            "pickEnd": "在畫布上點擊一個節點作為終點……",
+            "selectTheme": "選擇線路：",
+            "noPath": "未找到所選節點之間的路徑。",
+            "unadded": "有 {{count}} 個節點未加入時間線",
+            "addStationOnly": "僅添加此節點",
+            "reverse": "反向",
+            "reverseSelected": "反向選中線路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐款",
@@ -896,7 +959,9 @@
                 "snapline": "磁性吸附到參考線",
                 "predictNextNode": "當選擇一個節點時預測下一個節點",
                 "autoChangeStationType": "自動切換基本車站與換乘車站",
-                "disableWarningChangeType": "更改車站或線段類型時禁用警告"
+                "disableWarningChangeType": "更改車站或線段類型時禁用警告",
+                "timelineFeature": "啟用動畫時間線功能",
+                "enableActionDateFormat": "啟用動作日期格式校驗"
             },
             "shortcuts": {
                 "title": "捷徑",
@@ -1040,6 +1105,91 @@
             "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
             "invalidOrIncompatible": "剪貼簿內容無效，或與目前版本不相容。",
             "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
+        }
+    },
+
+
+    "timeline": {
+        "editor": {
+            "title": "動畫時間線"
+        },
+        "totalDuration": "總時長",
+        "second": "秒",
+        "undo": "復原",
+        "redo": "重做",
+        "lines": "線路列表",
+        "actions": "動作列表",
+        "segments": "段",
+        "segment": "線路段",
+        "addLine": "新增線路",
+        "addAction": "新增動作",
+        "addSegment": "新增線路段",
+        "noGroups": "暫無線路",
+        "noSegments": "暫無線路段",
+        "noActions": "暫無動作",
+        "addBelow": "在下方新增",
+        "drag": "拖動",
+        "newLine": "新線路",
+        "modify": "修改",
+        "elements": "元素",
+        "segmentRemark": "線路段備註名",
+        "segmentRemarkPlaceholder": "輸入線路段備註名",
+        "segmentRemarkRequired": "請輸入線路段備註名",
+        "addElement": "新增元素",
+        "reverseAll": "全部反轉",
+        "noElements": "暫無元素，請點擊「新增元素」",
+        "pickElement": "請在畫布上點擊要新增的元素",
+        "addSegmentPath": "整段新增",
+        "pickStartNode": "請在畫布上點擊路徑起點",
+        "pickEndNode": "請在畫布上點擊路徑終點",
+        "selectTheme": "選擇線路顏色",
+        "selectThemeHint": "請選擇路徑使用的線條顏色",
+        "noLines": "暫無線路段",
+        "start": "開始",
+        "end": "結束",
+        "isStation": "視為車站",
+        "mileage": "里程長度",
+        "savedAtTimePoint": "變更已儲存到目前時間點",
+        "futurePointsAffected": "後續時間點將受影響",
+        "attrs": {
+            "title": "時間線屬性"
+        },
+        "line": {
+            "name": "線路名稱",
+            "color": "顏色"
+        },
+        "action": {
+            "type": "類型",
+            "open": "開通",
+            "close": "停運",
+            "overview": "全覽",
+            "wait": "等待",
+            "focus": "聚焦",
+            "focusTargetMissing": "聚焦找不到後續目標線路段",
+            "remark": "備註",
+            "lineSegment": "目標線路段",
+            "selectSegment": "選擇線路段",
+            "duration": "時長",
+            "activeLines": "已開通線路",
+            "selectLines": "選擇線路",
+            "selectActiveLines": "選擇已開通線路",
+            "unsaved": "未儲存",
+            "invalidDateFormat": "日期格式無效，請輸入 YYYY-MM-DD，或在設定中關閉動作日期格式校驗",
+            "dateFormatEnabled": "動作日期格式校驗已啟用，僅接受 YYYY-MM-DD 格式",
+            "batchInvalidDateFormat": "已自動清空 {{count}} 個不符合 YYYY-MM-DD 格式的日期"
+        },
+        "player": {
+            "play": "播放",
+            "stop": "停止",
+            "pause": "暫停",
+            "export": "匯出影片",
+            "stations": "車站數",
+            "mileage": "里程",
+            "date": "日期",
+            "activeLines": "已開通線路",
+            "bad": "暫不支援此樣式",
+            "noEdges": "時間線中無可繪製的邊",
+            "prepare": "準備中..."
         }
     },
 

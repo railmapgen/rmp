@@ -97,6 +97,19 @@ export default function InfoSection() {
             oneLine: true,
             minW: 276,
         });
+        if (graph.current.hasNode(selectedFirst) && selectedFirst!.startsWith('stn')) {
+            fields.push({
+                type: 'switch',
+                label: t('timeline.isStation', '视为车站'),
+                isChecked: graph.current.getNodeAttribute(selectedFirst, 'isStation') ?? true,
+                onChange: val => {
+                    graph.current.setNodeAttribute(selectedFirst, 'isStation', val);
+                    refreshSelectedElements();
+                },
+                oneLine: true,
+                minW: 276,
+            });
+        }
         fields.push({
             type: 'select',
             label: t('panel.details.info.zIndex'),

@@ -103,6 +103,7 @@ const PredictNextNode = () => {
     const stationAttrs: NodeAttributes = {
         visible: true,
         zIndex: 0,
+        isStation: true,
         x: nextPos2.x,
         y: nextPos2.y,
         type: stationType,

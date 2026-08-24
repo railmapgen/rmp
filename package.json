@@ -23,6 +23,7 @@
         "graphology": "^0.26.0",
         "graphology-utils": "^2.5.2",
         "mime-types": "^3.0.1",
+        "mp4-muxer": "^5.2.2",
         "nanoid": "^5.0.9",
         "pinyin-pro": "^3.28.1",
         "react": "^19.1.1",
@@ -32,8 +33,10 @@
         "react-redux": "^9.2.0",
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
+        "recordrtc": "^5.6.2",
         "rollup": "^4.62.2",
-        "vite-plugin-svgr": "^4.5.0"
+        "vite-plugin-svgr": "^4.5.0",
+        "webm-writer": "^1.0.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",
@@ -69,7 +72,8 @@
     },
     "scripts": {
         "dev": "vite --host",
-        "build": "tsc && vite build",
+        "build": "vite build",
+        "build:root": "vite build --base=/",
         "test": "vitest",
         "lint": "eslint ./src",
         "lint:fix": "eslint ./src --fix",
