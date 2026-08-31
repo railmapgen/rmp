@@ -23,17 +23,55 @@ import { setDisableWarningChangeType } from '../../../redux/app/app-slice';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
-import { canUseLineCombination } from '../../../util/line-path-availability';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
+
+const legacySimplePathAvailableStyles = new Set([
+    LineStyleType.ShmetroVirtualInt,
+    LineStyleType.GzmtrVirtualInt,
+    LineStyleType.River,
+    LineStyleType.MTRPaidArea,
+    LineStyleType.MTRUnpaidArea,
+    LineStyleType.MRTTapeOut,
+]);
+
+/**
+ * Determine if a line path type or style type should be disabled based
+ * on the current selection and subscription status.
+ */
+const isLinePathAndStyleDisabled = (pathType: LinePathType, styleType: LineStyleType, pro: boolean) => {
+    const path = linePaths[pathType];
+    const style = lineStyles[styleType];
+    // Unknown legacy paths (e.g. imported from another app version) must not lock the current style options.
+    if (!path || !style) {
+        return false;
+    }
+    // This must be placed first as the simple path is pro and all will be rejected in the next check.
+    if (pathType === LinePathType.Simple && legacySimplePathAvailableStyles.has(styleType)) {
+        return false;
+    }
+    if (path.isPro && !pro) {
+        return true;
+    }
+    if (style.isPro && !pro) {
+        return true;
+    }
+    if (!style.metadata.supportLinePathType.includes(pathType)) {
+        return true;
+    }
+    return false;
+};
 
 export default function LineTypeSection() {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
+    const hardRefresh = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    }, [dispatch, refreshEdgesThunk, saveGraph]);
 
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const {
         preference: { autoParallel, disableWarning },
     } = useRootSelector(state => state.app);
@@ -45,13 +83,13 @@ export default function LineTypeSection() {
     const cancelRef = React.useRef(null);
     const [dontShowAgain, setDontShowAgain] = React.useState(false);
 
+    const availableLinePathOptions = Object.fromEntries(
+        Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
+    ) as { [k in LinePathType]: string };
     const [currentLinePathType, setCurrentLinePathType] = React.useState(
         graph.current.getEdgeAttribute(selectedFirst, 'type')
     );
     const [newLinePathType, setNewLinePathType] = React.useState<LinePathType | undefined>(undefined);
-    const availableLinePathOptions = Object.fromEntries(
-        Object.entries(linePaths).map(([key, val]) => [key, t(val.metadata.displayName).toString()])
-    );
 
     const availableLineStyleOptions = Object.fromEntries(
         localizedLineStyles[i18n.language as LanguageCode]?.map(lineStyle => [
@@ -69,61 +107,30 @@ export default function LineTypeSection() {
         setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
     }, [selectedFirst]);
 
-    const disabledLinePathOptions = Object.values(LinePathType).filter(
-        linePathType =>
-            !canUseLineCombination(linePathType, currentLineStyleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
+    const disabledLinePathOptions = Object.values(LinePathType).filter(linePathType =>
+        isLinePathAndStyleDisabled(linePathType, currentLineStyleType, activeSubscriptions.RMP_CLOUD)
     );
-    const disabledLineStyleOptions = linePaths[currentLinePathType]
-        ? Object.values(LineStyleType)
-              .filter(isVisibleLineStyle)
-              .filter(
-                  lineStyleType =>
-                      !canUseLineCombination(
-                          currentLinePathType,
-                          lineStyleType,
-                          mapEnabled,
-                          activeSubscriptions.RMP_CLOUD
-                      )
-              )
-        : [];
+    const disabledLineStyleOptions = Object.values(LineStyleType)
+        .filter(isVisibleLineStyle)
+        .filter(lineStyleType =>
+            isLinePathAndStyleDisabled(currentLinePathType, lineStyleType, activeSubscriptions.RMP_CLOUD)
+        );
 
     const baseReconciledLineID = getBaseReconciledLineID(graph.current, selectedFirst as LineId);
     const isReconciledStyleDisabled = baseReconciledLineID !== selectedFirst;
 
     const handleChangeLinePathType = (newLinePathType: LinePathType) => {
         if (newLinePathType) {
-            const changed = changeLinePathType(
-                graph.current,
-                selectedFirst!,
-                newLinePathType,
-                mapEnabled,
-                activeSubscriptions.RMP_CLOUD,
-                autoParallel
-            );
+            changeLinePathType(graph.current, selectedFirst!, newLinePathType, autoParallel);
             setCurrentLinePathType(graph.current.getEdgeAttribute(selectedFirst, 'type'));
-            if (changed) {
-                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
-                dispatch(saveGraph(graph.current.export()));
-                dispatch(refreshEdgesThunk());
-            }
+            hardRefresh();
         }
     };
     const handleChangeLineStyleType = (newLineStyleType: LineStyleType) => {
         if (newLineStyleType) {
-            const changed = changeLineStyleType(
-                graph.current,
-                selectedFirst!,
-                newLineStyleType,
-                theme,
-                mapEnabled,
-                activeSubscriptions.RMP_CLOUD
-            );
+            changeLineStyleType(graph.current, selectedFirst!, newLineStyleType, theme);
             setCurrentLineStyleType(graph.current.getEdgeAttribute(selectedFirst, 'style'));
-            if (changed) {
-                normalizeEdgeAttributes(graph.current, [selectedFirst as LineId]);
-                dispatch(saveGraph(graph.current.export()));
-                dispatch(refreshEdgesThunk());
-            }
+            hardRefresh();
         }
     };
     const handleClose = (proceed: boolean) => {
@@ -146,7 +153,7 @@ export default function LineTypeSection() {
     return (
         <>
             <RmgLabel label={t('panel.details.info.linePathType')} minW="276">
-                <RmgSelect<string>
+                <RmgSelect
                     options={availableLinePathOptions}
                     disabledOptions={disabledLinePathOptions}
                     defaultValue={currentLinePathType}

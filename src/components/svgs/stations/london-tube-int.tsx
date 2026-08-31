@@ -1,7 +1,6 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -238,7 +237,6 @@ const londonTubeIntStationIcon = (
 
 const londonTubeIntStation: Station<LondonTubeIntStationAttributes> = {
     component: LondonTubeIntStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: londonTubeIntStationIcon,
     defaultAttrs: defaultLondonTubeIntStationAttributes,
     attrsComponent: londonTubeIntAttrsComponent,

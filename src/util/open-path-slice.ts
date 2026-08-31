@@ -1,6 +1,5 @@
 import { makePoint, PathPoint } from '../constants/path';
 import { locatePrimitiveByArcLength, getPrimitiveListLength } from './open-path-length';
-import { clamp } from './number';
 import { OpenPathPrimitive, primitiveLength, primitiveToBezier } from './open-path-primitives';
 
 /**
@@ -14,6 +13,9 @@ import { OpenPathPrimitive, primitiveLength, primitiveToBezier } from './open-pa
  */
 
 const EPSILON = 1e-6;
+
+/** Clamp helper for arc-length ranges. */
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 /** Linear interpolation used when trimming line primitives. */
 const lerpPoint = (a: PathPoint, b: PathPoint, t: number): PathPoint =>

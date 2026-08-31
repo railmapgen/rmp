@@ -1,7 +1,6 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -24,7 +23,6 @@ import {
     InterchangeInfo,
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
-import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const LINE_WIDTH = 5;
@@ -271,9 +269,14 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
             minW: 'full',
         },
         {
-            type: 'custom',
+            type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            component: <RotateField type={StationType.MTR} defaultAttributes={defaultMTRStationAttributes} />,
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
             minW: 'full',
         },
     ];
@@ -298,7 +301,6 @@ const mtrStationIcon = (
 
 const mtrStation: Station<MTRStationAttributes> = {
     component: MTRStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: mtrStationIcon,
     defaultAttrs: defaultMTRStationAttributes,
     attrsComponent: MTRStationAttrsComponent,

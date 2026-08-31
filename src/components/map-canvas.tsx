@@ -109,7 +109,12 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
             return;
         }
         isLoadingSessionRef.current = true;
-        const progressText = progress ? ` (${progress.completed} / ${progress.total})` : '';
+        const formatMegabytes = (bytes: number) => (bytes / 1048576).toFixed(1);
+        const progressText = progress
+            ? progress.bytesTotal
+                ? ` (${formatMegabytes(progress.bytesLoaded ?? 0)} / ${formatMegabytes(progress.bytesTotal)} MB)`
+                : ` (${progress.completed} / ${progress.total})`
+            : '';
         dispatch(
             setGlobalAlert({
                 id: GlobalAlertId.MapLoading,
@@ -118,17 +123,14 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
             })
         );
     });
-    const updateViewport = React.useCallback(
-        (viewport: LiveViewport) => {
-            latestViewportRef.current = viewport;
+    const updateViewport = useEvent((viewport: LiveViewport) => {
+        latestViewportRef.current = viewport;
 
-            const isOverview = mapEnabled && !isMapZoomed(viewport.zoom);
-            updateOverviewState(isOverview);
+        const isOverview = mapEnabled && !isMapZoomed(viewport.zoom);
+        updateOverviewState(isOverview);
 
-            mapControllerRef.current?.updateViewport(viewport);
-        },
-        [mapEnabled, updateOverviewState]
-    );
+        mapControllerRef.current?.updateViewport(viewport);
+    });
 
     const markViewportInteraction = React.useCallback(() => {
         if (!mapEnabled) return;
@@ -196,8 +198,12 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
         updateViewport(latestViewportRef.current);
 
         void controller.initialize().catch(error => {
-            // Hiding the map may dispose this controller while its manifest is loading.
-            if (mapControllerRef.current !== controller) return;
+            // Hiding the map aborts in-flight requests; that expected teardown must not surface as a load error.
+            if (
+                mapControllerRef.current !== controller ||
+                (error instanceof DOMException && error.name === 'AbortError')
+            )
+                return;
             updateLoadingAlert(false);
             notifyLoadError(error);
         });

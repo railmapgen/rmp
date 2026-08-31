@@ -6,6 +6,7 @@ import appReducer from './app/app-slice';
 import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
+import timelineReducer from './timeline/timeline-slice';
 import viewportReducer from './viewport/viewport-slice';
 
 enableMapSet();
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
     param: paramReducer,
     runtime: runtimeReducer,
     fonts: fontsReducer,
+    timeline: timelineReducer,
     viewport: viewportReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;
@@ -26,9 +28,7 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
     configureStore({
         reducer: rootReducer,
         middleware: getDefaultMiddleware =>
-            // Runtime state deliberately contains transient Sets, so it is excluded
-            // from persistence and the serializable state check is disabled.
-            // https://stackoverflow.com/questions/61704805/getting-an-error-a-non-serializable-value-was-detected-in-the-state-when-using
+            // undo slice contains MultiDirectedGraph instance, it is not meant to be serialized nor persisted
             getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
         preloadedState,
     });

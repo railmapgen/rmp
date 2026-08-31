@@ -70,7 +70,7 @@ We welcome contributions to the Rail Map Painter project! Please read our [Contr
 
 ## License
 
-Rail Map Painter is released under the [GPL-3.0 License](./LICENCE).
+Rail Map Painter is released under the [GPL-3.0 License](./LICENSE).
 
 ## One More Thing
 

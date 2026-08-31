@@ -4,7 +4,6 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode, LineId, MiscNodeId, NodeAttributes } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
@@ -12,6 +11,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
+import { getEdgeMileageInKilometers } from '../../../util/map-distance';
 import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
@@ -127,38 +127,13 @@ export const defaultFillAttributes: FillAttributes = {
     selectedPatterns: ['logo'],
 };
 
-type FillShape = 'square' | 'triangle' | 'circle';
-type FillShapeLinePathType = LinePathType.Diagonal | LinePathType.Perpendicular | LinePathType.Bezier;
-
-const getFillShapeLinePathType = (shape: FillShape, mapEnabled: boolean): FillShapeLinePathType =>
-    mapEnabled ? LinePathType.Bezier : shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
-
-const makeFillShapeLinePathAttrs = (shape: FillShape, type: FillShapeLinePathType, edgeIndex: number, size: number) => {
-    if (type === LinePathType.Bezier) {
-        return {
-            ...structuredClone(linePaths[LinePathType.Bezier].defaultAttrs),
-            along: 0.5,
-            // Straight Beziers preserve polygon edges. Four outward quadratic
-            // segments reproduce the existing rounded circle construction.
-            normal: shape === 'circle' ? -0.5 : 0,
-        };
-    }
-
-    const attrs = structuredClone(linePaths[type].defaultAttrs);
-    if (shape === 'circle') {
-        if (edgeIndex % 2 === 0) attrs.startFrom = 'to';
-        attrs.roundCornerFactor = size;
-    }
-    return attrs;
-};
-
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
     const {
-        preference: { autoParallel },
+        preference: { autoParallel, timelineFeatureEnabled },
     } = useRootSelector(state => state.app);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
     const { refresh, theme } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -171,9 +146,7 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
 
     const hasClosedPath = React.useMemo(() => !!findShortestClosedPath(graph, id as MiscNodeId), [graph, id, refresh]);
 
-    const handleCreateShape = (shape: FillShape) => {
-        const type = getFillShapeLinePathType(shape, mapEnabled);
-
+    const handleCreateShape = (shape: 'square' | 'triangle' | 'circle') => {
         const currentNodeAttrs = graph.getNodeAttributes(id);
         const { x, y } = currentNodeAttrs;
         const size = 200; // The size of the shape to create
@@ -240,17 +213,29 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             const source = nodeIds[i];
             const target = nodeIds[(i + 1) % nodeIds.length]; // Wrap around to close the loop
             const newLineId: LineId = `line_${nanoid(10)}`;
-            const pathAttrs = makeFillShapeLinePathAttrs(shape, type, i, size);
+            const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
+            const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
+            if (shape === 'circle') {
+                if (i % 2 === 0) attrs.startFrom = 'to';
+                attrs.roundCornerFactor = size;
+            }
             graph.addDirectedEdgeWithKey(newLineId, source, target, {
                 visible: true,
                 zIndex: 0,
                 type,
-                [type]: pathAttrs,
+                [type]: attrs,
                 style: LineStyleType.SingleColor,
                 [LineStyleType.SingleColor]: { color: theme },
                 reconcileId: '',
                 parallelIndex: autoParallel ? 0 : -1,
             });
+            // 填充形状生成的线段同样遵循双视图开启时的实际地图里程自动填充规则。
+            if (mapEnabled && timelineFeatureEnabled) {
+                const mileage = getEdgeMileageInKilometers(graph, newLineId);
+                if (Number.isFinite(mileage) && mileage > 0) {
+                    graph.setEdgeAttribute(newLineId, 'mileage', mileage);
+                }
+            }
         }
 
         refreshAndSave();
@@ -336,7 +321,6 @@ const fillIcon = (
 
 const fill: Node<FillAttributes> = {
     component: Fill,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: fillIcon,
     defaultAttrs: defaultFillAttributes,
     attrsComponent: fillAttrsComponent,

@@ -128,6 +128,9 @@ const MAP_BASE_STYLE_CSS = `
     stroke: none;
     stroke-width: 0;
 }
+[data-map-layer] .rmp-map-tile[data-level="overview"] .area-water {
+    display: none;
+}
 [data-map-layer] .rmp-map-tile .landuse-residential {
     fill: #e8e5dc;
 }

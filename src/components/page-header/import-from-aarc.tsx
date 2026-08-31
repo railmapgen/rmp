@@ -19,8 +19,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { replaceProject } from '../../redux/project-history';
+import { useRootDispatch } from '../../redux';
+import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk } from '../../redux/runtime/runtime-slice';
 import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
 import { convertAARCToRmp, StationTypeOption, stationTypeOptions } from '../../util/import-from-aarc';
 
@@ -32,17 +33,24 @@ interface ImportFromAarcProps {
 export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps) {
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
-    const { mapEnabled, mapStyle } = useRootSelector(state => state.param.present);
     const [text, setText] = React.useState('');
     const [step, setStep] = React.useState<1 | 2>(1);
     const [mode, setMode] = React.useState<StationTypeOption>(StationTypeOption.Suzhou);
+    const graph = React.useRef(window.graph);
     const graphNew = React.useRef(new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>());
+
+    const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    }, [dispatch]);
 
     const [nodeCount, setNodeCount] = React.useState(0);
     const [edgeCount, setEdgeCount] = React.useState(0);
 
     const handleImport = () => {
         if (!text.trim()) return;
+        dispatch(clearSelected());
 
         try {
             graphNew.current.clear();
@@ -77,15 +85,11 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
             .forEach(id => {
                 autoPopulateTransfer(graphNew.current, id as StnId);
             });
-        dispatch(
-            replaceProject({
-                mapEnabled,
-                graph: graphNew.current.export(),
-                mapStyle,
-                svgViewBoxZoom: 100,
-                svgViewBoxMin: { x: 0, y: 0 },
-            })
-        );
+        graph.current.clear();
+        graph.current.import(graphNew.current.export());
+        dispatch(setSvgViewBoxZoom(100));
+        dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
+        refreshAndSave();
         setText('');
         setStep(1);
         onClose();

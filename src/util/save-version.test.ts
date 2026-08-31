@@ -1,32 +1,5 @@
-import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_MAP_STYLE } from '../map/map-style';
-import { ParamGraph, ProjectSnapshot } from '../redux/param/param-slice';
-import { CURRENT_VERSION, parseVersionFromSave, stringifyParam } from './save';
-
-describe('stringifyParam', () => {
-    it('serializes the current project snapshot and export-only images without history', () => {
-        const present: ProjectSnapshot = {
-            mapEnabled: false,
-            mapStyle: structuredClone(DEFAULT_MAP_STYLE),
-            graph: new MultiDirectedGraph().export() as ParamGraph,
-            svgViewBoxZoom: 75,
-            svgViewBoxMin: { x: 10, y: 20 },
-        };
-        const images = [{ id: 'img-local', base64: 'data:image/png;base64,example' }];
-
-        expect(
-            JSON.parse(
-                stringifyParam({
-                    present,
-                    past: [{ scope: 'graph', ...present }],
-                    future: [],
-                    images,
-                })
-            )
-        ).toEqual({ ...present, version: CURRENT_VERSION, images });
-    });
-});
+import { CURRENT_VERSION, parseVersionFromSave } from './save';
 
 describe('parseVersionFromSave', () => {
     it('should parse valid version from save string', () => {

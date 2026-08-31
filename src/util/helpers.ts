@@ -49,16 +49,6 @@ export const roundToMultiple = (value: number, base: number): number => {
 };
 
 /**
- * Rounds a number to the nearest multiple of a rotate angle.
- * @param value The number to round
- * @returns The rounded value with precise decimal handling
- */
-export const roundToRotateAngle = (value: number): number => {
-    const rounded = roundToMultiple(value, 45);
-    return ((rounded % 360) + 360) % 360;
-};
-
-/**
  * Calculate the canvas size from DOMRect of each node.
  * @param graph The graph.
  * @param svgViewBoxMin The viewport relative to each DOMRect.
@@ -81,11 +71,9 @@ export const calculateCanvasSize = (
         return { xMin: 0, yMin: 0, xMax: 100, yMax: 100 };
     }
 
-    let hasVisibleElement = false;
     elements.forEach(id => {
         const elem = document.getElementById(id) as SVGSVGElement | null;
-        if (elem && !elem.classList.contains('removeMe')) {
-            hasVisibleElement = true;
+        if (elem) {
             const rect = transformedBoundingBox(elem);
             xMin = Math.min(rect.x, xMin);
             yMin = Math.min(rect.y, yMin);
@@ -93,10 +81,6 @@ export const calculateCanvasSize = (
             yMax = Math.max(rect.y + rect.height, yMax);
         }
     });
-
-    if (!hasVisibleElement) {
-        return { xMin: 0, yMin: 0, xMax: 100, yMax: 100 };
-    }
 
     xMin -= padding;
     yMin -= padding;

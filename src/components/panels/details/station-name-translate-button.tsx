@@ -5,6 +5,7 @@ import { AttrsProps } from '../../../constants/constants';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { undoAction } from '../../../redux/project-history';
+import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../../util/helpers';
 import { translateStationNameByPinyin, translateStationNameBySemantic } from '../../../util/station-name-translation';
 import { sendErrorNotification } from '../../../util/notifications';
@@ -42,6 +43,8 @@ const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsPro
 
             event.preventDefault();
             dispatch(undoAction());
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
             lastTranslatedTextareaRef.current = null;
             lastTranslatedValueRef.current = undefined;
         };

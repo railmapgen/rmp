@@ -1,23 +1,19 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
-import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../constants/constants';
+import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { LinePathType, LineStyleType } from '../constants/lines';
-
-/**
- * Reconcile changes the authored geometry, so both the path and the visual
- * style must explicitly opt into the operation.
- */
-export const canReconcileLine = (pathType: LinePathType, styleType: LineStyleType): boolean =>
-    Boolean(linePaths[pathType]?.metadata.supportsReconcile && lineStyles[styleType]?.metadata.supportsReconcile);
 
 /**
  * Batch-reconcile all edges in the selection.
  * Picks the first existing non-empty reconcileId, or generates a new one.
- * Skips edges whose path or style does not support reconcile.
+ * Skips edges whose style has supportsReconcile === false.
  *
  * @returns true if any edge was updated.
  */
+export const canReconcileLine = (type: LinePathType, style: LineStyleType): boolean =>
+    linePaths[type].metadata.supportsReconcile && lineStyles[style].metadata.supportsReconcile;
+
 export const reconcileSelectedEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     selected: Set<Id>

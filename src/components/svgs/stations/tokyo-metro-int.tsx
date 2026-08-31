@@ -2,7 +2,6 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -529,7 +528,6 @@ const tokyoMetroIntStationIcon = (
 
 const tokyoMetroIntStation: Station<TokyoMetroIntStationAttributes> = {
     component: TokyoMetroIntStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: tokyoMetroIntStationIcon,
     defaultAttrs: defaultTokyoMetroIntStationAttributes,
     attrsComponent: tokyoMetroIntAttrsComponent,

@@ -1,19 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import {
-    arcTo,
     closePath,
     cubicTo,
     lineTo,
     makeCompoundClosedAreaPath,
     makeClosedAreaPath,
     makeEmptyOpenPath,
-    makeCubicPath,
     makeLinearPath,
     makePoint,
     makeRoundedTurnPath,
     moveTo,
 } from '../constants/path';
-import { concatOpenPaths, getEndPoint, isAreaPath, isOpenPath, parseRoundedTurnPath } from './path';
+import { concatOpenPaths, getEndPoint, parseRoundedTurnPath } from './path';
 
 describe('concatOpenPaths', () => {
     it('should collapse collinear linear segments back into a linear path', () => {
@@ -25,16 +23,6 @@ describe('concatOpenPaths', () => {
 
         expect(path.kind).toBe('ml');
         expect(path.d).toBe('M 0 0 L 20 0');
-    });
-
-    it('should preserve a collinear chain that reverses direction', () => {
-        const path = concatOpenPaths([
-            makeLinearPath(makePoint(0, 0), makePoint(20, 0)),
-            makeLinearPath(makePoint(20, 0), makePoint(10, 0)),
-        ]);
-
-        expect(path.kind).toBe('mll');
-        expect(path.d).toBe('M 0 0 L 20 0 L 10 0');
     });
 
     it('should keep non-collinear joined segments as a sharp turn', () => {
@@ -111,25 +99,5 @@ describe('getEndPoint', () => {
 
     it('should reject an empty open path', () => {
         expect(() => getEndPoint(makeEmptyOpenPath())).toThrow('Empty path does not have an endpoint.');
-    });
-});
-
-describe('path kind guards', () => {
-    it('distinguishes open centerlines from filled areas', () => {
-        const open = makeLinearPath(makePoint(0, 0), makePoint(10, 0));
-        const cubic = makeCubicPath(makePoint(0, 0), makePoint(3, 5), makePoint(7, 5), makePoint(10, 0));
-        const area = makeClosedAreaPath([
-            moveTo(makePoint(0, 0)),
-            lineTo(makePoint(10, 0)),
-            arcTo(5, 5, 0, false, false, makePoint(0, 0)),
-            closePath(),
-        ]);
-
-        expect(isOpenPath(open)).toBe(true);
-        expect(isOpenPath(cubic)).toBe(true);
-        expect(isAreaPath(open)).toBe(false);
-        expect(isOpenPath(area)).toBe(false);
-        expect(isAreaPath(area)).toBe(true);
-        expect(area.d).toBe('M 0 0 L 10 0 A 5 5 0 0 0 0 0 Z');
     });
 });

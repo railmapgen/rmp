@@ -123,9 +123,9 @@ const FreeformAttrsComponent = (props: LinePathAttrsProps<FreeformPathAttributes
                     sx={{
                         tableLayout: 'fixed',
                         '& th': {
-                            whiteSpace: 'normal',
+                            whiteSpace: 'nowrap',
                             lineHeight: 1.1,
-                            overflowWrap: 'anywhere',
+                            overflowWrap: 'normal',
                         },
                         '& td': {
                             overflow: 'hidden',

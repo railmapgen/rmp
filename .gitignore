@@ -29,4 +29,8 @@ yarn-error.log*
 # environment
 /.vscode
 /.idea
+/.trae
 .env
+
+# debug directory
+/.dbg

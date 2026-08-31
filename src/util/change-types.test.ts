@@ -3,82 +3,13 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
-import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { defaultBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
-import { normalizeEdgeAttributes } from '../components/svgs/lines/lines';
 import {
     autoPopulateTransfer,
     autoUpdateStationType,
-    changeLinePathType,
-    changeLinesColorInBatch,
-    changeLineStyleType,
     changeStationType,
     checkAndChangeStationIntType,
 } from './change-types';
-
-const makeLineGraph = () => {
-    const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-    graph.addNode('stn_1', { x: 0, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
-    graph.addNode('stn_2', { x: 100, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
-    graph.addDirectedEdgeWithKey('line_1', 'stn_1', 'stn_2', {
-        type: LinePathType.Simple,
-        style: LineStyleType.SingleColor,
-        zIndex: 0,
-        reconcileId: '',
-        visible: true,
-        parallelIndex: -1,
-        [LinePathType.Simple]: { offset: 0 },
-        [LineStyleType.SingleColor]: {
-            color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
-        },
-    });
-    return graph;
-};
-
-describe('changeLinePathType', () => {
-    it('rejects a diagram-native path for a free user while the map is shown', () => {
-        const graph = makeLineGraph();
-
-        changeLinePathType(graph, 'line_1', LinePathType.Diagonal, true, false, false);
-
-        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Simple);
-        expect(graph.hasEdgeAttribute('line_1', LinePathType.Simple)).toBe(true);
-        expect(graph.hasEdgeAttribute('line_1', LinePathType.Diagonal)).toBe(false);
-    });
-
-    it('allows a free user to convert a restricted existing line to an allowed target', () => {
-        const graph = makeLineGraph();
-
-        changeLinePathType(graph, 'line_1', LinePathType.Diagonal, false, false, false);
-
-        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Diagonal);
-        expect(graph.hasEdgeAttribute('line_1', LinePathType.Simple)).toBe(false);
-        expect(graph.hasEdgeAttribute('line_1', LinePathType.Diagonal)).toBe(true);
-    });
-
-    it('clears a reconcile group when the new path does not support reconcile', () => {
-        const graph = makeLineGraph();
-        graph.setEdgeAttribute('line_1', 'reconcileId', 'reconcile_group');
-
-        changeLinePathType(graph, 'line_1', LinePathType.Freeform, true, false, false);
-
-        expect(graph.getEdgeAttribute('line_1', 'type')).toBe(LinePathType.Freeform);
-        expect(graph.getEdgeAttribute('line_1', 'reconcileId')).toBe('');
-    });
-});
-
-describe('changeLineStyleType', () => {
-    it.each([false, true])('allows a free user to apply a legacy style to Simple when mapEnabled is %s', mapEnabled => {
-        const graph = makeLineGraph();
-        const theme: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
-
-        expect(changeLineStyleType(graph, 'line_1', LineStyleType.ShmetroVirtualInt, theme, mapEnabled, false)).toBe(
-            true
-        );
-        expect(graph.getEdgeAttribute('line_1', 'style')).toBe(LineStyleType.ShmetroVirtualInt);
-    });
-});
 
 describe('changeStationType', () => {
     it('should deep clone nested default attrs when changing to JR East basic stations', () => {
@@ -189,7 +120,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
+        checkAndChangeStationIntType(graph, 'stn_1');
 
         // Verify the station type changed to interchange
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
@@ -207,7 +138,7 @@ describe('checkAndChangeStationIntType', () => {
         expect(colors).toContain('#97D700');
     });
 
-    it('should change station to basic type and clear transfer when only one line color is connected', () => {
+    it('should keep interchange type and preserve transfer when only one line color is connected', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
         // Add station nodes
@@ -257,14 +188,19 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
+        checkAndChangeStationIntType(graph, 'stn_1');
 
-        // Verify the station type changed to basic
-        expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrBasic);
+        // Verify the station type remains interchange (smart downgrade is disabled)
+        expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
 
-        // Verify the transfer property is cleared (should use default)
-        const attrs = graph.getNodeAttribute('stn_1', StationType.GzmtrBasic);
+        // Verify the transfer property is preserved (not-yet-connected line colors must not disappear)
+        const attrs = graph.getNodeAttribute('stn_1', StationType.GzmtrInt);
         expect(attrs).toBeDefined();
+        expect(attrs!.transfer).toBeDefined();
+        expect(attrs!.transfer[0].length).toBe(2);
+        const colors = attrs!.transfer[0].map(t => t[2]);
+        expect(colors).toContain('#F3D03E');
+        expect(colors).toContain('#97D700');
     });
 
     it('should not change station type when no lines are connected', () => {
@@ -291,7 +227,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(false);
+        checkAndChangeStationIntType(graph, 'stn_1');
 
         // Verify the station type remains the same
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrBasic);
@@ -360,7 +296,7 @@ describe('checkAndChangeStationIntType', () => {
         });
 
         // Call the function
-        expect(checkAndChangeStationIntType(graph, 'stn_1')).toBe(true);
+        checkAndChangeStationIntType(graph, 'stn_1');
 
         // Verify the station type remains MTR (no basic/int pair)
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.MTR);
@@ -371,52 +307,6 @@ describe('checkAndChangeStationIntType', () => {
         expect(attrs!.transfer).toBeDefined();
         expect(attrs!.transfer[0]).toBeDefined();
         expect(attrs!.transfer[0].length).toBe(2);
-    });
-});
-
-describe('changeLinesColorInBatch', () => {
-    it('preserves non-color style attributes when recoloring a line', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        graph.addNode('misc_node_a', {
-            x: 0,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            zIndex: 0,
-            visible: true,
-            [MiscNodeType.Virtual]: {},
-        });
-        graph.addNode('misc_node_b', {
-            x: 100,
-            y: 0,
-            type: MiscNodeType.Virtual,
-            zIndex: 0,
-            visible: true,
-            [MiscNodeType.Virtual]: {},
-        });
-        const originalColor: Theme = [CityCode.Tokyo, 'jy', '#9ACD32', MonoColour.black];
-        const replacementColor: Theme = [CityCode.Tokyo, 'jk', '#00B2E5', MonoColour.black];
-        graph.addDirectedEdgeWithKey('line_jr', 'misc_node_a', 'misc_node_b', {
-            type: LinePathType.Simple,
-            style: LineStyleType.JREastSingleColor,
-            zIndex: 0,
-            reconcileId: '',
-            visible: true,
-            parallelIndex: -1,
-            [LinePathType.Simple]: { offset: 0 },
-            [LineStyleType.JREastSingleColor]: {
-                color: originalColor,
-                decoration: 'thin-tail',
-                decorationAt: 'from',
-            },
-        });
-
-        changeLinesColorInBatch(graph, originalColor, replacementColor, ['line_jr']);
-
-        expect(graph.getEdgeAttribute('line_jr', LineStyleType.JREastSingleColor)).toEqual({
-            color: replacementColor,
-            decoration: 'thin-tail',
-            decorationAt: 'from',
-        });
     });
 });
 
@@ -578,193 +468,5 @@ describe('autoUpdateStationType and autoPopulateTransfer', () => {
 
         // Verify station type remains unchanged (we didn't call autoUpdateStationType)
         expect(graph.getNodeAttribute('stn_1', 'type')).toBe(StationType.GzmtrInt);
-    });
-
-    it('should clear MTR transfer info when only one line color is connected', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        const lineColor: Theme = [CityCode.Hongkong, 'twl', '#FF0000', MonoColour.white];
-
-        graph.addNode('stn_1', {
-            x: 0,
-            y: 0,
-            type: StationType.MTR,
-            zIndex: 0,
-            visible: true,
-            [StationType.MTR]: {
-                names: ['Central'],
-                nameOffsetX: 'right' as const,
-                nameOffsetY: 'top' as const,
-                rotate: 0,
-                transfer: [
-                    [
-                        [CityCode.Hongkong, 'twl', '#FF0000', MonoColour.white, '', ''],
-                        [CityCode.Hongkong, 'isl', '#0000FF', MonoColour.white, '', ''],
-                    ],
-                ],
-            },
-        });
-        graph.addNode('stn_2', { x: 100, y: 0, type: StationType.MTR, zIndex: 0, visible: true });
-        graph.addDirectedEdge('stn_1', 'stn_2', {
-            type: LinePathType.Diagonal,
-            style: LineStyleType.SingleColor,
-            zIndex: 0,
-            reconcileId: '',
-            visible: true,
-            parallelIndex: -1,
-            [LinePathType.Diagonal]: {
-                startFrom: 'from',
-                offsetFrom: 0,
-                offsetTo: 0,
-                roundCornerFactor: 0,
-            },
-            [LineStyleType.SingleColor]: {
-                color: lineColor,
-            },
-        });
-
-        const updated = autoPopulateTransfer(graph, 'stn_1');
-
-        expect(updated).toBe(true);
-        expect(graph.getNodeAttribute('stn_1', StationType.MTR)!.transfer).toEqual([[]]);
-    });
-});
-
-describe('Bezier endpoint alignment after line type changes', () => {
-    type Graph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-
-    const RED: Theme = [CityCode.Other, 'red', '#ff0000', MonoColour.white];
-    const BLUE: Theme = [CityCode.Other, 'blue', '#0000ff', MonoColour.white];
-
-    const addNode = (graph: Graph, id: `stn_${string}` | `misc_node_${string}`, x: number) => {
-        graph.addNode(id, {
-            visible: true,
-            zIndex: 0,
-            x,
-            y: 0,
-            type: StationType.ShmetroBasic,
-        });
-    };
-
-    const makeBezierEdgeAttrs = (
-        color: Theme,
-        sourceOffset = { x: 0, y: 0 },
-        targetOffset = { x: 0, y: 0 },
-        visible = true,
-        style = LineStyleType.SingleColor
-    ): EdgeAttributes => ({
-        visible,
-        zIndex: 0,
-        type: LinePathType.Bezier,
-        [LinePathType.Bezier]: {
-            ...structuredClone(defaultBezierPathAttributes),
-            sourceOffset,
-            targetOffset,
-        },
-        style,
-        [style]: style === LineStyleType.SingleColor ? { color } : {},
-        reconcileId: '',
-        parallelIndex: -1,
-    });
-
-    const makeDiagonalEdgeAttrs = (color: Theme): EdgeAttributes => ({
-        visible: true,
-        zIndex: 0,
-        type: LinePathType.Diagonal,
-        [LinePathType.Diagonal]: {
-            startFrom: 'from',
-            offsetFrom: 0,
-            offsetTo: 0,
-            roundCornerFactor: 0,
-        },
-        style: LineStyleType.SingleColor,
-        [LineStyleType.SingleColor]: { color },
-        reconcileId: '',
-        parallelIndex: -1,
-    });
-
-    it('aligns default Bezier attrs to hidden same-style peers when changing the path type', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        addNode(graph, 'stn_source', 0);
-        addNode(graph, 'stn_target', 100);
-        addNode(graph, 'misc_node_source_peer', -100);
-        addNode(graph, 'misc_node_target_peer', 200);
-
-        graph.addDirectedEdgeWithKey(
-            'line_source_peer',
-            'misc_node_source_peer',
-            'stn_source',
-            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 11, y: 12 }, false)
-        );
-        graph.addDirectedEdgeWithKey(
-            'line_target_peer',
-            'stn_target',
-            'misc_node_target_peer',
-            makeBezierEdgeAttrs(RED, { x: 21, y: 22 })
-        );
-        graph.addDirectedEdgeWithKey('line_selected', 'stn_source', 'stn_target', makeDiagonalEdgeAttrs(RED));
-
-        expect(changeLinePathType(graph, 'line_selected', LinePathType.Bezier, true, false, false)).toBe(true);
-        normalizeEdgeAttributes(graph, ['line_selected']);
-
-        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
-            sourceOffset: { x: 11, y: 12 },
-            targetOffset: { x: 21, y: 22 },
-        });
-    });
-
-    it('aligns a Bezier edge when changing its style type into an existing group', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        addNode(graph, 'stn_center', 0);
-        addNode(graph, 'misc_node_peer', -100);
-        addNode(graph, 'misc_node_target', 100);
-
-        graph.addDirectedEdgeWithKey(
-            'line_peer',
-            'misc_node_peer',
-            'stn_center',
-            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 31, y: 32 })
-        );
-        graph.addDirectedEdgeWithKey(
-            'line_selected',
-            'stn_center',
-            'misc_node_target',
-            makeBezierEdgeAttrs(RED, { x: 1, y: 2 }, { x: 3, y: 4 }, true, LineStyleType.Unknown)
-        );
-
-        expect(changeLineStyleType(graph, 'line_selected', LineStyleType.SingleColor, RED, true, false)).toBe(true);
-        normalizeEdgeAttributes(graph, ['line_selected']);
-
-        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
-            sourceOffset: { x: 31, y: 32 },
-            targetOffset: { x: 3, y: 4 },
-        });
-    });
-
-    it('aligns a Bezier edge when a batch color change moves it into an existing group', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        addNode(graph, 'stn_center', 0);
-        addNode(graph, 'misc_node_peer', -100);
-        addNode(graph, 'misc_node_target', 100);
-
-        graph.addDirectedEdgeWithKey(
-            'line_peer',
-            'misc_node_peer',
-            'stn_center',
-            makeBezierEdgeAttrs(RED, { x: 0, y: 0 }, { x: 41, y: 42 }, false)
-        );
-        graph.addDirectedEdgeWithKey(
-            'line_selected',
-            'stn_center',
-            'misc_node_target',
-            makeBezierEdgeAttrs(BLUE, { x: 5, y: 6 }, { x: 7, y: 8 })
-        );
-
-        expect(changeLinesColorInBatch(graph, BLUE, RED, ['line_peer', 'line_selected'])).toEqual(['line_selected']);
-        normalizeEdgeAttributes(graph, ['line_selected']);
-
-        expect(graph.getEdgeAttribute('line_selected', LinePathType.Bezier)).toMatchObject({
-            sourceOffset: { x: 41, y: 42 },
-            targetOffset: { x: 7, y: 8 },
-        });
     });
 });

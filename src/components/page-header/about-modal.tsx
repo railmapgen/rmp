@@ -17,7 +17,6 @@ import {
 } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { useTranslation } from 'react-i18next';
-import { SiZulip } from 'react-icons/si';
 
 const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -171,16 +170,22 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                             size="lg"
                             w="85%"
                             onClick={() =>
-                                window.open('https://railmapgen.zulipchat.com/join/psex5yvk5b2g4vaq5chtkkrs/', '_blank')
+                                window.open(
+                                    'https://join.slack.com/t/railmapgenerator/shared_invite/zt-1odhhta3n-DdZF~fnVwo_q0S0RJmgV8A',
+                                    '_blank'
+                                )
                             }
                             cursor="pointer"
                         >
-                            <Avatar icon={<SiZulip size={32} />} size="lg" my={2} ml={-1} mr={2} />
+                            <Avatar src="images/slack-mark.svg" size="lg" my={2} ml={-1} mr={2} />
                             <TagLabel display="block" width="100%">
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
-                                    {t('header.about.zulip')}
+                                    {t('header.about.slack')}
                                 </Text>
-                                <Text fontSize="sm">{t('header.about.zulipContent')}</Text>
+                                <Text fontSize="sm">{t('header.about.slackContent')}</Text>
+                                <Text fontSize="sm" as="i">
+                                    #rmp, #gallery, #rmg, #palette-and-templates
+                                </Text>
                             </TagLabel>
                         </Tag>
                     </VStack>

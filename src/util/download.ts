@@ -51,8 +51,7 @@ export const makeRenderReadySVGElement = async (
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
     const [width, height] = [xMax - xMin, yMax - yMin];
 
-    const canvas = document.getElementById('canvas')!;
-    const elem = canvas.cloneNode(true) as SVGSVGElement;
+    const elem = document.getElementById('canvas')!.cloneNode(true) as SVGSVGElement;
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -111,22 +110,15 @@ export const makeRenderReadySVGElement = async (
     elem.querySelector('g')?.removeAttribute('transform');
 
     if (mapEnabled) {
+        const canvas = document.getElementById('canvas');
+        if (!(canvas instanceof SVGSVGElement)) {
+            throw new Error('Canvas is missing during export');
+        }
         const sourceMapLayer = canvas.querySelector<SVGGElement>('[data-map-layer]');
         const exportMapLayer = elem.querySelector<SVGGElement>('[data-map-layer]');
         if (!sourceMapLayer || !exportMapLayer) {
-            /**
-             * MapCanvas always owns this layer, and a deep clone must preserve
-             * it. Continuing would turn a broken render lifecycle into a
-             * seemingly successful image with a silently missing basemap.
-             */
             throw new Error('Map layer is missing during export');
         }
-
-        /**
-         * The live map intentionally retains only viewport tiles. Cloning that
-         * optimization into a graph-bounds export would leave every off-screen
-         * part blank, so populate the detached clone before it is serialized.
-         */
         await renderMapLayerForExport(sourceMapLayer, exportMapLayer, { xMin, yMin, xMax, yMax });
         positionMapAttributionForExport(elem, { xMin, yMax });
     }
@@ -161,18 +153,9 @@ export const restoreMapSvgTilesForExport = (svg: SVGSVGElement) => {
     });
 };
 
-/**
- * Reanchors map attribution after export changes the cloned SVG's viewBox.
- *
- * The live map keeps this control in the current viewport's graph coordinates
- * and counter-scales it to a stable screen size. Those values are no longer
- * meaningful once export replaces the viewport with graph bounds: reusing them
- * could put the attribution outside the file or give it an unexpected size.
- * This only mutates the export clone; the interactive canvas keeps its own
- * viewport-relative placement.
- */
 export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
-    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]')!;
+    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]');
+    if (!mapAttribution) return;
     const text = mapAttribution.querySelector<SVGTextElement>('[data-map-attribution-text]')?.textContent ?? '';
     if (!text.includes(MAP_ATTRIBUTION_EXPORT_URL)) {
         setMapAttributionText(mapAttribution, `${text} · ${MAP_ATTRIBUTION_EXPORT_URL}`);

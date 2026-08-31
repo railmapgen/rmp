@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "正在載入地圖……",
+        "loadError": "無法載入地理地圖。",
+        "zoomInToEdit": "請放大地圖以進行編輯。",
+        "style": {
+            "title": "地圖樣式",
+            "reset": "重置",
+            "type": "類型",
+            "enabled": "顯示",
+            "widthScale": "寬度比例",
+            "roads": {
+                "title": "道路",
+                "casingColor": "輪廓",
+                "color": "表面",
+                "path": "路徑",
+                "local": "本地道路",
+                "collector": "集散道路",
+                "arterial": "主幹道"
+            },
+            "rails": { "title": "鐵路", "metro": "地鐵", "national": "國鐵" },
+            "labels": {
+                "title": "標籤",
+                "enabled": "顯示所有標籤",
+                "sizeScale": "大小比例",
+                "color": "文字",
+                "strokeColor": "輪廓",
+                "groups": {
+                    "places": "地點",
+                    "roads": "道路",
+                    "buildings": "建築",
+                    "areas": "區域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地點",
+                    "place-medium": "中等地點",
+                    "place-minor": "次要地點",
+                    "road-arterial": "主幹道",
+                    "road-collector": "集散道路",
+                    "building": "建築",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅區",
+                    "area-commercial": "商業區",
+                    "area-industrial": "工業區",
+                    "area-education": "教育設施",
+                    "area-healthcare": "醫療設施",
+                    "transport-airport": "機場",
+                    "transport-rail": "火車站",
+                    "transport-metro": "地鐵站",
+                    "transport-platform": "月台",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    },
     "color": "顏色",
     "warning": "警告",
     "error": "錯誤",
@@ -9,6 +69,10 @@
     "pasteAttrs": "貼上獨特屬性",
     "remove": "移除",
     "close": "關閉",
+    "confirm": "確定",
+    "edit": "編輯",
+    "back": "返回",
+    "ok": "確定",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
 
@@ -472,7 +536,6 @@
                     "terminal": "終點站",
                     "terminalNameRotate": "終點站名旋轉角度",
                     "shareTracks": "軌道共享",
-                    "noTrackShare": "無軌道共享",
                     "shareTracksIndex": "軌道共享指數"
                 },
                 "londonTubeInt": {
@@ -583,6 +646,36 @@
                     "reconcileDisabled": "此線段屬於合併線段鏈，偏移已停用。整條鏈作為一條合併路徑渲染。",
                     "reconcileStyleDisabled": "此線段屬於合併線段鏈，樣式屬性已停用。最終渲染樣式由基準線段控制。"
                 },
+                "bezier": {
+                    "displayName": "貝茲曲線",
+                    "along": "沿線偏移",
+                    "normal": "法線偏移",
+                    "sourceOffset": "起點端點偏移",
+                    "targetOffset": "終點端點偏移",
+                    "sourceOffsetX": "起點端點 X 偏移",
+                    "sourceOffsetY": "起點端點 Y 偏移",
+                    "targetOffsetX": "終點端點 X 偏移",
+                    "targetOffsetY": "終點端點 Y 偏移",
+                    "linkedOffset": "連結端點偏移"
+                },
+                "freeform": {
+                    "displayName": "自由曲線",
+                    "controlPointHint": "拖曳經過所需控制點來繪製線段。",
+                    "outlineSettingsUnavailable": "自由曲線目前不支援輪廓設定。",
+                    "smoothing": "平滑度",
+                    "widthStops": "寬度節點",
+                    "widthStopIndex": "序號",
+                    "widthStopPosition": "位置（%）",
+                    "widthStopWidth": "寬度",
+                    "baseWidthHint": "線段寬度會沿路徑變化。",
+                    "startCap": "起點端帽",
+                    "endCap": "終點端帽",
+                    "round": "圓頭",
+                    "flat": "平頭",
+                    "arrow": "箭頭",
+                    "arrowLength": "箭頭長度",
+                    "arrowWidth": "箭頭寬度"
+                },
                 "simple": {
                     "displayName": "基本線段",
                     "offset": "偏移"
@@ -598,36 +691,6 @@
                 },
                 "rayGuided": {
                     "displayName": "任意角度線段"
-                },
-                "bezier": {
-                    "displayName": "貝塞爾曲線",
-                    "along": "沿線位置",
-                    "normal": "法向偏移",
-                    "sourceOffset": "起點偏移",
-                    "targetOffset": "終點偏移",
-                    "linkedOffset": "連動的端點偏移",
-                    "sourceOffsetX": "起點 X 偏移",
-                    "sourceOffsetY": "起點 Y 偏移",
-                    "targetOffsetX": "終點 X 偏移",
-                    "targetOffsetY": "終點 Y 偏移"
-                },
-                "freeform": {
-                    "displayName": "自由繪製線段",
-                    "outlineSettingsUnavailable": "可變寬度與兩端端頭設定暫未開放。",
-                    "controlPointHint": "拖動藍色控制點可調整線路走向；雙擊線路可在對應位置新增控制點，右擊藍色控制點可將其刪除。",
-                    "widthStops": "寬度點",
-                    "widthStopIndex": "#",
-                    "widthStopPosition": "位置 (%)",
-                    "widthStopWidth": "寬度 (px)",
-                    "baseWidthHint": "5px 是線段基準寬度",
-                    "smoothing": "平滑度",
-                    "startCap": "起點端帽",
-                    "endCap": "終點端帽",
-                    "round": "圓形",
-                    "flat": "平直",
-                    "arrow": "箭頭",
-                    "arrowLength": "箭頭長度",
-                    "arrowWidth": "箭頭寬度"
                 },
                 "singleColor": {
                     "displayName": "純色樣式"
@@ -782,6 +845,25 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "nodeVersion": {
+                "title": "歷史版本",
+                "current": "(目前)",
+                "rename": "重新命名",
+                "apply": "套用",
+                "remove": "刪除",
+                "add": "新增版本",
+                "placing": "請放置該版本的節點……",
+                "pleaseSelectNode": "請選擇新的版本節點",
+                "placingNew": "正在編輯此節點，完成後請點擊確定按鈕。",
+                "placingNewWithId": "正在編輯節點{{id}}，完成後請點擊確定按鈕。",
+                "nameVersion": "命名版本",
+                "namePlaceholder": "輸入版本名稱",
+                "enterName": "輸入版本名稱",
+                "enterNameDesc": "請為新版本輸入一個名稱（可選，留空將使用預設名稱）",
+                "versionName": "版本名稱",
+                "versionNotFound": "版本不存在或無法取得",
+                "applySuccess": "已套用版本 {version}"
             }
         }
     },
@@ -868,13 +950,61 @@
             "disabledScaleOptionsSolution": "<link1>訂閱</link1>並<link2>下載</link2>我們的桌面應用程式以呈現大型影像。",
             "imageTooBig": "圖像太大，您的瀏覽器無法生成！",
             "isSystemFontsOnly": "僅用系統字體（字體顯示可能不一致）。",
+            "shareInfo": "去水印（當我分享此圖片時我會附上<1>地鐵線路圖繪製器</1>和它的鏈接）。",
             "shareInfo1": "當我分享此圖片時我會附上",
             "shareInfo2": "和它的鏈接。",
             "termsAndConditions": "條款及細則",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些節點需要顯示此資訊。",
-            "confirm": "下載"
+            "confirm": "下載",
+            "video": "匯出影片",
+            "videoExport": {
+                "title": "匯出影片",
+                "fps": "每秒影格數 (FPS)",
+                "duration": "時長（秒）",
+                "quality": "影片品質",
+                "generating": "正在產生影片...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "影片格式",
+                "error": "影片匯出失敗，請重試。",
+                "closeConfirmTitle": "匯出進行中",
+                "closeConfirmDesc": "影片正在匯出中，請選擇操作：",
+                "cancelExport": "取消匯出",
+                "backgroundExport": "後台匯出",
+                "preview": "預覽",
+                "previewTitle": "影片預覽",
+                "previewDesc": "您可以點擊進度條上任意處自由查看任意時刻的動畫畫面。",
+                "previewPlay": "播放",
+                "previewPause": "暫停",
+                "previewLoading": "渲染中…",
+                "previewFullscreen": "全螢幕",
+                "jumpToAction": "跳轉到動作",
+                "previousAction": "上一個動作",
+                "nextAction": "下一個動作",
+                "actionOption": "動作 {{index}}：{{type}}（{{remark}}）",
+                "actionOptionType": "動作 {{index}}：{{type}}",
+                "actionOptionWait": "動作 {{index}}：{{type}}（{{duration}} 秒）",
+                "noRemark": "無備註"
+            }
+        },
+        "timeline": {
+            "title": "動畫時間線",
+            "empty": "暫無時間線，點擊「添加節點」開始構建。",
+            "addSegment": "添加節點",
+            "clearAll": "清空",
+            "pickStart": "在畫布上點擊一個節點作為起點……",
+            "pickEnd": "在畫布上點擊一個節點作為終點……",
+            "selectTheme": "選擇線路：",
+            "noPath": "未找到所選節點之間的路徑。",
+            "unadded": "有 {{count}} 個節點未加入時間線",
+            "addStationOnly": "僅添加此節點",
+            "reverse": "反向",
+            "reverseSelected": "反向選中線路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐款",
@@ -911,7 +1041,10 @@
             },
             "preference": {
                 "title": "偏好",
+                "map": "顯示地理地圖",
                 "mapEnabled": "顯示地理地圖圖層",
+                "disableMapPerformanceOptimization": "停用地圖效能最佳化",
+                "mapPerformanceOptimizationProgress": "已最佳化：{{optimized}}/{{total}}",
                 "keepLastPath": "在下一次操作中持續畫線段直到點擊背景",
                 "autoParallel": "自動將新段線設置為與現有線段平行",
                 "randomStationNames": {
@@ -932,9 +1065,9 @@
                 "snapline": "磁性吸附到參考線",
                 "predictNextNode": "當選擇一個節點時預測下一個節點",
                 "autoChangeStationType": "自動切換基本車站與換乘車站",
-                "disableMapPerformanceOptimization": "停用地圖效能最佳化",
-                "mapPerformanceOptimizationProgress": "已最佳化：{{optimized}}/{{total}}",
-                "disableWarningChangeType": "更改車站或線段類型時禁用警告"
+                "disableWarningChangeType": "更改車站或線段類型時禁用警告",
+                "timelineFeature": "啟用動畫時間線功能",
+                "enableActionDateFormat": "啟用動作日期格式校驗"
             },
             "shortcuts": {
                 "title": "捷徑",
@@ -1049,8 +1182,8 @@
             "contactUs": "聯繫我們",
             "github": "項目倉庫",
             "githubContent": "遇到任何問題？在這裡搜索或提出一個問題！",
-            "zulip": "Zulip 社群",
-            "zulipContent": "加入我們的 Zulip 社群！"
+            "slack": "Slack群組",
+            "slackContent": "在這些Slack頻道中討論!"
         }
     },
 
@@ -1081,69 +1214,88 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
-    "map": {
-        "loading": "正在載入地圖",
-        "loadError": "無法載入地圖底圖。",
-        "zoomInToEdit": "請放大地圖以進行編輯。",
-        "style": {
-            "title": "地圖樣式",
-            "reset": "恢復預設",
+    "timeline": {
+        "editor": {
+            "title": "動畫時間線"
+        },
+        "totalDuration": "總時長",
+        "second": "秒",
+        "undo": "復原",
+        "redo": "重做",
+        "lines": "線路列表",
+        "actions": "動作列表",
+        "segments": "段",
+        "segment": "線路段",
+        "addLine": "新增線路",
+        "addAction": "新增動作",
+        "addSegment": "新增線路段",
+        "noGroups": "暫無線路",
+        "noSegments": "暫無線路段",
+        "noActions": "暫無動作",
+        "addBelow": "在下方新增",
+        "drag": "拖動",
+        "newLine": "新線路",
+        "modify": "修改",
+        "elements": "元素",
+        "addElement": "新增元素",
+        "reverseAll": "全部反轉",
+        "noElements": "暫無元素，請點擊「新增元素」",
+        "pickElement": "請在畫布上點擊要新增的元素",
+        "addSegmentPath": "整段新增",
+        "pickStartNode": "請在畫布上點擊路徑起點",
+        "pickEndNode": "請在畫布上點擊路徑終點",
+        "selectTheme": "選擇線路顏色",
+        "selectThemeHint": "請選擇路徑使用的線條顏色",
+        "noLines": "暫無線路段",
+        "start": "開始",
+        "end": "結束",
+        "isStation": "視為車站",
+        "mileage": "里程長度",
+        "mileageAutoFill": "依地圖實際長度自動填入",
+        "mileageAutoFillDisabled": "需開啟真實地圖後才能依實際長度自動填入",
+        "savedAtTimePoint": "變更已儲存到目前時間點",
+        "futurePointsAffected": "後續時間點將受影響",
+        "attrs": {
+            "title": "時間線屬性"
+        },
+        "line": {
+            "name": "線路名稱",
+            "color": "顏色"
+        },
+        "action": {
             "type": "類型",
-            "enabled": "顯示",
-            "widthScale": "寬度倍率",
-            "roads": {
-                "title": "道路",
-                "casingColor": "描邊",
-                "color": "路面",
-                "path": "小徑",
-                "local": "支路",
-                "collector": "次幹路",
-                "arterial": "主幹路"
-            },
-            "rails": {
-                "title": "鐵路",
-                "metro": "地鐵",
-                "national": "國鐵"
-            },
-            "labels": {
-                "title": "標籤",
-                "enabled": "顯示全部標籤",
-                "sizeScale": "字號倍率",
-                "color": "文字",
-                "strokeColor": "描邊",
-                "groups": {
-                    "places": "地名",
-                    "roads": "道路",
-                    "buildings": "建築",
-                    "areas": "區域",
-                    "transport": "交通"
-                },
-                "categories": {
-                    "place-major": "主要地名",
-                    "place-medium": "中等地名",
-                    "place-minor": "次要地名",
-                    "road-arterial": "主幹路",
-                    "road-collector": "次幹路",
-                    "building": "建築",
-                    "area-water": "水域",
-                    "area-park": "公園",
-                    "area-grass": "草地",
-                    "area-forest": "森林",
-                    "area-farmland": "農田",
-                    "area-cemetery": "墓地",
-                    "area-residential": "住宅區",
-                    "area-commercial": "商業區",
-                    "area-industrial": "工業區",
-                    "area-education": "教育設施",
-                    "area-healthcare": "醫療設施",
-                    "transport-airport": "機場",
-                    "transport-rail": "國鐵車站",
-                    "transport-metro": "地鐵車站",
-                    "transport-platform": "月台",
-                    "transport-entrance": "出入口"
-                }
-            }
+            "open": "開通",
+            "close": "停運",
+            "overview": "全覽",
+            "wait": "等待",
+            "focus": "聚焦",
+            "focusTargetMissing": "聚焦找不到後續目標線路段",
+            "remark": "備註",
+            "lineSegment": "目標線路段",
+            "selectSegment": "選擇線路段",
+            "duration": "時長",
+            "activeLines": "已開通線路",
+            "selectLines": "選擇線路",
+            "selectActiveLines": "選擇已開通線路",
+            "unsaved": "未儲存",
+            "invalidDateFormat": "日期格式無效，請輸入 YYYY-MM-DD，或在設定中關閉動作日期格式校驗",
+            "dateFormatEnabled": "動作日期格式校驗已啟用，僅接受 YYYY-MM-DD 格式",
+            "batchInvalidDateFormat": "已自動清空 {{count}} 個不符合 YYYY-MM-DD 格式的日期"
+        },
+        "player": {
+            "play": "播放",
+            "stop": "停止",
+            "pause": "暫停",
+            "export": "匯出影片",
+            "stations": "車站數",
+            "mileage": "里程",
+            "date": "日期",
+            "activeLines": "已開通線路",
+            "bad": "暫不支援此樣式",
+            "noEdges": "時間線中無可繪製的邊",
+            "prepare": "準備中..."
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。"
 }

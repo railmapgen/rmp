@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { lineStyles } from '../components/svgs/lines/line-styles';
+import { lineStyles } from '../components/svgs/lines/lines';
 import { isTheme } from './color';
 
 /**
@@ -14,14 +14,12 @@ export function defaultIsSameStyle(a: Record<string, unknown>, b: Record<string,
     return (ca as string[])[2] === (cb as string[])[2];
 }
 
-/** Compare two edges using the exact LineStyleType + isSameStyle contract shared by editor features. */
 export function areSameLineStyles(a: EdgeAttributes, b: EdgeAttributes): boolean {
     if (a.style !== b.style) return false;
 
     const aStyleAttrs = a[a.style];
     const bStyleAttrs = b[b.style];
     if (!aStyleAttrs || !bStyleAttrs) return false;
-
     const styleEntry = lineStyles[a.style as keyof typeof lineStyles];
     if (!styleEntry) return false;
     const isSame = styleEntry.isSameStyle ?? defaultIsSameStyle;

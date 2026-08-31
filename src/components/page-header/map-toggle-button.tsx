@@ -16,9 +16,7 @@ export const MapToggleButton = () => {
                 size="sm"
                 variant="ghost"
                 colorScheme="gray"
-                isActive={mapEnabled}
                 aria-label={label}
-                aria-pressed={mapEnabled}
                 icon={<MdMap />}
                 onClick={() => dispatch(setMapEnabled(!mapEnabled))}
             />

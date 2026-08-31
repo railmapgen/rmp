@@ -107,16 +107,6 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
     const viewportRef = React.useRef<SVGGElement>(null);
 
     /**
-     * `updateViewportTransform` is shared by the frame scheduler and must remain
-     * stable, while its observer may change when a consumer closes over current
-     * project state or an imperative component handle. Reading the observer from
-     * a ref gives every frame the latest callback without rebuilding the generic
-     * viewport scheduler or moving map-specific behavior into this hook.
-     */
-    const viewportObserverRef = React.useRef(onViewportChange);
-    viewportObserverRef.current = onViewportChange;
-
-    /**
      * Ref to the root `<svg>` element.
      *
      * The controller itself does not need the DOM node for viewport math, but a
@@ -186,7 +176,6 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
         const y = -nextViewport.y * scale;
 
         viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
-        viewportObserverRef.current?.(nextViewport);
     }, []);
 
     /**
@@ -201,7 +190,8 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
      */
     React.useLayoutEffect(() => {
         updateViewportTransform(viewport);
-    }, [updateViewportTransform, viewport.x, viewport.y, viewport.zoom]);
+        onViewportChange?.(viewport);
+    }, [onViewportChange, updateViewportTransform, viewport.x, viewport.y, viewport.zoom]);
 
     /**
      * Clears the deferred preview commit if one is pending.
@@ -250,6 +240,7 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
                 const { viewport: latestViewport, publishLiveViewport } = viewportFrameRef.current;
 
                 updateViewportTransform(latestViewport);
+                onViewportChange?.(latestViewport);
                 if (publishLiveViewport) {
                     dispatch(setLiveViewport(latestViewport));
                 }
@@ -258,7 +249,7 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
                 viewportFrameRef.current.rafId = null;
             });
         },
-        [dispatch, updateViewportTransform]
+        [dispatch, onViewportChange, updateViewportTransform]
     );
 
     /**

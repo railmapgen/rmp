@@ -1,6 +1,5 @@
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, closeRadialTouchMenu, setActive, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
@@ -17,7 +16,7 @@ import { useWindowSize } from '../../util/hooks';
 export const TouchOverlay: React.FC = () => {
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const { mapEnabled, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const { radialTouchMenu } = useRootSelector(state => state.runtime);
     const graph = React.useRef(window.graph);
 
@@ -83,8 +82,7 @@ export const TouchOverlay: React.FC = () => {
             const d = dx * dx + dy * dy;
 
             let newSvgViewBoxZoom = svgViewBoxZoom;
-            const maxZoom = mapEnabled ? MAP_MAX_VIEWBOX_ZOOM : 390;
-            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= maxZoom) newSvgViewBoxZoom = svgViewBoxZoom + 10;
+            if (d - touchDist < 0 && svgViewBoxZoom + 10 <= 390) newSvgViewBoxZoom = svgViewBoxZoom + 10;
             else if (d - touchDist > 0 && svgViewBoxZoom - 10 >= 10) newSvgViewBoxZoom = svgViewBoxZoom - 10;
             dispatch(setSvgViewBoxZoom(newSvgViewBoxZoom));
             setTouchDist(d);

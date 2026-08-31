@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "正在加载地图……",
+        "loadError": "无法加载地理地图。",
+        "zoomInToEdit": "请放大地图以进行编辑。",
+        "style": {
+            "title": "地图样式",
+            "reset": "重置",
+            "type": "类型",
+            "enabled": "显示",
+            "widthScale": "宽度比例",
+            "roads": {
+                "title": "道路",
+                "casingColor": "轮廓",
+                "color": "表面",
+                "path": "路径",
+                "local": "本地道路",
+                "collector": "集散道路",
+                "arterial": "主干道"
+            },
+            "rails": { "title": "铁路", "metro": "地铁", "national": "国铁" },
+            "labels": {
+                "title": "标注",
+                "enabled": "显示所有标注",
+                "sizeScale": "大小比例",
+                "color": "文字",
+                "strokeColor": "轮廓",
+                "groups": {
+                    "places": "地点",
+                    "roads": "道路",
+                    "buildings": "建筑",
+                    "areas": "区域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地点",
+                    "place-medium": "中等地点",
+                    "place-minor": "次要地点",
+                    "road-arterial": "主干道",
+                    "road-collector": "集散道路",
+                    "building": "建筑",
+                    "area-water": "水域",
+                    "area-park": "公园",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "农田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅区",
+                    "area-commercial": "商业区",
+                    "area-industrial": "工业区",
+                    "area-education": "教育设施",
+                    "area-healthcare": "医疗设施",
+                    "transport-airport": "机场",
+                    "transport-rail": "火车站",
+                    "transport-metro": "地铁站",
+                    "transport-platform": "站台",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    },
     "color": "颜色",
     "warning": "警告",
     "error": "错误",
@@ -9,6 +69,10 @@
     "pasteAttrs": "粘贴独特属性",
     "remove": "移除",
     "close": "关闭",
+    "confirm": "确定",
+    "edit": "编辑",
+    "back": "返回",
+    "ok": "确定",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
 
@@ -472,7 +536,6 @@
                     "terminal": "终点站",
                     "terminalNameRotate": "终点站名旋转",
                     "shareTracks": "轨道共享",
-                    "noTrackShare": "无轨道共享",
                     "shareTracksIndex": "轨道共享索引"
                 },
                 "londonTubeInt": {
@@ -583,6 +646,36 @@
                     "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。",
                     "reconcileStyleDisabled": "此线段属于合并线段链，样式属性已禁用。最终渲染样式由基准线段控制。"
                 },
+                "bezier": {
+                    "displayName": "贝塞尔曲线",
+                    "along": "沿线偏移",
+                    "normal": "法线偏移",
+                    "sourceOffset": "起点端点偏移",
+                    "targetOffset": "终点端点偏移",
+                    "sourceOffsetX": "起点端点 X 偏移",
+                    "sourceOffsetY": "起点端点 Y 偏移",
+                    "targetOffsetX": "终点端点 X 偏移",
+                    "targetOffsetY": "终点端点 Y 偏移",
+                    "linkedOffset": "关联端点偏移"
+                },
+                "freeform": {
+                    "displayName": "自由曲线",
+                    "controlPointHint": "拖动经过所需控制点来绘制线段。",
+                    "outlineSettingsUnavailable": "自由曲线暂不支持轮廓设置。",
+                    "smoothing": "平滑度",
+                    "widthStops": "宽度节点",
+                    "widthStopIndex": "序号",
+                    "widthStopPosition": "位置（%）",
+                    "widthStopWidth": "宽度",
+                    "baseWidthHint": "线段宽度会沿路径变化。",
+                    "startCap": "起点端帽",
+                    "endCap": "终点端帽",
+                    "round": "圆头",
+                    "flat": "平头",
+                    "arrow": "箭头",
+                    "arrowLength": "箭头长度",
+                    "arrowWidth": "箭头宽度"
+                },
                 "simple": {
                     "displayName": "基本线段",
                     "offset": "偏移"
@@ -598,36 +691,6 @@
                 },
                 "rayGuided": {
                     "displayName": "任意角度线段"
-                },
-                "bezier": {
-                    "displayName": "贝塞尔曲线",
-                    "along": "沿线位置",
-                    "normal": "法向偏移",
-                    "sourceOffset": "起点偏移",
-                    "targetOffset": "终点偏移",
-                    "linkedOffset": "联动的端点偏移",
-                    "sourceOffsetX": "起点 X 偏移",
-                    "sourceOffsetY": "起点 Y 偏移",
-                    "targetOffsetX": "终点 X 偏移",
-                    "targetOffsetY": "终点 Y 偏移"
-                },
-                "freeform": {
-                    "displayName": "自由绘制线段",
-                    "outlineSettingsUnavailable": "可变宽度和两端端头设置暂未开放。",
-                    "controlPointHint": "拖动蓝色控制点可调整线路走向；双击线路可在对应位置添加控制点，右击蓝色控制点可将其删除。",
-                    "widthStops": "宽度点",
-                    "widthStopIndex": "#",
-                    "widthStopPosition": "位置 (%)",
-                    "widthStopWidth": "宽度 (px)",
-                    "baseWidthHint": "5px 是线段基准宽度",
-                    "smoothing": "平滑度",
-                    "startCap": "起点端帽",
-                    "endCap": "终点端帽",
-                    "round": "圆形",
-                    "flat": "平直",
-                    "arrow": "箭头",
-                    "arrowLength": "箭头长度",
-                    "arrowWidth": "箭头宽度"
                 },
                 "singleColor": {
                     "displayName": "纯色样式"
@@ -782,6 +845,25 @@
             },
             "footer": {
                 "duplicate": "重复"
+            },
+            "nodeVersion": {
+                "title": "历史版本",
+                "current": "(当前)",
+                "rename": "重命名",
+                "apply": "应用",
+                "remove": "删除",
+                "add": "添加新版本",
+                "placing": "请放置该版本的节点……",
+                "pleaseSelectNode": "请选择新建的版本节点",
+                "placingNew": "正在编辑此节点，完成后请点击确定按钮。",
+                "placingNewWithId": "正在编辑节点{{id}}，完成后请点击确定按钮。",
+                "nameVersion": "命名版本",
+                "namePlaceholder": "输入版本名称",
+                "enterName": "输入版本名称",
+                "enterNameDesc": "请为新版本输入一个名称（可选，留空将使用默认名称）",
+                "versionName": "版本名称",
+                "versionNotFound": "版本不存在或无法获取",
+                "applySuccess": "已应用版本 {version}"
             }
         }
     },
@@ -868,13 +950,61 @@
             "disabledScaleOptionsSolution": "<link1>订阅</link1>并<link2>下载</link2>我们的桌面应用程序以渲染大型图像。",
             "imageTooBig": "图像太大，无法在您的浏览器中生成！",
             "isSystemFontsOnly": "仅用系统字体（字体显示可能不一致）。 ",
+            "shareInfo": "去水印（当我分享此图片时我会附上<1>地铁线路图绘制器</1>和它的链接）。",
             "shareInfo1": "当我分享此图片时我会附上",
             "shareInfo2": "和它的链接。",
             "termsAndConditions": "条款及细则",
             "termsAndConditionsInfo": "我同意",
             "period": "。",
             "rmpInfoSpecificNodeExists": "某些节点需要显示此信息。",
-            "confirm": "下载"
+            "confirm": "下载",
+            "video": "导出视频",
+            "videoExport": {
+                "title": "导出视频",
+                "fps": "每秒帧数 (FPS)",
+                "duration": "时长（秒）",
+                "quality": "视频质量",
+                "generating": "正在生成视频...",
+                "progress": "进度：{{progress}}%",
+                "description": "此功能会导出一个动画视频，展示节点和线路逐步绘制的过程。",
+                "shareInfo1": "当我分享此视频时我会附上",
+                "shareInfo2": "和它的链接。",
+                "format": "视频格式",
+                "error": "视频导出失败，请重试。",
+                "closeConfirmTitle": "导出进行中",
+                "closeConfirmDesc": "视频正在导出中，请选择操作：",
+                "cancelExport": "取消导出",
+                "backgroundExport": "后台导出",
+                "preview": "预览",
+                "previewTitle": "视频预览",
+                "previewDesc": "您可以拖动进度条或点击进度条上任意处自由查看任意时刻的动画画面。",
+                "previewPlay": "播放",
+                "previewPause": "暂停",
+                "previewLoading": "渲染中…",
+                "previewFullscreen": "全屏",
+                "jumpToAction": "跳转到动作",
+                "previousAction": "上一个动作",
+                "nextAction": "下一个动作",
+                "actionOption": "动作 {{index}}：{{type}}（{{remark}}）",
+                "actionOptionType": "动作 {{index}}：{{type}}",
+                "actionOptionWait": "动作 {{index}}：{{type}}（{{duration}} 秒）",
+                "noRemark": "无备注"
+            }
+        },
+        "timeline": {
+            "title": "动画时间线",
+            "empty": "暂无时间线，点击「添加节点」开始构建。",
+            "addSegment": "添加节点",
+            "clearAll": "清空",
+            "pickStart": "在画布上点击一个节点作为起点……",
+            "pickEnd": "在画布上点击一个节点作为终点……",
+            "selectTheme": "选择线路：",
+            "noPath": "未找到所选节点之间的路径。",
+            "unadded": "有 {{count}} 个节点未加入时间线",
+            "addStationOnly": "仅添加此节点",
+            "reverse": "反向",
+            "reverseSelected": "反向选中线路",
+            "reversed": "已反向"
         },
         "donation": {
             "title": "捐赠",
@@ -911,7 +1041,10 @@
             },
             "preference": {
                 "title": "偏好",
+                "map": "显示地理地图",
                 "mapEnabled": "显示地理地图图层",
+                "disableMapPerformanceOptimization": "禁用地图性能优化",
+                "mapPerformanceOptimizationProgress": "已优化：{{optimized}}/{{total}}",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
                 "autoParallel": "自动将新线段设置为与现有线段平行",
                 "randomStationNames": {
@@ -932,9 +1065,9 @@
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
-                "disableMapPerformanceOptimization": "禁用地图性能优化",
-                "mapPerformanceOptimizationProgress": "已优化：{{optimized}}/{{total}}",
-                "disableWarningChangeType": "更改车站或线段类型时禁用警告"
+                "disableWarningChangeType": "更改车站或线段类型时禁用警告",
+                "timelineFeature": "启用动画时间线功能",
+                "enableActionDateFormat": "启用动作日期格式校验"
             },
             "shortcuts": {
                 "title": "快捷键",
@@ -1049,8 +1182,8 @@
             "contactUs": "联系我们",
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
-            "zulip": "Zulip 社区",
-            "zulipContent": "加入我们的 Zulip 社区！"
+            "slack": "Slack群组",
+            "slackContent": "在这些Slack频道中讨论!"
         }
     },
 
@@ -1082,68 +1215,87 @@
     },
 
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
-    "map": {
-        "loading": "正在加载地图",
-        "loadError": "无法加载地图底图。",
-        "zoomInToEdit": "请放大地图以进行编辑。",
-        "style": {
-            "title": "地图样式",
-            "reset": "恢复默认",
+
+    "timeline": {
+        "editor": {
+            "title": "动画时间线"
+        },
+        "totalDuration": "总时长",
+        "second": "秒",
+        "undo": "撤销",
+        "redo": "重做",
+        "lines": "线路列表",
+        "actions": "动作列表",
+        "segments": "段",
+        "segment": "线路段",
+        "addLine": "添加线路",
+        "addAction": "添加动作",
+        "addSegment": "添加线路段",
+        "noGroups": "暂无线路",
+        "noSegments": "暂无线路段",
+        "noActions": "暂无动作",
+        "addBelow": "在下方添加",
+        "drag": "拖动",
+        "newLine": "新线路",
+        "modify": "修改",
+        "elements": "元素",
+        "addElement": "添加元素",
+        "reverseAll": "全部反转",
+        "noElements": "暂无元素，请点击\"添加元素\"",
+        "pickElement": "请在画布上点击要添加的元素",
+        "addSegmentPath": "整段添加",
+        "pickStartNode": "请在画布上点击路径起点",
+        "pickEndNode": "请在画布上点击路径终点",
+        "selectTheme": "选择线路颜色",
+        "selectThemeHint": "请选择路径使用的线条颜色",
+        "noLines": "暂无线路",
+        "start": "开始",
+        "end": "结束",
+        "isStation": "视为车站",
+        "mileage": "里程长度",
+        "mileageAutoFill": "按地图实际长度自动填充",
+        "mileageAutoFillDisabled": "需开启真实地图后才能按实际长度自动填充",
+        "savedAtTimePoint": "变更已保存到当前时间点",
+        "futurePointsAffected": "后续时间点将受影响",
+        "attrs": {
+            "title": "时间线属性"
+        },
+        "line": {
+            "name": "线路名称",
+            "color": "颜色"
+        },
+        "action": {
             "type": "类型",
-            "enabled": "显示",
-            "widthScale": "宽度倍率",
-            "roads": {
-                "title": "道路",
-                "casingColor": "描边",
-                "color": "路面",
-                "path": "小径",
-                "local": "支路",
-                "collector": "次干路",
-                "arterial": "主干路"
-            },
-            "rails": {
-                "title": "铁路",
-                "metro": "地铁",
-                "national": "国铁"
-            },
-            "labels": {
-                "title": "标签",
-                "enabled": "显示全部标签",
-                "sizeScale": "字号倍率",
-                "color": "文字",
-                "strokeColor": "描边",
-                "groups": {
-                    "places": "地名",
-                    "roads": "道路",
-                    "buildings": "建筑",
-                    "areas": "区域",
-                    "transport": "交通"
-                },
-                "categories": {
-                    "place-major": "主要地名",
-                    "place-medium": "中等地名",
-                    "place-minor": "次要地名",
-                    "road-arterial": "主干路",
-                    "road-collector": "次干路",
-                    "building": "建筑",
-                    "area-water": "水域",
-                    "area-park": "公园",
-                    "area-grass": "草地",
-                    "area-forest": "森林",
-                    "area-farmland": "农田",
-                    "area-cemetery": "墓地",
-                    "area-residential": "住宅区",
-                    "area-commercial": "商业区",
-                    "area-industrial": "工业区",
-                    "area-education": "教育设施",
-                    "area-healthcare": "医疗设施",
-                    "transport-airport": "机场",
-                    "transport-rail": "国铁车站",
-                    "transport-metro": "地铁车站",
-                    "transport-platform": "站台",
-                    "transport-entrance": "出入口"
-                }
-            }
+            "open": "开通",
+            "close": "停运",
+            "overview": "全览",
+            "wait": "等待",
+            "focus": "聚焦",
+            "focusTargetMissing": "聚焦没有找到后续目标线路段",
+            "remark": "备注",
+            "lineSegment": "目标线路段",
+            "selectSegment": "选择线路段",
+            "duration": "时长",
+            "activeLines": "已开通线路",
+            "selectLines": "选择线路",
+            "selectActiveLines": "选择已开通线路",
+            "unsaved": "未保存",
+            "invalidDateFormat": "日期格式无效，请输入 YYYY-MM-DD，或在设置中关闭动作日期格式校验",
+            "dateFormatEnabled": "动作日期格式校验已启用，仅接受 YYYY-MM-DD 格式",
+            "batchInvalidDateFormat": "已自动清空 {{count}} 个不符合 YYYY-MM-DD 格式的日期"
+        },
+        "player": {
+            "play": "播放",
+            "stop": "停止",
+            "pause": "暂停",
+            "export": "导出视频",
+            "stations": "车站数",
+            "mileage": "里程",
+            "date": "日期",
+            "activeLines": "已开通线路",
+            "bad": "暂不支持此样式",
+            "noEdges": "时间线中无可绘制的边",
+            "prepare": "准备中..."
         }
     }
 }

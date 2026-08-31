@@ -1,6 +1,7 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
+import { SerializedGraph } from 'graphology-types';
 import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
@@ -39,26 +40,82 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
-import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
+import { ParamState } from '../redux/param/param-slice';
+import type { DateRow, LineGroup, TimelineLine, ActionRow, TimelineDiff } from '../constants/timeline';
 import { TextLanguage } from './fonts';
 
 /**
  * The save format of the project.
- * For project fields, see ProjectSnapshot.
+ * For fields other than `version`, see ParamState.
  */
-export interface RMPSave extends ProjectSnapshot {
+export interface RMPSave {
+    mapEnabled?: boolean;
+    mapStyle?: import('../map/map-style').MapStyle;
     /**
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
+    graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    svgViewBoxZoom: number;
+    svgViewBoxMin: { x: number; y: number };
     images?: { id: string; base64: string }[];
+    /** Timeline state for animation (optional, older saves may not have it) */
+    timeline?: {
+        enabled: boolean;
+        totalDuration: number;
+        currentTime: number;
+        dateRows: DateRow[];
+        groups: LineGroup[];
+        lines: TimelineLine[];
+        actionRows: ActionRow[];
+        diffs: TimelineDiff[];
+        /** Base graph state at time 0 before any diffs are applied */
+        baseGraph?: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    };
 }
 
-export const CURRENT_VERSION = 78;
+export const CURRENT_VERSION = 77;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
  */
+const repairMalformedProjectSnapshot = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave & {
+        graph?: RMPSave['graph'] & Partial<ParamState['present']>;
+    };
+    const malformedSnapshot = save.graph;
+
+    if (
+        !malformedSnapshot ||
+        typeof malformedSnapshot !== 'object' ||
+        !('graph' in malformedSnapshot) ||
+        !malformedSnapshot.graph ||
+        'svgViewBoxMin' in save
+    ) {
+        return saveStr;
+    }
+
+    const snapshot = malformedSnapshot as object & {
+        graph: RMPSave['graph'];
+    };
+    return JSON.stringify(
+        Object.assign({}, save, snapshot, {
+            graph: snapshot.graph,
+        })
+    );
+};
+
+const repairMissingMapSettings = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave;
+    if (save.mapEnabled !== undefined && save.mapStyle !== undefined) return saveStr;
+
+    return JSON.stringify({
+        ...save,
+        mapEnabled: save.mapEnabled ?? false,
+        mapStyle: save.mapStyle ?? structuredClone(DEFAULT_MAP_STYLE),
+    });
+};
+
 const repairNodeXYNullCoordinates = (saveStr: string): string => {
     const save = JSON.parse(saveStr) as RMPSave;
     const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -110,6 +167,19 @@ export const parseVersionFromSave = (saveStr: string): number => {
  */
 export const getInitialParam = async () => JSON.stringify((await import('../saves/tutorial.json')).default);
 
+export const normalizeTimelineStationFlags = <
+    TNode extends { id?: string; isStation?: boolean },
+    TGraph extends { forEachNode: (callback: (node: string, attributes: TNode) => void) => void },
+>(
+    graph: TGraph
+): void => {
+    graph.forEachNode((node, attributes) => {
+        if (attributes.isStation === undefined) {
+            attributes.isStation = node.startsWith('stn_');
+        }
+    });
+};
+
 /**
  * Upgrade the passed param to the latest format.
  */
@@ -134,6 +204,14 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
         version = Number(JSON.parse(save).version);
         changed = true;
     }
+
+    const repairedSnapshotSave = repairMalformedProjectSnapshot(save);
+    changed ||= repairedSnapshotSave !== save;
+    save = repairedSnapshotSave;
+
+    const repairedMapSettingsSave = repairMissingMapSettings(save);
+    changed ||= repairedMapSettingsSave !== save;
+    save = repairedMapSettingsSave;
 
     // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
     const repairedSave = repairNodeXYNullCoordinates(save);
@@ -160,12 +238,27 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Returns a save containing only the current project snapshot, never its undo
- * and redo stacks. Images are attached only when supplied by an export flow.
+ * Return a valid save string from ParamState and optional timeline state.
  */
-export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
-    const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
-    if (paramState.images) save.images = paramState.images;
+export const stringifyParam = (
+    paramState: ParamState,
+    timelineState?: {
+        enabled: boolean;
+        totalDuration: number;
+        currentTime: number;
+        dateRows: DateRow[];
+        groups: LineGroup[];
+        lines: TimelineLine[];
+        actionRows: ActionRow[];
+        diffs: TimelineDiff[];
+        baseGraph?: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    }
+) => {
+    const { present, past, future, ...param } = paramState;
+    const save: RMPSave = { ...param, ...present, version: CURRENT_VERSION };
+    if (timelineState) {
+        save.timeline = timelineState;
+    }
     return JSON.stringify(save);
 };
 
@@ -908,8 +1001,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any as
-                    | BjsubwayBasicStationAttributes
-                    | BjsubwayIntStationAttributes;
+                    BjsubwayBasicStationAttributes | BjsubwayIntStationAttributes;
                 if (typeof (attr as any).scale !== 'number') {
                     (attr as any).scale = 1;
                     graph.mergeNodeAttributes(node, { [type]: attr });
@@ -1032,12 +1124,4 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
-    /** The unreleased real-map schema starts with the map hidden for existing saves. */
-    77: param =>
-        JSON.stringify({
-            ...JSON.parse(param),
-            version: 78,
-            mapEnabled: false,
-            mapStyle: DEFAULT_MAP_STYLE,
-        }),
 };

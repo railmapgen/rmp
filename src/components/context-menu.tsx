@@ -24,7 +24,6 @@ import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
 import { reconcileSelectedEdges } from '../util/reconcile-ui';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
-import { normalizeEdgeAttributes } from './svgs/lines/lines';
 
 interface ContextMenuProps {
     isOpen: boolean;
@@ -254,9 +253,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             return;
         }
 
-        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
-        dispatch(saveGraph(graph.current.export()));
-        dispatch(refreshEdgesThunk());
+        refreshAndSave();
     });
 
     const handleRotate = useEvent((angle: number) => {

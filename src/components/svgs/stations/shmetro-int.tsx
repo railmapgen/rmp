@@ -1,7 +1,6 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -20,7 +19,6 @@ import {
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
-import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 const NAME_DY_SH_INT = {
@@ -263,11 +261,16 @@ const SHMetroIntAttrsComponent = (props: AttrsProps<ShmetroIntStationAttributes>
             minW: 'full',
         },
         {
-            type: 'custom',
+            type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            component: (
-                <RotateField type={StationType.ShmetroInt} defaultAttributes={defaultShmetroIntStationAttributes} />
-            ),
+            value: attrs.rotate,
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                handleAttrsUpdate(id, {
+                    ...attrs,
+                    rotate: Number(val) as Rotate,
+                });
+            },
             minW: 'full',
         },
     ];
@@ -283,7 +286,6 @@ const shmetroIntStationIcon = (
 
 const shmetroIntStation: Station<ShmetroIntStationAttributes> = {
     component: ShmetroIntStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: shmetroIntStationIcon,
     defaultAttrs: defaultShmetroIntStationAttributes,
     attrsComponent: SHMetroIntAttrsComponent,

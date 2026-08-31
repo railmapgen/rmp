@@ -5,7 +5,6 @@ import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -482,7 +481,6 @@ const gzmtrInt2024StationIcon = (
 
 const gzmtrInt2024Station: Station<GzmtrInt2024StationAttributes> = {
     component: GzmtrInt2024Station,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: gzmtrInt2024StationIcon,
     defaultAttrs: defaultGzmtrInt2024StationAttributes,
     attrsComponent: gzmtrInt2024StationAttrsComponents,

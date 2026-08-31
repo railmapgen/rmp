@@ -1,14 +1,7 @@
 import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
-import { type BezierPathAttributes, isStraightBezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
-import { getBezierEffectiveEndpoints } from '../components/svgs/lines/paths/bezier-geometry';
-import { makePoint } from '../constants/path';
 
 /**
- * Use simple render geometry when an authored path is exactly equivalent to a
- * straight segment.
- *
- * Bezier uses this only for a zero-normal control between its endpoints.
- * Offset-based path types retain their historical auto-simple rules:
+ * Automatically use the simple path under these conditions:
  *   1. offsetFrom and offsetTo are defined and are numbers AND
  *   2. Either offsetFrom and offsetTo are equal and the combination of
  *        slope (k) and type is one of the following cases:
@@ -24,21 +17,6 @@ export const checkSimplePathAvailability = (
     y2: number,
     attrs: NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>
 ): { x1: number; y1: number; x2: number; y2: number; offset: number } | undefined => {
-    if (type === LinePathType.Bezier) {
-        const bezierAttrs = attrs as BezierPathAttributes;
-        if (isStraightBezierPathAttributes(bezierAttrs)) {
-            const effective = getBezierEffectiveEndpoints(makePoint(x1, y1), makePoint(x2, y2), bezierAttrs);
-            return {
-                x1: effective.source.x,
-                y1: effective.source.y,
-                x2: effective.target.x,
-                y2: effective.target.y,
-                offset: 0,
-            };
-        }
-        return;
-    }
-
     // Check if offsetFrom and offsetTo are defined and are numbers.
     if (!('offsetFrom' in attrs) || !('offsetTo' in attrs)) return;
     if (Number.isNaN(attrs['offsetFrom']) || Number.isNaN(attrs['offsetTo'])) return;

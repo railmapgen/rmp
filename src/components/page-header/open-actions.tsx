@@ -1,20 +1,24 @@
 import { Badge, IconButton, Menu, MenuButton, MenuItem, MenuList, useDisclosure } from '@chakra-ui/react';
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
-import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
-import { EdgeAttributes, Events, GraphAttributes, LocalStorageKey, NodeAttributes } from '../../constants/constants';
-import { GlobalAlertId } from '../../constants/global-alerts';
+import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
-import { replaceProject } from '../../redux/project-history';
-import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
+import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { loadTimeline } from '../../redux/timeline/timeline-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
-import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
+import {
+    normalizeTimelineStationFlags,
+    getInitialParam,
+    parseVersionFromSave,
+    RMPSave,
+    upgrade,
+} from '../../util/save';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -22,8 +26,8 @@ import RmpGalleryAppClip from './rmp-gallery-app-clip';
 
 export default function OpenActions() {
     const dispatch = useRootDispatch();
+    const timelineFeatureEnabled = useRootSelector(state => state.app.preference.timelineFeatureEnabled);
     const { t } = useTranslation();
-    const mapStyle = useRootSelector(state => state.param.present.mapStyle);
     const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useDisclosure();
     const [paramToLoad, setParamToLoad] = React.useState<string | null>(null);
     const [versionToLoad, setVersionToLoad] = React.useState<number>(0);
@@ -31,53 +35,88 @@ export default function OpenActions() {
     const size = useWindowSize();
     const { height } = getCanvasSize(size);
 
+    const graph = React.useRef(window.graph);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const [isRmgParamAppClipOpen, setIsRmgParamAppClipOpen] = React.useState(false);
     const [isOpenGallery, setIsOpenGallery] = React.useState(false);
     const [isOpenAarc, setIsOpenAarc] = React.useState(false);
 
+    const refreshAndSave = React.useCallback(() => {
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshNodesThunk());
+        dispatch(refreshEdgesThunk());
+    }, [dispatch, refreshNodesThunk, refreshEdgesThunk, saveGraph, graph]);
+
     const handleNew = () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
-        dispatch(
-            replaceProject({
-                mapEnabled: false,
-                graph,
-                mapStyle,
-                svgViewBoxZoom: 100,
-                svgViewBoxMin: { x: 0, y: 0 },
-            })
-        );
+        dispatch(clearSelected());
+        graph.current.clear();
+        dispatch(setSvgViewBoxZoom(100));
+        dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
+        refreshAndSave();
     };
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, timeline: timelineSave, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
-        const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        nextGraph.import(save.graph);
+        // details panel will complain about unknown nodes or edges if the last selected is not cleared
+        dispatch(clearSelected());
+
+        // reset graph with new data
+        graph.current.clear();
+        graph.current.import(save.graph);
+        if (timelineFeatureEnabled) {
+            normalizeTimelineStationFlags(graph.current);
+        }
 
         // save images to indexedDB if they exist
         if (Array.isArray(images) && images.length > 0) {
-            await saveImagesFromParam(nextGraph, images);
+            await saveImagesFromParam(graph.current, images);
         }
-
-        const { svgViewBoxZoom, svgViewBoxMin } = save;
-        dispatch(
-            replaceProject({
-                mapEnabled: save.mapEnabled,
-                graph: nextGraph.export(),
-                mapStyle: save.mapStyle,
-                svgViewBoxZoom: typeof svgViewBoxZoom === 'number' ? svgViewBoxZoom : 100,
-                svgViewBoxMin:
-                    typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'
-                        ? svgViewBoxMin
-                        : { x: 0, y: 0 },
-            })
-        );
-
         // ensure all server images used in the graph are available in IndexedDB
         dispatch(pullServerImages());
+
+        // hard refresh the canvas
+        refreshAndSave();
+
+        // restore timeline state if present
+        if (timelineSave) {
+            dispatch(
+                loadTimeline({
+                    enabled: timelineSave.enabled,
+                    totalDuration: timelineSave.totalDuration,
+                    currentTime: timelineSave.currentTime,
+                    dateRows: timelineSave.dateRows ?? [],
+                    groups: timelineSave.groups ?? [],
+                    lines: timelineSave.lines ?? [],
+                    actionRows: timelineSave.actionRows ?? [],
+                    diffs: timelineSave.diffs ?? [],
+                    baseGraph: (timelineSave.baseGraph ?? save.graph) as any,
+                })
+            );
+        } else {
+            // No timeline data, disable timeline and clear it
+            dispatch(
+                loadTimeline({
+                    enabled: false,
+                    totalDuration: 60,
+                    currentTime: 0,
+                    dateRows: [],
+                    groups: [],
+                    lines: [],
+                    actionRows: [],
+                    diffs: [],
+                    baseGraph: save.graph as any,
+                })
+            );
+        }
+
+        // load svg view box related settings from the save
+        const { svgViewBoxZoom, svgViewBoxMin } = save;
+        if (typeof svgViewBoxZoom === 'number') dispatch(setSvgViewBoxZoom(svgViewBoxZoom));
+        if (typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number')
+            dispatch(setSvgViewBoxMin(svgViewBoxMin));
     };
 
     const handleConfirmLoad = async () => {
@@ -104,13 +143,7 @@ export default function OpenActions() {
         logger.debug('OpenActions.handleUpload():: received file', file);
 
         if (file?.type !== 'application/json') {
-            dispatch(
-                setGlobalAlert({
-                    id: GlobalAlertId.OpenInvalidFileType,
-                    status: 'error',
-                    message: t('header.open.invalidType'),
-                })
-            );
+            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.invalidType') }));
             logger.error('OpenActions.handleUpload():: Invalid file type! Only file in JSON format is accepted.');
         } else {
             try {
@@ -120,13 +153,7 @@ export default function OpenActions() {
                 setVersionToLoad(version);
                 onConfirmOpen();
             } catch (err) {
-                dispatch(
-                    setGlobalAlert({
-                        id: GlobalAlertId.OpenFileFailed,
-                        status: 'error',
-                        message: t('header.open.unknownError'),
-                    })
-                );
+                dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
                 logger.error(
                     'OpenActions.handleUpload():: Unknown error occurred while parsing the uploaded file',
                     err
@@ -193,9 +220,6 @@ export default function OpenActions() {
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenGallery(true)}>
                         {t('header.open.gallery')}
-                        <Badge ml="1" colorScheme="green">
-                            New
-                        </Badge>
                     </MenuItem>
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>

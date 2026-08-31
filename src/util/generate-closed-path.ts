@@ -10,7 +10,7 @@ import {
     makePoint,
 } from '../constants/path';
 import { reverseEdgePathAttrs } from './edge-path-attrs';
-import { dropInitialMoveTo, isOpenPath } from './path';
+import { dropInitialMoveTo } from './path';
 
 /**
  * Generate a closed SVG area path by concatenating the line paths along a loop.
@@ -50,7 +50,6 @@ export const generateClosedPath = (
         const segment =
             linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) ||
             makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
-        if (!isOpenPath(segment)) return undefined;
 
         if (i === 0) {
             commands = [segment.commands[0], ...dropInitialMoveTo(segment)];

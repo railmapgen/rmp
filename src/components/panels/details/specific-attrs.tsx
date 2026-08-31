@@ -6,10 +6,9 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { makeParallelIndex } from '../../../util/parallel';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles, normalizeEdgeAttributes } from '../../svgs/lines/lines';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
-import { ColorFieldContext } from './color-field';
 
 const nodes = { ...stations, ...miscNodes };
 
@@ -31,15 +30,7 @@ export const NodeSpecificAttributes = () => {
     };
 
     return AttrsComponent ? (
-        <ColorFieldContext.Provider
-            value={{
-                type,
-                attrs,
-                handleAttrsUpdate: nextAttrs => handleAttrsUpdate(id, nextAttrs),
-            }}
-        >
-            <AttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />
-        </ColorFieldContext.Provider>
+        <AttrsComponent id={id} attrs={attrs} handleAttrsUpdate={handleAttrsUpdate} />
     ) : (
         <Text fontSize="xs" m="var(--chakra-space-1)">
             {t('panel.details.unknown.error', { category: t('panel.details.unknown.node') })}
@@ -58,7 +49,7 @@ export const LineSpecificAttributes = () => {
 
     const { type, style, parallelIndex, reconcileId } = window.graph.getEdgeAttributes(id);
     const attrs = (window.graph.getEdgeAttribute(id, type) ?? {}) as any;
-    const PathAttrsComponent = Object.hasOwn(linePaths, type) && linePaths[type].attrsComponent;
+    const PathAttrsComponent = type in linePaths && linePaths[type].attrsComponent;
     const styleAttrs = (window.graph.getEdgeAttribute(id, style) ?? {}) as any;
     const StyleAttrsComponent = style in lineStyles && lineStyles[style].attrsComponent;
     const baseReconciledLineID = getBaseReconciledLineID(window.graph, id as LineId);
@@ -74,14 +65,12 @@ export const LineSpecificAttributes = () => {
     };
     const handlePathAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [type]: attrs });
-        normalizeEdgeAttributes(window.graph, [id as LineId]);
         dispatch(saveGraph(window.graph.export()));
         dispatch(refreshEdgesThunk());
     };
 
     const handleStyleAttrsUpdate = (id: string, attrs: any) => {
         window.graph.mergeEdgeAttributes(id, { [style]: attrs });
-        normalizeEdgeAttributes(window.graph, [id as LineId]);
         dispatch(saveGraph(window.graph.export()));
         dispatch(refreshEdgesThunk());
     };
@@ -120,20 +109,12 @@ export const LineSpecificAttributes = () => {
                         </Box>
                     </Alert>
                 ) : (
-                    <ColorFieldContext.Provider
-                        value={{
-                            type: style,
-                            attrs: styleAttrs,
-                            handleAttrsUpdate: nextAttrs => handleStyleAttrsUpdate(id, nextAttrs),
-                        }}
-                    >
-                        <StyleAttrsComponent
-                            id={id}
-                            attrs={styleAttrs}
-                            handleAttrsUpdate={handleStyleAttrsUpdate}
-                            reconcileId={reconcileId}
-                        />
-                    </ColorFieldContext.Provider>
+                    <StyleAttrsComponent
+                        id={id}
+                        attrs={styleAttrs}
+                        handleAttrsUpdate={handleStyleAttrsUpdate}
+                        reconcileId={reconcileId}
+                    />
                 )
             ) : (
                 <Text fontSize="xs" m="var(--chakra-space-1)">

@@ -35,6 +35,7 @@ import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { canUseLine } from '../util/line-path-availability';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { canReconcileLine } from '../util/reconcile-ui';
+import { getEdgeMileageInKilometers } from '../util/map-distance';
 import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
 import {
@@ -94,7 +95,7 @@ const SvgCanvas = () => {
     };
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
+        preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType, timelineFeatureEnabled },
     } = useRootSelector(state => state.app);
     const { mapEnabled, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
@@ -133,7 +134,9 @@ const SvgCanvas = () => {
         connectableNodesType.includes(graph.current.getNodeAttribute(node, 'type'));
     const getSvgPointerPosition = (event: React.PointerEvent<SVGElement>): PathPoint => {
         const bbox = document.getElementById('canvas')!.getBoundingClientRect();
-        return pointerPosToSVGCoord(event.clientX - bbox.left, event.clientY - bbox.top, svgViewBoxZoom, svgViewBoxMin);
+        const local = { x: event.clientX - bbox.left, y: event.clientY - bbox.top };
+        const converted = pointerPosToSVGCoord(local.x, local.y, svgViewBoxZoom, svgViewBoxMin);
+        return converted;
     };
     const getConnectableNodeFromPointer = (event: React.PointerEvent<SVGElement>): NodeId | undefined => {
         const target = findConnectableTarget(document.elementsFromPoint(event.clientX, event.clientY));
@@ -441,6 +444,13 @@ const SvgCanvas = () => {
                         reconcileId: '',
                         parallelIndex,
                     });
+                    // 里程自动填充：仅当真实地图与动画时间线同时开启时，按地图实际长度写入 mileage，否则沿用原默认（1）逻辑。
+                    if (mapEnabled && timelineFeatureEnabled) {
+                        const mileage = getEdgeMileageInKilometers(graph.current, newLineId);
+                        if (Number.isFinite(mileage) && mileage > 0) {
+                            graph.current.setEdgeAttribute(newLineId, 'mileage', mileage);
+                        }
+                    }
 
                     let nodesChanged = false;
                     if (autoChangeStationType && source.startsWith('stn')) {
@@ -570,6 +580,15 @@ const SvgCanvas = () => {
                 reconcileId: '',
                 parallelIndex,
             });
+            // 分割产生的新线段同样按双视图开启时的实际地图长度自动填充里程，否则沿用原默认逻辑。
+            if (mapEnabled && timelineFeatureEnabled) {
+                for (const splitEdgeId of [firstSplitEdgeId, secondSplitEdgeId]) {
+                    const mileage = getEdgeMileageInKilometers(graph.current, splitEdgeId);
+                    if (Number.isFinite(mileage) && mileage > 0) {
+                        graph.current.setEdgeAttribute(splitEdgeId, 'mileage', mileage);
+                    }
+                }
+            }
             normalizeEdgeAttributes(graph.current, [firstSplitEdgeId, secondSplitEdgeId], 'created');
             graph.current.dropEdge(edge);
             refreshAndSave();

@@ -39,17 +39,21 @@ import {
     setAutoParallel,
     setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
+    setEnableActionDateFormatValidation,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
     setStationNameTranslationMode,
     setTelemetryProject,
+    setTimelineFeatureEnabled,
 } from '../../redux/app/app-slice';
 import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
-import { setMapEnabled } from '../../redux/param/param-slice';
+import { saveGraph, setMapEnabled } from '../../redux/param/param-slice';
+import { normalizeTimelineStationFlags } from '../../util/save';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
-import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
+import { clearTimelineData } from '../../redux/timeline/timeline-slice';
+import { refreshEdgesThunk, refreshNodesThunk, setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { MapStyleSection } from './map-style-section';
@@ -72,6 +76,7 @@ const macKeyStyle: SystemStyleObject = {
 
 const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
+    const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
@@ -85,14 +90,52 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
             autoChangeStationType,
             disableMapPerformanceOptimization,
             disableWarning: { changeType: disableWarningChangeType },
+            timelineFeatureEnabled,
+            enableActionDateFormatValidation,
         },
     } = useRootSelector(state => state.app);
     const {
         keepLastPath,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
-    const dispatch = useRootDispatch();
+    const { mapEnabled } = useRootSelector(state => state.param.present);
+    const mapOptimizationProgress = React.useMemo(
+        () =>
+            isOpen
+                ? getMapOptimizationProgress(document.querySelector<SVGGElement>('[data-map-layer]'))
+                : { optimized: 0, total: 0 },
+        [isOpen]
+    );
+
+    const handleTimelineFeatureToggle = (enabled: boolean) => {
+        dispatch(setTimelineFeatureEnabled(enabled));
+        if (!enabled) {
+            window.graph.forEachNode(node => {
+                if (window.graph.getNodeAttribute(node, 'isStation') !== undefined) {
+                    window.graph.removeNodeAttribute(node, 'isStation');
+                }
+            });
+            window.graph.forEachEdge(edge => {
+                if (window.graph.getEdgeAttribute(edge, 'mileage') !== undefined) {
+                    window.graph.removeEdgeAttribute(edge, 'mileage');
+                }
+            });
+            dispatch(clearTimelineData());
+            dispatch(saveGraph(window.graph.export()));
+            dispatch(refreshNodesThunk());
+            dispatch(refreshEdgesThunk());
+            return;
+        }
+        window.graph.forEachEdge(edge => {
+            const mileage = window.graph.getEdgeAttribute(edge, 'mileage');
+            if (typeof mileage !== 'number' || !Number.isFinite(mileage)) {
+                window.graph.setEdgeAttribute(edge, 'mileage', 1);
+            }
+        });
+        normalizeTimelineStationFlags(window.graph);
+        dispatch(saveGraph(window.graph.export()));
+        dispatch(refreshEdgesThunk());
+    };
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
 
@@ -102,13 +145,6 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
-    const mapOptimizationProgress = React.useMemo(
-        () =>
-            isOpen
-                ? getMapOptimizationProgress(document.querySelector<SVGGElement>('[data-map-layer]'))
-                : { optimized: 0, total: 0 },
-        [isOpen]
-    );
 
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const handleAdditionalTelemetry = (allowTelemetry: boolean) => {
@@ -124,6 +160,10 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     };
     const handleStationNameTranslationModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setStationNameTranslationMode(event.target.value as StationNameTranslationMode));
+    };
+
+    const handleDateFormatToggle = (checked: boolean) => {
+        dispatch(setEnableActionDateFormatValidation(checked));
     };
 
     return (
@@ -245,6 +285,34 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     </Select>
                                 </HStack>
                                 <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                    />
+                                </HStack>
+                                {mapEnabled && (
+                                    <Box mb="1" data-testid="map-performance-preference">
+                                        <HStack>
+                                            <Text flex="1">
+                                                {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                            </Text>
+                                            <Switch
+                                                isChecked={disableMapPerformanceOptimization}
+                                                onChange={({ target: { checked } }) =>
+                                                    dispatch(setDisableMapPerformanceOptimization(checked))
+                                                }
+                                            />
+                                        </HStack>
+                                        <Text color="gray.500" fontSize="sm">
+                                            {t('header.settings.preference.mapPerformanceOptimizationProgress', {
+                                                optimized: mapOptimizationProgress.optimized,
+                                                total: mapOptimizationProgress.total,
+                                            })}
+                                        </Text>
+                                    </Box>
+                                )}
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.gridline')}</Text>
                                     <Switch
                                         isChecked={gridLines}
@@ -284,32 +352,20 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     />
                                 </HStack>
                                 <HStack mb="1">
-                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Text flex="1">{t('header.settings.preference.timelineFeature')}</Text>
                                     <Switch
-                                        isChecked={mapEnabled}
-                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                        isChecked={timelineFeatureEnabled}
+                                        onChange={({ target: { checked } }) => handleTimelineFeatureToggle(checked)}
                                     />
                                 </HStack>
-                                {mapEnabled && (
-                                    <Box mb="1">
-                                        <HStack>
-                                            <Text flex="1">
-                                                {t('header.settings.preference.disableMapPerformanceOptimization')}
-                                            </Text>
-                                            <Switch
-                                                isChecked={disableMapPerformanceOptimization}
-                                                onChange={({ target: { checked } }) =>
-                                                    dispatch(setDisableMapPerformanceOptimization(checked))
-                                                }
-                                            />
-                                        </HStack>
-                                        <Text color="gray.500" fontSize="sm">
-                                            {t('header.settings.preference.mapPerformanceOptimizationProgress', {
-                                                optimized: mapOptimizationProgress.optimized,
-                                                total: mapOptimizationProgress.total,
-                                            })}
-                                        </Text>
-                                    </Box>
+                                {timelineFeatureEnabled && (
+                                    <HStack mb="1">
+                                        <Text flex="1">{t('header.settings.preference.enableActionDateFormat')}</Text>
+                                        <Switch
+                                            isChecked={enableActionDateFormatValidation}
+                                            onChange={e => handleDateFormatToggle(e.currentTarget.checked)}
+                                        />
+                                    </HStack>
                                 )}
                             </VStack>
                         </Box>

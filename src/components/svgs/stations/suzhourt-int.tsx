@@ -2,7 +2,6 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -23,7 +22,6 @@ import {
 } from '../../../util/use-draggable-station-name';
 import { InterchangeField, StationAttributesWithInterchange } from '../../panels/details/interchange-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
-import { RotateField } from '../../panels/details/rotate-field';
 
 const ICON_SIZE = 6;
 
@@ -275,12 +273,15 @@ const SuzhouRTIntAttrsComponent = (props: AttrsProps<SuzhouRTIntStationAttribute
             minW: 'full',
         },
         {
-            type: 'custom',
+            type: 'select',
             label: t('panel.details.stations.common.rotate'),
+            value: attrs.rotate ?? defaultSuzhouRTIntStationAttributes.rotate,
             hidden: (attrs?.transfer?.flat()?.length ?? 0) === 0,
-            component: (
-                <RotateField type={StationType.SuzhouRTInt} defaultAttributes={defaultSuzhouRTIntStationAttributes} />
-            ),
+            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                handleAttrsUpdate(id, attrs);
+            },
             minW: 'full',
         },
     ];
@@ -307,7 +308,6 @@ const suzhouRTIntStationIcon = (
 
 const suzhouRTIntStation: Station<SuzhouRTIntStationAttributes> = {
     component: SuzhouRTIntStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: suzhouRTIntStationIcon,
     defaultAttrs: defaultSuzhouRTIntStationAttributes,
     attrsComponent: SuzhouRTIntAttrsComponent,

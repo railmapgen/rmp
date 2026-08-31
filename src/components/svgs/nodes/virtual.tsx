@@ -1,5 +1,4 @@
 import React from 'react';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
@@ -25,7 +24,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
-            className="removeMe"
+            className="rmp-virtual-node"
         >
             <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
             <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />
@@ -53,7 +52,6 @@ const virtualIcon = (
 
 const virtual: Node<VirtualAttributes> = {
     component: Virtual,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: virtualIcon,
     defaultAttrs: defaultVirtualAttributes,
     attrsComponent,

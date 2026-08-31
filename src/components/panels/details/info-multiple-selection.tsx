@@ -22,9 +22,9 @@ export default function InfoMultipleSection() {
     const graph = React.useRef(window.graph);
     const getVisible = (id: string) =>
         graph.current.hasNode(id)
-            ? graph.current.getNodeAttribute(id, 'visible')
+            ? (graph.current.getNodeAttribute(id, 'visible') ?? true)
             : graph.current.hasEdge(id)
-              ? graph.current.getEdgeAttribute(id, 'visible')
+              ? (graph.current.getEdgeAttribute(id, 'visible') ?? true)
               : true;
 
     const selectionKey = [...selected].sort().join('\n');
@@ -46,6 +46,14 @@ export default function InfoMultipleSection() {
     const visibilityState = {
         isChecked: selected.size > 0 && hiddenCount === 0,
         isIndeterminate: visibleCount > 0 && hiddenCount > 0,
+    };
+
+    const stationValues = [...selected]
+        .filter(id => graph.current.hasNode(id))
+        .map(id => graph.current.getNodeAttribute(id, 'isStation') ?? id.startsWith('stn_'));
+    const stationState = {
+        isChecked: stationValues.length > 0 && stationValues.every(Boolean),
+        isIndeterminate: stationValues.some(Boolean) && stationValues.some(value => !value),
     };
 
     const handleVisibleChange = (checked: boolean) => {
@@ -70,7 +78,9 @@ export default function InfoMultipleSection() {
 
         selected.forEach(id => {
             const visible =
-                nextState === 'mixed' ? initialVisibilityRef.current!.visibleById.get(id)! : nextState === 'visible';
+                nextState === 'mixed'
+                    ? (initialVisibilityRef.current!.visibleById.get(id) ?? true)
+                    : nextState === 'visible';
             if (graph.current.hasNode(id)) {
                 graph.current.setNodeAttribute(id, 'visible', visible);
                 hasNode = true;
@@ -84,6 +94,19 @@ export default function InfoMultipleSection() {
         dispatch(saveGraph(graph.current.export()));
         if (hasNode) dispatch(refreshNodesThunk());
         if (hasEdge) dispatch(refreshEdgesThunk());
+    };
+
+    const handleStationFlagChange = (isStation: boolean) => {
+        let hasNode = false;
+        selected.forEach(id => {
+            if (!graph.current.hasNode(id)) return;
+            graph.current.setNodeAttribute(id, 'isStation', isStation);
+            hasNode = true;
+        });
+        if (hasNode) {
+            dispatch(saveGraph(graph.current.export()));
+            dispatch(refreshNodesThunk());
+        }
     };
 
     const getName = (id: string) => {
@@ -133,6 +156,16 @@ export default function InfoMultipleSection() {
                 >
                     {t('panel.details.info.visible')}
                 </Checkbox>
+                <HStack width="100%">
+                    <Checkbox
+                        isChecked={stationState.isChecked}
+                        isIndeterminate={stationState.isIndeterminate}
+                        onChange={e => handleStationFlagChange(e.target.checked)}
+                    />
+                    <Heading as="h5" size="xs" flex={1}>
+                        {t('timeline.isStation', '视为车站')}
+                    </Heading>
+                </HStack>
                 <HStack w="100%">
                     <Heading as="h5" size="xs" w="100%">
                         {t('panel.details.multipleSelection.show')}

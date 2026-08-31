@@ -191,10 +191,7 @@ const perpendicularPath: LinePath<PerpendicularPathAttributes> = {
     icon: perpendicularIcon,
     defaultAttrs: defaultPerpendicularPathAttributes,
     attrsComponent,
-    metadata: {
-        displayName: 'panel.details.lines.perpendicular.displayName',
-        supportsReconcile: true,
-    },
+    metadata: { displayName: 'panel.details.lines.perpendicular.displayName' },
 };
 
 export default perpendicularPath;

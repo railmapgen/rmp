@@ -9,6 +9,9 @@ import {
     Button,
     Checkbox,
     Flex,
+    HStack,
+    Icon,
+    Link,
     SystemStyleObject,
     Text,
     Tooltip,
@@ -17,7 +20,8 @@ import {
 import { LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdExpandLess, MdExpandMore } from 'react-icons/md';
+import { IconContext } from 'react-icons';
+import { MdCode, MdExpandLess, MdExpandMore, MdOpenInNew } from 'react-icons/md';
 import { getLinePathAndStyle, RuntimeMode, Theme } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../../constants/master';
@@ -33,13 +37,12 @@ import {
 } from '../../../redux/app/app-slice';
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
-import { canUseLineCombination, requiresSubscriptionForLinePath } from '../../../util/line-path-availability';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { canUseLine } from '../../../util/line-path-availability';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
 import FavoriteButton from './favorite-button';
-import LearnHowToAdd from './learn-how-to-add';
 import { localizedLineStyles, localizedMiscNodes, localizedStations } from './localized-order';
 import { LineStyleLeftIcon } from './line-style-left-icon';
 
@@ -76,7 +79,7 @@ const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
     const {
         preference: {
             toolsPanel: { expand: isToolsExpanded, showOnlyFavorites },
@@ -89,7 +92,6 @@ const ToolsPanel = () => {
         count: { masters: masterNodesCount },
     } = useRootSelector(state => state.runtime);
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
-    const availableLinePathTypes = Object.values(LinePathType);
 
     const handleThemeApplied = React.useCallback((theme: Theme) => {
         dispatch(setTheme(theme));
@@ -106,36 +108,33 @@ const ToolsPanel = () => {
 
     const handleStation = (type: StationType) => dispatch(setMode(`station-${type}`));
 
+    const isStyleCompatible = (styleType: LineStyleType, pathType: LinePathType): boolean => {
+        const style = lineStyles[styleType];
+        const pathSupported = style.metadata.supportLinePathType.includes(pathType);
+        const subscriptionOK = !style.isPro || activeSubscriptions.RMP_CLOUD;
+        return pathSupported && subscriptionOK;
+    };
+    const isPathCompatible = (pathType: LinePathType, styleType: LineStyleType): boolean => {
+        const path = linePaths[pathType];
+        const styleSupported = lineStyles[styleType].metadata.supportLinePathType.includes(pathType);
+        const subscriptionOK = !path.isPro || activeSubscriptions.RMP_CLOUD;
+        return styleSupported && subscriptionOK;
+    };
     const handleLine = (pathType: LinePathType) => {
         let { style: currentStyle } = getLinePathAndStyle(mode);
         // When user click the background and mode becomes 'free', we try to recover last used style.
         if (!currentStyle && lastTool) currentStyle = getLinePathAndStyle(lastTool as RuntimeMode).style;
-        if (currentStyle && canUseLineCombination(pathType, currentStyle, mapEnabled, activeSubscriptions.RMP_CLOUD)) {
-            dispatch(setMode(`line-${pathType}/${currentStyle}`));
-            return;
-        }
-        if (
-            currentStyle === LineStyleType.SingleColor ||
-            !canUseLineCombination(pathType, LineStyleType.SingleColor, mapEnabled, activeSubscriptions.RMP_CLOUD)
-        ) {
-            return;
-        }
-        dispatch(setMode(`line-${pathType}/${LineStyleType.SingleColor}`));
+        // If current style is compatible with new path, keep it; otherwise use SingleColor
+        const newStyle =
+            currentStyle && isStyleCompatible(currentStyle, pathType) ? currentStyle : LineStyleType.SingleColor;
+        dispatch(setMode(`line-${pathType}/${newStyle}`));
     };
     const handleLineStyle = (styleType: LineStyleType) => {
         let { path: currentPath } = getLinePathAndStyle(mode);
         // When user click the background and mode becomes 'free', we try to recover last used path.
         if (!currentPath && lastTool) currentPath = getLinePathAndStyle(lastTool as RuntimeMode).path;
-        // If current path is incompatible, use the first permitted path for this style.
-        const newPath =
-            currentPath && canUseLineCombination(currentPath, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
-                ? currentPath
-                : availableLinePathTypes.find(
-                      pathType =>
-                          pathType !== currentPath &&
-                          canUseLineCombination(pathType, styleType, mapEnabled, activeSubscriptions.RMP_CLOUD)
-                  );
-        if (!newPath) return;
+        // If current path is compatible with new style, keep it; otherwise use Diagonal
+        const newPath = currentPath && isPathCompatible(currentPath, styleType) ? currentPath : LinePathType.Diagonal;
         dispatch(setMode(`line-${newPath}/${styleType}`));
     };
 
@@ -239,59 +238,51 @@ const ToolsPanel = () => {
                                 </Text>
                             </Flex>
 
-                            {availableLinePathTypes.map(type => {
-                                const isProLinePath = requiresSubscriptionForLinePath(type, mapEnabled);
-                                const canUseCurrentStyle =
-                                    !!currentStyle &&
-                                    canUseLineCombination(
+                            {Object.values(LinePathType)
+                                .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
+                                .map(type => {
+                                    const isProLinePath = !!linePaths[type].isPro;
+                                    // 线型按钮不应受当前样式限制。若当前样式不支持目标线型，handleLine 会切换到单色样式，
+                                    // 不应因此把另一个线型显示为不可用。
+                                    const isLinePathDisabled = !canUseLine(
                                         type,
-                                        currentStyle,
+                                        LineStyleType.SingleColor,
                                         mapEnabled,
                                         activeSubscriptions.RMP_CLOUD
                                     );
-                                const isLinePathDisabled =
-                                    !canUseCurrentStyle &&
-                                    (currentStyle === LineStyleType.SingleColor ||
-                                        !canUseLineCombination(
-                                            type,
-                                            LineStyleType.SingleColor,
-                                            mapEnabled,
-                                            activeSubscriptions.RMP_CLOUD
-                                        ));
-
-                                return (
-                                    <Flex key={type} w="100%" align="stretch">
-                                        <Box
-                                            w="4px"
-                                            bg={currentPath === type ? 'blue.500' : 'transparent'}
-                                            transition="background-color 0.2s"
-                                        />
-                                        <Button
-                                            aria-label={type}
-                                            leftIcon={linePaths[type].icon}
-                                            onClick={() => handleLine(type)}
-                                            variant="ghost"
-                                            isDisabled={isLinePathDisabled}
-                                            sx={buttonStyle}
-                                            flex={1}
-                                        >
-                                            {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                            {isTextShown && isProLinePath ? (
-                                                <Tooltip label={t('header.settings.pro')}>
-                                                    <Badge
-                                                        ml="1"
-                                                        color="gray.50"
-                                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                        mr="auto"
-                                                    >
-                                                        PRO
-                                                    </Badge>
-                                                </Tooltip>
-                                            ) : undefined}
-                                        </Button>
-                                    </Flex>
-                                );
-                            })}
+                                    return (
+                                        <Flex key={type} w="100%" align="stretch">
+                                            <Box
+                                                w="4px"
+                                                bg={currentPath === type ? 'blue.500' : 'transparent'}
+                                                transition="background-color 0.2s"
+                                            />
+                                            <Button
+                                                aria-label={type}
+                                                leftIcon={linePaths[type].icon}
+                                                onClick={() => handleLine(type)}
+                                                variant="ghost"
+                                                isDisabled={isLinePathDisabled}
+                                                sx={buttonStyle}
+                                                flex={1}
+                                            >
+                                                {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
+                                                {isTextShown && isProLinePath ? (
+                                                    <Tooltip label={t('header.settings.pro')}>
+                                                        <Badge
+                                                            ml="1"
+                                                            color="gray.50"
+                                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                                            mr="auto"
+                                                        >
+                                                            PRO
+                                                        </Badge>
+                                                    </Tooltip>
+                                                ) : undefined}
+                                            </Button>
+                                        </Flex>
+                                    );
+                                })}
 
                             <Flex w="100%" align="stretch">
                                 <Box
@@ -300,7 +291,7 @@ const ToolsPanel = () => {
                                     transition="background-color 0.2s"
                                 />
                                 <Button
-                                    aria-label={MiscNodeType.Virtual}
+                                    aria-label={t(miscNodes[MiscNodeType.Virtual].metadata.displayName)}
                                     leftIcon={miscNodes[MiscNodeType.Virtual].icon}
                                     onClick={() => handleMiscNode(MiscNodeType.Virtual)}
                                     variant="ghost"
@@ -334,20 +325,11 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={styleType}
+                                        aria-label={t(lineStyles[styleType].metadata.displayName)}
                                         leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
-                                        isDisabled={
-                                            !availableLinePathTypes.some(pathType =>
-                                                canUseLineCombination(
-                                                    pathType,
-                                                    styleType,
-                                                    mapEnabled,
-                                                    activeSubscriptions.RMP_CLOUD
-                                                )
-                                            )
-                                        }
+                                        isDisabled={currentPath ? !isStyleCompatible(styleType, currentPath) : false}
                                         sx={buttonStyle}
                                         flex={1}
                                     >
@@ -400,7 +382,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(stations[type].metadata.displayName)}
                                         leftIcon={stations[type].icon}
                                         onClick={() => handleStation(type)}
                                         variant="ghost"
@@ -443,7 +425,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(miscNodes[type].metadata.displayName)}
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
                                         variant="ghost"
@@ -483,3 +465,30 @@ const ToolsPanel = () => {
 };
 
 export default ToolsPanel;
+
+const LearnHowToAdd = (props: { type: 'station' | 'misc-node' | 'line-styles'; expand: boolean }) => {
+    const { type, expand } = props;
+    const { t } = useTranslation();
+
+    const doc = type === 'misc-node' ? 'nodes' : type;
+
+    return (
+        <HStack>
+            <IconContext.Provider value={{ style: { padding: 5 }, size: '40px' }}>
+                <MdCode />
+            </IconContext.Provider>
+            {expand && (
+                <>
+                    <Link
+                        color="teal.500"
+                        href={`https://github.com/railmapgen/rmp/blob/main/docs/${doc}.md`}
+                        isExternal
+                    >
+                        {t(`panel.tools.learnHowToAdd.${type}`)}
+                    </Link>
+                    <Icon as={MdOpenInNew} color="teal.500" mr="auto" />
+                </>
+            )}
+        </HStack>
+    );
+};

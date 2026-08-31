@@ -10,14 +10,6 @@ import { render } from '../../../../test-utils';
 import generic, { GenericAttributes } from './generic';
 
 const GenericAttrsComponent = generic.attrsComponent;
-const freeAccountState = {
-    ...accountInitialState,
-    state: 'logged-out' as const,
-    activeSubscriptions: {
-        RMP_CLOUD: false,
-        RMP_EXPORT: false,
-    },
-};
 
 const makeAttrs = (count: number): GenericAttributes => ({
     layers: Array.from({ length: count }, (_, index) => ({
@@ -36,7 +28,7 @@ describe('Generic attrs component', () => {
         render(
             <GenericAttrsComponent id="line_test" reconcileId="" attrs={makeAttrs(1)} handleAttrsUpdate={vi.fn()} />,
             {
-                store: createStore({ account: freeAccountState }),
+                store: createStore(),
             }
         );
 
@@ -49,7 +41,7 @@ describe('Generic attrs component', () => {
         render(
             <GenericAttrsComponent id="line_test" reconcileId="" attrs={makeAttrs(2)} handleAttrsUpdate={vi.fn()} />,
             {
-                store: createStore({ account: freeAccountState }),
+                store: createStore(),
             }
         );
 

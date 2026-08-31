@@ -1,7 +1,7 @@
 import { map_tile_base_url } from '../constants/server';
 
 export const MAP_TILE_SIZE = 256;
-export const MAP_RASTER_TILE_SIZE = 4096;
+export const MAP_RASTER_TILE_SIZE = 2048;
 
 /**
  * All map levels are projected into one Web Mercator pixel space before they
@@ -11,9 +11,8 @@ export const MAP_RASTER_TILE_SIZE = 4096;
 export const MAP_COMMON_ZOOM = 13;
 
 /**
- * Prefer the largest bundle containing a tile. The order is significant: it
- * reduces request count in dense areas while still allowing smaller bundles
- * around sparse dataset boundaries.
+ * Published bundle dimensions. The resolver chooses the smallest available
+ * bundle for the visible tile to keep initial SVG downloads bounded.
  */
 export const MAP_BUNDLE_SIDES = [8, 4, 2, 1] as const;
 
@@ -51,8 +50,10 @@ export const MAP_MAX_VIEWBOX_ZOOM = 10_000;
 // One off-screen tile prevents blank edges while a pan is waiting for its next animation frame.
 export const MAP_TILE_BUFFER = 1;
 
-// Map data is fetched outside React; explicit limits keep rapid pans from exhausting network and memory resources.
-export const MAP_MAX_FETCHES = 16;
+// Overview bundles can contain several megabytes of SVG. Restricting concurrency prevents the browser from
+// aborting long-running body reads while the viewport is expanded to the national overview.
+export const MAP_MAX_FETCHES = 3;
+export const MAP_TILE_REQUEST_TIMEOUT_MS = 180_000;
 export const MAP_BUNDLE_CACHE_MAX_BYTES = 64 * 1024 * 1024;
 export const MAP_TILE_CACHE_MAX_BYTES = 32 * 1024 * 1024;
 export const MAP_TILE_CACHE_MAX_ENTRIES = 512;

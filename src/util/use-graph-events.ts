@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useRootDispatch } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
+import { syncCurrentNodeVersion } from './timeline';
 
 /**
  * This hook register the events callback of window.graph
@@ -11,8 +12,11 @@ export const useGraphEvents = () => {
     const graph = useRef(window.graph);
 
     useEffect(() => {
-        function onEvent(payload: any) {
-            dispatch(saveGraph(graph.current.export()));
+        function onEvent(nodeId?: string) {
+            if (nodeId && window.graph.hasNode(nodeId)) {
+                syncCurrentNodeVersion(window.graph, nodeId);
+            }
+            dispatch(saveGraph(window.graph.export()));
         }
 
         // Add event listener
@@ -24,9 +28,12 @@ export const useGraphEvents = () => {
         // Call handler right away so state gets updated with initial window size
         onEvent(undefined);
 
-        // Remove event listener on cleanup
+        // Remove only the listeners registered by this hook
         return () => {
-            graph.current.removeAllListeners();
+            graph.current.off('nodeAdded', onEvent);
+            graph.current.off('edgeAdded', onEvent);
+            graph.current.off('nodeAttributesUpdated', onEvent);
+            graph.current.off('edgeAttributesUpdated', onEvent);
         };
     }, []); // Empty array ensures that effect is only run on mount
 };

@@ -3,7 +3,6 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -411,7 +410,6 @@ const gzmtrBasicStationIcon = (
 
 const gzmtrBasicStation: Station<GzmtrBasicStationAttributes> = {
     component: GzmtrBasicStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: gzmtrBasicStationIcon,
     defaultAttrs: defaultGzmtrBasicStationAttributes,
     attrsComponent: gzmtrBasicStationAttrsComponents,

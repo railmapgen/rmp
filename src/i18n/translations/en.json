@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "Loading map...",
+        "loadError": "Unable to load the geographic map.",
+        "zoomInToEdit": "Zoom in to edit the map.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "enabled": "Show",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": { "title": "Railways", "metro": "Metro", "national": "National railway" },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show all labels",
+                "sizeScale": "Size scale",
+                "color": "Text",
+                "strokeColor": "Outline",
+                "groups": {
+                    "places": "Places",
+                    "roads": "Roads",
+                    "buildings": "Buildings",
+                    "areas": "Areas",
+                    "transport": "Transport"
+                },
+                "categories": {
+                    "place-major": "Major places",
+                    "place-medium": "Medium places",
+                    "place-minor": "Minor places",
+                    "road-arterial": "Arterial roads",
+                    "road-collector": "Collector roads",
+                    "building": "Buildings",
+                    "area-water": "Water",
+                    "area-park": "Parks",
+                    "area-grass": "Grass",
+                    "area-forest": "Forests",
+                    "area-farmland": "Farmland",
+                    "area-cemetery": "Cemeteries",
+                    "area-residential": "Residential areas",
+                    "area-commercial": "Commercial areas",
+                    "area-industrial": "Industrial areas",
+                    "area-education": "Education",
+                    "area-healthcare": "Healthcare",
+                    "transport-airport": "Airports",
+                    "transport-rail": "Railway stations",
+                    "transport-metro": "Metro stations",
+                    "transport-platform": "Platforms",
+                    "transport-entrance": "Entrances"
+                }
+            }
+        }
+    },
     "color": "Color",
     "warning": "Warning",
     "error": "Error",
@@ -9,6 +69,10 @@
     "pasteAttrs": "Paste Specific Attributes",
     "remove": "Remove",
     "close": "Close",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "back": "Back",
+    "ok": "OK",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
 
@@ -23,6 +87,7 @@
                 "miscellaneousNodes": "Miscellaneous Nodes"
             },
             "select": "Select",
+            "menu": "Toggle tools panel",
             "learnHowToAdd": {
                 "station": "Learn how to add your stations!",
                 "misc-node": "Learn how to add your nodes!",
@@ -473,7 +538,6 @@
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
-                    "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
@@ -584,6 +648,36 @@
                     "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
                     "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along offset",
+                    "normal": "Normal offset",
+                    "sourceOffset": "Source endpoint offset",
+                    "targetOffset": "Target endpoint offset",
+                    "sourceOffsetX": "Source endpoint X offset",
+                    "sourceOffsetY": "Source endpoint Y offset",
+                    "targetOffsetX": "Target endpoint X offset",
+                    "targetOffsetY": "Target endpoint Y offset",
+                    "linkedOffset": "Link endpoint offsets"
+                },
+                "freeform": {
+                    "displayName": "Freeform curve",
+                    "controlPointHint": "Draw a line by dragging through the desired control points.",
+                    "outlineSettingsUnavailable": "Outline settings are not available for freeform paths.",
+                    "smoothing": "Smoothing",
+                    "widthStops": "Width stops",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "Position (%)",
+                    "widthStopWidth": "Width",
+                    "baseWidthHint": "Width varies along the path.",
+                    "startCap": "Start cap",
+                    "endCap": "End cap",
+                    "round": "Round",
+                    "flat": "Flat",
+                    "arrow": "Arrow",
+                    "arrowLength": "Arrow length",
+                    "arrowWidth": "Arrow width"
+                },
                 "simple": {
                     "displayName": "Simple path",
                     "offset": "Offset"
@@ -599,36 +693,6 @@
                 },
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
-                },
-                "bezier": {
-                    "displayName": "Bezier curve",
-                    "along": "Along position",
-                    "normal": "Normal offset",
-                    "sourceOffset": "Source offset",
-                    "targetOffset": "Target offset",
-                    "linkedOffset": "Linked endpoint offset",
-                    "sourceOffsetX": "Source X offset",
-                    "sourceOffsetY": "Source Y offset",
-                    "targetOffsetX": "Target X offset",
-                    "targetOffsetY": "Target Y offset"
-                },
-                "freeform": {
-                    "displayName": "Freeform path",
-                    "outlineSettingsUnavailable": "Variable width and start/end cap settings are not available yet.",
-                    "controlPointHint": "Drag a blue control point to adjust the path. Double-click the path to add a control point there, or right-click a blue control point to remove it.",
-                    "widthStops": "Width stops",
-                    "widthStopIndex": "#",
-                    "widthStopPosition": "Position (%)",
-                    "widthStopWidth": "Width (px)",
-                    "baseWidthHint": "5px is the baseline line width.",
-                    "smoothing": "Smoothing",
-                    "startCap": "Start cap",
-                    "endCap": "End cap",
-                    "round": "Round",
-                    "flat": "Flat",
-                    "arrow": "Arrow",
-                    "arrowLength": "Arrow length",
-                    "arrowWidth": "Arrow width"
                 },
                 "singleColor": {
                     "displayName": "Single color style"
@@ -783,6 +847,25 @@
             },
             "footer": {
                 "duplicate": "Duplicate"
+            },
+            "nodeVersion": {
+                "title": "Historical Versions",
+                "current": "(current)",
+                "rename": "Rename",
+                "apply": "Apply",
+                "remove": "Delete",
+                "add": "Add New Version",
+                "placing": "Place this version's node...",
+                "pleaseSelectNode": "Please select the new version node",
+                "placingNew": "Editing this node. Click OK when done.",
+                "placingNewWithId": "Editing node {{id}}. Click OK when done.",
+                "nameVersion": "Name Version",
+                "namePlaceholder": "Enter version name",
+                "enterName": "Enter Version Name",
+                "enterNameDesc": "Enter a name for the new version (optional, default name will be used if left empty)",
+                "versionName": "Version Name",
+                "versionNotFound": "Version does not exist or cannot be retrieved",
+                "applySuccess": "Applied version {version}"
             }
         }
     },
@@ -869,13 +952,62 @@
             "disabledScaleOptionsSolution": "<link1>Subscribe</link1> and <link2>download</link2> our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
             "isSystemFontsOnly": "Use system font only (font display may vary).",
+            "shareInfo": "Remove watermark (when I share this image, I will include <1>Rail Map Painter</1> and its link).",
             "shareInfo1": "I will attach ",
             "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",
             "termsAndConditionsInfo": "I agree to ",
             "period": ".",
             "rmpInfoSpecificNodeExists": "Some nodes require this info to be displayed.",
-            "confirm": "Download"
+            "confirm": "Download",
+            "video": "Export video",
+            "new": "New",
+            "videoExport": {
+                "title": "Export Video",
+                "fps": "Frames per second (FPS)",
+                "duration": "Duration (seconds)",
+                "quality": "Video quality",
+                "generating": "Generating video...",
+                "progress": "Progress: {{progress}}%",
+                "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
+                "shareInfo1": "I will attach ",
+                "shareInfo2": " and its link when I share this video.",
+                "format": "Video Format",
+                "error": "Video export failed. Please try again.",
+                "closeConfirmTitle": "Export in progress",
+                "closeConfirmDesc": "Video is being exported. Please choose an action:",
+                "cancelExport": "Cancel Export",
+                "backgroundExport": "Export in Background",
+                "preview": "Preview",
+                "previewTitle": "Video Preview",
+                "previewDesc": "Click anywhere on the slider to preview the animation at any moment.",
+                "previewPlay": "Play",
+                "previewPause": "Pause",
+                "previewLoading": "Rendering…",
+                "previewFullscreen": "Fullscreen",
+                "jumpToAction": "Jump to action",
+                "previousAction": "Previous action",
+                "nextAction": "Next action",
+                "actionOption": "Action {{index}}: {{type}} ({{remark}})",
+                "actionOptionType": "Action {{index}}: {{type}}",
+                "actionOptionWait": "Action {{index}}: {{type}} ({{duration}} seconds)",
+                "noRemark": "No remark"
+            }
+        },
+        "timeline": {
+            "title": "Animation Timeline",
+            "empty": "No timeline entries. Click \"Add Node\" to start.",
+            "addSegment": "Add Node",
+            "clearAll": "Clear All",
+            "pickStart": "Click a node on the canvas as start...",
+            "pickEnd": "Click a node on the canvas as end...",
+            "selectTheme": "Select a line:",
+            "noPath": "No path found between the selected nodes.",
+            "unadded": "{{count}} node(s) not in timeline",
+            "addStationOnly": "Add this node only",
+            "reverse": "Reverse",
+            "reverseSelected": "Reverse selected",
+            "reversed": "Reversed"
         },
         "donation": {
             "title": "Donation",
@@ -912,7 +1044,7 @@
             },
             "preference": {
                 "title": "Preference",
-                "mapEnabled": "Show geographic map layer",
+                "map": "Show geographic map",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
@@ -933,9 +1065,9 @@
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
-                "disableMapPerformanceOptimization": "Disable map performance optimization",
-                "mapPerformanceOptimizationProgress": "Optimized: {{optimized}}/{{total}}",
-                "disableWarningChangeType": "Disable warnings when changing station or line types"
+                "disableWarningChangeType": "Disable warnings when changing station or line types",
+                "timelineFeature": "Enable Animation Timeline feature",
+                "enableActionDateFormat": "Enable action date format validation"
             },
             "shortcuts": {
                 "title": "Shortcuts",
@@ -1050,8 +1182,8 @@
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
-            "zulip": "Zulip community",
-            "zulipContent": "Join our community on Zulip!"
+            "slack": "Slack group",
+            "slackContent": "Chat in these Slack channels!"
         }
     },
 
@@ -1082,69 +1214,88 @@
         }
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
-    "map": {
-        "loading": "Loading map",
-        "loadError": "Unable to load the map background.",
-        "zoomInToEdit": "Zoom in to edit the map.",
-        "style": {
-            "title": "Map style",
-            "reset": "Reset",
+    "timeline": {
+        "editor": {
+            "title": "Animation Timeline"
+        },
+        "totalDuration": "Total Duration",
+        "second": "s",
+        "undo": "Undo",
+        "redo": "Redo",
+        "lines": "Line List",
+        "actions": "Actions",
+        "segments": "seg",
+        "segment": "Segment",
+        "addLine": "Add Line",
+        "addAction": "Add Action",
+        "addSegment": "Add Segment",
+        "noGroups": "No lines",
+        "noSegments": "No segments",
+        "noActions": "No actions",
+        "addBelow": "Add Below",
+        "drag": "Drag",
+        "newLine": "New Line",
+        "modify": "Modify",
+        "elements": "Elements",
+        "addElement": "Add Element",
+        "reverseAll": "Reverse All",
+        "noElements": "No elements. Click \"Add Element\"",
+        "pickElement": "Click an element on the canvas to add",
+        "addSegmentPath": "Add Path",
+        "pickStartNode": "Click a start node on the canvas",
+        "pickEndNode": "Click an end node on the canvas",
+        "selectTheme": "Select Line Color",
+        "selectThemeHint": "Select the line color for the path",
+        "noLines": "No line segments",
+        "start": "Start",
+        "end": "End",
+        "isStation": "Treat as Station",
+        "mileage": "Mileage",
+        "mileageAutoFill": "Auto-fill from map length",
+        "mileageAutoFillDisabled": "Enable the geographic map to auto-fill the actual length",
+        "savedAtTimePoint": "Changes saved to current time point",
+        "futurePointsAffected": "Future time points will be affected",
+        "attrs": {
+            "title": "Timeline Attributes"
+        },
+        "line": {
+            "name": "Line Name",
+            "color": "Color"
+        },
+        "action": {
             "type": "Type",
-            "enabled": "Show",
-            "widthScale": "Width scale",
-            "roads": {
-                "title": "Roads",
-                "casingColor": "Outline",
-                "color": "Surface",
-                "path": "Path",
-                "local": "Local",
-                "collector": "Collector",
-                "arterial": "Arterial"
-            },
-            "rails": {
-                "title": "Railways",
-                "metro": "Metro",
-                "national": "National railway"
-            },
-            "labels": {
-                "title": "Labels",
-                "enabled": "Show all labels",
-                "sizeScale": "Size scale",
-                "color": "Text",
-                "strokeColor": "Outline",
-                "groups": {
-                    "places": "Places",
-                    "roads": "Roads",
-                    "buildings": "Buildings",
-                    "areas": "Areas",
-                    "transport": "Transport"
-                },
-                "categories": {
-                    "place-major": "Major places",
-                    "place-medium": "Medium places",
-                    "place-minor": "Minor places",
-                    "road-arterial": "Arterial roads",
-                    "road-collector": "Collector roads",
-                    "building": "Buildings",
-                    "area-water": "Water",
-                    "area-park": "Parks",
-                    "area-grass": "Grass",
-                    "area-forest": "Forests",
-                    "area-farmland": "Farmland",
-                    "area-cemetery": "Cemeteries",
-                    "area-residential": "Residential areas",
-                    "area-commercial": "Commercial areas",
-                    "area-industrial": "Industrial areas",
-                    "area-education": "Education",
-                    "area-healthcare": "Healthcare",
-                    "transport-airport": "Airports",
-                    "transport-rail": "Railway stations",
-                    "transport-metro": "Metro stations",
-                    "transport-platform": "Platforms",
-                    "transport-entrance": "Entrances"
-                }
-            }
+            "open": "Open",
+            "close": "Close",
+            "overview": "Overview",
+            "wait": "Wait",
+            "focus": "Focus",
+            "focusTargetMissing": "No following target segment for focus",
+            "remark": "Remark",
+            "lineSegment": "Target Segment",
+            "selectSegment": "Select Segment",
+            "duration": "Duration",
+            "activeLines": "Active Lines",
+            "selectLines": "Select Lines",
+            "selectActiveLines": "Select Active Lines",
+            "unsaved": "Unsaved",
+            "invalidDateFormat": "Invalid date format. Please enter YYYY-MM-DD, or disable date format validation in Settings",
+            "dateFormatEnabled": "Date format validation enabled. Only YYYY-MM-DD format is accepted",
+            "batchInvalidDateFormat": "Auto-cleared {{count}} date(s) that do not conform to YYYY-MM-DD format"
+        },
+        "player": {
+            "play": "Play",
+            "stop": "Stop",
+            "pause": "Pause",
+            "export": "Export Video",
+            "stations": "Stations",
+            "mileage": "Mileage",
+            "date": "Date",
+            "activeLines": "Active Lines",
+            "bad": "This style is not yet supported",
+            "noEdges": "No drawable edges in timeline",
+            "prepare": "Preparing..."
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
 }

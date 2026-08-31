@@ -36,6 +36,10 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
     const [appClipId] = React.useState(crypto.randomUUID());
     const [isLoaded, setIsLoaded] = React.useState(false);
 
+    // Use the same-origin relative path so the Vite dev-server proxy (and the
+    // production same-host deployment) serves rmg-palette from the SAME origin.
+    // BroadcastChannel only works between same-origin documents — an absolute
+    // cross-origin URL (https://railmapgen.org/...) silently breaks LOADED/CLOSE/SELECT.
     const frameUrl =
         '/rmg-palette/#/picker?' +
         new URLSearchParams({
@@ -64,14 +68,17 @@ export default function RmgPaletteAppClip(props: RmgPaletteAppClip) {
 
         return () => {
             channel.close();
+            channelRef.current = undefined;
         };
     }, []);
 
     React.useEffect(() => {
-        if (defaultTheme) {
-            channelRef.current?.postMessage({ event: 'OPEN', data: defaultTheme });
-        }
-    }, [isLoaded, defaultTheme?.toString()]);
+        if (!isOpen || !isLoaded || !defaultTheme) return;
+        const message = { event: 'OPEN', data: [...defaultTheme] as Theme };
+        channelRef.current?.postMessage(message);
+        const retryId = window.setTimeout(() => channelRef.current?.postMessage(message), 100);
+        return () => window.clearTimeout(retryId);
+    }, [isOpen, isLoaded, JSON.stringify(defaultTheme)]);
 
     return (
         <RmgAppClip size="md" isOpen={isOpen} onClose={onClose} sx={styles}>

@@ -1,6 +1,5 @@
 import { Alert, AlertIcon, CloseButton, Link } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
-import { GlobalAlertId } from '../../constants/global-alerts';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { closeGlobalAlert } from '../../redux/runtime/runtime-slice';
 
@@ -19,21 +18,25 @@ export default function GlobalAlerts() {
 
     return (
         <>
-            {Object.entries(globalAlerts).map(([id, { status, message, url, linkedApp }]) => (
-                <Alert key={id} status={status} variant="solid" size="xs" pl={3} pr={1} py={0} zIndex="1">
-                    <AlertIcon />
-                    {linkedApp ? (
-                        <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>
-                    ) : url ? (
-                        <Link href={url} target="_blank">
-                            {message}
-                        </Link>
-                    ) : (
-                        message
-                    )}
-                    <CloseButton ml="auto" onClick={() => dispatch(closeGlobalAlert(id as GlobalAlertId))} />
-                </Alert>
-            ))}
+            {Object.entries(globalAlerts).map(([id, alert]) => {
+                if (!alert) return null;
+                const { status, message, url, linkedApp } = alert;
+                return (
+                    <Alert key={id} status={status} variant="solid" size="xs" pl={3} pr={1} py={0} zIndex="1">
+                        <AlertIcon />
+                        {linkedApp ? (
+                            <Link onClick={() => handleAppOpen(linkedApp)}>{message}</Link>
+                        ) : url ? (
+                            <Link href={url} target="_blank">
+                                {message}
+                            </Link>
+                        ) : (
+                            message
+                        )}
+                        <CloseButton ml="auto" onClick={() => dispatch(closeGlobalAlert(id))} />
+                    </Alert>
+                );
+            })}
         </>
     );
 }

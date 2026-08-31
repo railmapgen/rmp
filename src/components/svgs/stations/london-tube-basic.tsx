@@ -4,7 +4,6 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdContentCopy, MdDelete } from 'react-icons/md';
-import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, StnId, Theme } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -22,9 +21,7 @@ import {
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
-import { roundToRotateAngle } from '../../../util/helpers';
 import ThemeButton from '../../panels/theme-button';
-import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText } from '../common/multiline-text';
 
 const X_HEIGHT = 5;
@@ -214,24 +211,22 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
     const textRotate = terminal ? terminalNameRotate : rotate;
     // whether the text in the terminal station is positioned other than the rotation
     const isTextTerminal = terminal && rotate !== terminalNameRotate;
-    // Free rotation keeps the exact SVG angle, while text metrics reuse the nearest layout template.
-    const rotateConst = ROTATE_CONST[roundToRotateAngle(textRotate)];
     const textDx =
-        (isTextTerminal ? rotateConst.textTerminalDx : rotateConst.textDx) + // fixed dx for each rotation
-        Math.cos(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
+        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDx : ROTATE_CONST[textRotate].textDx) + // fixed dx for each rotation
+        Math.cos(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dx of n share tracks
     const textDy =
-        (isTextTerminal ? rotateConst.textTerminalDy : rotateConst.textDy) + // fixed dy for each rotation
-        Math.sin(rad) * Math.max(0, ...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
+        (isTextTerminal ? ROTATE_CONST[textRotate].textTerminalDy : ROTATE_CONST[textRotate].textDy) + // fixed dy for each rotation
+        Math.sin(rad) * Math.max(...transfer[0].map(_ => _[4])) * X_HEIGHT; // dynamic dy of n share tracks
 
     const accessibleD =
-        -((Math.max(0, ...transfer[0].map(_ => _[4])) + Math.min(0, ...transfer[0].map(_ => _[4]))) / 2) * X_HEIGHT;
+        -((Math.max(...transfer[0].map(_ => _[4])) + Math.min(...transfer[0].map(_ => _[4]))) / 2) * X_HEIGHT;
     const accessibleDX = Math.sin((rotate * Math.PI) / 180) * accessibleD;
     const accessibleDY = Math.cos((rotate * Math.PI) / 180) * accessibleD;
 
     const defaultNameLayout: NameLayout = {
         x: textDx,
         y: textDy,
-        anchor: rotateConst.textAnchor ?? 'start',
+        anchor: ROTATE_CONST[textRotate].textAnchor ?? 'start',
     };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
         id,
@@ -250,30 +245,18 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                 style={{ cursor: 'move' }}
             >
                 {stepFreeAccess === 'none' ? (
-                    transfer[0].length > 0 ? (
-                        transfer[0].map(info => (
-                            <rect
-                                id={`stn_core_${id}`}
-                                key={`${id}_${info[2]}_${info[4]}`}
-                                x={(-X_HEIGHT * 0.66) / 2}
-                                y={-X_HEIGHT * 0.66 - X_HEIGHT / 2 - X_HEIGHT * info[4]}
-                                width={X_HEIGHT * 0.66}
-                                height={height}
-                                stroke="none"
-                                fill={info[2]}
-                            />
-                        ))
-                    ) : (
+                    transfer[0].map(info => (
                         <rect
                             id={`stn_core_${id}`}
+                            key={`${id}_${info[2]}_${info[4]}`}
                             x={(-X_HEIGHT * 0.66) / 2}
-                            y={-X_HEIGHT * 0.66 - X_HEIGHT / 2}
+                            y={-X_HEIGHT * 0.66 - X_HEIGHT / 2 - X_HEIGHT * info[4]}
                             width={X_HEIGHT * 0.66}
                             height={height}
                             stroke="none"
-                            fill="#9fa9b6"
+                            fill={info[2]}
                         />
-                    )
+                    ))
                 ) : (
                     <AccessibleIcon
                         key={`stn_core_${id}`}
@@ -295,8 +278,8 @@ const LondonTubeBasicStation = (props: StationComponentProps) => {
                     text={names[0].split('\n')}
                     fontSize={FONT_SIZE}
                     lineHeight={LINE_HEIGHT}
-                    dominantBaseline={rotateConst.dominantBaseline}
-                    grow={rotateConst.grow}
+                    dominantBaseline={ROTATE_CONST[textRotate].dominantBaseline}
+                    grow={ROTATE_CONST[textRotate].grow}
                     baseOffset={0}
                     {...getLangStyle(TextLanguage.tube)}
                 />
@@ -357,24 +340,17 @@ const londonTubeBasicAttrsComponent = (props: AttrsProps<LondonTubeBasicStationA
             minW: 'full',
         },
         {
-            type: 'custom',
+            type: 'select',
             label: t('panel.details.stations.common.rotate'),
-            component: (
-                <RotateField
-                    type={StationType.LondonTubeBasic}
-                    defaultAttributes={defaultLondonTubeBasicStationAttributes}
-                    getNextAttributes={nextAttributes => {
-                        if (nextAttributes.terminal) {
-                            return {
-                                ...nextAttributes,
-                                terminalNameRotate: nextAttributes.rotate,
-                            };
-                        }
-                        return nextAttributes;
-                    }}
-                    rotateSelect={rotateSelect}
-                />
-            ),
+            value: rotateSelect.value,
+            options: rotateSelect.options,
+            disabledOptions: rotateSelect.disabledOptions,
+            onChange: val => {
+                attrs.rotate = Number(val) as Rotate;
+                if (attrs.terminal) attrs.terminalNameRotate = attrs.rotate;
+                delete attrs.preciseNameOffsets;
+                handleAttrsUpdate(id, attrs);
+            },
             minW: 'full',
         },
         {
@@ -491,7 +467,6 @@ const londonTubeBasicStationIcon = (
 
 const londonTubeBasicStation: Station<LondonTubeBasicStationAttributes> = {
     component: LondonTubeBasicStation,
-    overlayComponent: SameStyleLineEndpointOverlay,
     icon: londonTubeBasicStationIcon,
     defaultAttrs: defaultLondonTubeBasicStationAttributes,
     attrsComponent: londonTubeBasicAttrsComponent,
@@ -540,7 +515,7 @@ function InterchangeCard(props: InterchangeCardProps) {
             {interchangeList.length === 0 && (
                 <HStack spacing={0.5} data-testid={`interchange-card-stack`}>
                     <Text as="i" flex={1} align="center" fontSize="md" colorScheme="gray">
-                        {t('panel.details.stations.londonTubeBasic.noTrackShare')}
+                        {t('panel.details.stations.interchange.noTrackShare')}
                     </Text>
 
                     <IconButton

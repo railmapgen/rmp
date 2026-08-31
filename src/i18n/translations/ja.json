@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "地図を読み込み中…",
+        "loadError": "地理マップを読み込めません。",
+        "zoomInToEdit": "編集するには地図を拡大してください。",
+        "style": {
+            "title": "地図スタイル",
+            "reset": "リセット",
+            "type": "種類",
+            "enabled": "表示",
+            "widthScale": "幅の倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "輪郭",
+                "color": "表面",
+                "path": "経路",
+                "local": "ローカル",
+                "collector": "集散道路",
+                "arterial": "幹線道路"
+            },
+            "rails": { "title": "鉄道", "metro": "地下鉄", "national": "国鉄" },
+            "labels": {
+                "title": "ラベル",
+                "enabled": "すべてのラベルを表示",
+                "sizeScale": "サイズの倍率",
+                "color": "文字",
+                "strokeColor": "輪郭",
+                "groups": {
+                    "places": "場所",
+                    "roads": "道路",
+                    "buildings": "建物",
+                    "areas": "地域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要な場所",
+                    "place-medium": "中規模の場所",
+                    "place-minor": "小規模な場所",
+                    "road-arterial": "幹線道路",
+                    "road-collector": "集散道路",
+                    "building": "建物",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農地",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅地",
+                    "area-commercial": "商業地",
+                    "area-industrial": "工業地",
+                    "area-education": "教育",
+                    "area-healthcare": "医療",
+                    "transport-airport": "空港",
+                    "transport-rail": "鉄道駅",
+                    "transport-metro": "地下鉄駅",
+                    "transport-platform": "ホーム",
+                    "transport-entrance": "入口"
+                }
+            }
+        }
+    },
     "colorA": "Color A",
     "colorB": "Color B",
     "color": "カラー",
@@ -11,6 +71,10 @@
     "pasteAttrs": "独自属性を貼り付け",
     "remove": "削除",
     "close": "閉じる",
+    "confirm": "確認",
+    "edit": "編集",
+    "back": "戻る",
+    "ok": "OK",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
 
@@ -475,7 +539,6 @@
                     "terminal": "終着駅",
                     "terminalNameRotate": "終着駅名回転",
                     "shareTracks": "線路共有",
-                    "noTrackShare": "線路共有なし",
                     "shareTracksIndex": "線路共有索引"
                 },
                 "londonTubeInt": {
@@ -586,6 +649,36 @@
                     "reconcileDisabled": "この路線は統合チェーンに含まれるため、オフセットは無効です。チェーン全体が結合された一本のパスとして描画されます。",
                     "reconcileStyleDisabled": "この路線は統合チェーンに含まれるため、スタイル属性は無効です。描画されるスタイルは基準線によって制御されます。"
                 },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "接線方向のオフセット",
+                    "normal": "法線方向のオフセット",
+                    "sourceOffset": "始点端点オフセット",
+                    "targetOffset": "終点端点オフセット",
+                    "sourceOffsetX": "始点端点 X オフセット",
+                    "sourceOffsetY": "始点端点 Y オフセット",
+                    "targetOffsetX": "終点端点 X オフセット",
+                    "targetOffsetY": "終点端点 Y オフセット",
+                    "linkedOffset": "端点オフセットを連動"
+                },
+                "freeform": {
+                    "displayName": "フリーフォーム曲線",
+                    "controlPointHint": "目的の制御点を通るようにドラッグして線を描きます。",
+                    "outlineSettingsUnavailable": "フリーフォーム曲線では輪郭設定を利用できません。",
+                    "smoothing": "スムージング",
+                    "widthStops": "幅の変化点",
+                    "widthStopIndex": "番号",
+                    "widthStopPosition": "位置（%）",
+                    "widthStopWidth": "幅",
+                    "baseWidthHint": "線の幅はパスに沿って変化します。",
+                    "startCap": "始点キャップ",
+                    "endCap": "終点キャップ",
+                    "round": "ラウンド",
+                    "flat": "フラット",
+                    "arrow": "矢印",
+                    "arrowLength": "矢印の長さ",
+                    "arrowWidth": "矢印の幅"
+                },
                 "simple": {
                     "displayName": "簡単な経路",
                     "offset": "補正値"
@@ -601,36 +694,6 @@
                 },
                 "rayGuided": {
                     "displayName": "任意角度経路"
-                },
-                "bezier": {
-                    "displayName": "ベジェ曲線",
-                    "along": "線方向の位置",
-                    "normal": "法線オフセット",
-                    "sourceOffset": "始点オフセット",
-                    "targetOffset": "終点オフセット",
-                    "linkedOffset": "連動する端点オフセット",
-                    "sourceOffsetX": "始点 X オフセット",
-                    "sourceOffsetY": "始点 Y オフセット",
-                    "targetOffsetX": "終点 X オフセット",
-                    "targetOffsetY": "終点 Y オフセット"
-                },
-                "freeform": {
-                    "displayName": "フリーフォーム経路",
-                    "outlineSettingsUnavailable": "可変幅および両端のキャップ設定は、現在まだ利用できません。",
-                    "controlPointHint": "青いコントロールポイントをドラッグして経路を調整できます。経路をダブルクリックするとその位置にポイントを追加でき、青いポイントを右クリックすると削除できます。",
-                    "widthStops": "幅ポイント",
-                    "widthStopIndex": "#",
-                    "widthStopPosition": "位置 (%)",
-                    "widthStopWidth": "幅 (px)",
-                    "baseWidthHint": "5px は線分の基準幅です。",
-                    "smoothing": "スムージング",
-                    "startCap": "始点キャップ",
-                    "endCap": "終点キャップ",
-                    "round": "丸",
-                    "flat": "平面",
-                    "arrow": "矢印",
-                    "arrowLength": "矢印の長さ",
-                    "arrowWidth": "矢印の幅"
                 },
                 "singleColor": {
                     "displayName": "単色風格"
@@ -785,6 +848,25 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "nodeVersion": {
+                "title": "履歴バージョン",
+                "current": "(現在)",
+                "rename": "名前変更",
+                "apply": "適用",
+                "remove": "削除",
+                "add": "新バージョンを追加",
+                "placing": "このバージョンのノードを配置...",
+                "pleaseSelectNode": "新しいバージョンノードを選択してください",
+                "placingNew": "このノードを編集しています。完了したらOKをクリックしてください。",
+                "placingNewWithId": "ノード{{id}}を編集しています。完了したらOKをクリックしてください。",
+                "nameVersion": "バージョン名",
+                "namePlaceholder": "バージョン名を入力",
+                "enterName": "バージョン名を入力",
+                "enterNameDesc": "新しいバージョンの名前を入力してください（任意。空の場合はデフォルト名を使用します）",
+                "versionName": "バージョン名",
+                "versionNotFound": "バージョンが存在しないか、取得できません",
+                "applySuccess": "バージョン {version} を適用しました"
             }
         }
     },
@@ -794,8 +876,8 @@
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
         "mapToggle": {
-            "show": "地理地図を表示",
-            "hide": "地理地図を非表示"
+            "show": "地理マップを表示",
+            "hide": "地理マップを非表示"
         },
         "open": {
             "new": "新しい作品",
@@ -871,13 +953,61 @@
             "disabledScaleOptionsSolution": "<link1>購読して</link1>デスクトップアプリを<link2>ダウンロードし</link2>、大きな画像を渲染してください。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
+            "shareInfo": "透かしを削除（この画像を共有する際に<1>地下鉄路線図画家</1>とそのリンクを添付します）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
             "shareInfo2": " とリンクを添付します。",
             "termsAndConditions": "利用規約",
             "termsAndConditionsInfo": "以下の利用規約に同意します：",
             "period": "。",
             "rmpInfoSpecificNodeExists": "一部の節点にはこの情報を表示する必要があります。",
-            "confirm": "ダウンロード"
+            "confirm": "ダウンロード",
+            "video": "ビデオをエクスポート",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "fps": "フレームレート（FPS）",
+                "duration": "長さ（秒）",
+                "quality": "ビデオ品質",
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "動画形式",
+                "error": "ビデオの書き出しに失敗しました。もう一度お試しください。",
+                "closeConfirmTitle": "書き出し中",
+                "closeConfirmDesc": "ビデオを書き出しています。操作を選択してください：",
+                "cancelExport": "書き出しをキャンセル",
+                "backgroundExport": "バックグラウンドで書き出し",
+                "preview": "プレビュー",
+                "previewTitle": "ビデオプレビュー",
+                "previewDesc": "スライダーをクリックするだけで、任意の瞬間のアニメーションを確認できます。",
+                "previewPlay": "再生",
+                "previewPause": "一時停止",
+                "previewLoading": "レンダリング中…",
+                "previewFullscreen": "全画面",
+                "jumpToAction": "アクションへ移動",
+                "previousAction": "前のアクション",
+                "nextAction": "次のアクション",
+                "actionOption": "アクション {{index}}：{{type}}（{{remark}}）",
+                "actionOptionType": "アクション {{index}}：{{type}}",
+                "actionOptionWait": "アクション {{index}}：{{type}}（{{duration}} 秒）",
+                "noRemark": "備考なし"
+            }
+        },
+        "timeline": {
+            "title": "アニメーションタイムライン",
+            "empty": "タイムラインがありません。「ノード追加」をクリックして開始します。",
+            "addSegment": "ノード追加",
+            "clearAll": "すべてクリア",
+            "pickStart": "キャンバス上のノードをクリックして始点を選択...",
+            "pickEnd": "キャンバス上のノードをクリックして終点を選択...",
+            "selectTheme": "路線を選択：",
+            "noPath": "選択したノード間のルートが見つかりません。",
+            "unadded": "{{count}}個のノードがタイムラインに未追加",
+            "addStationOnly": "このノードのみ追加",
+            "reverse": "反転",
+            "reverseSelected": "選択した線を反転",
+            "reversed": "反転済み"
         },
         "donation": {
             "title": "寄付",
@@ -914,7 +1044,10 @@
             },
             "preference": {
                 "title": "設定",
+                "map": "地理マップを表示",
                 "mapEnabled": "地理地図レイヤーを表示",
+                "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
+                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
                 "autoParallel": "新しい路線を既存の路線と並列に自動的に設定",
                 "randomStationNames": {
@@ -935,9 +1068,9 @@
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
                 "predictNextNode": "節点を選択したときに次の節点を予測する",
                 "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
-                "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
-                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
-                "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
+                "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする",
+                "timelineFeature": "アニメーションタイムライン機能を有効にする",
+                "enableActionDateFormat": "アクションの日付形式バリデーションを有効にする"
             },
             "shortcuts": {
                 "title": "ショートカット",
@@ -1051,8 +1184,8 @@
             "contactUs": "お問い合わせ",
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
-            "zulip": "Zulip コミュニティ",
-            "zulipContent": "Zulip でコミュニティに参加しましょう！"
+            "slack": "Slackグループ",
+            "slackContent": "Slackのチャンネルでチャットしましょう！"
         }
     },
 
@@ -1083,69 +1216,88 @@
         }
     },
 
-    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
-    "map": {
-        "loading": "地図を読み込み中",
-        "loadError": "地図の背景を読み込めません。",
-        "zoomInToEdit": "地図を編集するには拡大してください。",
-        "style": {
-            "title": "地図スタイル",
-            "reset": "初期設定に戻す",
-            "type": "種類",
-            "enabled": "表示",
-            "widthScale": "幅の倍率",
-            "roads": {
-                "title": "道路",
-                "casingColor": "縁取り",
-                "color": "路面",
-                "path": "小道",
-                "local": "一般道",
-                "collector": "補助幹線道路",
-                "arterial": "幹線道路"
-            },
-            "rails": {
-                "title": "鉄道",
-                "metro": "地下鉄",
-                "national": "一般鉄道"
-            },
-            "labels": {
-                "title": "ラベル",
-                "enabled": "すべてのラベルを表示",
-                "sizeScale": "文字サイズ倍率",
-                "color": "文字",
-                "strokeColor": "縁取り",
-                "groups": {
-                    "places": "地名",
-                    "roads": "道路",
-                    "buildings": "建物",
-                    "areas": "エリア",
-                    "transport": "交通"
-                },
-                "categories": {
-                    "place-major": "主要地名",
-                    "place-medium": "中規模地名",
-                    "place-minor": "小規模地名",
-                    "road-arterial": "幹線道路",
-                    "road-collector": "補助幹線道路",
-                    "building": "建物",
-                    "area-water": "水域",
-                    "area-park": "公園",
-                    "area-grass": "草地",
-                    "area-forest": "森林",
-                    "area-farmland": "農地",
-                    "area-cemetery": "墓地",
-                    "area-residential": "住宅地",
-                    "area-commercial": "商業地",
-                    "area-industrial": "工業地",
-                    "area-education": "教育施設",
-                    "area-healthcare": "医療施設",
-                    "transport-airport": "空港",
-                    "transport-rail": "一般鉄道駅",
-                    "transport-metro": "地下鉄駅",
-                    "transport-platform": "プラットホーム",
-                    "transport-entrance": "出入口"
-                }
-            }
+    "timeline": {
+        "editor": {
+            "title": "アニメーションタイムライン"
+        },
+        "totalDuration": "総時間",
+        "second": "秒",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "lines": "路線リスト",
+        "actions": "アクションリスト",
+        "segments": "区間",
+        "segment": "路線区間",
+        "addLine": "路線を追加",
+        "addAction": "アクションを追加",
+        "addSegment": "路線区間を追加",
+        "noGroups": "路線がありません",
+        "noSegments": "路線区間がありません",
+        "noActions": "アクションがありません",
+        "addBelow": "下に追加",
+        "drag": "ドラッグ",
+        "newLine": "新路線",
+        "modify": "修正",
+        "elements": "要素",
+        "addElement": "要素を追加",
+        "reverseAll": "すべて反転",
+        "noElements": "要素がありません。「要素を追加」をクリック",
+        "pickElement": "キャンバス上の要素をクリックして追加",
+        "addSegmentPath": "経路追加",
+        "pickStartNode": "キャンバス上の開始ノードをクリック",
+        "pickEndNode": "キャンバス上の終了ノードをクリック",
+        "selectTheme": "路線色を選択",
+        "selectThemeHint": "経路に使用する線の色を選択してください",
+        "noLines": "路線区間がありません",
+        "start": "開始",
+        "end": "終了",
+        "isStation": "駅として扱う",
+        "mileage": "距離",
+        "mileageAutoFill": "地図の実際の長さから自動入力",
+        "mileageAutoFillDisabled": "地図を有効にしてから実際の長さで自動入力できます",
+        "savedAtTimePoint": "現在の時点に変更を保存しました",
+        "futurePointsAffected": "以降の時点に影響します",
+        "attrs": {
+            "title": "タイムライン属性"
+        },
+        "line": {
+            "name": "路線名",
+            "color": "色"
+        },
+        "action": {
+            "type": "タイプ",
+            "open": "開通",
+            "close": "廃止",
+            "overview": "全体表示",
+            "wait": "待機",
+            "focus": "フォーカス",
+            "focusTargetMissing": "フォーカス対象の後続区間がありません",
+            "remark": "備考",
+            "lineSegment": "目標路線区間",
+            "selectSegment": "路線区間を選択",
+            "duration": "時間",
+            "activeLines": "開通済み路線",
+            "selectLines": "路線を選択",
+            "selectActiveLines": "開通済み路線を選択",
+            "unsaved": "未保存",
+            "invalidDateFormat": "日付形式が無効です。YYYY-MM-DD を入力するか、設定で日付形式の検証を無効にしてください",
+            "dateFormatEnabled": "日付形式の検証が有効になりました。YYYY-MM-DD 形式のみ受け付けます",
+            "batchInvalidDateFormat": "YYYY-MM-DD 形式に準拠していない {{count}} 件の日付を自動クリアしました"
+        },
+        "player": {
+            "play": "再生",
+            "stop": "停止",
+            "pause": "一時停止",
+            "export": "動画をエクスポート",
+            "stations": "駅数",
+            "mileage": "距離",
+            "date": "日付",
+            "activeLines": "開通済み路線",
+            "bad": "このスタイルはまだサポートされていません",
+            "noEdges": "タイムラインに描画可能な辺がありません",
+            "prepare": "準備中..."
         }
-    }
+    },
+
+    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
 }

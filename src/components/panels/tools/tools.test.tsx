@@ -75,7 +75,7 @@ describe('ToolsPanel contextual line access', () => {
         expect(screen.getByRole('button', { name: LinePathType.Bezier, hidden: true })).toBeDisabled();
         expect(screen.getByRole('button', { name: LinePathType.Freeform, hidden: true })).toBeDisabled();
         expect(screen.getByRole('button', { name: LinePathType.RayGuided, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Simple, hidden: true })).toBeDisabled();
+        expect(screen.queryByRole('button', { name: LinePathType.Simple, hidden: true })).toBeNull();
     });
 
     it('disables diagram-native and static Pro paths for free users while the map is shown', () => {
@@ -85,14 +85,14 @@ describe('ToolsPanel contextual line access', () => {
         expect(screen.getByRole('button', { name: LinePathType.Bezier, hidden: true })).toBeEnabled();
         expect(screen.getByRole('button', { name: LinePathType.Freeform, hidden: true })).toBeEnabled();
         expect(screen.getByRole('button', { name: LinePathType.RayGuided, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Simple, hidden: true })).toBeDisabled();
     });
 
     it('uses an allowed map-native fallback for a free user selecting a style', () => {
         const testStore = renderToolsPanel(true, false);
 
-        fireEvent.click(screen.getByRole('button', { name: LineStyleType.SingleColor, hidden: true }));
+        fireEvent.click(screen.getByRole('button', { name: 'Line Styles', hidden: true }));
+        fireEvent.click(screen.getByRole('button', { name: 'Single color style', hidden: true }));
 
-        expect(testStore.getState().runtime.mode).toBe(`line-${LinePathType.Bezier}/${LineStyleType.SingleColor}`);
+        expect(testStore.getState().runtime.mode).toBe(`line-${LinePathType.Diagonal}/${LineStyleType.SingleColor}`);
     });
 });
