@@ -17,13 +17,14 @@ import {
 } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { ActionRow, LineGroup, TimelineDiff, TimelineLine } from '../constants/timeline';
+import { ActionRow, CloseNodeStyle, LineGroup, TimelineDiff, TimelineLine } from '../constants/timeline';
 import allStations from '../components/svgs/stations/stations';
 import miscNodes from '../components/svgs/nodes/misc-nodes';
 import { getNodeVersion } from './timeline';
 import { makeRenderReadySVGElement } from './download';
 import { TextLanguage } from './fonts';
 import { calculateCanvasSize } from './helpers';
+import { getActionDuration, isQuickCompleteAction, scheduleActionRows } from './action-schedule';
 
 export interface VideoExportOptions {
     fps?: number;
@@ -33,7 +34,6 @@ export interface VideoExportOptions {
     isTransparent?: boolean;
     scale?: number;
     isSystemFontsOnly?: boolean;
-    hideWatermark?: boolean;
     timelineDiffs?: TimelineDiff[];
     existsNodeTypes?: Set<NodeType>;
     /** Action rows for animation sequencing */
@@ -42,6 +42,8 @@ export interface VideoExportOptions {
     timelineLines?: TimelineLine[];
     /** Line groups (color + name) */
     lineGroups?: LineGroup[];
+    /** 当前画布中的地图图层快照 */
+    mapLayerMarkup?: string;
     /** Abort signal — aborting cancels the export (throws an AbortError) */
     signal?: AbortSignal;
 }
@@ -76,15 +78,40 @@ export interface AnimationPhase {
     durationWeight: number;
     /** User-set action duration in seconds (t in the speed formula) */
     duration: number;
+    /** User-set station animation duration in seconds */
+    nodeAnimationDuration: number;
     focusTarget?: AnimationStep;
+    /** 聚焦时并行批次的全部目标元素 */
+    focusTargets?: AnimationStep[];
+    /** 聚焦时并行批次目标元素的联合包围盒 */
+    focusTargetBounds?: GraphBounds;
+    /** 聚焦目标动作批次，用于在整个批次内保持目标中心 */
+    focusTargetBatch?: number;
     /** 该 open/close 动作目标线路段所属线路组 id（用于左上角线路徽章） */
     targetGroupId?: string;
+    /** 停运后多版本换乘站的显示与版本配置 */
+    closeNodeStyles?: Record<NodeId, CloseNodeStyle>;
+    startTime: number;
+    endTime: number;
+    batchIndex: number;
+    quickComplete?: boolean;
 }
 
-export const getActionLineMinimumDuration = (line: TimelineLine | undefined): number => {
-    if (!line) return 0.5;
-    const edgeCount = line.elements.filter(element => isLineId(element.id)).length;
-    return Math.max(0.5, edgeCount * 0.5);
+const getActionLineCounts = (line: TimelineLine | undefined) => ({
+    stationCount: line?.elements.filter(element => isStationNodeId(element.id)).length ?? 0,
+    edgeCount: line?.elements.filter(element => isLineId(element.id)).length ?? 0,
+});
+
+export const getActionLineMinimumDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
+    if (!line) return Math.max(0.1, nodeAnimationDuration);
+    const { stationCount, edgeCount } = getActionLineCounts(line);
+    return Math.max(0.1, stationCount * nodeAnimationDuration + edgeCount * 0.5);
+};
+
+export const getActionLineSuggestedDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
+    if (!line) return Math.max(0.1, nodeAnimationDuration);
+    const { stationCount, edgeCount } = getActionLineCounts(line);
+    return Math.max(0.1, stationCount * nodeAnimationDuration + edgeCount);
 };
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -96,24 +123,26 @@ const CAMERA_VIEWPORT_ZOOM = 40;
 const CAMERA_VIEWPORT_ASPECT_RATIO = 16 / 9;
 const CAMERA_VIEWPORT_BASE_HEIGHT = 360;
 const VIDEO_EXPORT_OUTPUT_HEIGHT = 720;
+const CAMERA_SAFE_INSETS = { top: 48, right: 264, bottom: 112, left: 204 };
 const VIDEO_EXPORT_OUTPUT_WIDTH = VIDEO_EXPORT_OUTPUT_HEIGHT * CAMERA_VIEWPORT_ASPECT_RATIO;
 const NODE_CAMERA_OVERLAP_RATIO = 0.5;
 // 镜头惯性系统：弹簧-阻尼模型
 // 每帧：velocity += (target - position) * stiffness; velocity *= damping; position += velocity
 // 目标移动时镜头平滑追赶并带有速度延续（惯性），停顿时轻微回弹后静止，观感丝滑
-const CAMERA_SPRING_STIFFNESS = 0.1;
-const CAMERA_VELOCITY_DAMPING = 0.72;
+const CAMERA_SPRING_STIFFNESS = 0.045;
+const CAMERA_VELOCITY_DAMPING = 0.8;
 /** 镜头每帧最大位移（视口宽度的比例）：限制长距离跳变时的峰值速度，避免镜头"甩"过目标 */
-const CAMERA_MAX_VELOCITY_RATIO = 0.05;
+const CAMERA_MAX_VELOCITY_RATIO = 0.025;
 /** 镜头距目标小于该世界距离时直接吸附（消除到达后的微小振荡/回摆） */
 const CAMERA_SNAP_DISTANCE = 2;
 /** 段间镜头预瞄的最大时长（秒）：保证镜头在下一段开始前基本就位，避免追焦点导致路径混乱 */
 const CAMERA_PREVIEW_MAX_SECONDS = 2.5;
 const CAMERA_VIEWPORT_HEIGHT = (CAMERA_VIEWPORT_BASE_HEIGHT * CAMERA_VIEWPORT_ZOOM) / 100;
 const CAMERA_VIEWPORT_WIDTH = CAMERA_VIEWPORT_HEIGHT * CAMERA_VIEWPORT_ASPECT_RATIO;
-const VIDEO_WATERMARK_WIDTH = 350;
-const VIDEO_WATERMARK_HEIGHT = 50;
-const VIDEO_WATERMARK_MARGIN = 24;
+const CAMERA_SAFE_WIDTH = VIDEO_EXPORT_OUTPUT_WIDTH - CAMERA_SAFE_INSETS.left - CAMERA_SAFE_INSETS.right;
+const CAMERA_SAFE_HEIGHT = VIDEO_EXPORT_OUTPUT_HEIGHT - CAMERA_SAFE_INSETS.top - CAMERA_SAFE_INSETS.bottom;
+const CAMERA_SAFE_VIEWPORT_WIDTH = CAMERA_VIEWPORT_WIDTH * (CAMERA_SAFE_WIDTH / VIDEO_EXPORT_OUTPUT_WIDTH);
+const CAMERA_SAFE_VIEWPORT_HEIGHT = CAMERA_VIEWPORT_HEIGHT * (CAMERA_SAFE_HEIGHT / VIDEO_EXPORT_OUTPUT_HEIGHT);
 const OVERVIEW_ZOOM_RATIO = 0.1;
 const OVERVIEW_FRAME_RATIO = 0;
 const EDGE_STEP_WEIGHT = 1;
@@ -148,6 +177,7 @@ type NodeAnimationState = 'not-drawn' | 'drawing' | 'drawn';
 type ElementAnimation = {
     kind: 'node' | 'edge';
     progress: number;
+    quickComplete?: boolean;
     textProgress: number;
     reverse: boolean;
     state: NodeAnimationState;
@@ -183,13 +213,13 @@ const isColoredElement = (value: string | null): boolean =>
     !value.startsWith('url(') &&
     !value.startsWith('var(');
 
-const getNodeRevealProgress = (frame: number, startFrame: number, fps: number): number => {
-    const revealFrames = Math.max(1, Math.round(fps * 0.5));
+const getNodeRevealProgress = (frame: number, startFrame: number, fps: number, durationSeconds = 1): number => {
+    const revealFrames = Math.max(1, Math.round(fps * durationSeconds));
     return clamp01((frame - startFrame) / revealFrames);
 };
 
-const getNodeTextRevealProgress = (frame: number, startFrame: number, fps: number): number => {
-    const revealFrames = Math.max(1, Math.round(fps * 0.5));
+const getNodeTextRevealProgress = (frame: number, startFrame: number, fps: number, durationSeconds = 1): number => {
+    const revealFrames = Math.max(1, Math.round(fps * durationSeconds));
     return clamp01((frame - startFrame) / revealFrames);
 };
 
@@ -204,6 +234,7 @@ export function buildAnimationPhases(
     lines: TimelineLine[],
     _graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
 ): AnimationPhase[] {
+    const schedule = scheduleActionRows(actionRows, actionRows.map(getActionDuration));
     const phases: AnimationPhase[] = [];
     // 按动作顺序自动推导已开通的线路组（不再读取用户手动维护的 activeLineIds）
     const openedGroupIds: Set<string> = new Set();
@@ -219,11 +250,14 @@ export function buildAnimationPhases(
                 if (timelineLine) {
                     for (const elem of timelineLine.elements) {
                         if (isVirtualNode(_graph, elem.id)) continue;
+                        const kind = isNodeId(elem.id) ? 'node' : 'edge';
+                        if (kind === 'node' && !_graph.hasNode(elem.id as NodeId)) continue;
+                        if (kind === 'edge' && !_graph.hasEdge(elem.id as LineId)) continue;
                         elements.push({
                             id: elem.id as Id,
-                            kind: isNodeId(elem.id) ? 'node' : 'edge',
+                            kind,
                             reverse: elem.reverse ?? false,
-                            ...(isNodeId(elem.id) ? { version: elem.version ?? 1 } : {}),
+                            ...(kind === 'node' ? { version: elem.version ?? 1 } : {}),
                         });
                     }
                     if (timelineLine.groupId) {
@@ -235,28 +269,62 @@ export function buildAnimationPhases(
             }
         }
 
-        const baseWeight =
-            action.actionType === 'overview' || action.actionType === 'focus' ? 2 : (action.actionDuration ?? 2);
-        let durationWeight: number;
-        if (action.actionType === 'overview') {
-            durationWeight = Math.max(baseWeight, 1);
-        } else if (action.actionType === 'wait') {
-            durationWeight = Math.max(baseWeight, 0.5);
-        } else if (action.actionType === 'open' || action.actionType === 'close') {
-            const line = action.actionLineId ? lines.find(item => item.id === action.actionLineId) : undefined;
-            durationWeight = Math.max(baseWeight, getActionLineMinimumDuration(line));
-        } else {
-            durationWeight = Math.max(baseWeight, 1);
-        }
+        const baseWeight = getActionDuration(action);
+        const durationWeight = baseWeight;
 
-        const focusTarget =
+        const focusTargetAction =
             action.actionType === 'focus'
                 ? actionRows
                       .slice(i + 1)
                       .find(next => (next.actionType === 'open' || next.actionType === 'close') && next.actionLineId)
                 : undefined;
-        const targetLine = focusTarget ? lines.find(line => line.id === focusTarget.actionLineId) : undefined;
-        const targetElement = targetLine?.elements.find(element => !isVirtualNode(_graph, element.id));
+        const focusTargetBatch = focusTargetAction
+            ? schedule.entries[actionRows.indexOf(focusTargetAction)]?.batchIndex
+            : undefined;
+        const focusTargetActions =
+            focusTargetBatch === undefined
+                ? []
+                : actionRows.filter((next, nextIndex) => {
+                      const entry = schedule.entries[nextIndex];
+                      return (
+                          entry?.batchIndex === focusTargetBatch &&
+                          (next.actionType === 'open' || next.actionType === 'close') &&
+                          next.actionLineId
+                      );
+                  });
+        const focusTargets = Array.from(
+            focusTargetActions
+                .reduce((targets, next) => {
+                    const targetLine = lines.find(line => line.id === next.actionLineId);
+                    const targetElements =
+                        next.actionType === 'close'
+                            ? [...(targetLine?.elements ?? [])].reverse()
+                            : targetLine?.elements;
+                    (targetElements ?? [])
+                        .filter(element => !isVirtualNode(_graph, element.id))
+                        .forEach(element => {
+                            const target = {
+                                id: element.id as Id,
+                                kind: isNodeId(element.id) ? ('node' as const) : ('edge' as const),
+                                reverse: element.reverse ?? false,
+                            };
+                            if (!targets.has(target.id)) targets.set(target.id, target);
+                        });
+                    return targets;
+                }, new Map<Id, AnimationStep>())
+                .values()
+        );
+        const focusTarget = focusTargets[0];
+        const targetLine = focusTargetAction
+            ? lines.find(line => line.id === focusTargetAction.actionLineId)
+            : undefined;
+        // 停运按线路元素的反向顺序播放；聚焦必须预先定位到反向播放的首个元素（终点），
+        // 而不是一律取正向第一个元素（起点）。
+        const targetElements =
+            focusTargetAction?.actionType === 'close'
+                ? [...(targetLine?.elements ?? [])].reverse()
+                : targetLine?.elements;
+        const targetElement = targetElements?.find(element => !isVirtualNode(_graph, element.id));
 
         phases.push({
             type: action.actionType,
@@ -274,7 +342,19 @@ export function buildAnimationPhases(
                       reverse: targetElement.reverse ?? false,
                   }
                 : undefined,
+            focusTargets: action.actionType === 'focus' ? focusTargets : undefined,
+            focusTargetBounds: action.actionType === 'focus' ? getElementBounds(_graph, focusTargets) : undefined,
+            focusTargetBatch: action.actionType === 'focus' ? focusTargetBatch : undefined,
             targetGroupId,
+            nodeAnimationDuration:
+                action.actionType === 'open' || action.actionType === 'close'
+                    ? Math.max(0.1, action.nodeAnimationDuration ?? 1)
+                    : 1,
+            closeNodeStyles: action.actionType === 'close' ? action.closeNodeStyles : undefined,
+            startTime: schedule.entries[i].startTime,
+            endTime: schedule.entries[i].endTime,
+            batchIndex: schedule.entries[i].batchIndex,
+            quickComplete: isQuickCompleteAction(action),
         });
     }
 
@@ -294,7 +374,7 @@ export const getActionRowsTotalDuration = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
 ): number => {
     const phases = buildAnimationPhases(actionRows, lines, graph);
-    return phases.reduce((sum, phase) => sum + Math.max(0, phase.durationWeight), 0);
+    return phases.reduce((max, phase) => Math.max(max, phase.endTime), 0);
 };
 
 /**
@@ -336,9 +416,9 @@ const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     const bounds = calculateCanvasSize(graph);
     const graphWidth = Math.max(bounds.xMax - bounds.xMin, 1);
     const graphHeight = Math.max(bounds.yMax - bounds.yMin, 1);
-    const fitWidthZoom = (CAMERA_VIEWPORT_WIDTH / (graphWidth * 1.12)) * 100;
-    const fitHeightZoom = (CAMERA_VIEWPORT_HEIGHT / (graphHeight * 1.12)) * 100;
-    return Math.max(8, Math.min(100, Math.min(fitWidthZoom, fitHeightZoom)));
+    const fitWidthZoom = (CAMERA_SAFE_VIEWPORT_WIDTH / (graphWidth * 1.12)) * 100;
+    const fitHeightZoom = (CAMERA_SAFE_VIEWPORT_HEIGHT / (graphHeight * 1.12)) * 100;
+    return Math.max(0.1, Math.min(100, Math.min(fitWidthZoom, fitHeightZoom)));
 };
 
 const getVisibleBounds = (
@@ -390,10 +470,13 @@ const getVisibleOverviewZoom = (
     const width = Math.max(bounds.xMax - bounds.xMin, 1);
     const height = Math.max(bounds.yMax - bounds.yMin, 1);
     return Math.max(
-        8,
+        0.1,
         Math.min(
             100,
-            Math.min((CAMERA_VIEWPORT_WIDTH / (width * 1.12)) * 100, (CAMERA_VIEWPORT_HEIGHT / (height * 1.12)) * 100)
+            Math.min(
+                (CAMERA_SAFE_VIEWPORT_WIDTH / (width * 1.12)) * 100,
+                (CAMERA_SAFE_VIEWPORT_HEIGHT / (height * 1.12)) * 100
+            )
         )
     );
 };
@@ -405,6 +488,122 @@ const getVisibleCenter = (
 ) => {
     const bounds = getVisibleBounds(graph, visibleNodes, visibleEdges);
     return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
+};
+
+/**
+ * 基于"内容世界包围盒"计算全览安全相机。
+ * bounds 应涵盖所有需展示的元素边界（节点、边端点以及站名文本等），
+ * 本函数仅负责把该包围盒映射到扣除 HUD 后的安全矩形，不关心包围盒如何得到。
+ */
+const computeSafeCameraFromBounds = (bounds: GraphBounds): { center: { x: number; y: number }; zoom: number } => {
+    const bboxW = Math.max(bounds.xMax - bounds.xMin, 1);
+    const bboxH = Math.max(bounds.yMax - bounds.yMin, 1);
+
+    // 输出像素安全矩形（像素坐标，左上角为原点）
+    const safeL = CAMERA_SAFE_INSETS.left;
+    const safeT = CAMERA_SAFE_INSETS.top;
+    const safeR = VIDEO_EXPORT_OUTPUT_WIDTH - CAMERA_SAFE_INSETS.right;
+    const safeB = VIDEO_EXPORT_OUTPUT_HEIGHT - CAMERA_SAFE_INSETS.bottom;
+    const safeW = safeR - safeL;
+    const safeH = safeB - safeT;
+
+    // 世界单位/像素：让内容在安全矩形内额外留 12% 余量（与既有观感一致）
+    const scale = Math.max(bboxW / safeW, bboxH / safeH) * 1.12;
+
+    // zoom = CAMERA_VIEWPORT_HEIGHT * 100 / (scale * OUTPUT_HEIGHT)
+    const zoom = (CAMERA_VIEWPORT_HEIGHT * 100) / (scale * VIDEO_EXPORT_OUTPUT_HEIGHT);
+
+    const halfW = VIDEO_EXPORT_OUTPUT_WIDTH / 2;
+    const halfH = VIDEO_EXPORT_OUTPUT_HEIGHT / 2;
+
+    // 中心可行区间（保证 px 落在 [safeL, safeR]、py 落在 [safeT, safeB]），取中点避免偏向一侧
+    const cxMin = bounds.xMax + (halfW - safeR) * scale;
+    const cxMax = bounds.xMin + (halfW - safeL) * scale;
+    const cyMin = bounds.yMax + (halfH - safeB) * scale;
+    const cyMax = bounds.yMin + (halfH - safeT) * scale;
+
+    return {
+        center: { x: (cxMin + cxMax) / 2, y: (cyMin + cyMax) / 2 },
+        zoom,
+    };
+};
+
+const getSafeOverviewCamera = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    visibleNodes: Set<NodeId>,
+    visibleEdges: Set<LineId>
+): { center: { x: number; y: number }; zoom: number } =>
+    computeSafeCameraFromBounds(getVisibleBounds(graph, visibleNodes, visibleEdges));
+
+// ── 内容包围盒测量（纳入站名文本等真实渲染宽度） ─────────────────────────────────
+
+/** 离屏测量容器：隐藏于视口外，用于让克隆 SVG 完成布局后读取 getBBox() */
+let measureContentContainer: HTMLDivElement | null = null;
+const getMeasureContentContainer = (): HTMLDivElement => {
+    if (!measureContentContainer) {
+        measureContentContainer = document.createElement('div');
+        measureContentContainer.setAttribute('aria-hidden', 'true');
+        measureContentContainer.style.position = 'fixed';
+        measureContentContainer.style.left = '-100000px';
+        measureContentContainer.style.top = '-100000px';
+        measureContentContainer.style.width = '0';
+        measureContentContainer.style.height = '0';
+        measureContentContainer.style.overflow = 'hidden';
+        measureContentContainer.style.pointerEvents = 'none';
+        document.body.appendChild(measureContentContainer);
+    }
+    return measureContentContainer;
+};
+
+/**
+ * 测量当前帧实际渲染内容（节点、边、站名文本等，不含背景地图层）在世界坐标系中的包围盒。
+ * getVisibleBounds 只采样节点/边端点坐标，会漏掉站名文本标签的宽度；全览时若只用端点坐标，
+ * 长站名（如"广州火车站"）会向左溢出、被左上统计卡片遮挡。这里改为读取真实渲染盒。
+ */
+const measureFrameContentBounds = (elem: SVGSVGElement): GraphBounds | null => {
+    const mapLayer = elem.querySelector('[data-map-layer]');
+    if (mapLayer) (mapLayer as SVGElement).setAttribute('visibility', 'hidden');
+    try {
+        const container = getMeasureContentContainer();
+        container.appendChild(elem);
+        const bbox = elem.getBBox();
+        elem.remove();
+        if (!bbox || (bbox.width === 0 && bbox.height === 0)) return null;
+        return { xMin: bbox.x, xMax: bbox.x + bbox.width, yMin: bbox.y, yMax: bbox.y + bbox.height };
+    } catch {
+        elem.remove();
+        return null;
+    } finally {
+        if (mapLayer) (mapLayer as SVGElement).setAttribute('visibility', '');
+    }
+};
+
+const getElementBounds = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    elements: AnimationStep[]
+): GraphBounds | undefined => {
+    const nodes = new Set<NodeId>();
+    const edges = new Set<LineId>();
+    elements.forEach(element =>
+        element.kind === 'node' ? nodes.add(element.id as NodeId) : edges.add(element.id as LineId)
+    );
+    if (nodes.size === 0 && edges.size === 0) return undefined;
+    return getVisibleBounds(graph, nodes, edges);
+};
+
+const getBoundsFitZoom = (bounds: GraphBounds): number => {
+    const width = Math.max(bounds.xMax - bounds.xMin, 1);
+    const height = Math.max(bounds.yMax - bounds.yMin, 1);
+    return Math.max(
+        8,
+        Math.min(
+            100,
+            Math.min(
+                (CAMERA_SAFE_VIEWPORT_WIDTH / (width * 1.12)) * 100,
+                (CAMERA_SAFE_VIEWPORT_HEIGHT / (height * 1.12)) * 100
+            )
+        )
+    );
 };
 
 // ── Edge progress animation ────────────────────────────────────────────────────
@@ -589,9 +788,11 @@ const applyCameraViewBox = (
         y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
     };
     const cameraFocus = center ?? fallbackCenter;
-    const zoomFactor = Math.max(effectiveZoom, 1) / 100;
+    const zoomFactor = Math.max(effectiveZoom, 0.1) / 100;
     const viewportWidth = CAMERA_VIEWPORT_WIDTH / zoomFactor;
     const viewportHeight = CAMERA_VIEWPORT_HEIGHT / zoomFactor;
+    // 主画布始终居中，不做额外偏移。HUD（createVideoInfoOverlay）也用同一个 cameraFocus，
+    // 两者坐标系完全对齐，内容居中于安全矩形内，不会被 HUD 遮挡。
     elem.setAttribute(
         'viewBox',
         `${cameraFocus.x - viewportWidth / 2} ${cameraFocus.y - viewportHeight / 2} ${viewportWidth} ${viewportHeight}`
@@ -734,9 +935,8 @@ const createVideoInfoOverlay = (
     mmBg.setAttribute('y', miniMapY.toString());
     mmBg.setAttribute('width', miniMapW.toString());
     mmBg.setAttribute('height', miniMapH.toString());
-    mmBg.setAttribute('fill', 'rgba(255,255,255,0.9)');
-    mmBg.setAttribute('stroke', 'black');
-    mmBg.setAttribute('stroke-width', (2 * pw).toString());
+    mmBg.setAttribute('fill', '#ffffff');
+    mmBg.setAttribute('stroke', 'none');
     mmBg.setAttribute('rx', (6 * pw).toString());
     mmBg.setAttribute('ry', (6 * ph).toString());
     svg.appendChild(mmBg);
@@ -768,11 +968,39 @@ const createVideoInfoOverlay = (
         );
         // 导入完整图形，但小地图只显示线路和节点主体，不显示站名文字。
         Array.from(fullGraphSnapshot.children).forEach(child => {
-            const imported = document.importNode(child, true);
-            imported.querySelectorAll('text, [data-station-name], .station-name').forEach(label => label.remove());
+            const source = child as Element;
+            if (
+                source.matches(
+                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution]'
+                )
+            )
+                return;
+            const imported = document.importNode(child, true) as Element;
+            if (
+                imported.matches(
+                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution]'
+                )
+            )
+                return;
+            imported
+                .querySelectorAll(
+                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution], text, [data-station-name], .station-name, .rmp-virtual-node, g[id^="stn_"] path, g[id^="misc_node_"] path, g[id^="node_"] path'
+                )
+                .forEach(label => label.remove());
             mmContent.appendChild(imported);
         });
         svg.appendChild(mmContent);
+        const mmBorder = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        mmBorder.setAttribute('x', miniMapX.toString());
+        mmBorder.setAttribute('y', miniMapY.toString());
+        mmBorder.setAttribute('width', miniMapW.toString());
+        mmBorder.setAttribute('height', miniMapH.toString());
+        mmBorder.setAttribute('fill', 'none');
+        mmBorder.setAttribute('stroke', '#000000');
+        mmBorder.setAttribute('stroke-width', (4 * pw).toString());
+        mmBorder.setAttribute('rx', (6 * pw).toString());
+        mmBorder.setAttribute('ry', (6 * ph).toString());
+        svg.appendChild(mmBorder);
 
         // Viewport indicator
         const vpW = viewportWidth;
@@ -928,65 +1156,24 @@ const createVideoInfoOverlay = (
     return svg;
 };
 
-// ── Watermark ──────────────────────────────────────────────────────────────────
-
-let watermarkLogoMarkupCache: string | undefined;
-
-const getWatermarkLogoMarkup = async (): Promise<string> => {
-    if (!watermarkLogoMarkupCache) {
-        const logoSVGRep = await fetch('logo.svg');
-        const logoSVG = await logoSVGRep.text();
-        const temp = document.createElement('div');
-        temp.innerHTML = logoSVG;
-        watermarkLogoMarkupCache = temp.querySelector('svg')?.innerHTML ?? '';
-    }
-    return watermarkLogoMarkupCache;
-};
-
-const createVideoWatermarkElement = async (effectiveZoom: number) => {
-    const zoomFactor = Math.max(effectiveZoom, 1) / 100;
-    const viewportWidth = CAMERA_VIEWPORT_WIDTH / zoomFactor;
-    const worldUnitsPerPixel = viewportWidth / VIDEO_EXPORT_OUTPUT_WIDTH;
-    const watermarkX =
-        (VIDEO_EXPORT_OUTPUT_WIDTH - VIDEO_WATERMARK_WIDTH - VIDEO_WATERMARK_MARGIN) * worldUnitsPerPixel;
-    const watermarkY =
-        (VIDEO_EXPORT_OUTPUT_HEIGHT - VIDEO_WATERMARK_HEIGHT - VIDEO_WATERMARK_MARGIN) * worldUnitsPerPixel;
-
-    const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    info.setAttribute('id', 'rmp_info');
-    info.setAttribute('opacity', '0.5');
-    info.setAttribute('transform', `translate(${watermarkX}, ${watermarkY}) scale(${worldUnitsPerPixel})`);
-
-    const logo = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    logo.setAttribute('transform', 'scale(0.1)');
-    logo.setAttribute('font-family', 'Arial, sans-serif');
-    logo.innerHTML = await getWatermarkLogoMarkup();
-
-    const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    rmp.setAttribute('font-family', 'Arial, sans-serif');
-    rmp.setAttribute('font-size', '32');
-    rmp.setAttribute('x', '60');
-    rmp.setAttribute('y', '25');
-    rmp.appendChild(document.createTextNode('Rail Map Painter'));
-
-    const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    link.setAttribute('font-family', 'Arial, sans-serif');
-    link.setAttribute('font-size', '20');
-    link.setAttribute('x', '60');
-    link.setAttribute('y', '50');
-    let url = window.location.origin;
-    if (url.includes('github')) url = 'https://railmapgen.github.io/';
-    else if (url.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
-    url += '?app=rmp';
-    link.appendChild(document.createTextNode(url));
-
-    info.appendChild(logo);
-    info.appendChild(rmp);
-    info.appendChild(link);
-    return info;
-};
-
 // ── Frame SVG creation ─────────────────────────────────────────────────────────
+
+let cachedMapLayerMarkup: string | undefined;
+let cachedMapLayerTemplate: SVGSVGElement | undefined;
+
+const getMapLayerTemplate = (markup?: string): SVGSVGElement | undefined => {
+    if (!markup) return undefined;
+    if (markup === cachedMapLayerMarkup && cachedMapLayerTemplate) {
+        return cachedMapLayerTemplate;
+    }
+    const parsed = new DOMParser().parseFromString(
+        `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">${markup}</svg>`,
+        'image/svg+xml'
+    );
+    cachedMapLayerMarkup = markup;
+    cachedMapLayerTemplate = parsed.documentElement as unknown as SVGSVGElement;
+    return cachedMapLayerTemplate;
+};
 
 const createFrameSVG = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -998,7 +1185,10 @@ const createFrameSVG = async (
     cameraVelocity: { x: number; y: number } | undefined,
     _previousBasicStations: Set<StnId>,
     effectiveZoom: number,
-    hideWatermark: boolean,
+    /** 全览缓动进度（0→1）：缩放自 userScale 向"包含文本的精确安全相机"平滑过渡的程度 */
+    overviewEaseProgress = -1,
+    /** 用户初始缩放：全览缩放从此值开始缓动 */
+    userScale = 0,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
     existsNodeTypes: Set<NodeType>,
@@ -1010,9 +1200,15 @@ const createFrameSVG = async (
     badgeGroup?: { bgColor: string; text: string } | null,
     /** 聚焦插值相机位置：提供时跳过惯性模型，直接定位到该点（聚焦期间镜头沿"起点→目标"平滑插值） */
     cameraOverrideCenter?: { x: number; y: number } | null,
-    /** 当前帧是否处于聚焦阶段：聚焦时不附加 RMP 水印（与全览一致保持画面简洁） */
-    isFocusPhase?: boolean,
-    nodeVersions?: Map<NodeId, number>
+    /** 预览跳转至指定时间点时直接定位相机，避免沿用播放中的惯性过渡 */
+    snapCameraToTarget = false,
+    nodeVersions?: Map<NodeId, number>,
+    /** 地图图层快照（当前画布地图图层序列化标记）：存在时注入帧 SVG 作为底层背景 */
+    mapLayerMarkup?: string,
+    /** 已解析的地图图层模板，预览时复用以避免每帧重复解析大体积 SVG */
+    mapLayerTemplate?: SVGSVGElement,
+    /** 全览专用安全相机（来自 processFrame 返回值）：存在时优先使用其精确值，跳过弹簧追赶系统 */
+    safeOverviewCamera?: { center: { x: number; y: number }; zoom: number }
 ): Promise<{
     elem: SVGSVGElement;
     width: number;
@@ -1020,7 +1216,28 @@ const createFrameSVG = async (
     cameraCenter: { x: number; y: number };
     cameraVelocity: { x: number; y: number };
 }> => {
-    const { elem } = await makeRenderReadySVGElement(graph, true, isSystemFontsOnly, languages, false, 1.1);
+    const { elem } = await makeRenderReadySVGElement(graph, false, true, isSystemFontsOnly, languages, false, 1.1);
+
+    // 注入地图图层快照：预览复用已解析模板，避免每帧重新解析大体积地图 SVG。
+    if (mapLayerTemplate || mapLayerMarkup) {
+        try {
+            const template = mapLayerTemplate ?? getMapLayerTemplate(mapLayerMarkup);
+            if (template) {
+                const mapLayer = elem.querySelector('[data-map-layer]') ?? elem;
+                const snapshotMapLayer = template.querySelector('[data-map-layer]');
+                mapLayer.replaceChildren();
+                if (snapshotMapLayer) {
+                    [...snapshotMapLayer.childNodes].forEach(child => mapLayer.appendChild(child.cloneNode(true)));
+                    const snapshotStyle = template.querySelector('style[data-map-style]');
+                    if (snapshotStyle) elem.prepend(snapshotStyle.cloneNode(true));
+                } else {
+                    [...template.childNodes].forEach(child => mapLayer.appendChild(child.cloneNode(true)));
+                }
+            }
+        } catch {
+            // 地图图层快照无效时静默跳过，不影响视频导出
+        }
+    }
 
     if (nodeVersions) {
         nodeVersions.forEach((versionNumber, nodeId) => {
@@ -1048,7 +1265,7 @@ const createFrameSVG = async (
                         { id, transform: `translate(${versionSnapshot.x}, ${versionSnapshot.y})` },
                         React.createElement(
                             Provider,
-                            { store },
+                            { store } as any,
                             React.createElement(Component, {
                                 id: nodeId as any,
                                 x: versionSnapshot.x,
@@ -1107,7 +1324,8 @@ const createFrameSVG = async (
         if (!edgeElem) return;
         const anim = animatingElements.get(edgeId);
         const progress = anim?.kind === 'edge' ? anim.progress : 1;
-        applyEdgeProgress(edgeElem, progress, anim?.reverse ?? false);
+        applyEdgeProgress(edgeElem, anim?.quickComplete ? 1 : progress, anim?.reverse ?? false);
+        if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
         const edgeMileage = graph.getEdgeAttribute(edgeId, 'mileage');
         mileage += typeof edgeMileage === 'number' && Number.isFinite(edgeMileage) ? edgeMileage * progress : 0;
     });
@@ -1121,7 +1339,10 @@ const createFrameSVG = async (
         const anim = animatingElements.get(nodeId);
         const revealProgress = anim?.kind === 'node' ? anim.progress : 1;
         const textProgress = anim?.kind === 'node' ? (anim.textProgress ?? anim.progress) : 1;
-        if (revealProgress <= 0) {
+        if (anim?.quickComplete) {
+            nodeGroup.removeAttribute('visibility');
+            nodeGroup.setAttribute('opacity', `${revealProgress}`);
+        } else if (revealProgress <= 0) {
             // 渐显过程开始之前：整组隐藏，绝不出现“一个点”在画布上
             // （用 visibility 而非 opacity，避免部分车站组件内部样式覆盖 opacity 属性）
             nodeGroup.setAttribute('visibility', 'hidden');
@@ -1131,21 +1352,31 @@ const createFrameSVG = async (
         }
     });
 
+    // 构建"含站名文本等真实渲染宽度"的全览安全相机目标。
+    // 此前 safeOverviewCamera 直接覆盖 finalCameraCenter/finalZoom，跳过了弹簧-阻尼追击与 smoothstep 缩放缓动，
+    // 导致全览时视口瞬间跳变。这里只把它作为目标：中心交给弹簧-阻尼逐帧收敛，缩放交给缓动过渡。
+    let refinedSafeCamera: { center: { x: number; y: number }; zoom: number } | undefined;
+    if (safeOverviewCamera) {
+        const contentBounds = measureFrameContentBounds(elem);
+        refinedSafeCamera = contentBounds ? computeSafeCameraFromBounds(contentBounds) : safeOverviewCamera;
+    }
+
     // Camera system（惯性弹簧-阻尼模型）
     const fallbackBounds = calculateCanvasSize(graph);
     const fallbackCenter = {
         x: (fallbackBounds.xMin + fallbackBounds.xMax) / 2,
         y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
     };
-    const targetCenter =
+    const focusTarget =
         focus.kind === 'none' ? fallbackCenter : (getCameraTargetPointForFrame(graph, elem, focus) ?? fallbackCenter);
+    // 全览时弹簧目标 = 含文本的精确安全相机中心；其余阶段仍跟踪镜头焦点
+    const targetCenter = refinedSafeCamera?.center ?? focusTarget;
     let nextCameraCenter: { x: number; y: number };
     let nextCameraVelocity: { x: number; y: number };
-    if (cameraOverrideCenter) {
-        // 聚焦插值：直接定位到插值位置，跳过惯性模型。
-        // 聚焦期间镜头沿"全览中心→聚焦目标"平滑插值，保证聚焦阶段内一定到位，
-        // 且与缩放过渡（全览缩放→用户缩放）同步完成，观感是"边拉近边推向目标"。
-        nextCameraCenter = cameraOverrideCenter;
+    if (cameraOverrideCenter || snapCameraToTarget) {
+        // 聚焦插值或预览跳转：直接定位到目标，跳过惯性模型。
+        // 正常播放仍使用下方的弹簧-阻尼模型。
+        nextCameraCenter = cameraOverrideCenter ?? targetCenter;
         nextCameraVelocity = { x: 0, y: 0 };
     } else if (cameraCenter) {
         const frameScale = 1;
@@ -1181,8 +1412,15 @@ const createFrameSVG = async (
     // Clone SVG for mini-map BEFORE viewBox modification (preserves original coordinates)
     const frameSnapshot = elem.cloneNode(true) as SVGSVGElement;
 
-    applyCameraViewBox(graph, elem, nextCameraCenter, effectiveZoom);
+    // 视口渲染值：中心取弹簧-阻尼输出（保留惯性），缩放向"含文本精确安全相机"缓动（smoothstep）。
+    // 非全览时使用外部计算好的 effectiveZoom（含 focusZoom 过渡）；全览时重算为平滑缓动值。
+    const finalCameraCenter = nextCameraCenter;
+    const finalZoom = refinedSafeCamera
+        ? getEffectiveZoom(overviewEaseProgress, userScale, refinedSafeCamera.zoom)
+        : effectiveZoom;
+    applyCameraViewBox(graph, elem, finalCameraCenter, finalZoom);
 
+    // 主画布和 HUD 始终使用同一个 finalCameraCenter，坐标系完全对齐
     // Add info overlay
     const stationCount = [...visibleNodes].filter(id => {
         if (!isStationNodeId(id)) return false;
@@ -1204,16 +1442,11 @@ const createFrameSVG = async (
             stationCount,
             mileage,
             frameSnapshot,
-            nextCameraCenter,
-            effectiveZoom,
+            finalCameraCenter,
+            finalZoom,
             graphBounds
         )
     );
-
-    // 全览（overview）与聚焦（focus）模式下不附加 RMP 水印，保持画面简洁
-    if (!hideWatermark && !isFocusPhase && focus.kind !== 'overview') {
-        elem.appendChild(await createVideoWatermarkElement(effectiveZoom));
-    }
 
     return {
         elem,
@@ -1242,14 +1475,19 @@ const renderSVGToCanvas = async (
         ctx.fillRect(0, 0, width, height);
     }
     const svgString = svgElem.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
-    const src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgString)));
+    const src = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml' }));
     return new Promise((resolve, reject) => {
         const img = new Image();
+        const cleanup = () => URL.revokeObjectURL(src);
         img.onload = () => {
             ctx.drawImage(img, 0, 0, width, height);
+            cleanup();
             resolve(canvas);
         };
-        img.onerror = () => reject(new Error('Failed to load SVG image for video frame'));
+        img.onerror = () => {
+            cleanup();
+            reject(new Error('Failed to load SVG image for video frame'));
+        };
         img.src = src;
     });
 };
@@ -1274,7 +1512,6 @@ interface FrameContext {
     userScale: number;
     overviewZoom: number;
     isTransparent: boolean;
-    hideWatermark: boolean;
     isSystemFontsOnly: boolean;
     bgColor: string;
     activeLineGroups: LineGroup[];
@@ -1297,11 +1534,15 @@ interface FrameContext {
     phaseDurations: number[];
     overviewZoomOverride?: number;
     overviewPhaseProgress?: number;
+    currentZoom?: number;
+    focusZoom?: number;
+    focusZoomTransition?: { phaseIndex: number; start: number; target: number; progress: number } | null;
     /** 全览保持状态：overview 结束后继续保持全览缩放与视口，直到 focus 动作取消 */
     overviewHold?: { center: { x: number; y: number }; zoom: number } | null;
-    focusCenterHold?: { x: number; y: number } | null;
+    focusCenterHold?: { center: { x: number; y: number }; zoom: number; batchIndex: number } | null;
     /** 聚焦插值起点：聚焦阶段首帧的相机位置，用于聚焦期间镜头沿"起点→目标"线性插值到位 */
     focusTransitionStart?: { x: number; y: number } | null;
+    mapLayerMarkup?: string;
 }
 
 /**
@@ -1329,7 +1570,7 @@ async function calculateEdgeLengths(
         }
     };
     try {
-        const { elem } = await makeRenderReadySVGElement(graph, true, isSystemFontsOnly, languages, false, 1.1);
+        const { elem } = await makeRenderReadySVGElement(graph, false, true, isSystemFontsOnly, languages, false, 1.1);
         // 临时挂载到文档：部分浏览器对脱离 DOM（或 display:none）的 SVG 调用
         // getTotalLength() 会返回 0，导致所有边长度相等、线段绘制速度与长度无关。
         // 使用 visibility:hidden + 移出屏幕，保证元素参与布局但不闪烁。
@@ -1412,8 +1653,8 @@ function scheduleElementFrames(
         .filter(e => e.kind === 'edge')
         .reduce((s, e) => s + (ctx.edgeLengths.get(e.id as LineId) ?? 100), 0);
 
-    // 基础动画时长：节点 0.5s，边按长度成比例分配剩余时间 t - 0.5n
-    const baseNodeFrames = Math.max(1, Math.round(ctx.fps * 0.5));
+    // 基础动画时长：车站时长由动作配置控制，边按长度成比例分配剩余时间。
+    const baseNodeFrames = Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration));
     const getBaseEdgeDur = (edgeId: Id): number => {
         const edgeLen = ctx.edgeLengths.get(edgeId as LineId) ?? 100;
         const minimumEdgeSec = 0.5;
@@ -1483,23 +1724,35 @@ const getEffectiveZoom = (overviewProgress: number, userScale: number, overviewZ
     return userScale + (overviewZoom - userScale) * t;
 };
 
+const getFrameEffectiveZoom = (ctx: FrameContext, overviewProgress: number): number => {
+    const focusZoom = ctx.focusZoomTransition
+        ? ctx.focusZoomTransition.start +
+          (ctx.focusZoomTransition.target - ctx.focusZoomTransition.start) *
+              smoothstep(0, 1, ctx.focusZoomTransition.progress)
+        : ctx.focusZoom;
+    const zoom =
+        focusZoom ?? getEffectiveZoom(overviewProgress, ctx.userScale, ctx.overviewZoomOverride ?? ctx.overviewZoom);
+    ctx.currentZoom = zoom;
+    return zoom;
+};
+
 function processFrame(
     ctx: FrameContext,
     frameIndex: number,
     phases: AnimationPhase[],
     phaseFrameRanges: Array<{ start: number; end: number }>
 ) {
-    // Find which phase this frame belongs to
-    let currentPhaseIndex = -1;
-    let phaseLocalProgress = 0; // 0..1 within the phase
-    for (let i = 0; i < phases.length; i++) {
-        const range = phaseFrameRanges[i];
-        if (frameIndex >= range.start && frameIndex < range.end) {
-            currentPhaseIndex = i;
-            phaseLocalProgress = range.end > range.start ? (frameIndex - range.start) / (range.end - range.start) : 0;
-            break;
-        }
-    }
+    // 同一批次的阶段可能重叠。以最后一个活动阶段提供镜头/文案，下面再合并其余活动阶段的元素状态。
+    const activePhaseIndices = phases.flatMap((_, index) => {
+        const range = phaseFrameRanges[index];
+        return frameIndex >= range.start && frameIndex < range.end ? [index] : [];
+    });
+    const currentPhaseIndex = activePhaseIndices.at(-1) ?? -1;
+    const currentRange = currentPhaseIndex === -1 ? undefined : phaseFrameRanges[currentPhaseIndex];
+    const phaseLocalProgress =
+        currentRange && currentRange.end > currentRange.start
+            ? (frameIndex - currentRange.start) / (currentRange.end - currentRange.start)
+            : 0;
 
     // If past all phases, overview mode
     const isOverview = currentPhaseIndex === -1;
@@ -1517,6 +1770,8 @@ function processFrame(
     let currentDate = '';
     let currentRemark = '';
     let currentActiveLineIds: string[] = [];
+    /** 全览动作专用安全相机（由 getSafeOverviewCamera 计算），传递给 createFrameSVG 用于精确设置 viewBox 和 HUD */
+    let safeOverviewCamera: { center: { x: number; y: number }; zoom: number } | undefined;
 
     const stateEnd = isOverview ? phases.length : Math.max(0, currentPhaseIndex);
     for (let i = 0; i < stateEnd; i++) {
@@ -1535,28 +1790,98 @@ function processFrame(
             }
         } else if (previousPhase.type === 'close') {
             for (const elem of previousPhase.elements) {
-                if (elem.kind === 'node') visibleNodes.delete(elem.id as NodeId);
-                else visibleEdges.delete(elem.id as LineId);
+                if (elem.kind === 'node') {
+                    const nodeId = elem.id as NodeId;
+                    const closeStyle = previousPhase.closeNodeStyles?.[nodeId];
+                    if (closeStyle?.visible) {
+                        visibleNodes.add(nodeId);
+                        nodeVersions.set(nodeId, closeStyle.version);
+                    } else {
+                        visibleNodes.delete(nodeId);
+                        nodeVersions.delete(nodeId);
+                    }
+                } else if (ctx.graph.hasEdge(elem.id as LineId)) {
+                    visibleEdges.delete(elem.id as LineId);
+                }
             }
         }
     }
 
     previousNodeVersions.clear();
     nodeVersions.forEach((version, nodeId) => previousNodeVersions.set(nodeId, version));
+
+    // 将同时进行但非主阶段的开通/停运动画合并到本帧；主阶段仍负责镜头和文案。
+    for (const phaseIndex of activePhaseIndices.filter(index => index !== currentPhaseIndex)) {
+        const activePhase = phases[phaseIndex];
+        if (activePhase.type !== 'open' && activePhase.type !== 'close') continue;
+        const range = phaseFrameRanges[phaseIndex];
+        const steps = activePhase.type === 'close' ? [...activePhase.elements].reverse() : activePhase.elements;
+        if (!activePhase.quickComplete) scheduleElementFrames(ctx, activePhase, range, phaseIndex);
+        for (const step of steps) {
+            const key = `${phaseIndex}:${step.id}`;
+            const startFrame = activePhase.quickComplete ? range.start : (ctx.elementStartFrame.get(key) ?? range.end);
+            const duration = activePhase.quickComplete
+                ? Math.max(1, Math.round(ctx.fps))
+                : (ctx.elementDurationFrame.get(key) ??
+                  Math.max(1, Math.round(ctx.fps * activePhase.nodeAnimationDuration)));
+            const openProgress = frameIndex < startFrame ? 0 : clamp01((frameIndex - startFrame) / duration);
+            const progress = activePhase.type === 'close' ? 1 - openProgress : openProgress;
+            if (step.kind === 'node') {
+                const nodeId = step.id as NodeId;
+                const closeStyle = activePhase.closeNodeStyles?.[nodeId];
+                if (activePhase.type === 'close' && progress <= 0 && !closeStyle?.visible) {
+                    visibleNodes.delete(nodeId);
+                    nodeVersions.delete(nodeId);
+                } else {
+                    visibleNodes.add(nodeId);
+                    nodeVersions.set(
+                        nodeId,
+                        activePhase.type === 'close' && closeStyle?.visible ? closeStyle.version : (step.version ?? 1)
+                    );
+                }
+            } else if (activePhase.type === 'open' && isEdgeExportVisible(ctx.graph, step.id as LineId)) {
+                visibleEdges.add(step.id as LineId);
+            } else if (activePhase.type === 'close' && ctx.graph.hasEdge(step.id as LineId)) {
+                if (progress <= 0) visibleEdges.delete(step.id as LineId);
+                else visibleEdges.add(step.id as LineId);
+            }
+            animatingElements.set(step.id, {
+                kind: step.kind,
+                progress,
+                textProgress: step.kind === 'node' ? progress : 1,
+                reverse: step.reverse,
+                state: progress <= 0 ? 'not-drawn' : progress >= 1 ? 'drawn' : 'drawing',
+                quickComplete: activePhase.quickComplete,
+            });
+        }
+    }
+
     ctx.overviewZoomOverride = undefined;
     ctx.overviewPhaseProgress = undefined;
     if (isOverview) {
         ctx.focusCenterHold = null;
-        focus = { kind: 'overview', center: getVisibleCenter(ctx.graph, visibleNodes, visibleEdges) };
+        const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
+        focus = { kind: 'overview', center: safeCamera.center };
         ctx.lastFocus = focus;
-        ctx.overviewZoomOverride = getVisibleOverviewZoom(ctx.graph, visibleNodes, visibleEdges);
+        ctx.overviewZoomOverride = safeCamera.zoom;
+        safeOverviewCamera = safeCamera;
     } else if (phase?.type === 'overview') {
         ctx.focusCenterHold = null;
-        focus = { kind: 'overview', center: getVisibleCenter(ctx.graph, visibleNodes, visibleEdges) };
+        const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
+        focus = { kind: 'overview', center: safeCamera.center };
         ctx.lastFocus = focus;
-        ctx.overviewZoomOverride = getVisibleOverviewZoom(ctx.graph, visibleNodes, visibleEdges);
+        ctx.overviewZoomOverride = safeCamera.zoom;
         ctx.overviewPhaseProgress = phaseLocalProgress;
+        safeOverviewCamera = safeCamera;
     } else if (phase) {
+        const keepsFocusZoom =
+            phase.quickComplete &&
+            (phase.type === 'open' || phase.type === 'close') &&
+            ctx.focusCenterHold?.batchIndex === phase.batchIndex;
+        if (phase.type !== 'focus' && !keepsFocusZoom) {
+            ctx.focusZoom = undefined;
+            ctx.focusZoomTransition = null;
+        }
         if (phase.type === 'open' || phase.type === 'close') {
             currentDate = phase.date || currentDate;
             // 备注严格跟随当前动作：当前动作无备注则不显示，绝不 fallback 到上一条动作的旧备注，
@@ -1571,37 +1896,43 @@ function processFrame(
 
         const getKey = (id: Id) => `${currentPhaseIndex}:${id}`;
         if (phase.type === 'open') {
-            scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
+            if (!phase.quickComplete)
+                scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
             for (const elem of phase.elements) {
-                const startFrame =
-                    ctx.elementStartFrame.get(getKey(elem.id)) ?? phaseFrameRanges[currentPhaseIndex].end;
+                const startFrame = phase.quickComplete
+                    ? phaseFrameRanges[currentPhaseIndex].start
+                    : (ctx.elementStartFrame.get(getKey(elem.id)) ?? phaseFrameRanges[currentPhaseIndex].end);
                 if (startFrame > frameIndex) continue;
                 if (elem.kind === 'node' && !isVirtualNode(ctx.graph, elem.id)) {
                     visibleNodes.add(elem.id as NodeId);
                     nodeVersions.set(elem.id as NodeId, elem.version ?? 1);
-                } else if (elem.kind === 'edge') visibleEdges.add(elem.id as LineId);
-            }
-        } else if (phase.type === 'close') {
-            for (const elem of phase.elements) {
-                if (elem.kind === 'node') nodeVersions.delete(elem.id as NodeId);
-                if (elem.kind === 'node') visibleNodes.delete(elem.id as NodeId);
-                else visibleEdges.delete(elem.id as LineId);
+                } else if (elem.kind === 'edge' && isEdgeExportVisible(ctx.graph, elem.id as LineId)) {
+                    visibleEdges.add(elem.id as LineId);
+                }
             }
         }
 
         // Apply animations for elements being opened in this phase
         if (phase.type === 'open') {
-            scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
+            if (!phase.quickComplete)
+                scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
             // Process animations and set focus
             let latestFocusElement: AnimationStep | undefined;
             for (const step of phase.elements) {
-                const startFrame = ctx.elementStartFrame.get(getKey(step.id)) ?? frameIndex;
+                const startFrame = phase.quickComplete
+                    ? phaseFrameRanges[currentPhaseIndex].start
+                    : (ctx.elementStartFrame.get(getKey(step.id)) ?? frameIndex);
                 const frameSinceStart = frameIndex - startFrame;
+                const quickProgress = phase.quickComplete
+                    ? clamp01(frameSinceStart / Math.max(1, Math.round(ctx.fps)))
+                    : undefined;
                 if (step.kind === 'node') {
                     // 节点渐显时长与调度一致（可能被拉伸以填满 phase）
                     const nodeDuration =
-                        ctx.elementDurationFrame.get(getKey(step.id)) ?? Math.max(1, Math.round(ctx.fps * 0.5));
-                    const progress = frameSinceStart < 0 ? 0 : clamp01(frameSinceStart / nodeDuration);
+                        ctx.elementDurationFrame.get(getKey(step.id)) ??
+                        Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration));
+                    const progress =
+                        quickProgress ?? (frameSinceStart < 0 ? 0 : clamp01(frameSinceStart / nodeDuration));
                     const previousVersion = previousNodeVersions.get(step.id as NodeId);
                     // 共享节点在新线路尚未绘制到之前，继续显示上一线路版本；
                     // 不要让未来动作的 progress=0 覆盖它并提前隐藏节点。
@@ -1616,25 +1947,32 @@ function processFrame(
                         textProgress: progress,
                         reverse: false,
                         state: progress <= 0 ? 'not-drawn' : progress >= 1 ? 'drawn' : 'drawing',
+                        quickComplete: phase.quickComplete,
                         versionTransition,
                     });
                     if (frameSinceStart >= 0) latestFocusElement = step;
                 } else {
                     const edgeDuration =
                         ctx.elementDurationFrame.get(getKey(step.id)) ?? Math.max(1, Math.round(ctx.fps * 0.5));
-                    const progress = frameSinceStart < 0 ? 0 : clamp01(frameSinceStart / edgeDuration);
+                    const progress =
+                        quickProgress ?? (frameSinceStart < 0 ? 0 : clamp01(frameSinceStart / edgeDuration));
                     animatingElements.set(step.id, {
                         kind: 'edge',
                         progress,
                         textProgress: 1,
                         reverse: step.reverse,
                         state: progress <= 0 ? 'not-drawn' : progress >= 1 ? 'drawn' : 'drawing',
+                        quickComplete: phase.quickComplete,
                     });
                     if (frameSinceStart >= 0) latestFocusElement = step;
                 }
             }
             const keepFocusFromTransition =
                 phases[currentPhaseIndex - 1]?.type === 'focus' && ctx.lastFocus.kind !== 'none';
+            const keepQuickCompleteFocus =
+                phase.quickComplete &&
+                phases[currentPhaseIndex - 1]?.type === 'focus' &&
+                ctx.lastFocus.kind === 'center';
             if (keepFocusFromTransition && FOCUS_END_POLICY === 'pullBackCenter') {
                 // 方案A：聚焦完成后镜头拉回可见元素中心（仅平移、不缩放）。
                 // 使用 kind:'center' 而非 'overview'，避免触发全览缩放/水印隐藏等全览专属行为。
@@ -1646,9 +1984,15 @@ function processFrame(
                         y: (canvasBounds.yMin + canvasBounds.yMax) / 2,
                     },
                 };
-                ctx.focusCenterHold = center.center;
+                ctx.focusCenterHold = {
+                    center: center.center,
+                    zoom: ctx.currentZoom ?? ctx.userScale,
+                    batchIndex: phase.batchIndex,
+                };
                 focus = center;
                 ctx.lastFocus = focus;
+            } else if (keepQuickCompleteFocus) {
+                focus = ctx.lastFocus;
             } else if (latestFocusElement) {
                 const step = latestFocusElement;
                 if (step.kind === 'node') {
@@ -1665,7 +2009,33 @@ function processFrame(
         } else if (phase.type === 'focus') {
             ctx.focusCenterHold = null;
             const target = phase.focusTarget;
-            if (target?.kind === 'node') {
+            const targetBounds = phase.focusTargetBounds;
+            if (targetBounds) {
+                const targetZoom = getBoundsFitZoom(targetBounds);
+                if (ctx.focusZoomTransition?.phaseIndex !== currentPhaseIndex) {
+                    ctx.focusZoomTransition = {
+                        phaseIndex: currentPhaseIndex,
+                        start: ctx.currentZoom ?? ctx.userScale,
+                        target: targetZoom,
+                        progress: phaseLocalProgress,
+                    };
+                } else {
+                    ctx.focusZoomTransition.progress = phaseLocalProgress;
+                }
+                ctx.focusZoom = targetZoom;
+                focus = {
+                    kind: 'center',
+                    center: {
+                        x: (targetBounds.xMin + targetBounds.xMax) / 2,
+                        y: (targetBounds.yMin + targetBounds.yMax) / 2,
+                    },
+                };
+                ctx.focusCenterHold =
+                    phase.focusTargetBatch === undefined
+                        ? null
+                        : { center: focus.center, zoom: targetZoom, batchIndex: phase.focusTargetBatch };
+                ctx.lastFocus = focus;
+            } else if (target?.kind === 'node') {
                 focus = { kind: 'node', id: target.id as NodeId };
                 ctx.lastFocus = focus;
             } else if (target?.kind === 'edge') {
@@ -1677,45 +2047,103 @@ function processFrame(
                 focus = ctx.lastFocus;
             }
         } else if (phase.type === 'close') {
-            for (const elem of phase.elements) {
-                if (elem.kind === 'node') visibleNodes.add(elem.id as NodeId);
-                else visibleEdges.add(elem.id as LineId);
-            }
-            // Elements being closed: uniform fade out based on phase progress (original implementation)
-            for (const step of phase.elements) {
-                // 清除动画调度记录：若该元素日后再次开通，需要重新调度并从新起点渐显，
-                // 而不是沿用旧的 startFrame 导致直接完整显示（渐显前出现“点”）
-                const progress = 1 - phaseLocalProgress;
+            // 停运开始时必须立即退出全览保持状态。
+            ctx.overviewHold = null;
+            // 停运完全镜像开通：沿用相同的逐元素调度，只把每个元素的进度从 1 反向播到 0。
+            scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
+            let latestFocusElement: AnimationStep | undefined;
+            let latestFocusStartFrame = -1;
+            const closeElements = [...phase.elements].reverse();
+            for (const step of closeElements) {
+                const startFrame = ctx.elementStartFrame.get(getKey(step.id)) ?? frameIndex;
+                const duration = phase.quickComplete
+                    ? Math.max(1, Math.round(ctx.fps))
+                    : (ctx.elementDurationFrame.get(getKey(step.id)) ??
+                      Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration)));
+                const closeStartFrame = phase.quickComplete ? phaseFrameRanges[currentPhaseIndex].start : startFrame;
+                const openProgress =
+                    frameIndex < closeStartFrame ? 0 : clamp01((frameIndex - closeStartFrame) / duration);
+                const progress = 1 - openProgress;
+
                 if (step.kind === 'node') {
+                    const nodeId = step.id as NodeId;
+                    const closeStyle = phase.closeNodeStyles?.[nodeId];
+                    if (progress <= 0) {
+                        if (closeStyle?.visible) {
+                            visibleNodes.add(nodeId);
+                            nodeVersions.set(nodeId, closeStyle.version);
+                        } else {
+                            visibleNodes.delete(nodeId);
+                            nodeVersions.delete(nodeId);
+                        }
+                    } else {
+                        visibleNodes.add(nodeId);
+                    }
+                    const renderProgress = closeStyle?.visible && progress <= 0 ? 1 : progress;
                     animatingElements.set(step.id, {
                         kind: 'node',
-                        progress,
-                        textProgress: progress,
+                        progress: renderProgress,
+                        textProgress: renderProgress,
                         reverse: false,
-                        state: progress >= 1 ? 'drawn' : 'drawing',
+                        state: renderProgress >= 1 ? 'drawn' : 'drawing',
+                        quickComplete: phase.quickComplete,
                     });
                 } else {
+                    visibleEdges.add(step.id as LineId);
                     animatingElements.set(step.id, {
                         kind: 'edge',
                         progress,
                         textProgress: 1,
-                        reverse: !step.reverse,
-                        state: progress >= 1 ? 'drawn' : 'drawing',
+                        reverse: step.reverse,
+                        state: progress <= 0 ? 'not-drawn' : progress >= 1 ? 'drawn' : 'drawing',
+                        quickComplete: phase.quickComplete,
                     });
                 }
+                if (frameIndex >= startFrame && startFrame >= latestFocusStartFrame) {
+                    latestFocusElement = step;
+                    latestFocusStartFrame = startFrame;
+                }
             }
-            // Keep last known focus for camera during close
-            if (ctx.lastFocus.kind !== 'none') {
+
+            const keepQuickCompleteFocus =
+                phase.quickComplete &&
+                phases[currentPhaseIndex - 1]?.type === 'focus' &&
+                ctx.lastFocus.kind === 'center';
+            const closeFocusElement = latestFocusElement ?? closeElements[0];
+            if (keepQuickCompleteFocus) {
                 focus = ctx.lastFocus;
+            } else if (closeFocusElement) {
+                if (closeFocusElement.kind === 'node') {
+                    focus = { kind: 'node', id: closeFocusElement.id as NodeId };
+                } else {
+                    const startFrame = ctx.elementStartFrame.get(getKey(closeFocusElement.id)) ?? frameIndex;
+                    const duration =
+                        ctx.elementDurationFrame.get(getKey(closeFocusElement.id)) ??
+                        Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration));
+                    focus = {
+                        kind: 'edge',
+                        id: closeFocusElement.id as LineId,
+                        progress: 1 - clamp01((frameIndex - startFrame) / duration),
+                        reverse: closeFocusElement.reverse,
+                    };
+                }
+                ctx.lastFocus = focus;
             }
+        }
+        if (
+            phase.quickComplete &&
+            (phase.type === 'open' || phase.type === 'close') &&
+            ctx.focusCenterHold?.batchIndex === phase.batchIndex
+        ) {
+            focus = { kind: 'center', center: ctx.focusCenterHold.center };
+            ctx.focusZoom = ctx.focusCenterHold.zoom;
+            ctx.lastFocus = focus;
         }
         // 等待阶段保持当前镜头；全览阶段使用全图中心。
         if (phase.type === 'wait' && focus.kind === 'none' && ctx.lastFocus.kind !== 'none') {
             focus = ctx.lastFocus;
         }
     }
-
-    if (FOCUS_END_POLICY === 'nextLineStart') ctx.focusCenterHold = null;
 
     // Current active line groups info
     const currentActiveLineGroups = ctx.activeLineGroups.filter(g => currentActiveLineIds.includes(g.id));
@@ -1729,46 +2157,57 @@ function processFrame(
 
     // 全览保持：overview 结束后保持缩放与视口，仅 focus 动作恢复（下一条线起点）
     if (phase?.type === 'overview') {
-        const visibleCenter = getVisibleCenter(ctx.graph, visibleNodes, visibleEdges);
+        // 全览阶段：使用扣除 HUD 安全矩形后的全览相机，保证所有元素落在安全区内
+        const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
+        focus = { kind: 'overview', center: safeCamera.center };
+        ctx.lastFocus = focus;
+        ctx.overviewZoomOverride = safeCamera.zoom;
+        safeOverviewCamera = safeCamera;
         ctx.overviewHold = {
-            center: focus.kind === 'overview' ? focus.center : visibleCenter,
-            zoom: ctx.overviewZoomOverride ?? getVisibleOverviewZoom(ctx.graph, visibleNodes, visibleEdges),
+            center: safeCamera.center,
+            zoom: safeCamera.zoom,
         };
     } else if (phase?.type === 'focus') {
-        // 聚焦：若刚从全览过来，缩放从全览值平滑过渡到用户缩放（避免瞬间跳变导致“聚焦用不了”）。
-        // overviewHold 必须保留到聚焦阶段最后一帧再释放：processFrame 每帧开头会重置
-        // overviewZoomOverride / overviewPhaseProgress，若首帧即释放，第二帧起缩放会直接跳回
-        // 用户缩放，聚焦观感变成“短暂停留后瞬移/跳变”。
-        if (ctx.overviewHold) {
+        if (phase.focusTargetBounds) {
+            ctx.overviewHold = null;
+        } else if (ctx.overviewHold) {
             ctx.overviewZoomOverride = ctx.overviewHold.zoom;
             ctx.overviewPhaseProgress = 1 - phaseLocalProgress;
             const range = phaseFrameRanges[currentPhaseIndex];
             if (frameIndex >= range.end - 1) ctx.overviewHold = null;
         }
     } else if (ctx.overviewHold && !isOverview) {
-        focus = { kind: 'overview', center: ctx.overviewHold.center };
-        ctx.overviewZoomOverride = ctx.overviewHold.zoom;
+        // 全览后的保持/过渡帧：同样扣除 HUD 安全矩形，避免内容被统计卡片/小地图遮挡
+        const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
+        focus = { kind: 'overview', center: safeCamera.center };
+        ctx.lastFocus = focus;
+        ctx.overviewZoomOverride = safeCamera.zoom;
         ctx.overviewPhaseProgress = 1;
+        safeOverviewCamera = safeCamera;
     }
 
     // 聚焦插值：聚焦期间镜头沿"起点→聚焦目标"平滑移动（与缩放过渡同步），
     // 保证聚焦阶段内镜头一定到位，而非受惯性/速度上限限制追不上目标。
     let cameraOverrideCenter: { x: number; y: number } | null = null;
-    if (phase?.type === 'focus' && (focus.kind === 'node' || focus.kind === 'edge')) {
+    if (phase?.type === 'focus' && (focus.kind === 'node' || focus.kind === 'edge' || focus.kind === 'center')) {
         if (phaseLocalProgress <= 0) ctx.focusTransitionStart = null; // 新聚焦阶段：重置插值起点
-        const targetPoint = getFocusApproxPoint(ctx.graph, {
-            kind: focus.kind,
-            id: focus.id as Id,
-            reverse: focus.kind === 'edge' ? focus.reverse : false,
-        });
+        const targetPoint =
+            focus.kind === 'center'
+                ? focus.center
+                : getFocusApproxPoint(ctx.graph, {
+                      kind: focus.kind,
+                      id: focus.id as Id,
+                      reverse: focus.kind === 'edge' ? focus.reverse : false,
+                  });
         if (targetPoint) {
             if (!ctx.focusTransitionStart) {
                 ctx.focusTransitionStart = ctx.cameraCenter ?? ctx.overviewHold?.center ?? targetPoint;
             }
+            const transitionStart = ctx.focusTransitionStart;
             const t = smoothstep(0, 1, phaseLocalProgress);
             cameraOverrideCenter = {
-                x: ctx.focusTransitionStart.x + (targetPoint.x - ctx.focusTransitionStart.x) * t,
-                y: ctx.focusTransitionStart.y + (targetPoint.y - ctx.focusTransitionStart.y) * t,
+                x: transitionStart.x + (targetPoint.x - transitionStart.x) * t,
+                y: transitionStart.y + (targetPoint.y - transitionStart.y) * t,
             };
         }
     }
@@ -1785,10 +2224,13 @@ function processFrame(
         currentActiveLineGroups,
         badgeGroup,
         cameraOverrideCenter,
-        /** 当前帧是否处于聚焦阶段（用于隐藏 RMP 水印等聚焦专属行为） */
-        isFocusPhase: phase?.type === 'focus',
-        overviewCenter: isOverview ? getVisibleCenter(ctx.graph, visibleNodes, visibleEdges) : undefined,
-        overviewZoom: isOverview ? getVisibleOverviewZoom(ctx.graph, visibleNodes, visibleEdges) : undefined,
+        overviewCenter:
+            safeOverviewCamera?.center ??
+            (isOverview ? getVisibleCenter(ctx.graph, visibleNodes, visibleEdges) : undefined),
+        overviewZoom:
+            safeOverviewCamera?.zoom ??
+            (isOverview ? getVisibleOverviewZoom(ctx.graph, visibleNodes, visibleEdges) : undefined),
+        safeOverviewCamera,
     };
 }
 
@@ -1802,24 +2244,16 @@ const getPhaseFrameRanges = (
         Math.max(1, Math.round(fps * VIDEO_OVERVIEW_SECONDS))
     );
     const animationFrames = Math.max(1, totalFrames - overviewFrames);
-    const totalWeight = phases.reduce((sum, phase) => sum + Math.max(0, phase.durationWeight), 0);
-    const phaseFrameRanges: Array<{ start: number; end: number }> = [];
-    let frameCursor = 0;
-    phases.forEach((phase, index) => {
-        const isLast = index === phases.length - 1;
-        const proportionalFrames =
-            totalWeight > 0 ? Math.round((Math.max(0, phase.durationWeight) / totalWeight) * animationFrames) : 0;
-        const remainingPhaseFrames = animationFrames - frameCursor;
-        const phaseFrames = isLast
-            ? Math.max(0, remainingPhaseFrames)
-            : Math.min(Math.max(0, remainingPhaseFrames), proportionalFrames);
-        phaseFrameRanges.push({ start: frameCursor, end: frameCursor + phaseFrames });
-        frameCursor += phaseFrames;
-    });
+    const totalDuration = phases.reduce((max, phase) => Math.max(max, phase.endTime), 0);
+    const phaseFrameRanges = phases.map(phase => ({
+        start: totalDuration > 0 ? Math.round((phase.startTime / totalDuration) * animationFrames) : 0,
+        end: totalDuration > 0 ? Math.round((phase.endTime / totalDuration) * animationFrames) : animationFrames,
+    }));
+    const animationEndFrame = phaseFrameRanges.reduce((max, range) => Math.max(max, range.end), 0);
     return {
         phaseFrameRanges,
-        animationEndFrame: frameCursor,
-        remainingFrames: Math.max(0, totalFrames - frameCursor),
+        animationEndFrame,
+        remainingFrames: Math.max(0, totalFrames - animationEndFrame),
     };
 };
 
@@ -1836,12 +2270,12 @@ async function exportAsWebM(
     userScale: number,
     overviewZoom: number,
     isTransparent: boolean,
-    hideWatermark: boolean,
     isSystemFontsOnly: boolean,
     bgColor: string,
     activeLineGroups: LineGroup[],
     progress?: (p: number) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mapLayerMarkup?: string
 ): Promise<Blob> {
     const writer = new WebMWriter({
         quality: Math.min(0.999, Math.max(0.01, quality / 100)),
@@ -1861,10 +2295,10 @@ async function exportAsWebM(
         userScale,
         overviewZoom,
         isTransparent,
-        hideWatermark,
         isSystemFontsOnly,
         bgColor,
         activeLineGroups,
+        mapLayerMarkup,
         accumulatedVisibleNodes: new Set(),
         accumulatedVisibleEdges: new Set(),
         elementStartFrame: new Map(),
@@ -1908,16 +2342,13 @@ async function exportAsWebM(
             currentActiveLineGroups,
             badgeGroup,
             cameraOverrideCenter,
-            isFocusPhase,
+            safeOverviewCamera,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
             frame < animationEndFrame ? -1 : (frame - animationEndFrame) / Math.max(remainingFrames, 1);
-        const effectiveZoom = getEffectiveZoom(
-            ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1),
-            userScale,
-            ctx.overviewZoomOverride ?? overviewZoom
-        );
+        const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
+        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
 
         const {
             elem,
@@ -1933,7 +2364,8 @@ async function exportAsWebM(
             ctx.cameraVelocity,
             ctx.previousBasicStations,
             effectiveZoom,
-            hideWatermark,
+            cameraEaseProgress,
+            ctx.userScale,
             isSystemFontsOnly,
             languages,
             existsNodeTypes,
@@ -1942,8 +2374,11 @@ async function exportAsWebM(
             currentActiveLineGroups,
             badgeGroup,
             cameraOverrideCenter,
-            isFocusPhase,
-            nodeVersions
+            false,
+            nodeVersions,
+            ctx.mapLayerMarkup,
+            undefined,
+            safeOverviewCamera
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -2042,6 +2477,10 @@ const encodeFramesToMP4 = async (
             });
             encoder.encode(videoFrame, { keyFrame: frame % keyFrameInterval === 0 });
             videoFrame.close();
+            while (encoder.encodeQueueSize > 8) {
+                await new Promise<void>(resolve => setTimeout(resolve, 0));
+                throwIfAborted(signal);
+            }
         }
     } finally {
         try {
@@ -2068,13 +2507,13 @@ async function exportAsMP4(
     userScale: number,
     overviewZoom: number,
     isTransparent: boolean,
-    hideWatermark: boolean,
     isSystemFontsOnly: boolean,
     bgColor: string,
     activeLineGroups: LineGroup[],
     progress?: (p: number) => void,
     duration?: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mapLayerMarkup?: string
 ): Promise<Blob> {
     const { phaseFrameRanges, animationEndFrame, remainingFrames } = getPhaseFrameRanges(phases, totalFrames, fps);
     const frameMs = 1000 / fps;
@@ -2091,7 +2530,6 @@ async function exportAsMP4(
         userScale,
         overviewZoom,
         isTransparent,
-        hideWatermark,
         isSystemFontsOnly,
         bgColor,
         activeLineGroups,
@@ -2138,16 +2576,13 @@ async function exportAsMP4(
             currentActiveLineGroups,
             badgeGroup,
             cameraOverrideCenter,
-            isFocusPhase,
+            safeOverviewCamera,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
             frame < animationEndFrame ? -1 : (frame - animationEndFrame) / Math.max(remainingFrames, 1);
-        const effectiveZoom = getEffectiveZoom(
-            ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1),
-            userScale,
-            ctx.overviewZoomOverride ?? overviewZoom
-        );
+        const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
+        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
 
         const {
             elem,
@@ -2163,7 +2598,8 @@ async function exportAsMP4(
             ctx.cameraVelocity,
             ctx.previousBasicStations,
             effectiveZoom,
-            hideWatermark,
+            cameraEaseProgress,
+            ctx.userScale,
             isSystemFontsOnly,
             languages,
             existsNodeTypes,
@@ -2172,8 +2608,11 @@ async function exportAsMP4(
             currentActiveLineGroups,
             badgeGroup,
             cameraOverrideCenter,
-            isFocusPhase,
-            nodeVersions
+            false,
+            nodeVersions,
+            mapLayerMarkup,
+            undefined,
+            safeOverviewCamera
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -2273,13 +2712,13 @@ async function exportFallback(
     scale: number,
     overviewZoom: number,
     isTransparent: boolean,
-    hideWatermark: boolean,
     isSystemFontsOnly: boolean,
     bgColor: string,
     format: 'webm' | 'mp4',
     progress?: (p: number) => void,
     duration?: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mapLayerMarkup?: string
 ): Promise<Blob> {
     const animationFrames = Math.max(1, Math.round(totalFrames * 0.9));
 
@@ -2295,12 +2734,12 @@ async function exportFallback(
             scale,
             overviewZoom,
             isTransparent,
-            hideWatermark,
             isSystemFontsOnly,
             bgColor,
             progress,
             duration,
-            signal
+            signal,
+            mapLayerMarkup
         );
     }
 
@@ -2316,13 +2755,21 @@ async function exportFallback(
         scale,
         overviewZoom,
         isTransparent,
-        hideWatermark,
         isSystemFontsOnly,
         bgColor,
         progress,
-        signal
+        signal,
+        mapLayerMarkup
     );
 }
+
+const isEdgeExportVisible = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    edgeId: LineId
+): boolean => {
+    if (!graph.hasEdge(edgeId)) return false;
+    return graph.getEdgeAttribute(edgeId, 'visible') !== false;
+};
 
 async function exportFallbackWebM(
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -2336,11 +2783,11 @@ async function exportFallbackWebM(
     scale: number,
     overviewZoom: number,
     isTransparent: boolean,
-    hideWatermark: boolean,
     isSystemFontsOnly: boolean,
     bgColor: string,
     progress?: (p: number) => void,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mapLayerMarkup?: string
 ): Promise<Blob> {
     const writer = new WebMWriter({
         quality: Math.min(0.999, Math.max(0.01, quality / 100)),
@@ -2434,9 +2881,12 @@ async function exportFallbackWebM(
             }
         } else {
             allNodes.forEach(n => visibleNodes.add(n));
-            allEdges.forEach(e => visibleEdges.add(e));
+            allEdges.forEach(e => {
+                if (isEdgeExportVisible(graph, e)) visibleEdges.add(e);
+            });
         }
 
+        const safeOverviewCamera = getSafeOverviewCamera(graph, visibleNodes, visibleEdges);
         const {
             elem,
             cameraCenter: nc,
@@ -2451,7 +2901,8 @@ async function exportFallbackWebM(
             cameraVelocity,
             new Set(),
             effectiveZoom,
-            hideWatermark,
+            overviewProgress,
+            scale,
             isSystemFontsOnly,
             languages,
             existsNodeTypes,
@@ -2461,7 +2912,10 @@ async function exportFallbackWebM(
             undefined,
             undefined,
             false,
-            nodeVersions
+            nodeVersions,
+            mapLayerMarkup,
+            undefined,
+            safeOverviewCamera
         );
         cameraCenter = nc;
         cameraVelocity = nv;
@@ -2491,12 +2945,12 @@ async function exportFallbackMP4(
     scale: number,
     overviewZoom: number,
     isTransparent: boolean,
-    hideWatermark: boolean,
     isSystemFontsOnly: boolean,
     bgColor: string,
     progress?: (p: number) => void,
     duration?: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    mapLayerMarkup?: string
 ): Promise<Blob> {
     const allNodes = new Set<NodeId>();
     const allEdges = new Set<LineId>();
@@ -2506,6 +2960,7 @@ async function exportFallbackMP4(
     let cameraCenter: { x: number; y: number } | undefined;
     let cameraVelocity: { x: number; y: number } | undefined;
     const nodeStartFrame = new Map<NodeId, number>();
+    const nodeVersions = new Map<NodeId, number>();
     const frameMs = 1000 / fps;
 
     // 渲染单帧并返回画布（WebCodecs 离线编码与 MediaRecorder 回退共用）
@@ -2578,6 +3033,7 @@ async function exportFallbackMP4(
             allEdges.forEach(e => visibleEdges.add(e));
         }
 
+        const safeOverviewCamera = getSafeOverviewCamera(graph, visibleNodes, visibleEdges);
         const {
             elem,
             cameraCenter: nc,
@@ -2592,7 +3048,8 @@ async function exportFallbackMP4(
             cameraVelocity,
             new Set(),
             effectiveZoom,
-            hideWatermark,
+            overviewProgress,
+            scale,
             isSystemFontsOnly,
             languages,
             existsNodeTypes,
@@ -2602,7 +3059,10 @@ async function exportFallbackMP4(
             undefined,
             undefined,
             false,
-            nodeVersions
+            nodeVersions,
+            mapLayerMarkup,
+            undefined,
+            safeOverviewCamera
         );
         cameraCenter = nc;
         cameraVelocity = nv;
@@ -2692,12 +3152,12 @@ export const exportVideo = async (
         isTransparent = false,
         scale = 100,
         isSystemFontsOnly = false,
-        hideWatermark = false,
         timelineDiffs,
         existsNodeTypes = new Set<NodeType>(),
         actionRows,
         timelineLines = [],
         lineGroups = [],
+        mapLayerMarkup,
         signal,
     } = options;
 
@@ -2721,13 +3181,13 @@ export const exportVideo = async (
                 scale,
                 overviewZoom,
                 isTransparent,
-                hideWatermark,
                 isSystemFontsOnly,
                 bgColor,
                 lineGroups,
                 progress,
                 duration,
-                signal
+                signal,
+                mapLayerMarkup
             );
         }
         return exportAsWebM(
@@ -2741,12 +3201,12 @@ export const exportVideo = async (
             scale,
             overviewZoom,
             isTransparent,
-            hideWatermark,
             isSystemFontsOnly,
             bgColor,
             lineGroups,
             progress,
-            signal
+            signal,
+            mapLayerMarkup
         );
     }
 
@@ -2767,13 +3227,13 @@ export const exportVideo = async (
         scale,
         overviewZoom,
         isTransparent,
-        hideWatermark,
         isSystemFontsOnly,
         bgColor,
         format,
         progress,
         duration,
-        signal
+        signal,
+        mapLayerMarkup
     );
 };
 
@@ -2910,8 +3370,8 @@ export interface VideoPreview {
     durationSec: number;
     /** 每个动作开始对应的帧 */
     actionStartFrames: number[];
-    /** 渲染指定帧（0 <= frameIndex < totalFrames），返回可直接挂载到 DOM 的 SVG 元素 */
-    renderFrame: (frameIndex: number) => Promise<SVGSVGElement>;
+    /** 渲染指定帧（0 <= frameIndex < totalFrames）；跳转时可直接定位镜头 */
+    renderFrame: (frameIndex: number, snapCameraToTarget?: boolean) => Promise<SVGSVGElement>;
     /** 释放内部资源（移除缓存的 SVG 元素、清空调度状态） */
     dispose: () => void;
 }
@@ -2936,7 +3396,6 @@ export const createVideoPreview = async (
         isTransparent = false,
         scale = 100,
         isSystemFontsOnly = false,
-        hideWatermark = false,
         existsNodeTypes = new Set<NodeType>(),
         actionRows,
         timelineLines = [],
@@ -2955,6 +3414,14 @@ export const createVideoPreview = async (
     const phases = buildAnimationPhases(actionRows, timelineLines, graph);
     const { phaseFrameRanges, animationEndFrame, remainingFrames } = getPhaseFrameRanges(phases, totalFrames, fps);
     const edgeLengths = await calculateEdgeLengths(graph, languages, isSystemFontsOnly);
+    let mapLayerTemplate: SVGSVGElement | undefined;
+    if (options.mapLayerMarkup) {
+        try {
+            mapLayerTemplate = getMapLayerTemplate(options.mapLayerMarkup);
+        } catch {
+            // 地图图层快照无效时静默跳过，不影响预览
+        }
+    }
 
     const ctx: FrameContext = {
         graph,
@@ -2965,10 +3432,10 @@ export const createVideoPreview = async (
         userScale: scale,
         overviewZoom,
         isTransparent,
-        hideWatermark,
         isSystemFontsOnly,
         bgColor: bg,
         activeLineGroups: lineGroups,
+        mapLayerMarkup: options.mapLayerMarkup,
         accumulatedVisibleNodes: new Set(),
         accumulatedVisibleEdges: new Set(),
         elementStartFrame: new Map(),
@@ -3001,7 +3468,7 @@ export const createVideoPreview = async (
     let maxRendered = -1;
     let lastElem: SVGSVGElement | null = null;
 
-    const renderFrame = async (frameIndex: number): Promise<SVGSVGElement> => {
+    const renderFrame = async (frameIndex: number, snapCameraToTarget = false): Promise<SVGSVGElement> => {
         const target = Math.max(0, Math.min(totalFrames - 1, Math.round(frameIndex)));
         if (target < maxRendered) {
             // 跳回：重置帧相关的累积状态
@@ -3019,13 +3486,6 @@ export const createVideoPreview = async (
             maxRendered = -1;
         }
         for (let f = maxRendered + 1; f <= target; f++) {
-            const frameState = processFrame(ctx, f, phases, phaseFrameRanges);
-            maxRendered = f;
-
-            // 拖动跳转时只生成目标帧 SVG。中间帧只推进动画状态，避免跳到第几百帧时
-            // 重复创建、解析和克隆数百个完整 SVG；正常播放仍由调用方逐帧请求，因此画面不变。
-            if (f !== target) continue;
-
             const {
                 visibleNodes,
                 visibleEdges,
@@ -3037,15 +3497,13 @@ export const createVideoPreview = async (
                 currentActiveLineGroups,
                 badgeGroup,
                 cameraOverrideCenter,
-                isFocusPhase,
-            } = frameState;
+                safeOverviewCamera,
+            } = processFrame(ctx, f, phases, phaseFrameRanges);
+            maxRendered = f;
             const overviewProgress =
                 f < animationEndFrame ? -1 : (f - animationEndFrame) / Math.max(remainingFrames, 1);
-            const effectiveZoom = getEffectiveZoom(
-                ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1),
-                scale,
-                ctx.overviewZoomOverride ?? overviewZoom
-            );
+            const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
+            const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
             const { elem, cameraCenter, cameraVelocity } = await createFrameSVG(
                 graph,
                 visibleNodes,
@@ -3056,7 +3514,8 @@ export const createVideoPreview = async (
                 ctx.cameraVelocity,
                 ctx.previousBasicStations,
                 effectiveZoom,
-                hideWatermark,
+                cameraEaseProgress,
+                ctx.userScale,
                 isSystemFontsOnly,
                 languages,
                 existsNodeTypes,
@@ -3065,13 +3524,20 @@ export const createVideoPreview = async (
                 currentActiveLineGroups,
                 badgeGroup,
                 cameraOverrideCenter,
-                isFocusPhase,
-                nodeVersions
+                f === target && snapCameraToTarget,
+                nodeVersions,
+                ctx.mapLayerMarkup,
+                mapLayerTemplate,
+                safeOverviewCamera
             );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
-            if (lastElem) lastElem.remove();
-            lastElem = elem;
+            if (f === target) {
+                if (lastElem) lastElem.remove();
+                lastElem = elem;
+            } else {
+                elem.remove();
+            }
         }
         return lastElem!;
     };

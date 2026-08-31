@@ -24,7 +24,7 @@ const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
-            className="removeMe"
+            className="rmp-virtual-node"
         >
             <line x1="-5" y1="0" x2="5" y2="0" stroke="black" />
             <line x1="0" y1="-5" x2="0" y2="5" stroke="black" />

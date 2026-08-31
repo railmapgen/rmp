@@ -38,6 +38,7 @@ import {
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
+import { canUseLine } from '../../../util/line-path-availability';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
 import ThemeButton from '../theme-button';
@@ -78,6 +79,7 @@ const ToolsPanel = () => {
     const { i18n, t } = useTranslation();
     const dispatch = useRootDispatch();
     const { activeSubscriptions } = useRootSelector(state => state.account);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
     const {
         preference: {
             toolsPanel: { expand: isToolsExpanded, showOnlyFavorites },
@@ -240,10 +242,14 @@ const ToolsPanel = () => {
                                 .filter(type => type !== LinePathType.Simple || activeSubscriptions.RMP_CLOUD)
                                 .map(type => {
                                     const isProLinePath = !!linePaths[type].isPro;
-                                    const isLinePathDisabled =
-                                        (!activeSubscriptions.RMP_CLOUD && isProLinePath) ||
-                                        (currentStyle ? !isPathCompatible(type, currentStyle) : false);
-
+                                    // 线型按钮不应受当前样式限制。若当前样式不支持目标线型，handleLine 会切换到单色样式，
+                                    // 不应因此把另一个线型显示为不可用。
+                                    const isLinePathDisabled = !canUseLine(
+                                        type,
+                                        LineStyleType.SingleColor,
+                                        mapEnabled,
+                                        activeSubscriptions.RMP_CLOUD
+                                    );
                                     return (
                                         <Flex key={type} w="100%" align="stretch">
                                             <Box
@@ -285,7 +291,7 @@ const ToolsPanel = () => {
                                     transition="background-color 0.2s"
                                 />
                                 <Button
-                                    aria-label={MiscNodeType.Virtual}
+                                    aria-label={t(miscNodes[MiscNodeType.Virtual].metadata.displayName)}
                                     leftIcon={miscNodes[MiscNodeType.Virtual].icon}
                                     onClick={() => handleMiscNode(MiscNodeType.Virtual)}
                                     variant="ghost"
@@ -319,7 +325,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={styleType}
+                                        aria-label={t(lineStyles[styleType].metadata.displayName)}
                                         leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant="ghost"
@@ -376,7 +382,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(stations[type].metadata.displayName)}
                                         leftIcon={stations[type].icon}
                                         onClick={() => handleStation(type)}
                                         variant="ghost"
@@ -419,7 +425,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(miscNodes[type].metadata.displayName)}
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
                                         variant="ghost"

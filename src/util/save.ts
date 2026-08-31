@@ -39,6 +39,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState } from '../redux/param/param-slice';
 import type { DateRow, LineGroup, TimelineLine, ActionRow, TimelineDiff } from '../constants/timeline';
 import { TextLanguage } from './fonts';
@@ -48,6 +49,8 @@ import { TextLanguage } from './fonts';
  * For fields other than `version`, see ParamState.
  */
 export interface RMPSave {
+    mapEnabled?: boolean;
+    mapStyle?: import('../map/map-style').MapStyle;
     /**
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
@@ -76,6 +79,43 @@ export const CURRENT_VERSION = 77;
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
  */
+const repairMalformedProjectSnapshot = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave & {
+        graph?: RMPSave['graph'] & Partial<ParamState['present']>;
+    };
+    const malformedSnapshot = save.graph;
+
+    if (
+        !malformedSnapshot ||
+        typeof malformedSnapshot !== 'object' ||
+        !('graph' in malformedSnapshot) ||
+        !malformedSnapshot.graph ||
+        'svgViewBoxMin' in save
+    ) {
+        return saveStr;
+    }
+
+    const snapshot = malformedSnapshot as object & {
+        graph: RMPSave['graph'];
+    };
+    return JSON.stringify(
+        Object.assign({}, save, snapshot, {
+            graph: snapshot.graph,
+        })
+    );
+};
+
+const repairMissingMapSettings = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave;
+    if (save.mapEnabled !== undefined && save.mapStyle !== undefined) return saveStr;
+
+    return JSON.stringify({
+        ...save,
+        mapEnabled: save.mapEnabled ?? false,
+        mapStyle: save.mapStyle ?? structuredClone(DEFAULT_MAP_STYLE),
+    });
+};
+
 const repairNodeXYNullCoordinates = (saveStr: string): string => {
     const save = JSON.parse(saveStr) as RMPSave;
     const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -165,6 +205,14 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
         changed = true;
     }
 
+    const repairedSnapshotSave = repairMalformedProjectSnapshot(save);
+    changed ||= repairedSnapshotSave !== save;
+    save = repairedSnapshotSave;
+
+    const repairedMapSettingsSave = repairMissingMapSettings(save);
+    changed ||= repairedMapSettingsSave !== save;
+    save = repairedMapSettingsSave;
+
     // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
     const repairedSave = repairNodeXYNullCoordinates(save);
     changed ||= repairedSave !== save;
@@ -207,7 +255,7 @@ export const stringifyParam = (
     }
 ) => {
     const { present, past, future, ...param } = paramState;
-    const save: RMPSave = { ...param, graph: present, version: CURRENT_VERSION };
+    const save: RMPSave = { ...param, ...present, version: CURRENT_VERSION };
     if (timelineState) {
         save.timeline = timelineState;
     }

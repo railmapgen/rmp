@@ -41,8 +41,6 @@ export interface LineGroup {
     bgColor: string;
     /** 线路名称 */
     text: string;
-    /** 线路备注 */
-    remark?: string;
 }
 
 /**
@@ -54,13 +52,18 @@ export interface TimelineLine {
     groupId: string;
     /** 关联的图元素列表 */
     elements: LineElement[];
-    /** 线路段备注 */
-    remark?: string;
 }
 
 /**
  * 动作列表行 - 时间线编辑器下半部分的动作配置
  */
+export interface CloseNodeStyle {
+    /** 停运完成后是否保留该换乘站 */
+    visible: boolean;
+    /** 保留时使用的节点历史版本 */
+    version: number;
+}
+
 export interface ActionRow {
     id: string;
     /** 日期 (年月日) */
@@ -75,6 +78,14 @@ export interface ActionRow {
     actionLineId?: string;
     /** 动作时长 (秒, 支持小数) - 所有动作类型都支持 */
     actionDuration?: number;
+    /** 开通/停运时车站动画时长（秒，默认 1 秒） */
+    nodeAnimationDuration?: number;
+    /** 停运后多版本换乘站的显示与版本配置（仅停运有效） */
+    closeNodeStyles?: Record<NodeId, CloseNodeStyle>;
+    /** 是否与上一动作同时开始 */
+    withPrevious?: boolean;
+    /** 是否快速完成开通/停运动作 */
+    quickComplete?: boolean;
 }
 
 export type DiffAction = 'add' | 'update' | 'remove';

@@ -37,7 +37,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const dispatch = useRootDispatch();
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 

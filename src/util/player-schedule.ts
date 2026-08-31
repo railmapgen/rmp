@@ -1,4 +1,5 @@
-import type { TimelineDiff } from '../constants/timeline';
+import type { ActionRow, TimelineDiff } from '../constants/timeline';
+import { isQuickCompleteAction } from './action-schedule';
 
 export type PhaseType = 'segment' | 'segmentHold' | 'globalMove' | 'globalHold';
 
@@ -14,6 +15,15 @@ export interface AnimPhase {
     /** segmentHold 专用：下一段绘制的边及其方向，用于镜头预瞄 */
     nextEdgeId?: string;
     nextDirection?: 'forward' | 'backward';
+    /** 与当前动作同时开始的其它线路段。 */
+    parallelEdges?: Array<{
+        edgeId: string;
+        direction?: 'forward' | 'backward';
+        edgeAction: 'add' | 'remove' | 'highlight';
+        isDrawing: boolean;
+    }>;
+    /** 是否快速完成当前动作。 */
+    quickComplete?: boolean;
 }
 
 interface EdgeState {
@@ -39,7 +49,17 @@ const MAX_HOLD_GAP_MS = 3000;
  */
 export function buildPhases(
     diffs: TimelineDiff[],
-    options?: { drawSeconds?: number; fadeSeconds?: number; holdSeconds?: number }
+    options?: {
+        drawSeconds?: number;
+        fadeSeconds?: number;
+        holdSeconds?: number;
+        /** 线路元素顺序，用于停运时保证从线路起点到终点逐条执行。 */
+        edgeOrder?: Map<string, number>;
+        /** 动作调度，用于将并行/快速完成标记同步到 diff 动画。 */
+        actionRows?: ActionRow[];
+        actionSchedule?: Array<{ startTime: number; endTime: number; actionRowIndex: number }>;
+        actionLineEdges?: Map<string, string[]>;
+    }
 ): AnimPhase[] {
     const drawSeconds = options?.drawSeconds ?? DEFAULT_DRAW_SECONDS;
     const fadeSeconds = options?.fadeSeconds ?? DEFAULT_FADE_SECONDS;
@@ -129,30 +149,42 @@ export function buildPhases(
 
     // 按批重排：组内边错开，组间空隙用 segmentHold 填充
     const segments: AnimPhase[] = [];
+    let previousEndMs = 0;
     for (let b = 0; b < batchEvents.length; b++) {
-        const events = batchEvents[b];
+        const events = [...batchEvents[b]].sort((a, z) => {
+            if (a.edgeAction === 'remove' && z.edgeAction === 'remove') {
+                return (
+                    (options?.edgeOrder?.get(a.edgeId) ?? Number.MAX_SAFE_INTEGER) -
+                    (options?.edgeOrder?.get(z.edgeId) ?? Number.MAX_SAFE_INTEGER)
+                );
+            }
+            return 0;
+        });
         const batchStart = diffs[events[0].eventIndex].time; // 毫秒
         const nextBatchStart = b < batchEvents.length - 1 ? diffs[batchEvents[b + 1][0].eventIndex].time : undefined;
         const windowMs = nextBatchStart !== undefined ? Math.max(0, nextBatchStart - batchStart) : drawMs;
-        const perEdgeMs = Math.max(MIN_EDGE_MS, Math.min(drawMs, windowMs / events.length));
+        // 时间窗口不足以容纳所有边时，不能让阶段互相重叠；将停运事件顺延，保证逐条完成。
+        const perEdgeMs = Math.max(MIN_EDGE_MS, Math.min(drawMs, windowMs > 0 ? windowMs / events.length : drawMs));
 
         for (let i = 0; i < events.length; i++) {
             const ev = events[i];
-            const startMs = batchStart + i * perEdgeMs;
+            const startMs = Math.max(batchStart + i * perEdgeMs, previousEndMs);
             let durationMs = perEdgeMs;
             if (ev.edgeAction === 'highlight') durationMs = Math.min(perEdgeMs, 1500);
             else if (ev.edgeAction === 'remove')
                 durationMs = Math.min(perEdgeMs, Math.max(fadeSeconds * 1000, MIN_EDGE_MS));
+            const endMs = startMs + durationMs;
             segments.push({
                 type: 'segment',
                 startMs,
-                endMs: startMs + durationMs,
+                endMs,
                 edgeId: ev.edgeId,
                 edgeAction: ev.edgeAction,
                 eventIndex: ev.eventIndex,
                 direction: ev.direction,
                 isDrawing: ev.isDrawing,
             });
+            previousEndMs = endMs;
         }
     }
 
@@ -182,6 +214,44 @@ export function buildPhases(
                 }
             }
         }
+    }
+
+    const actionRows = options?.actionRows;
+    const actionSchedule = options?.actionSchedule;
+    if (actionRows && actionSchedule) {
+        const edgePhases = phases.filter(phase => phase.type === 'segment' && phase.edgeId);
+        edgePhases.forEach(phase => {
+            const diffTime = phase.eventIndex === undefined ? undefined : diffs[phase.eventIndex]?.time;
+            const actionIndex = actionSchedule.findIndex((entry, index) => {
+                const action = actionRows[index];
+                return (
+                    diffTime !== undefined &&
+                    Math.abs(entry.startTime - diffTime) < 0.5 &&
+                    (action?.actionType === 'open' || action?.actionType === 'close') &&
+                    options.actionLineEdges?.get(action.actionLineId ?? '')?.includes(phase.edgeId ?? '')
+                );
+            });
+            if (actionIndex >= 0) phase.quickComplete = isQuickCompleteAction(actionRows[actionIndex]);
+        });
+        const starts = new Map<number, AnimPhase[]>();
+        edgePhases.forEach(phase => {
+            const group = starts.get(phase.startMs) ?? [];
+            group.push(phase);
+            starts.set(phase.startMs, group);
+        });
+        starts.forEach(group => {
+            if (group.length < 2) return;
+            group.forEach(phase => {
+                phase.parallelEdges = group
+                    .filter(peer => peer !== phase)
+                    .map(peer => ({
+                        edgeId: peer.edgeId!,
+                        direction: peer.direction,
+                        edgeAction: peer.edgeAction === 'update' ? 'highlight' : (peer.edgeAction ?? 'highlight'),
+                        isDrawing: peer.isDrawing ?? false,
+                    }));
+            });
+        });
     }
 
     return phases;

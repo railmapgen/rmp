@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "Loading map...",
+        "loadError": "Unable to load the geographic map.",
+        "zoomInToEdit": "Zoom in to edit the map.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "enabled": "Show",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": { "title": "Railways", "metro": "Metro", "national": "National railway" },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show all labels",
+                "sizeScale": "Size scale",
+                "color": "Text",
+                "strokeColor": "Outline",
+                "groups": {
+                    "places": "Places",
+                    "roads": "Roads",
+                    "buildings": "Buildings",
+                    "areas": "Areas",
+                    "transport": "Transport"
+                },
+                "categories": {
+                    "place-major": "Major places",
+                    "place-medium": "Medium places",
+                    "place-minor": "Minor places",
+                    "road-arterial": "Arterial roads",
+                    "road-collector": "Collector roads",
+                    "building": "Buildings",
+                    "area-water": "Water",
+                    "area-park": "Parks",
+                    "area-grass": "Grass",
+                    "area-forest": "Forests",
+                    "area-farmland": "Farmland",
+                    "area-cemetery": "Cemeteries",
+                    "area-residential": "Residential areas",
+                    "area-commercial": "Commercial areas",
+                    "area-industrial": "Industrial areas",
+                    "area-education": "Education",
+                    "area-healthcare": "Healthcare",
+                    "transport-airport": "Airports",
+                    "transport-rail": "Railway stations",
+                    "transport-metro": "Metro stations",
+                    "transport-platform": "Platforms",
+                    "transport-entrance": "Entrances"
+                }
+            }
+        }
+    },
     "color": "Color",
     "warning": "Warning",
     "error": "Error",
@@ -27,6 +87,7 @@
                 "miscellaneousNodes": "Miscellaneous Nodes"
             },
             "select": "Select",
+            "menu": "Toggle tools panel",
             "learnHowToAdd": {
                 "station": "Learn how to add your stations!",
                 "misc-node": "Learn how to add your nodes!",
@@ -587,6 +648,36 @@
                     "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
                     "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along offset",
+                    "normal": "Normal offset",
+                    "sourceOffset": "Source endpoint offset",
+                    "targetOffset": "Target endpoint offset",
+                    "sourceOffsetX": "Source endpoint X offset",
+                    "sourceOffsetY": "Source endpoint Y offset",
+                    "targetOffsetX": "Target endpoint X offset",
+                    "targetOffsetY": "Target endpoint Y offset",
+                    "linkedOffset": "Link endpoint offsets"
+                },
+                "freeform": {
+                    "displayName": "Freeform curve",
+                    "controlPointHint": "Draw a line by dragging through the desired control points.",
+                    "outlineSettingsUnavailable": "Outline settings are not available for freeform paths.",
+                    "smoothing": "Smoothing",
+                    "widthStops": "Width stops",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "Position (%)",
+                    "widthStopWidth": "Width",
+                    "baseWidthHint": "Width varies along the path.",
+                    "startCap": "Start cap",
+                    "endCap": "End cap",
+                    "round": "Round",
+                    "flat": "Flat",
+                    "arrow": "Arrow",
+                    "arrowLength": "Arrow length",
+                    "arrowWidth": "Arrow width"
+                },
                 "simple": {
                     "displayName": "Simple path",
                     "offset": "Offset"
@@ -783,6 +874,10 @@
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
+        "mapToggle": {
+            "show": "Show geographic map",
+            "hide": "Hide geographic map"
+        },
         "open": {
             "new": "New project",
             "config": "Import project",
@@ -857,6 +952,7 @@
             "disabledScaleOptionsSolution": "<link1>Subscribe</link1> and <link2>download</link2> our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
             "isSystemFontsOnly": "Use system font only (font display may vary).",
+            "shareInfo": "Remove watermark (when I share this image, I will include <1>Rail Map Painter</1> and its link).",
             "shareInfo1": "I will attach ",
             "shareInfo2": " and its link when I share this image.",
             "termsAndConditions": "Terms and Conditions",
@@ -888,7 +984,14 @@
                 "previewPlay": "Play",
                 "previewPause": "Pause",
                 "previewLoading": "Rendering…",
-                "previewFullscreen": "Fullscreen"
+                "previewFullscreen": "Fullscreen",
+                "jumpToAction": "Jump to action",
+                "previousAction": "Previous action",
+                "nextAction": "Next action",
+                "actionOption": "Action {{index}}: {{type}} ({{remark}})",
+                "actionOptionType": "Action {{index}}: {{type}}",
+                "actionOptionWait": "Action {{index}}: {{type}} ({{duration}} seconds)",
+                "noRemark": "No remark"
             }
         },
         "timeline": {
@@ -941,6 +1044,7 @@
             },
             "preference": {
                 "title": "Preference",
+                "map": "Show geographic map",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
@@ -1133,9 +1237,6 @@
         "newLine": "New Line",
         "modify": "Modify",
         "elements": "Elements",
-        "segmentRemark": "Segment Remark",
-        "segmentRemarkPlaceholder": "Enter segment remark",
-        "segmentRemarkRequired": "Please enter a segment remark",
         "addElement": "Add Element",
         "reverseAll": "Reverse All",
         "noElements": "No elements. Click \"Add Element\"",
@@ -1150,6 +1251,8 @@
         "end": "End",
         "isStation": "Treat as Station",
         "mileage": "Mileage",
+        "mileageAutoFill": "Auto-fill from map length",
+        "mileageAutoFillDisabled": "Enable the geographic map to auto-fill the actual length",
         "savedAtTimePoint": "Changes saved to current time point",
         "futurePointsAffected": "Future time points will be affected",
         "attrs": {

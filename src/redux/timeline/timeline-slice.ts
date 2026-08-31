@@ -11,7 +11,7 @@ import {
     TimelineState,
     TIMELINE_DEFAULTS,
 } from '../../constants/timeline';
-import { undoAction, redoAction } from '../param/param-slice';
+import { applyUndoAction, applyRedoAction } from '../param/param-slice';
 
 const initialState: TimelineState = {
     ...TIMELINE_DEFAULTS,
@@ -327,8 +327,8 @@ const timelineSlice = createSlice({
                 totalDuration: number;
                 currentTime: number;
                 dateRows: DateRow[];
-                groups: LineGroup[];
-                lines: TimelineLine[];
+                groups: Array<LineGroup & { remark?: unknown }>;
+                lines: Array<TimelineLine & { remark?: unknown }>;
                 actionRows: ActionRow[];
                 diffs: TimelineDiff[];
                 baseGraph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -338,11 +338,8 @@ const timelineSlice = createSlice({
             state.totalDuration = action.payload.totalDuration;
             state.currentTime = action.payload.currentTime;
             state.dateRows = action.payload.dateRows ?? [];
-            state.groups = (action.payload.groups ?? []).map(group => ({
-                ...group,
-                remark: group.remark || undefined,
-            }));
-            state.lines = action.payload.lines ?? [];
+            state.groups = (action.payload.groups ?? []).map(({ remark: _, ...group }) => group);
+            state.lines = (action.payload.lines ?? []).map(({ remark: _, ...line }) => line);
             state.actionRows = normalizeActionRowIds(action.payload.actionRows ?? []);
             state.diffs = action.payload.diffs ?? [];
             state.baseGraph = action.payload.baseGraph;
@@ -408,7 +405,7 @@ const timelineSlice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(undoAction, state => {
+            .addCase(applyUndoAction, state => {
                 const prev = state.undoStack.pop();
                 if (prev) {
                     state.redoStack.push({
@@ -428,7 +425,7 @@ const timelineSlice = createSlice({
                     state.validationUndoPending = true;
                 }
             })
-            .addCase(redoAction, state => {
+            .addCase(applyRedoAction, state => {
                 const next = state.redoStack.pop();
                 if (next) {
                     state.undoStack.push({

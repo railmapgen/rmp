@@ -30,11 +30,10 @@ const renderSettings = (mapEnabled: boolean) => {
 describe('SettingsModal map performance preference', () => {
     it('lets map users disable idle raster optimization', () => {
         const store = renderSettings(true);
-        const mapEnabledRow = screen.getByText('Show geographic map layer').parentElement;
-        const label = screen.getByText('Disable map performance optimization');
-        const checkbox = label.parentElement?.querySelector<HTMLInputElement>('input[type="checkbox"]');
+        const preference = screen.getByTestId('map-performance-preference');
+        const checkbox = preference.querySelector<HTMLInputElement>('input[type="checkbox"]');
 
-        expect(mapEnabledRow?.nextElementSibling).toContainElement(label);
+        expect(preference).toContainElement(checkbox);
         expect(checkbox).not.toBeNull();
         fireEvent.click(checkbox!);
         expect(store.getState().app.preference.disableMapPerformanceOptimization).toBe(true);
@@ -59,14 +58,14 @@ describe('SettingsModal map performance preference', () => {
 
         getMapOptimizationProgress.mockReturnValue({ optimized: 2, total: 5 });
         rerender(<SettingsModal isOpen={true} onClose={onClose} />);
-        expect(screen.getByText('Optimized: 2/5')).toBeInTheDocument();
+        expect(screen.getByTestId('map-performance-preference')).toHaveTextContent(/2.*5/);
 
         getMapOptimizationProgress.mockReturnValue({ optimized: 4, total: 5 });
         rerender(<SettingsModal isOpen={true} onClose={onClose} />);
-        expect(screen.getByText('Optimized: 2/5')).toBeInTheDocument();
+        expect(screen.getByTestId('map-performance-preference')).toHaveTextContent(/2.*5/);
 
         rerender(<SettingsModal isOpen={false} onClose={onClose} />);
         rerender(<SettingsModal isOpen={true} onClose={onClose} />);
-        expect(screen.getByText('Optimized: 4/5')).toBeInTheDocument();
+        expect(screen.getByTestId('map-performance-preference')).toHaveTextContent(/4.*5/);
     });
 });

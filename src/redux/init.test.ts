@@ -3,7 +3,7 @@ import { LocalStorageKey } from '../constants/constants';
 import { onRMPSaveUpdate } from '../util/rmt-save';
 import { createStore } from '.';
 import { initStore } from './init';
-import { saveGraph, setSvgViewport } from './param/param-slice';
+import { saveGraph, setMapEnabled, setSvgViewport } from './param/param-slice';
 import { refreshEdgesThunk } from './runtime/runtime-slice';
 
 vi.mock('../util/rmt-save', () => ({
@@ -44,6 +44,14 @@ describe('project persistence', () => {
     it('persists a committed graph once without writing again for its refresh', async () => {
         store.dispatch(saveGraph(structuredClone(store.getState().param.present.graph)));
         await store.dispatch(refreshEdgesThunk());
+        await flushListenerEffects();
+
+        expect(localStorage.getItem(LocalStorageKey.PARAM)).toBeTruthy();
+        expect(onRMPSaveUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('persists map visibility changes', async () => {
+        store.dispatch(setMapEnabled(true));
         await flushListenerEffects();
 
         expect(localStorage.getItem(LocalStorageKey.PARAM)).toBeTruthy();

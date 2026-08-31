@@ -62,11 +62,13 @@ const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonTubeInternalInt.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

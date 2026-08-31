@@ -125,7 +125,7 @@ const SvgWrapper = () => {
         panEnd,
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
-        onViewportChange: handleViewportChange,
+        onViewportChange: mapEnabled ? handleViewportChange : undefined,
     });
 
     const makeStationName = useMakeStationName();

@@ -24,12 +24,19 @@ import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
-import { redoAction, undoAction } from '../param/param-slice';
+import { applyRedoAction, applyUndoAction } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
  * All of them can be initiated with default value.
  */
+type GlobalAlert = {
+    status: AlertStatus;
+    message: string;
+    url?: string;
+    linkedApp?: string;
+};
+
 interface RuntimeState {
     /**
      * Current selection (nodes and edges id, possible multiple selection).
@@ -98,8 +105,9 @@ interface RuntimeState {
      * The types of nodes that exist in the current graph.
      */
     existsNodeTypes: Set<NodeType>;
+    isMapOverview: boolean;
     radialTouchMenu: RadialTouchMenuState;
-    globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    globalAlerts: Partial<Record<string, GlobalAlert>>;
     /**
      * When placing a historical node version on canvas.
      * Set when user clicks "add new version" in details panel.
@@ -141,6 +149,7 @@ const initialState: RuntimeState = {
     stationNames: {},
     radialTouchMenu: defaultRadialTouchMenuState,
     existsNodeTypes: new Set<NodeType>(),
+    isMapOverview: false,
     globalAlerts: {},
 };
 
@@ -329,6 +338,9 @@ const runtimeSlice = createSlice({
         setExistsNodeTypes: (state, action: PayloadAction<Set<NodeType>>) => {
             state.existsNodeTypes = action.payload;
         },
+        setMapOverview: (state, action: PayloadAction<boolean>) => {
+            state.isMapOverview = action.payload;
+        },
         setRadialTouchMenu: (state, action: PayloadAction<RadialTouchMenuState>) => {
             state.radialTouchMenu = action.payload;
         },
@@ -342,12 +354,18 @@ const runtimeSlice = createSlice({
          */
         setGlobalAlert: (
             state,
-            action: PayloadAction<{ status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+            action: PayloadAction<{
+                id?: string;
+                status: AlertStatus;
+                message: string;
+                url?: string;
+                linkedApp?: string;
+            }>
         ) => {
-            const { status, message, url, linkedApp } = action.payload;
-            state.globalAlerts[status] = { message, url, linkedApp };
+            const { id, status, message, url, linkedApp } = action.payload;
+            state.globalAlerts[id ?? status] = { status, message, url, linkedApp };
         },
-        closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
+        closeGlobalAlert: (state, action: PayloadAction<string>) => {
             delete state.globalAlerts[action.payload];
         },
         startPlacingNodeVersion: (
@@ -368,11 +386,11 @@ const runtimeSlice = createSlice({
     },
     extraReducers: builder => {
         builder
-            .addCase(undoAction, state => {
+            .addCase(applyUndoAction, state => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
             })
-            .addCase(redoAction, state => {
+            .addCase(applyRedoAction, state => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
             });
@@ -401,6 +419,7 @@ export const {
     onPaletteAppClipEmit,
     setStationNames,
     setExistsNodeTypes,
+    setMapOverview,
     setRadialTouchMenu,
     closeRadialTouchMenu,
     setGlobalAlert,

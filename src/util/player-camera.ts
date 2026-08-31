@@ -130,6 +130,11 @@ export class PlayerCamera {
         return { ...this.state };
     }
 
+    /** 立即对齐至当前目标，清除镜头过渡速度。 */
+    snapToTarget(): void {
+        this.reset(this.target);
+    }
+
     /** 重置到指定状态 */
     reset(state: CameraState): void {
         this.state = { ...state };
@@ -162,20 +167,36 @@ export function calculateBoundingBox(
     return { minX, minY, maxX, maxY };
 }
 
-/** 计算适配视口的缩放值 */
+/** HUD 安全边距：扣除线路面板（左侧）、小地图（右侧）、顶部 HUD、底部 HUD 后的可用矩形 */
+export interface HudInset {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+}
+
+/** 时间线播放器预览的标准 HUD 安全边距 */
+export const PLAYER_HUD_INSET: HudInset = { top: 48, right: 264, bottom: 112, left: 204 };
+
+/** 计算适配视口的缩放值（可选扣 HUD 安全边距） */
 export function zoomToFit(
     bbox: { minX: number; minY: number; maxX: number; maxY: number },
     viewportWidth: number,
     viewportHeight: number,
-    padding: number = 0.1
+    padding: number = 0.1,
+    hudInset?: HudInset
 ): number {
     const bboxWidth = bbox.maxX - bbox.minX;
     const bboxHeight = bbox.maxY - bbox.minY;
 
     if (bboxWidth <= 0 || bboxHeight <= 0) return 1;
 
-    const effectiveWidth = viewportWidth * (1 - padding * 2);
-    const effectiveHeight = viewportHeight * (1 - padding * 2);
+    // 扣 HUD 安全边距后的实际可用视口
+    const safeWidth = hudInset ? viewportWidth - hudInset.left - hudInset.right : viewportWidth;
+    const safeHeight = hudInset ? viewportHeight - hudInset.top - hudInset.bottom : viewportHeight;
+
+    const effectiveWidth = safeWidth * (1 - padding * 2);
+    const effectiveHeight = safeHeight * (1 - padding * 2);
 
     const scaleX = effectiveWidth / bboxWidth;
     const scaleY = effectiveHeight / bboxHeight;

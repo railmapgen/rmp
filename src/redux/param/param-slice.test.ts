@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import store from '../index';
-import appReducer, { MAX_UNDO_SIZE, redoAction, saveGraph, undoAction } from './param-slice';
+import appReducer, { applyRedoAction, applyUndoAction, MAX_UNDO_SIZE, saveGraph } from './param-slice';
 
 const realStore = store.getState();
 const emptySerializedGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export();
@@ -12,13 +12,13 @@ describe('ParamSlice', () => {
     it('Can save graph as expected', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));
-        expect(nextState.present).toEqual(emptySerializedGraph);
+        expect(nextState.present.graph).toEqual(emptySerializedGraph);
     });
 
     it('Can preserve past stack upon save', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(realStore.param, saveGraph(graph.export()));
-        expect(nextState.past).toEqual([emptySerializedGraph]);
+        expect(nextState.past.map(entry => entry.graph)).toEqual([emptySerializedGraph]);
     });
 
     it('Can reset future stack upon save', () => {
@@ -38,14 +38,21 @@ describe('ParamSlice', () => {
         const nextState = appReducer(
             {
                 ...realStore.param,
-                past: Array(MAX_UNDO_SIZE).fill(graph.export()).flat(),
-                present: newGraph.export(),
+                past: Array(MAX_UNDO_SIZE).fill({
+                    ...realStore.param.present,
+                    scope: 'graph' as const,
+                    graph: graph.export(),
+                }),
+                present: {
+                    ...realStore.param.present,
+                    graph: newGraph.export(),
+                },
             },
-            undoAction()
+            applyUndoAction('graph')
         );
         expect(nextState.past.length).toEqual(MAX_UNDO_SIZE - 1);
         expect(nextState.future.length).toEqual(1);
-        expect(nextState.present).toEqual(emptySerializedGraph);
+        expect(nextState.present.graph).toEqual(emptySerializedGraph);
     });
 
     it('Can pop from future upon redo', () => {
@@ -56,20 +63,31 @@ describe('ParamSlice', () => {
         const nextState = appReducer(
             {
                 ...realStore.param,
-                future: Array(MAX_UNDO_SIZE).fill(graph.export()).flat(),
-                present: oldGraph.export(),
+                future: Array(MAX_UNDO_SIZE).fill({
+                    ...realStore.param.present,
+                    scope: 'graph' as const,
+                    graph: graph.export(),
+                }),
+                present: { ...realStore.param.present, graph: oldGraph.export() },
             },
-            redoAction()
+            applyRedoAction('graph')
         );
         expect(nextState.past.length).toEqual(1);
         expect(nextState.future.length).toEqual(MAX_UNDO_SIZE - 1);
-        expect(nextState.present).toEqual(emptySerializedGraph);
+        expect(nextState.present.graph).toEqual(graph.export());
     });
 
     it('Can discard old graph if past.length > MAX_UNDO_SIZE', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         const nextState = appReducer(
-            { ...realStore.param, past: Array(MAX_UNDO_SIZE).fill(graph.export()).flat() },
+            {
+                ...realStore.param,
+                past: Array(MAX_UNDO_SIZE).fill({
+                    ...realStore.param.present,
+                    scope: 'graph' as const,
+                    graph: graph.export(),
+                }),
+            },
             saveGraph(graph.export())
         );
         expect(nextState.past.length).toEqual(MAX_UNDO_SIZE);

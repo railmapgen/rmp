@@ -38,8 +38,8 @@ const SvgLayer = React.memo(
             handlePointerUp,
             handleEdgePointerDown,
             handleEdgeDoubleClick,
-            mapEnabled,
-            isSubscriber,
+            mapEnabled = false,
+            isSubscriber = true,
         } = props;
 
         const layers = Object.fromEntries(
@@ -55,11 +55,14 @@ const SvgLayer = React.memo(
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
+                const edgeVisible = element.line!.attr.visible ?? true;
                 const effectiveEdgeVisible =
-                    element.line!.attr.visible && isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber);
+                    edgeVisible &&
+                    (element.line!.attr.visible === undefined ||
+                        isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber));
                 const wrapperProps = {
                     className: effectiveEdgeVisible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: effectiveEdgeVisible ? undefined : 'url(#invisible)',
+                    style: effectiveEdgeVisible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
@@ -124,10 +127,10 @@ const SvgLayer = React.memo(
                 const id = element.id as StnId;
                 const attr = element.station!;
                 const type = attr.type as StationType;
-                const visible = attr.visible;
+                const visible = attr.visible ?? true;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    style: visible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
 
                 const PreStationComponent = allStations[type]?.preComponent;
@@ -192,10 +195,10 @@ const SvgLayer = React.memo(
                 const id = element.id as MiscNodeId;
                 const attr = element.miscNode!;
                 const type = attr.type as MiscNodeType;
-                const visible = attr.visible;
+                const visible = attr.visible ?? true;
                 const wrapperProps = {
                     className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    style: visible ? undefined : { filter: 'grayscale(100%)', opacity: 0.5 },
                 };
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
@@ -268,11 +271,7 @@ const SvgLayer = React.memo(
 
         return jsxElements;
     },
-    (prevProps, nextProps) =>
-        prevProps.elements === nextProps.elements &&
-        prevProps.selected === nextProps.selected &&
-        prevProps.mapEnabled === nextProps.mapEnabled &&
-        prevProps.isSubscriber === nextProps.isSubscriber
+    (prevProps, nextProps) => prevProps.elements === nextProps.elements && prevProps.selected === nextProps.selected
 );
 
 export default SvgLayer;

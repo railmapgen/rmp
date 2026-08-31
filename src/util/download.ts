@@ -4,6 +4,8 @@ import { FacilitiesType } from '../components/svgs/nodes/facilities';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeType } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import i18n from '../i18n/config';
+import { MAP_ATTRIBUTION_EXPORT_URL, positionMapAttribution, setMapAttributionText } from '../map/map-attribution';
+import { renderMapLayerForExport } from '../map/map-tile-controller';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize, transformedBoundingBox } from './helpers';
@@ -30,6 +32,7 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
  * @param graph The graph.
+ * @param mapEnabled Whether the geographic map layer is included.
  * @param isShareInfoAttached Whether the user confirmed they will attach RMP info when sharing the image.
  * @param isSystemFontsOnly Whether to add font-family to elements with fonts classes.
  * @param forceRMPInfo Whether RMP info must be embedded regardless of the user's confirmation.
@@ -37,6 +40,7 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  */
 export const makeRenderReadySVGElement = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    mapEnabled: boolean,
     isShareInfoAttached: boolean,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
@@ -59,6 +63,7 @@ export const makeRenderReadySVGElement = async (
     elem.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
     elem.removeAttribute('style');
     elem.removeAttribute('tabindex');
+    restoreMapSvgTilesForExport(elem);
     // copy attributes from css to each elem in the newly cloned svg
     // this is necessary as styles stated in css will be missing in the cloned svg dom
     // only styles other than fonts need to be stated here, fonts are handled below
@@ -104,6 +109,20 @@ export const makeRenderReadySVGElement = async (
     // remove transform set by updateViewportTransform for dragging performance
     elem.querySelector('g')?.removeAttribute('transform');
 
+    if (mapEnabled) {
+        const canvas = document.getElementById('canvas');
+        if (!(canvas instanceof SVGSVGElement)) {
+            throw new Error('Canvas is missing during export');
+        }
+        const sourceMapLayer = canvas.querySelector<SVGGElement>('[data-map-layer]');
+        const exportMapLayer = elem.querySelector<SVGGElement>('[data-map-layer]');
+        if (!sourceMapLayer || !exportMapLayer) {
+            throw new Error('Map layer is missing during export');
+        }
+        await renderMapLayerForExport(sourceMapLayer, exportMapLayer, { xMin, yMin, xMax, yMax });
+        positionMapAttributionForExport(elem, { xMin, yMax });
+    }
+
     if (!isSystemFontsOnly) {
         // add additional fonts data to the final svg in encoded base64 format
         try {
@@ -124,6 +143,24 @@ export const makeRenderReadySVGElement = async (
     }
 
     return { elem, width, height };
+};
+
+export const restoreMapSvgTilesForExport = (svg: SVGSVGElement) => {
+    svg.querySelectorAll('[data-map-raster]').forEach(raster => raster.remove());
+    svg.querySelectorAll<SVGSVGElement>('.rmp-map-tile').forEach(tile => {
+        tile.style.removeProperty('display');
+        if (tile.getAttribute('style') === '') tile.removeAttribute('style');
+    });
+};
+
+export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
+    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]');
+    if (!mapAttribution) return;
+    const text = mapAttribution.querySelector<SVGTextElement>('[data-map-attribution-text]')?.textContent ?? '';
+    if (!text.includes(MAP_ATTRIBUTION_EXPORT_URL)) {
+        setMapAttributionText(mapAttribution, `${text} · ${MAP_ATTRIBUTION_EXPORT_URL}`);
+    }
+    positionMapAttribution(mapAttribution, bounds.xMin + 8, bounds.yMax - 8);
 };
 
 const loadFacilitiesSvg = async (

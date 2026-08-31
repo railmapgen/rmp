@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "地図を読み込み中…",
+        "loadError": "地理マップを読み込めません。",
+        "zoomInToEdit": "編集するには地図を拡大してください。",
+        "style": {
+            "title": "地図スタイル",
+            "reset": "リセット",
+            "type": "種類",
+            "enabled": "表示",
+            "widthScale": "幅の倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "輪郭",
+                "color": "表面",
+                "path": "経路",
+                "local": "ローカル",
+                "collector": "集散道路",
+                "arterial": "幹線道路"
+            },
+            "rails": { "title": "鉄道", "metro": "地下鉄", "national": "国鉄" },
+            "labels": {
+                "title": "ラベル",
+                "enabled": "すべてのラベルを表示",
+                "sizeScale": "サイズの倍率",
+                "color": "文字",
+                "strokeColor": "輪郭",
+                "groups": {
+                    "places": "場所",
+                    "roads": "道路",
+                    "buildings": "建物",
+                    "areas": "地域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要な場所",
+                    "place-medium": "中規模の場所",
+                    "place-minor": "小規模な場所",
+                    "road-arterial": "幹線道路",
+                    "road-collector": "集散道路",
+                    "building": "建物",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農地",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅地",
+                    "area-commercial": "商業地",
+                    "area-industrial": "工業地",
+                    "area-education": "教育",
+                    "area-healthcare": "医療",
+                    "transport-airport": "空港",
+                    "transport-rail": "鉄道駅",
+                    "transport-metro": "地下鉄駅",
+                    "transport-platform": "ホーム",
+                    "transport-entrance": "入口"
+                }
+            }
+        }
+    },
     "colorA": "Color A",
     "colorB": "Color B",
     "color": "カラー",
@@ -589,6 +649,36 @@
                     "reconcileDisabled": "この路線は統合チェーンに含まれるため、オフセットは無効です。チェーン全体が結合された一本のパスとして描画されます。",
                     "reconcileStyleDisabled": "この路線は統合チェーンに含まれるため、スタイル属性は無効です。描画されるスタイルは基準線によって制御されます。"
                 },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "接線方向のオフセット",
+                    "normal": "法線方向のオフセット",
+                    "sourceOffset": "始点端点オフセット",
+                    "targetOffset": "終点端点オフセット",
+                    "sourceOffsetX": "始点端点 X オフセット",
+                    "sourceOffsetY": "始点端点 Y オフセット",
+                    "targetOffsetX": "終点端点 X オフセット",
+                    "targetOffsetY": "終点端点 Y オフセット",
+                    "linkedOffset": "端点オフセットを連動"
+                },
+                "freeform": {
+                    "displayName": "フリーフォーム曲線",
+                    "controlPointHint": "目的の制御点を通るようにドラッグして線を描きます。",
+                    "outlineSettingsUnavailable": "フリーフォーム曲線では輪郭設定を利用できません。",
+                    "smoothing": "スムージング",
+                    "widthStops": "幅の変化点",
+                    "widthStopIndex": "番号",
+                    "widthStopPosition": "位置（%）",
+                    "widthStopWidth": "幅",
+                    "baseWidthHint": "線の幅はパスに沿って変化します。",
+                    "startCap": "始点キャップ",
+                    "endCap": "終点キャップ",
+                    "round": "ラウンド",
+                    "flat": "フラット",
+                    "arrow": "矢印",
+                    "arrowLength": "矢印の長さ",
+                    "arrowWidth": "矢印の幅"
+                },
                 "simple": {
                     "displayName": "簡単な経路",
                     "offset": "補正値"
@@ -785,6 +875,10 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "mapToggle": {
+            "show": "地理マップを表示",
+            "hide": "地理マップを非表示"
+        },
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",
@@ -859,6 +953,7 @@
             "disabledScaleOptionsSolution": "<link1>購読して</link1>デスクトップアプリを<link2>ダウンロードし</link2>、大きな画像を渲染してください。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
+            "shareInfo": "透かしを削除（この画像を共有する際に<1>地下鉄路線図画家</1>とそのリンクを添付します）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
             "shareInfo2": " とリンクを添付します。",
             "termsAndConditions": "利用規約",
@@ -889,7 +984,14 @@
                 "previewPlay": "再生",
                 "previewPause": "一時停止",
                 "previewLoading": "レンダリング中…",
-                "previewFullscreen": "全画面"
+                "previewFullscreen": "全画面",
+                "jumpToAction": "アクションへ移動",
+                "previousAction": "前のアクション",
+                "nextAction": "次のアクション",
+                "actionOption": "アクション {{index}}：{{type}}（{{remark}}）",
+                "actionOptionType": "アクション {{index}}：{{type}}",
+                "actionOptionWait": "アクション {{index}}：{{type}}（{{duration}} 秒）",
+                "noRemark": "備考なし"
             }
         },
         "timeline": {
@@ -942,6 +1044,10 @@
             },
             "preference": {
                 "title": "設定",
+                "map": "地理マップを表示",
+                "mapEnabled": "地理地図レイヤーを表示",
+                "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
+                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
                 "autoParallel": "新しい路線を既存の路線と並列に自動的に設定",
                 "randomStationNames": {
@@ -1133,9 +1239,6 @@
         "newLine": "新路線",
         "modify": "修正",
         "elements": "要素",
-        "segmentRemark": "区間の備考",
-        "segmentRemarkPlaceholder": "区間の備考を入力",
-        "segmentRemarkRequired": "区間の備考を入力してください",
         "addElement": "要素を追加",
         "reverseAll": "すべて反転",
         "noElements": "要素がありません。「要素を追加」をクリック",
@@ -1150,6 +1253,8 @@
         "end": "終了",
         "isStation": "駅として扱う",
         "mileage": "距離",
+        "mileageAutoFill": "地図の実際の長さから自動入力",
+        "mileageAutoFillDisabled": "地図を有効にしてから実際の長さで自動入力できます",
         "savedAtTimePoint": "現在の時点に変更を保存しました",
         "futurePointsAffected": "以降の時点に影響します",
         "attrs": {

@@ -34,7 +34,7 @@ const addEdge = (
 };
 
 describe('buildAnimationPhases', () => {
-    it('uses half a second per line edge as the minimum open and close duration', () => {
+    it('uses one second for quick-complete actions while retaining the normal minimum duration', () => {
         const graph = makeGraph();
         addNode(graph, 'stn_a', 0, 0);
         addNode(graph, 'stn_b', 100, 0);
@@ -45,7 +45,7 @@ describe('buildAnimationPhases', () => {
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
         };
 
-        expect(getActionLineMinimumDuration(line)).toBe(0.5);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
         expect(
             buildAnimationPhases(
                 [
@@ -56,16 +56,17 @@ describe('buildAnimationPhases', () => {
                         remark: '',
                         actionType: 'open',
                         actionLineId: 'line1',
-                        actionDuration: 0.5,
+                        actionDuration: 3,
+                        quickComplete: true,
                     },
                 ],
                 [line],
                 graph
             )[0].durationWeight
-        ).toBe(0.5);
+        ).toBe(1);
     });
 
-    it('does not count line nodes in the minimum duration', () => {
+    it('calculates station-only duration when a line has no edges', () => {
         const graph = makeGraph();
         addNode(graph, 'stn_a', 0, 0);
         addNode(graph, 'stn_b', 100, 0);
@@ -75,7 +76,7 @@ describe('buildAnimationPhases', () => {
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }],
         };
 
-        expect(getActionLineMinimumDuration(line)).toBe(0.5);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2);
     });
 
     it('creates open phases with elements from TimelineLine', () => {
@@ -111,8 +112,8 @@ describe('buildAnimationPhases', () => {
         expect(phases[0].remark).toBe('First phase');
         expect(phases[0].activeLineIds).toEqual(['group1']);
         expect(phases[0].elements).toEqual([
-            { id: 'stn_a', kind: 'node', reverse: false },
-            { id: 'stn_b', kind: 'node', reverse: false },
+            { id: 'stn_a', kind: 'node', reverse: false, version: 1 },
+            { id: 'stn_b', kind: 'node', reverse: false, version: 1 },
             { id: 'line_ab', kind: 'edge', reverse: true },
         ]);
     });
@@ -197,6 +198,50 @@ describe('buildAnimationPhases', () => {
         expect(phases[1].activeLineIds).toEqual(['group1', 'group2']);
         expect(phases[2].activeLineIds).toEqual(['group2']);
         expect(phases[3].activeLineIds).toEqual(['group2']);
+    });
+
+    it('marks quick completion and computes the parallel focus bounds', () => {
+        const graph = makeGraph();
+        addNode(graph, 'stn_a', 0, 0);
+        addNode(graph, 'stn_b', 100, 0);
+        addNode(graph, 'stn_c', 300, 100);
+        addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
+        addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
+        const lines: TimelineLine[] = [
+            { id: 'line1', groupId: 'group1', elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }] },
+            { id: 'line2', groupId: 'group2', elements: [{ id: 'stn_b' }, { id: 'stn_c' }, { id: 'line_bc' }] },
+        ];
+        const phases = buildAnimationPhases(
+            [
+                { id: 'focus', date: '', activeLineIds: [], remark: '', actionType: 'focus' },
+                {
+                    id: 'open1',
+                    date: '',
+                    activeLineIds: [],
+                    remark: '',
+                    actionType: 'open',
+                    actionLineId: 'line1',
+                    quickComplete: true,
+                    withPrevious: true,
+                },
+                {
+                    id: 'open2',
+                    date: '',
+                    activeLineIds: [],
+                    remark: '',
+                    actionType: 'open',
+                    actionLineId: 'line2',
+                    withPrevious: true,
+                },
+            ],
+            lines,
+            graph
+        );
+        expect(phases[1].quickComplete).toBe(true);
+        expect(phases[1].batchIndex).toBe(phases[2].batchIndex);
+        expect(phases[0].focusTargets).toHaveLength(5);
+        expect(phases[0].focusTargetBounds).toEqual({ xMin: 0, xMax: 300, yMin: 0, yMax: 100 });
+        expect(phases[0].focusTargetBatch).toBe(phases[1].batchIndex);
     });
 
     it('fills targetGroupId for open/close phases only', () => {

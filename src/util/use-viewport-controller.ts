@@ -22,6 +22,7 @@ interface Point {
  */
 interface UseViewportControllerOptions {
     viewport: LiveViewport;
+    onViewportChange?: (viewport: LiveViewport) => void;
 }
 
 /**
@@ -92,7 +93,7 @@ interface ViewportFrameState {
  * - higher-level application decisions such as how wheel zoom should be calculated
  * - tool mode changes, selection logic, or business-specific branching
  */
-export const useViewportController = ({ viewport }: UseViewportControllerOptions) => {
+export const useViewportController = ({ viewport, onViewportChange }: UseViewportControllerOptions) => {
     const dispatch = useRootDispatch();
     const store = useRootStore();
 
@@ -189,7 +190,8 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      */
     React.useLayoutEffect(() => {
         updateViewportTransform(viewport);
-    }, [updateViewportTransform, viewport.x, viewport.y, viewport.zoom]);
+        onViewportChange?.(viewport);
+    }, [onViewportChange, updateViewportTransform, viewport.x, viewport.y, viewport.zoom]);
 
     /**
      * Clears the deferred preview commit if one is pending.
@@ -238,6 +240,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                 const { viewport: latestViewport, publishLiveViewport } = viewportFrameRef.current;
 
                 updateViewportTransform(latestViewport);
+                onViewportChange?.(latestViewport);
                 if (publishLiveViewport) {
                     dispatch(setLiveViewport(latestViewport));
                 }
@@ -246,7 +249,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
                 viewportFrameRef.current.rafId = null;
             });
         },
-        [dispatch, updateViewportTransform]
+        [dispatch, onViewportChange, updateViewportTransform]
     );
 
     /**

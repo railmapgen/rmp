@@ -192,6 +192,7 @@ export default function DownloadActions() {
 
         const { elem, width, height } = await makeRenderReadySVGElement(
             graph.current,
+            param.present.mapEnabled,
             isAttachSelected,
             isSystemFontsOnly,
             languages,
@@ -308,13 +309,19 @@ export default function DownloadActions() {
                                 isDisabled={isRmpInfoForced}
                                 onChange={e => setIsAttachSelected(e.target.checked)}
                             >
-                                <Text>
-                                    {t('header.download.shareInfo1')}
-                                    <Link color="teal.500" href="https://railmapgen.org/rmp">
-                                        {t('header.about.rmp')} <Icon as={MdOpenInNew} />
-                                    </Link>
-                                    {t('header.download.shareInfo2')}
-                                </Text>
+                                <Trans
+                                    i18nKey="header.download.shareInfo"
+                                    components={{
+                                        1: (
+                                            <Link
+                                                color="teal.500"
+                                                textDecoration="underline"
+                                                href="https://railmapgen.org/rmp"
+                                                isExternal
+                                            />
+                                        ),
+                                    }}
+                                />
                             </Checkbox>
                             {isRmpInfoForced && (
                                 <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">

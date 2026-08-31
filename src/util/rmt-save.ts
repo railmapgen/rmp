@@ -44,33 +44,38 @@ const updateToken = async (store: ReturnType<typeof createStore>, token: string)
 };
 
 export const fetchLoginStateAndSubscriptions = async (dispatch: RootDispatch, token: string) => {
-    const rep = await fetch(subscription_endpoint, {
-        headers: {
-            accept: 'application/json',
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-        },
-    });
-    if (rep.status !== 200) {
-        logger.debug('Token is invalid, expiring the login state');
-        dispatch(setState('expired'));
-        dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
-        return;
-    }
-
-    dispatch(setState('free'));
-    const subscriptions = (await rep.json()).subscriptions as APISubscription[];
-
-    const activeSubscriptions = structuredClone(defaultActiveSubscriptions);
-    for (const subscription of subscriptions) {
-        const type = subscription.type;
-        if (type in activeSubscriptions) {
-            dispatch(setState('subscriber'));
-            activeSubscriptions[type as keyof ActiveSubscriptions] = true;
+    try {
+        const rep = await fetch(subscription_endpoint, {
+            headers: {
+                accept: 'application/json',
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        if (rep.status !== 200) {
+            logger.debug('Token is invalid, expiring the login state');
+            dispatch(setState('expired'));
+            dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
+            return;
         }
+
+        dispatch(setState('free'));
+        const subscriptions = (await rep.json()).subscriptions as APISubscription[];
+
+        const activeSubscriptions = structuredClone(defaultActiveSubscriptions);
+        for (const subscription of subscriptions) {
+            const type = subscription.type;
+            if (type in activeSubscriptions) {
+                dispatch(setState('subscriber'));
+                activeSubscriptions[type as keyof ActiveSubscriptions] = true;
+            }
+        }
+        dispatch(setActiveSubscriptions(activeSubscriptions));
+        logger.debug(`Token is valid, setting active subscriptions: ${JSON.stringify(activeSubscriptions)}`);
+    } catch (error) {
+        logger.warn('Unable to fetch subscriptions; continuing with the locally loaded account state.', error);
+        dispatch(setActiveSubscriptions(defaultActiveSubscriptions));
     }
-    dispatch(setActiveSubscriptions(activeSubscriptions));
-    logger.debug(`Token is valid, setting active subscriptions: ${JSON.stringify(activeSubscriptions)}`);
 };
 
 /**

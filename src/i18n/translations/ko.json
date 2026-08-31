@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "지도를 불러오는 중…",
+        "loadError": "지리 지도를 불러올 수 없습니다.",
+        "zoomInToEdit": "편집하려면 지도를 확대하세요.",
+        "style": {
+            "title": "지도 스타일",
+            "reset": "초기화",
+            "type": "유형",
+            "enabled": "표시",
+            "widthScale": "너비 비율",
+            "roads": {
+                "title": "도로",
+                "casingColor": "윤곽",
+                "color": "표면",
+                "path": "경로",
+                "local": "지역 도로",
+                "collector": "집산 도로",
+                "arterial": "간선 도로"
+            },
+            "rails": { "title": "철도", "metro": "지하철", "national": "국철" },
+            "labels": {
+                "title": "라벨",
+                "enabled": "모든 라벨 표시",
+                "sizeScale": "크기 비율",
+                "color": "텍스트",
+                "strokeColor": "윤곽",
+                "groups": {
+                    "places": "장소",
+                    "roads": "도로",
+                    "buildings": "건물",
+                    "areas": "지역",
+                    "transport": "교통"
+                },
+                "categories": {
+                    "place-major": "주요 장소",
+                    "place-medium": "중간 장소",
+                    "place-minor": "소규모 장소",
+                    "road-arterial": "간선 도로",
+                    "road-collector": "집산 도로",
+                    "building": "건물",
+                    "area-water": "수역",
+                    "area-park": "공원",
+                    "area-grass": "초지",
+                    "area-forest": "숲",
+                    "area-farmland": "농지",
+                    "area-cemetery": "묘지",
+                    "area-residential": "주거 지역",
+                    "area-commercial": "상업 지역",
+                    "area-industrial": "공업 지역",
+                    "area-education": "교육 시설",
+                    "area-healthcare": "의료 시설",
+                    "transport-airport": "공항",
+                    "transport-rail": "철도역",
+                    "transport-metro": "지하철역",
+                    "transport-platform": "승강장",
+                    "transport-entrance": "출입구"
+                }
+            }
+        }
+    },
     "color": "색깔",
     "warning": "경고",
     "error": "오류",
@@ -586,6 +646,36 @@
                     "reconcileDisabled": "이 선분은 통합 체인에 포함되어 있어 오프셋이 비활성화되었습니다. 체인 전체가 하나의 결합된 경로로 렌더링됩니다.",
                     "reconcileStyleDisabled": "이 선분은 통합 체인에 포함되어 있어 스타일 속성이 비활성화되었습니다. 렌더링되는 스타일은 기본선에서 제어됩니다."
                 },
+                "bezier": {
+                    "displayName": "베지어 곡선",
+                    "along": "접선 방향 오프셋",
+                    "normal": "법선 방향 오프셋",
+                    "sourceOffset": "시작점 끝점 오프셋",
+                    "targetOffset": "끝점 끝점 오프셋",
+                    "sourceOffsetX": "시작점 X 오프셋",
+                    "sourceOffsetY": "시작점 Y 오프셋",
+                    "targetOffsetX": "끝점 X 오프셋",
+                    "targetOffsetY": "끝점 Y 오프셋",
+                    "linkedOffset": "끝점 오프셋 연결"
+                },
+                "freeform": {
+                    "displayName": "자유 곡선",
+                    "controlPointHint": "원하는 제어점을 따라 드래그하여 선을 그립니다.",
+                    "outlineSettingsUnavailable": "자유 곡선에서는 외곽선 설정을 사용할 수 없습니다.",
+                    "smoothing": "스무딩",
+                    "widthStops": "너비 정지점",
+                    "widthStopIndex": "번호",
+                    "widthStopPosition": "위치(%)",
+                    "widthStopWidth": "너비",
+                    "baseWidthHint": "경로를 따라 선 너비가 변합니다.",
+                    "startCap": "시작 캡",
+                    "endCap": "끝 캡",
+                    "round": "둥근 끝",
+                    "flat": "평평한 끝",
+                    "arrow": "화살표",
+                    "arrowLength": "화살표 길이",
+                    "arrowWidth": "화살표 너비"
+                },
                 "simple": {
                     "displayName": "기본 선분",
                     "offset": "오프셋"
@@ -782,6 +872,10 @@
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
         "search": "방송국 검색",
+        "mapToggle": {
+            "show": "지리 지도 표시",
+            "hide": "지리 지도 숨기기"
+        },
         "open": {
             "new": "신 프로젝트",
             "config": "프로젝트 가져오기",
@@ -856,6 +950,7 @@
             "disabledScaleOptionsSolution": "<link1>구독하고</link1> <link2>데스크톱 앱을 다운로드하여</link2> 큰 이미지를 렌더링하세요.",
             "imageTooBig": "이미지가 너무 크기 때문에 브라우저에서 생성할 수 없습니다!",
             "isSystemFontsOnly": "시스템 글꼴만 사용하십시오 (글꼴 표시가 다를 수 있습니다).",
+            "shareInfo": "이 이미지를 공유할 때 <1>지하철 노선도 그리기 도구</1>와 링크를 첨부합니다.",
             "shareInfo1": "이 사진을 공유할 때",
             "shareInfo2": "링크를 첨부할 것입니다.",
             "termsAndConditions": "약관 및 세칙",
@@ -886,7 +981,14 @@
                 "previewPlay": "재생",
                 "previewPause": "일시정지",
                 "previewLoading": "렌더링 중…",
-                "previewFullscreen": "전체 화면"
+                "previewFullscreen": "전체 화면",
+                "jumpToAction": "동작으로 이동",
+                "previousAction": "이전 동작",
+                "nextAction": "다음 동작",
+                "actionOption": "동작 {{index}}: {{type}} ({{remark}})",
+                "actionOptionType": "동작 {{index}}: {{type}}",
+                "actionOptionWait": "동작 {{index}}: {{type}} ({{duration}}초)",
+                "noRemark": "메모 없음"
             }
         },
         "timeline": {
@@ -939,6 +1041,10 @@
             },
             "preference": {
                 "title": "선호",
+                "map": "지리 지도 표시",
+                "mapEnabled": "지리 지도 레이어 표시",
+                "disableMapPerformanceOptimization": "지도 성능 최적화 비활성화",
+                "mapPerformanceOptimizationProgress": "최적화됨: {{optimized}}/{{total}}",
                 "keepLastPath": "다음 이동에서 배경을 클릭할 때까지 계속 선을 그립니다",
                 "autoParallel": "새 선을 기존 선과 평행하게 자동으로 설정합니다",
                 "randomStationNames": {
@@ -1131,9 +1237,6 @@
         "newLine": "새 노선",
         "modify": "수정",
         "elements": "요소",
-        "segmentRemark": "구간 메모",
-        "segmentRemarkPlaceholder": "구간 메모 입력",
-        "segmentRemarkRequired": "구간 메모를 입력하세요",
         "addElement": "요소 추가",
         "reverseAll": "모두 반전",
         "noElements": "요소가 없습니다. \"요소 추가\"를 클릭하세요",
@@ -1148,6 +1251,8 @@
         "end": "종료",
         "isStation": "역으로 간주",
         "mileage": "거리",
+        "mileageAutoFill": "지도 실제 길이에서 자동 채우기",
+        "mileageAutoFillDisabled": "실제 길이로 자동 채우려면 지도를 켜세요",
         "savedAtTimePoint": "현재 시점에 변경 사항 저장됨",
         "futurePointsAffected": "이후 시점에 영향을 미칩니다",
         "attrs": {

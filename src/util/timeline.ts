@@ -245,6 +245,7 @@ export const getNodeDisplayName = (
     nodeId: NodeId
 ): string => {
     if (!graph.hasNode(nodeId)) return nodeId;
+    if (graph.getNodeAttribute(nodeId, 'type') === 'virtual') return '虚拟节点';
     const type = graph.getNodeAttribute(nodeId, 'type');
     const attr = graph.getNodeAttribute(nodeId, type) as Record<string, any> | undefined;
     if (attr && Array.isArray(attr.names)) {
@@ -295,7 +296,7 @@ export const syncCurrentNodeVersion = (
 
     if (JSON.stringify(currentSnapshot) !== JSON.stringify(nextSnapshot)) {
         graph.updateNodeAttribute(nodeId, 'versions', versions =>
-            versions.map(version => (version.version === currentVersion ? nextSnapshot : version))
+            (versions ?? []).map(version => (version.version === currentVersion ? nextSnapshot : version))
         );
     }
 };

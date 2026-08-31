@@ -159,10 +159,12 @@ const jrEastSingleColorPattern: LineStyle<JREastSingleColorPatternAttributes> = 
     metadata: {
         displayName: 'panel.details.lines.jrEastSingleColorPattern.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

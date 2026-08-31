@@ -129,13 +129,13 @@ describe('MapCanvas', () => {
         act(() => onLoadingChange(true));
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
             status: 'loading',
-            message: 'Loading map',
+            message: 'Loading map...',
         });
 
         act(() => onLoadingChange(true, { completed: 2, total: 5 }));
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
             status: 'loading',
-            message: 'Loading map (2 / 5)',
+            message: 'Loading map... (2 / 5)',
         });
 
         act(() => store.dispatch(closeGlobalAlert(GlobalAlertId.MapLoading)));
@@ -147,7 +147,7 @@ describe('MapCanvas', () => {
 
         act(() => onLoadingChange(true, { completed: 0, total: 2 }));
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toMatchObject({
-            message: 'Loading map (0 / 2)',
+            message: 'Loading map... (0 / 2)',
         });
     });
 

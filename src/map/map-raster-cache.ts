@@ -67,7 +67,8 @@ export class MapRasterCache {
     async getSourceSession(sourceKey: string, now = Date.now()): Promise<MapSourceSession> {
         const db = await this.getDb();
         const readTransaction = db.transaction(SOURCE_STORE, 'readonly');
-        const existing = (await requestResult(readTransaction.objectStore(SOURCE_STORE).get(sourceKey))) as SourceRecord | undefined;
+        const existing = (await requestResult(readTransaction.objectStore(SOURCE_STORE).get(sourceKey))) as
+            SourceRecord | undefined;
         await transactionDone(readTransaction);
 
         if (existing && existing.expiresAt > now) {

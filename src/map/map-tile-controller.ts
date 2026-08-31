@@ -14,6 +14,7 @@ import {
     MAP_TILE_BUFFER,
     MAP_TILE_CACHE_MAX_BYTES,
     MAP_TILE_CACHE_MAX_ENTRIES,
+    MAP_TILE_REQUEST_TIMEOUT_MS,
     MAP_TILE_SIZE,
     MAP_WORLD_PIXELS_PER_GRAPH_UNIT,
     worldPixelToGraph,
@@ -120,6 +121,7 @@ export interface MapTileControllerOptions {
     rasterCache?: MapRasterCacheApi | null;
     rasterizer?: MapRasterizer | null;
     rasterEnabled?: boolean;
+    rasterizeOverview?: boolean;
     rasterIdleDelayMs?: number;
     now?: () => number;
 }
@@ -127,11 +129,15 @@ export interface MapTileControllerOptions {
 /**
  * Counts visible tile outcomes instead of bundle downloads. A bundle can serve
  * several tiles or come from cache, so network request counts do not describe
- * how much of the current viewport is ready to display.
+ * how much of the current viewport is ready to display. When a large bundle is
+ * being downloaded, `bytesLoaded`/`bytesTotal` give the UI a live transfer
+ * estimate so the loading state does not appear stuck at `0 / N`.
  */
 export interface MapLoadingProgress {
     completed: number;
     total: number;
+    bytesLoaded?: number;
+    bytesTotal?: number;
 }
 
 export interface MapOptimizationProgress {
@@ -255,11 +261,15 @@ export class MapTileController {
     private readonly pending = new Set<string>();
     private readonly settled = new Set<string>();
     private desired = new Map<string, TileRequest>();
-    private levels: Record<MapLevelName, MapLevel> | undefined;
+    private levels: Partial<Record<MapLevelName, MapLevel>> = {};
+    private levelManifests: Record<MapLevelName, MapLevelManifest> | undefined;
+    private readonly levelRequests = new Map<MapLevelName, Promise<MapLevel>>();
     private manifestUrl: URL | undefined;
     private viewport: LiveViewport | undefined;
     private activeLevel: MapLevel | undefined;
     private activeFetches = 0;
+    private readonly retryCounts = new Map<string, number>();
+    private readonly retryTimers = new Set<ReturnType<typeof setTimeout>>();
 
     /**
      * Network promises may outlive a viewport or level. Capturing this generation
@@ -277,6 +287,7 @@ export class MapTileController {
     private styleCss: string;
     private styleKey: string;
     private rasterEnabled: boolean;
+    private readonly rasterizeOverview: boolean;
     private rasterRevision = 0;
     private rasterWorkActive = false;
     private rasterRescheduleRequested = false;
@@ -296,6 +307,7 @@ export class MapTileController {
         this.styleCss = options.styleCss ?? '';
         this.styleKey = getMapStyleCacheKey(this.styleCss);
         this.rasterEnabled = options.rasterEnabled ?? true;
+        this.rasterizeOverview = options.rasterizeOverview ?? false;
         this.tileRoot = document.createElementNS(SVG_NAMESPACE, 'g');
         this.tileRoot.dataset.mapTiles = '';
         this.attribution = createMapAttribution();
@@ -307,20 +319,15 @@ export class MapTileController {
     }
 
     /**
-     * Loads both levels before rendering so crossing the zoom threshold never
-     * has to reinterpret partially initialized metadata. `updateViewport` may
-     * safely run first; its latest value is rendered once initialization ends.
-     *
-     * Export preparation may join initialization while the live canvas is still
-     * starting. Retaining one promise prevents that second consumer from loading
-     * and parsing the same manifest and indexes again.
+     * Loads only the active level before the first render. The other level is
+     * fetched lazily when the viewport crosses the zoom threshold.
      */
     initialize() {
         this.initialization ??= this.initializeOnce();
         return this.initialization;
     }
 
-    /** Performs the one controller-wide metadata load shared by live rendering and export. */
+    /** Performs the metadata load shared by live rendering and export. */
     private async initializeOnce() {
         const baseUrl = this.options.baseUrl.trim();
         if (!baseUrl) throw new Error('Map tile base URL is not configured');
@@ -336,19 +343,41 @@ export class MapTileController {
             // Tile placement assumes this projection and size; accepting another value would silently misalign the map.
             throw new Error('Unsupported map projection or tile size');
         }
-        const overviewManifest = requireLevel(manifest, 'overview');
-        const zoomedManifest = requireLevel(manifest, 'zoomed');
-        const [overview, zoomed] = await Promise.all([
-            this.loadLevel(overviewManifest, manifestUrl),
-            this.loadLevel(zoomedManifest, manifestUrl),
-        ]);
+        this.levelManifests = {
+            overview: requireLevel(manifest, 'overview'),
+            zoomed: requireLevel(manifest, 'zoomed'),
+        };
         if (this.disposed) return;
         this.sourceSession = await this.confirmSourceSession(this.sourceSession);
         if (this.disposed) return;
         this.scheduleSourceExpiryCheck();
-        this.levels = { overview, zoomed };
         setMapAttributionText(this.attribution, manifest.attribution);
+        await this.loadActiveLevel();
         this.scheduleRender();
+    }
+
+    private async loadActiveLevel() {
+        if (!this.levelManifests || !this.manifestUrl) return;
+        const name: MapLevelName = this.viewport && isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        await this.loadLevelByName(name);
+    }
+
+    private loadLevelByName(name: MapLevelName): Promise<MapLevel> {
+        const loaded = this.levels[name];
+        if (loaded) return Promise.resolve(loaded);
+        const inFlight = this.levelRequests.get(name);
+        if (inFlight) return inFlight;
+        const manifest = this.levelManifests?.[name];
+        if (!manifest || !this.manifestUrl) return Promise.reject(new Error(`Map level is not configured: ${name}`));
+        const request = this.loadLevel(manifest, this.manifestUrl).then(level => {
+            this.levels[name] = level;
+            return level;
+        });
+        this.levelRequests.set(name, request);
+        request.catch(() => {
+            if (this.levelRequests.get(name) === request) this.levelRequests.delete(name);
+        });
+        return request;
     }
 
     /**
@@ -362,10 +391,7 @@ export class MapTileController {
 
         // Attribution must follow even before tile metadata is ready, because viewport updates are independent of loading.
         this.positionAttribution(viewport);
-        if (this.levels) {
-            const target = isMapZoomed(viewport.zoom) ? this.levels.zoomed : this.levels.overview;
-            if (target !== this.activeLevel) this.switchLevel(target);
-        }
+        this.ensureViewportLevel();
         this.scheduleRender();
     }
 
@@ -430,14 +456,16 @@ export class MapTileController {
         }
 
         await this.initialize();
-        if (this.disposed || !this.levels) return;
+        if (this.disposed) return;
 
         /**
          * A single export must not mix overview and detailed geometry. The
          * freshest viewport chooses the same level the live renderer is about
          * to show, even if its coalesced animation frame has not run yet.
          */
-        const level = this.viewport && isMapZoomed(this.viewport.zoom) ? this.levels.zoomed : this.levels.overview;
+        const name: MapLevelName = this.viewport && isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        const level = await this.loadLevelByName(name);
+        if (this.disposed) return;
         const requests = this.getTilesForBounds(level, bounds, 0);
         const tiles = await Promise.all(
             [...requests.values()].map(async request => {
@@ -481,6 +509,8 @@ export class MapTileController {
         if (this.mountFrame !== undefined) cancelAnimationFrame(this.mountFrame);
         if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
         if (this.sourceExpiryTimer !== undefined) clearTimeout(this.sourceExpiryTimer);
+        for (const timer of this.retryTimers) clearTimeout(timer);
+        this.retryTimers.clear();
         this.renderFrame = undefined;
         this.mountFrame = undefined;
         this.rasterTimer = undefined;
@@ -489,6 +519,7 @@ export class MapTileController {
         this.clearMountedTiles();
         this.pending.clear();
         this.desired.clear();
+        this.retryCounts.clear();
         this.bundleCache.clear();
         this.tileCache.clear();
         this.rasterRequests.clear();
@@ -540,9 +571,21 @@ export class MapTileController {
         return { ...level, availabilityIndex, bundles };
     }
 
+    private ensureViewportLevel() {
+        if (!this.levelManifests || !this.viewport || this.disposed) return;
+        const name: MapLevelName = isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        if (this.levels[name]) return;
+        this.setLoading(true);
+        void this.loadLevelByName(name)
+            .then(() => this.scheduleRender())
+            .catch(error => {
+                if (!this.disposed) console.error(`Map level failed: ${name}`, error);
+            });
+    }
+
     /** Coalesces high-frequency viewport changes before doing visibility math. */
     private scheduleRender() {
-        if (!this.levels || !this.viewport || this.renderFrame !== undefined || this.disposed) return;
+        if (!this.viewport || this.renderFrame !== undefined || this.disposed) return;
 
         // Pan events can outpace paint; coalescing them avoids calculating visibility for viewports never shown.
         this.renderFrame = requestAnimationFrame(() => {
@@ -556,8 +599,13 @@ export class MapTileController {
      * have crossed the threshold after that frame was requested.
      */
     private render() {
-        if (!this.levels || !this.viewport || this.disposed) return;
-        const target = isMapZoomed(this.viewport.zoom) ? this.levels.zoomed : this.levels.overview;
+        if (!this.viewport || this.disposed) return;
+        const name: MapLevelName = isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        const target = this.levels[name];
+        if (!target) {
+            this.ensureViewportLevel();
+            return;
+        }
         if (target !== this.activeLevel) this.switchLevel(target);
         this.syncVisibleTiles(target, this.viewport);
     }
@@ -571,6 +619,9 @@ export class MapTileController {
         this.clearMountedTiles();
         this.pending.clear();
         this.settled.clear();
+        this.retryCounts.clear();
+        for (const timer of this.retryTimers) clearTimeout(timer);
+        this.retryTimers.clear();
         this.desired.clear();
         this.mountQueue = [];
         this.tileRoot.replaceChildren();
@@ -594,6 +645,9 @@ export class MapTileController {
         }
         for (const key of [...this.settled]) {
             if (!nextDesired.has(key)) this.settled.delete(key);
+        }
+        for (const key of [...this.retryCounts.keys()]) {
+            if (!nextDesired.has(key)) this.retryCounts.delete(key);
         }
         for (const request of nextDesired.values()) {
             if (this.nodes.has(request.key)) this.settled.add(request.key);
@@ -655,8 +709,9 @@ export class MapTileController {
      * not enough at sparse dataset boundaries where that file may not exist.
      */
     private resolveBundle(level: MapLevel, x: number, y: number) {
-        // `MAP_BUNDLE_SIDES` is largest-first so dense areas are served with fewer requests.
-        for (const side of MAP_BUNDLE_SIDES) {
+        // Prefer the smallest published bundle for a tile. Large 8×8 bundles can
+        // contain tens of megabytes of SVG that is outside the current viewport.
+        for (const side of [...MAP_BUNDLE_SIDES].reverse()) {
             const address = { zoom: level.zoom, side, x: Math.floor(x / side), y: Math.floor(y / side) };
             if (!level.bundles.has(bundleAddressKey(address))) continue;
             const relative = level.bundleTemplate
@@ -691,10 +746,34 @@ export class MapTileController {
             })
             .catch(error => {
                 if (this.disposed || generation !== this.generation) return;
-                console.error(`Map tile failed: ${request.key}`, error);
                 this.pending.delete(request.key);
 
-                // A failed desired tile is terminal for this switch; otherwise the loading state could remain forever.
+                if (error instanceof DOMException && error.name === 'AbortError') {
+                    this.settled.add(request.key);
+                    this.maybeFinishSwitch();
+                    return;
+                }
+
+                const attempts = (this.retryCounts.get(request.key) ?? 0) + 1;
+                if (this.desired.has(request.key) && attempts < 3) {
+                    this.retryCounts.set(request.key, attempts);
+                    const timer = setTimeout(() => {
+                        this.retryTimers.delete(timer);
+                        if (
+                            !this.disposed &&
+                            generation === this.generation &&
+                            this.desired.has(request.key) &&
+                            !this.nodes.has(request.key) &&
+                            !this.pending.has(request.key)
+                        ) {
+                            this.requestTile(request);
+                        }
+                    }, attempts * 1_000);
+                    this.retryTimers.add(timer);
+                    return;
+                }
+
+                console.error(`Map tile failed after ${attempts} attempts: ${request.key}`, error);
                 if (this.desired.has(request.key)) this.settled.add(request.key);
                 this.maybeFinishSwitch();
             });
@@ -720,6 +799,7 @@ export class MapTileController {
                     this.nodes.set(request.key, { request, svg: tile });
                 }
                 this.pending.delete(request.key);
+                this.retryCounts.delete(request.key);
                 this.settled.add(request.key);
             }
             this.tileRoot.append(fragment);
@@ -815,7 +895,11 @@ export class MapTileController {
         }
         let inFlight = this.bundleRequests.get(url);
         if (!inFlight) {
-            inFlight = this.enqueueFetch(() => this.fetchArrayBuffer(new URL(url)).then(parseBundle));
+            inFlight = this.enqueueFetch(() =>
+                this.fetchBundleWithProgress(new URL(url), (loaded, total) => {
+                    this.reportBundleDownloadProgress(loaded, total);
+                }).then(parseBundle)
+            );
             this.bundleRequests.set(url, inFlight);
             const clearRequest = () => {
                 if (this.bundleRequests.get(url) === inFlight) this.bundleRequests.delete(url);
@@ -827,6 +911,20 @@ export class MapTileController {
             this.assertBundleAddress(bundle, expectedAddress, url);
             this.bundleCache.set(url, bundle, bundle.bytes.byteLength);
             return bundle;
+        });
+    }
+
+    /** Surfaces the live transfer of a large bundle so the loading alert advances instead of staying at `0 / N`. */
+    private reportBundleDownloadProgress(loaded: number, total: number) {
+        let completed = 0;
+        for (const key of this.desired.keys()) {
+            if (this.settled.has(key)) completed += 1;
+        }
+        this.setLoading(true, {
+            completed,
+            total: this.desired.size,
+            bytesLoaded: loaded,
+            bytesTotal: total || undefined,
         });
     }
 
@@ -886,6 +984,11 @@ export class MapTileController {
         element.setAttribute('y', String(graphPosition.y));
         element.setAttribute('width', String(graphSize));
         element.setAttribute('height', String(graphSize));
+        // Tile SVGs use source-world coordinates; placement above supplies the common-scale world position.
+        element.setAttribute(
+            'viewBox',
+            `${request.x * MAP_TILE_SIZE} ${request.y * MAP_TILE_SIZE} ${MAP_TILE_SIZE} ${MAP_TILE_SIZE}`
+        );
         element.dataset.level = request.level.name;
         element.dataset.tileKey = request.key;
     }
@@ -1029,6 +1132,7 @@ export class MapTileController {
         if (
             this.disposed ||
             !this.rasterEnabled ||
+            (!this.rasterizeOverview && this.activeLevel?.name === 'overview') ||
             revision !== this.rasterRevision ||
             this.switching ||
             this.interactionActive ||
@@ -1213,28 +1317,94 @@ export class MapTileController {
     /** Applies the controller-wide abort signal so project changes terminate manifest and index requests too. */
     private async fetchJson<T>(url: URL): Promise<T> {
         const requestUrl = this.getSourceRequestUrl(url);
-        const response = await this.fetcher(requestUrl, {
-            signal: this.abortController.signal,
-            cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${requestUrl.href}`);
-        return response.json() as Promise<T>;
+        return this.fetchWithTimeout(requestUrl, response => response.json() as Promise<T>);
     }
 
     /** Binary fetches share the same lifetime and HTTP failure semantics as manifest requests. */
     private async fetchArrayBuffer(url: URL) {
         const requestUrl = this.getSourceRequestUrl(url);
-        const response = await this.fetcher(requestUrl, {
-            signal: this.abortController.signal,
-            cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
-        });
-        if (!response.ok) throw new Error(`HTTP ${response.status} for ${requestUrl.href}`);
-        return response.arrayBuffer();
+        return this.fetchWithTimeout(requestUrl, response => response.arrayBuffer());
+    }
+
+    /**
+     * Keeps the deadline active through body consumption. `fetch()` resolves as
+     * soon as headers arrive, so timing only that promise lets stalled bundle
+     * bodies occupy every queue slot indefinitely.
+     */
+    private async fetchWithTimeout<T>(url: URL, read: (response: Response) => Promise<T>): Promise<T> {
+        const timeout = new AbortController();
+        const timer = setTimeout(() => timeout.abort(), MAP_TILE_REQUEST_TIMEOUT_MS);
+        const signal = AbortSignal.any([this.abortController.signal, timeout.signal]);
+        try {
+            const response = await this.fetcher(url, {
+                signal,
+                cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status} for ${url.href}`);
+            return await read(response);
+        } finally {
+            clearTimeout(timer);
+        }
     }
 
     private getSourceRequestUrl(url: URL) {
         const requestUrl = new URL(url);
         if (this.sourceSession) requestUrl.searchParams.set('rmp-source-epoch', this.sourceSession.epoch);
         return requestUrl;
+    }
+
+    /**
+     * Downloads a bundle while streaming its body so the loading alert can show
+     * a live transfer estimate. Falls back to a single `arrayBuffer()` read when
+     * the response has no streaming body (e.g. some test fixtures).
+     */
+    private async fetchBundleWithProgress(
+        url: URL,
+        onProgress: (loaded: number, total: number) => void
+    ): Promise<ArrayBuffer> {
+        const requestUrl = this.getSourceRequestUrl(url);
+        const timeout = new AbortController();
+        const timer = setTimeout(() => timeout.abort(), MAP_TILE_REQUEST_TIMEOUT_MS);
+        const signal = AbortSignal.any([this.abortController.signal, timeout.signal]);
+        try {
+            const response = await this.fetcher(requestUrl, {
+                signal,
+                cache: this.sourceSession?.refreshSource ? 'reload' : 'default',
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status} for ${requestUrl.href}`);
+            if (!response.body) return await response.arrayBuffer();
+
+            const total = Number(response.headers.get('Content-Length') ?? 0);
+            const reader = response.body.getReader();
+            const chunks: Uint8Array[] = [];
+            let loaded = 0;
+            let lastReportAt = 0;
+            const report = () => {
+                const now = Date.now();
+                // Throttle UI updates; a fast network can deliver dozens of chunks per second.
+                if (now - lastReportAt >= 200) {
+                    lastReportAt = now;
+                    onProgress(loaded, total);
+                }
+            };
+            for (;;) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                loaded += value.byteLength;
+                report();
+            }
+            onProgress(loaded, total);
+
+            const merged = new Uint8Array(loaded);
+            let offset = 0;
+            for (const chunk of chunks) {
+                merged.set(chunk, offset);
+                offset += chunk.byteLength;
+            }
+            return merged.buffer;
+        } finally {
+            clearTimeout(timer);
+        }
     }
 }

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { AttrsProps } from '../../../constants/constants';
 import { StationAttributes } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
-import { undoAction } from '../../../redux/param/param-slice';
+import { undoAction } from '../../../redux/project-history';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../../util/helpers';
 import { translateStationNameByPinyin, translateStationNameBySemantic } from '../../../util/station-name-translation';

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SerializedGraph } from 'graphology-types';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import type { TimelineLine } from '../../constants/timeline';
 import timelineReducer, { addActionRow, loadTimeline } from './timeline-slice';
 
 const actionRow = {
@@ -19,6 +20,29 @@ describe('timeline action row ids', () => {
 
         const ids = state.actionRows.map(row => row.id);
         expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('discards legacy segment remarks when loading saved timeline data', () => {
+        const state = timelineReducer(
+            undefined,
+            loadTimeline({
+                enabled: true,
+                totalDuration: 60,
+                currentTime: 0,
+                dateRows: [],
+                groups: [],
+                lines: [
+                    { id: 'line_1', groupId: 'group_1', elements: [], remark: 'legacy remark' } as TimelineLine & {
+                        remark: string;
+                    },
+                ],
+                actionRows: [],
+                diffs: [],
+                baseGraph: {} as SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+            })
+        );
+
+        expect(state.lines[0]).toEqual({ id: 'line_1', groupId: 'group_1', elements: [] });
     });
 
     it('normalizes duplicate ids when loading saved timeline data', () => {

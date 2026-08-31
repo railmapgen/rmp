@@ -324,11 +324,13 @@ const generic: LineStyle<GenericAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.generic.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

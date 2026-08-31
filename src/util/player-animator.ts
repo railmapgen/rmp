@@ -114,16 +114,25 @@ export class PlayerAnimator {
         const viewportW = containerRect.width || 800;
         const viewportH = containerRect.height || 600;
 
+        // HUD 占位估算（像素），与实际 HTML overlay 对齐：
+        // 左上角 badge/remark/date ≈ 220px 宽、72px 高
+        // 中央偏左 stats ≈ 180px 宽、80px 高
+        // 右上角 mini-map ≈ 220px 宽、170px 高
+        // 左下角 active-lines ≈ 280px 宽、80px 高
+        // 底部居中 controls ≈ 300px 宽、72px 高
+        const hudLeft = 220;
+        const hudTop = 72;
+        const hudRight = 220;
+        const hudBottom = 72;
+
         if (svgEl) {
             const vb = svgEl.viewBox.baseVal;
             if (vb && vb.width > 0 && vb.height > 0) {
-                const zoom = zoomToFit(
-                    { minX: vb.x, maxX: vb.x + vb.width, minY: vb.y, maxY: vb.y + vb.height },
-                    viewportW,
-                    viewportH,
-                    0.1
-                );
-                return { cx: vb.x + vb.width / 2, cy: vb.y + vb.height / 2, zoom };
+                const bbox = { minX: vb.x, maxX: vb.x + vb.width, minY: vb.y, maxY: vb.y + vb.height };
+                const zoom = zoomToFit(bbox, viewportW, viewportH, 0.1);
+                const cx = (bbox.minX + bbox.maxX) / 2 + (hudLeft - hudRight) / 2;
+                const cy = (bbox.minY + bbox.maxY) / 2 + (hudTop - hudBottom) / 2;
+                return { cx, cy, zoom };
             }
         }
 
@@ -139,11 +148,9 @@ export class PlayerAnimator {
                 const bbox = calculateBoundingBox(pts);
                 if (bbox) {
                     const zoom = zoomToFit(bbox, viewportW, viewportH, 0.1);
-                    return {
-                        cx: (bbox.minX + bbox.maxX) / 2,
-                        cy: (bbox.minY + bbox.maxY) / 2,
-                        zoom,
-                    };
+                    const cx = (bbox.minX + bbox.maxX) / 2 + (hudLeft - hudRight) / 2;
+                    const cy = (bbox.minY + bbox.maxY) / 2 + (hudTop - hudBottom) / 2;
+                    return { cx, cy, zoom };
                 }
             }
         }
@@ -186,62 +193,32 @@ export class PlayerAnimator {
             // 正在绘制的边必须可见（hideAllEdges 的样式会让其 opacity 为 0）
             g.style.opacity = '1';
 
-            const direction = g.getAttribute('data-appear-direction') || 'forward';
+            const direction =
+                phase.edgeAction === 'remove'
+                    ? g.getAttribute('data-disappear-direction') || 'forward'
+                    : g.getAttribute('data-appear-direction') || 'forward';
 
             g.querySelectorAll<SVGPathElement>('path').forEach(path => {
                 try {
                     const len = path.getTotalLength();
                     if (!len || len <= 0) return;
 
-                    if (phase.edgeAction === 'remove') {
-                        path.removeAttribute('stroke-dasharray');
-                        path.removeAttribute('stroke-dashoffset');
-                    } else if (progress <= 0) {
-                        path.removeAttribute('stroke-dasharray');
-                        path.removeAttribute('stroke-dashoffset');
+                    // 停运严格复用开通的路径计算，只把时间进度反向。
+                    // 开通：0 → 1；停运：1 → 0。因此两者的每一帧是彼此的镜像。
+                    const drawProgress = phase.edgeAction === 'remove' ? 1 - progress : progress;
+                    path.setAttribute('stroke-dasharray', String(len));
+                    if (drawProgress >= 1) {
+                        path.setAttribute('stroke-dashoffset', '0');
+                    } else if (direction === 'forward') {
+                        path.setAttribute('stroke-dashoffset', String(len * (1 - drawProgress)));
                     } else {
-                        path.setAttribute('stroke-dasharray', String(len));
-                        if (progress >= 1) {
-                            path.setAttribute('stroke-dashoffset', '0');
-                        } else if (direction === 'forward') {
-                            path.setAttribute('stroke-dashoffset', String(len * (1 - progress)));
-                        } else {
-                            path.setAttribute('stroke-dashoffset', String(len * progress));
-                        }
+                        path.setAttribute('stroke-dashoffset', String(len * drawProgress));
                     }
                 } catch (e) {
                     // 忽略 getTotalLength() 错误
                 }
             });
         });
-    }
-
-    private applyFadeAnimation(phase: AnimPhase, progress: number): void {
-        if (!this.svgElement) return;
-        if (phase.edgeAction !== 'remove') return;
-
-        const g = this.svgElement.querySelector<HTMLElement>(`g[data-edge-id="${phase.edgeId}"]`);
-        if (!g) return;
-
-        const direction = g.getAttribute('data-disappear-direction') || 'backward';
-
-        g.querySelectorAll<SVGPathElement>('path').forEach(path => {
-            try {
-                const len = path.getTotalLength();
-                if (!len || len <= 0) return;
-
-                path.setAttribute('stroke-dasharray', String(len));
-                if (direction === 'forward') {
-                    path.setAttribute('stroke-dashoffset', String(len * (1 - progress)));
-                } else {
-                    path.setAttribute('stroke-dashoffset', String(len * progress));
-                }
-            } catch (e) {
-                // 忽略
-            }
-        });
-
-        g.style.opacity = String(Math.max(0.3, 1 - progress * 0.7));
     }
 
     private applyHighlightAnimation(phase: AnimPhase): void {
@@ -357,7 +334,12 @@ export class PlayerAnimator {
             const point = path.getPointAtLength(len * Math.max(0, Math.min(1, p)));
 
             const currentZoom = this.camera.getState().zoom;
-            this.camera.setTarget(point.x, point.y, currentZoom);
+            // 应用 HUD 偏移：动画过程中始终让目标避开 HUD 区域
+            const hudLeft = 220;
+            const hudTop = 72;
+            const hudRight = 220;
+            const hudBottom = 72;
+            this.camera.setTarget(point.x + (hudLeft - hudRight) / 2, point.y + (hudTop - hudBottom) / 2, currentZoom);
         } catch (e) {
             // 忽略
         }
@@ -387,13 +369,17 @@ export class PlayerAnimator {
             const point = path.getPointAtLength(len * (dir === 'backward' ? 1 : 0));
 
             const currentZoom = this.camera.getState().zoom;
-            this.camera.setTarget(point.x, point.y, currentZoom);
+            const hudLeft = 220;
+            const hudTop = 72;
+            const hudRight = 220;
+            const hudBottom = 72;
+            this.camera.setTarget(point.x + (hudLeft - hudRight) / 2, point.y + (hudTop - hudBottom) / 2, currentZoom);
         } catch (e) {
             // 忽略
         }
     }
 
-    private applyFrame(ms: number): void {
+    private applyFrame(ms: number, snapCamera: boolean = false): void {
         const lastEndMs = this.schedule.length > 0 ? Math.max(...this.schedule.map(p => p.endMs)) : 0;
         const result =
             findPhaseAt(this.schedule, ms) ??
@@ -407,6 +393,7 @@ export class PlayerAnimator {
             if (ms === 0) {
                 this.hideAllEdges();
             }
+            if (snapCamera) this.camera.snapToTarget();
             this.applyCameraTransform();
             return;
         }
@@ -427,12 +414,25 @@ export class PlayerAnimator {
         }
 
         if (phase.type === 'segment') {
+            if (phase.parallelEdges) {
+                phase.parallelEdges.forEach(parallel => {
+                    this.applyDrawingAnimation(
+                        {
+                            ...phase,
+                            edgeId: parallel.edgeId,
+                            edgeAction: parallel.edgeAction,
+                            direction: parallel.direction,
+                            isDrawing: parallel.isDrawing,
+                        },
+                        progress
+                    );
+                });
+            }
             if (phase.edgeAction === 'highlight') {
                 this.applyHighlightAnimation(phase);
                 this.resetNonActiveEdges(phase);
             } else {
                 this.applyDrawingAnimation(phase, progress);
-                this.applyFadeAnimation(phase, progress);
                 this.resetNonActiveEdges(phase);
 
                 if (phase.edgeAction === 'add' && progress >= 1 && phase.edgeId) {
@@ -444,8 +444,8 @@ export class PlayerAnimator {
                     }
                 }
 
-                if (phase.edgeAction === 'add') {
-                    this.updateCameraTarget(phase, progress);
+                if (phase.edgeAction === 'add' || phase.edgeAction === 'remove') {
+                    this.updateCameraTarget(phase, phase.edgeAction === 'remove' ? 1 - progress : progress);
                 }
             }
         } else if (phase.type === 'segmentHold') {
@@ -458,7 +458,8 @@ export class PlayerAnimator {
             this.resetNonActiveEdges(phase);
         }
 
-        this.camera.update(1 / 60);
+        if (snapCamera) this.camera.snapToTarget();
+        else this.camera.update(1 / 60);
         this.applyCameraTransform();
 
         this.canAdvance = true;
@@ -562,7 +563,7 @@ export class PlayerAnimator {
         this.settledSince = null;
         this.canAdvance = true;
         this.lastTimestamp = 0;
-        this.applyFrame(this.currentMs);
+        this.applyFrame(this.currentMs, true);
     }
 
     setSpeed(speed: number): void {

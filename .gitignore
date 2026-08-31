@@ -31,3 +31,6 @@ yarn-error.log*
 /.idea
 /.trae
 .env
+
+# debug directory
+/.dbg

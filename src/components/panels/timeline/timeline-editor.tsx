@@ -1,6 +1,13 @@
 import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Badge,
     Box,
+    Checkbox,
     Collapse,
     Slider,
     SliderFilledTrack,
@@ -19,7 +26,9 @@ import {
     ModalHeader,
     ModalOverlay,
     Select,
+    Switch,
     Text,
+    Tooltip,
     VStack,
     useColorModeValue,
     useToast,
@@ -58,7 +67,7 @@ import {
 } from '../../../redux/timeline/timeline-slice';
 import { clearSelected, setSelected } from '../../../redux/runtime/runtime-slice';
 import { setEnableActionDateFormatValidation } from '../../../redux/app/app-slice';
-import { TimelineLine, LineElement, ActionRow, LineGroup } from '../../../constants/timeline';
+import { TimelineLine, LineElement, ActionRow, CloseNodeStyle, LineGroup } from '../../../constants/timeline';
 import { Id, NodeId, Theme } from '../../../constants/constants';
 import { MiscNodeType } from '../../../constants/nodes';
 import { StationType } from '../../../constants/stations';
@@ -72,7 +81,8 @@ import {
     calculateAutoReverseForPath,
     getActionConstraintState,
 } from '../../../util/timeline';
-import { getActionLineMinimumDuration } from '../../../util/video-export';
+import { getActionLineMinimumDuration, getActionLineSuggestedDuration } from '../../../util/video-export';
+import { isQuickCompleteAction } from '../../../util/action-schedule';
 import ThemeButton from '../theme-button';
 import TimelineColorPicker from './timeline-color-picker';
 import InvalidDateModal from './invalid-date-modal';
@@ -129,7 +139,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     // 新建线路状态
     const [newGroupName, setNewGroupName] = React.useState('');
-    const [newGroupRemark, setNewGroupRemark] = React.useState('');
     const [newGroupColor, setNewGroupColor] = React.useState('#E3002B');
 
     // 元素编辑视图 - 当前展开查看元素的线路段ID
@@ -152,8 +161,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     // 线路内添加线路段
     const [addingSegmentForGroupId, setAddingSegmentForGroupId] = React.useState<string | null>(null);
-    const [newSegmentRemark, setNewSegmentRemark] = React.useState('');
-    const [editingSegmentRemark, setEditingSegmentRemark] = React.useState('');
 
     // 动作行编辑状态
     const [editingActionRow, setEditingActionRow] = React.useState<ActionRow | null>(null);
@@ -180,7 +187,20 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
     const [newActionRemark, setNewActionRemark] = React.useState('');
     const [newActionType, setNewActionType] = React.useState<ActionRow['actionType']>('open');
     const [newActionLineSegmentId, setNewActionLineSegmentId] = React.useState('');
-    const [newActionDuration, setNewActionDuration] = React.useState('0.5');
+    const [newActionDuration, setNewActionDuration] = React.useState('1');
+    const [newNodeAnimationDuration, setNewNodeAnimationDuration] = React.useState('1');
+    const [newActionWithPrevious, setNewActionWithPrevious] = React.useState(false);
+    const [newActionQuickComplete, setNewActionQuickComplete] = React.useState(false);
+    const [newUseSuggestedDuration, setNewUseSuggestedDuration] = React.useState(false);
+    const [editingUseSuggestedDuration, setEditingUseSuggestedDuration] = React.useState(false);
+    const [closeNodeStylesModal, setCloseNodeStylesModal] = React.useState<ActionRow | null>(null);
+    const [draftCloseNodeStyles, setDraftCloseNodeStyles] = React.useState<Record<NodeId, CloseNodeStyle>>({});
+    const [actionRowBeforeEditing, setActionRowBeforeEditing] = React.useState<ActionRow | null>(null);
+    const [closeNodeStylesBeforeEditing, setCloseNodeStylesBeforeEditing] = React.useState<
+        Record<NodeId, CloseNodeStyle>
+    >({});
+    const [discardChangesTarget, setDiscardChangesTarget] = React.useState<'action' | 'closeStyle' | null>(null);
+    const cancelDiscardRef = React.useRef<HTMLButtonElement>(null);
 
     const getFocusTargetRow = React.useCallback(
         (index: number) =>
@@ -190,11 +210,48 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         [actionRows]
     );
 
-    const getMinimumActionDuration = (type: ActionRow['actionType'], lineId?: string): number => {
+    const getMinimumActionDuration = (
+        type: ActionRow['actionType'],
+        lineId?: string,
+        nodeAnimationDuration = 1
+    ): number => {
         if (type !== 'open' && type !== 'close') return 0;
         const line = lineId ? lines.find(item => item.id === lineId) : undefined;
-        return getActionLineMinimumDuration(line);
+        return getActionLineMinimumDuration(line, nodeAnimationDuration);
     };
+
+    const getSuggestedActionDuration = (lineId?: string, nodeAnimationDuration = 1): string =>
+        getActionLineSuggestedDuration(
+            lineId ? lines.find(line => line.id === lineId) : undefined,
+            Math.max(0.1, nodeAnimationDuration)
+        ).toString();
+
+    React.useEffect(() => {
+        if (newUseSuggestedDuration && (newActionType === 'open' || newActionType === 'close')) {
+            setNewActionDuration(
+                getSuggestedActionDuration(newActionLineSegmentId, parseFloat(newNodeAnimationDuration) || 1)
+            );
+        }
+    }, [newUseSuggestedDuration, newActionType, newActionLineSegmentId, newNodeAnimationDuration, graphRefresh, lines]);
+
+    React.useEffect(() => {
+        if (!editingUseSuggestedDuration || !editingActionRow) return;
+        if (editingActionRow.actionType !== 'open' && editingActionRow.actionType !== 'close') return;
+        const suggested = getSuggestedActionDuration(
+            editingActionRow.actionLineId,
+            editingActionRow.nodeAnimationDuration ?? 1
+        );
+        if (Number(editingActionRow.actionDuration) !== Number(suggested)) {
+            setEditingActionRow(prev => (prev ? { ...prev, actionDuration: Number(suggested) } : null));
+        }
+    }, [
+        editingUseSuggestedDuration,
+        editingActionRow?.actionType,
+        editingActionRow?.actionLineId,
+        editingActionRow?.nodeAnimationDuration,
+        graphRefresh,
+        lines,
+    ]);
 
     const getSegmentOperationAllowed = (type: 'open' | 'close', lineId: string, beforeIndex = actionRows.length) => {
         if (!lineId) return false;
@@ -229,12 +286,17 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         type: 'clearElements';
         lineId: string;
     } | null>(null);
-    const [versionPicker, setVersionPicker] = React.useState<{
-        lineId: string;
-        elementIndex: number;
-        nodeId: NodeId;
-        selectedVersion: number;
-    } | null>(null);
+    const [versionPicker, setVersionPicker] = React.useState<
+        | {
+              type: 'element';
+              lineId: string;
+              elementIndex: number;
+              nodeId: NodeId;
+              selectedVersion: number;
+          }
+        | { type: 'closeStyle'; nodeId: NodeId; selectedVersion: number }
+        | null
+    >(null);
     const [previewVersion, setPreviewVersion] = React.useState<{
         name: string;
         nodeId: NodeId;
@@ -455,11 +517,9 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
             addLineGroup({
                 bgColor: newGroupColor,
                 text: newGroupName.trim() || t('timeline.newLine', '新线路'),
-                remark: newGroupRemark.trim() || undefined,
             })
         );
         setNewGroupName('');
-        setNewGroupRemark('');
         setNewGroupColor('#E3002B');
     };
 
@@ -477,27 +537,8 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     // ===== 线路段 CRUD =====
     const handleAddSegment = (groupId: string) => {
-        const remark = newSegmentRemark.trim();
-        if (!remark) {
-            toast({
-                title: t('error'),
-                description: t('timeline.segmentRemarkRequired', '请输入线路段备注名'),
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-                position: 'bottom-right',
-            });
-            return;
-        }
-        dispatch(
-            addTimelineLine({
-                groupId,
-                elements: [],
-                remark,
-            })
-        );
+        dispatch(addTimelineLine({ groupId, elements: [] }));
         setAddingSegmentForGroupId(null);
-        setNewSegmentRemark('');
     };
 
     const handleRemoveSegment = (id: string) => {
@@ -508,32 +549,10 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
     const handleStartEditElements = (lineId: string) => {
         setEditingElementsForLineId(lineId);
         setEditingGroup(null);
-        const line = lines.find(item => item.id === lineId);
-        setEditingSegmentRemark(line?.remark ?? '');
     };
 
     const handleBackFromElements = () => {
         setEditingElementsForLineId(null);
-        setEditingSegmentRemark('');
-    };
-
-    const handleConfirmSegmentRemark = () => {
-        if (!editingLineData) return;
-        const remark = editingSegmentRemark.trim();
-        if (!remark) {
-            toast({
-                title: t('error'),
-                description: t('timeline.segmentRemarkRequired', '请输入线路段备注名'),
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-                position: 'bottom-right',
-            });
-            return;
-        }
-        if (remark !== editingLineData.remark) {
-            dispatch(updateTimelineLine({ id: editingLineData.id, updates: { remark } }));
-        }
     };
 
     // ===== 元素列表操作 =====
@@ -647,6 +666,49 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         return stored?.name || `v${version}`;
     };
 
+    const getCloseStyleNodes = (lineId?: string): NodeId[] => {
+        const line = lineId ? lines.find(item => item.id === lineId) : undefined;
+        if (!line) return [];
+        return line.elements
+            .filter(element => {
+                if (!element.id.startsWith('stn_') && !element.id.startsWith('misc_node_')) return false;
+                return getNodeVersionOptions(element.id as NodeId).length > 1;
+            })
+            .map(element => element.id as NodeId);
+    };
+
+    const openCloseNodeStylesModal = (row: ActionRow) => {
+        const styles: Record<NodeId, CloseNodeStyle> = {};
+        getCloseStyleNodes(row.actionLineId).forEach(nodeId => {
+            styles[nodeId] = row.closeNodeStyles?.[nodeId] ?? { visible: false, version: 1 };
+        });
+        setDraftCloseNodeStyles(styles);
+        setCloseNodeStylesBeforeEditing(styles);
+        setCloseNodeStylesModal(row);
+    };
+
+    const requestCloseActionEditor = () => {
+        if (
+            editingActionRow &&
+            actionRowBeforeEditing &&
+            JSON.stringify(editingActionRow) !== JSON.stringify(actionRowBeforeEditing)
+        ) {
+            setDiscardChangesTarget('action');
+            return;
+        }
+        setEditingActionRow(null);
+        setActionRowBeforeEditing(null);
+    };
+
+    const requestCloseNodeStylesModal = () => {
+        if (JSON.stringify(draftCloseNodeStyles) !== JSON.stringify(closeNodeStylesBeforeEditing)) {
+            setDiscardChangesTarget('closeStyle');
+            return;
+        }
+        setCloseNodeStylesModal(null);
+        setCloseNodeStylesBeforeEditing({});
+    };
+
     const getElementDisplayName = (el: LineElement): string => {
         if (el.id.startsWith('line_')) {
             if (graph.current.hasEdge(el.id)) {
@@ -701,7 +763,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
     const handleSelectSegment = (segmentId: string) => {
         if (segmentModalTarget === 'new') {
             setNewActionLineSegmentId(segmentId);
-            setNewActionDuration(getActionLineMinimumDuration(lines.find(line => line.id === segmentId)).toString());
+            setNewActionDuration(getSuggestedActionDuration(segmentId, parseFloat(newNodeAnimationDuration) || 1));
             if (newActionType === 'open' || newActionType === 'close') {
                 setNewActionRemark(getSegmentActionRemark(segmentId, newActionType));
             }
@@ -759,7 +821,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
             });
             return;
         }
-        if (shouldAddFocus) {
+        if (shouldAddFocus && !newActionQuickComplete) {
             const minimumDuration = getMinimumActionDuration(newActionType, newActionLineSegmentId);
             const duration = parseFloat(newActionDuration);
             if (!Number.isFinite(duration) || duration < minimumDuration) {
@@ -776,7 +838,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         }
         const constraintState = getActionConstraintState(actionRows, actionRows.length);
         if (shouldAddFocus && constraintState.canAddFocus) {
-            dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'focus', actionDuration: 2 }));
+            dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'focus', actionDuration: 4 }));
         }
         dispatch(
             addActionRow({
@@ -790,20 +852,32 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                         : undefined,
                 actionDuration:
                     newActionType === 'overview' || newActionType === 'focus'
-                        ? 2
-                        : parseFloat(newActionDuration) || undefined,
+                        ? 4
+                        : newActionQuickComplete
+                          ? 1
+                          : parseFloat(newActionDuration) || undefined,
+                nodeAnimationDuration:
+                    newActionType === 'open' || newActionType === 'close'
+                        ? Math.max(0.1, parseFloat(newNodeAnimationDuration) || 1)
+                        : undefined,
+                withPrevious: actionRows.length > 0 ? newActionWithPrevious : undefined,
+                quickComplete:
+                    newActionType === 'open' || newActionType === 'close' ? newActionQuickComplete : undefined,
             })
         );
         if (newActionType === 'open' || newActionType === 'close') {
             dispatch(
-                addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'overview', actionDuration: 2 })
+                addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'overview', actionDuration: 4 })
             );
             dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'wait', actionDuration: 2 }));
         }
         dispatch(setUnsavedDate(''));
         setNewActionRemark('');
         setNewActionLineSegmentId('');
-        setNewActionDuration('');
+        setNewActionDuration(getSuggestedActionDuration());
+        setNewNodeAnimationDuration('1');
+        setNewActionWithPrevious(false);
+        setNewActionQuickComplete(false);
     };
 
     const handleAddActionRowBelow = (index: number) => {
@@ -816,7 +890,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         // 直接插入聚焦动作 —— 修复"中间插入聚焦的限制问题"：此时复制全览会被
         // canAddOverview 拦截（全览后未聚焦禁止再加全览），用户无法在中间插入聚焦。
         if (sourceRow.actionType === 'overview' && constraintState.canAddFocus) {
-            dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'focus', actionDuration: 2 }));
+            dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'focus', actionDuration: 4 }));
             const newIndex = actionRows.length;
             if (newIndex > index + 1) dispatch(reorderActionRows({ fromIndex: newIndex - 1, toIndex: index + 1 }));
             return;
@@ -831,6 +905,11 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                 actionType: sourceRow.actionType,
                 actionLineId: sourceRow.actionLineId,
                 actionDuration: undefined,
+                withPrevious: sourceRow.withPrevious,
+                quickComplete:
+                    sourceRow.actionType === 'open' || sourceRow.actionType === 'close'
+                        ? sourceRow.quickComplete
+                        : undefined,
             })
         );
         // 移动新行到目标位置下方
@@ -860,9 +939,12 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
             }
             const minimumDuration = getMinimumActionDuration(
                 editingActionRow.actionType,
-                editingActionRow.actionLineId
+                editingActionRow.actionLineId,
+                editingActionRow.nodeAnimationDuration ?? 1
             );
+            const quickComplete = isQuickCompleteAction(editingActionRow);
             if (
+                !quickComplete &&
                 (editingActionRow.actionType === 'open' || editingActionRow.actionType === 'close') &&
                 (!Number.isFinite(editingActionRow.actionDuration) ||
                     (editingActionRow.actionDuration ?? 0) < minimumDuration)
@@ -910,14 +992,26 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                         activeLineIds: [],
                         remark: isMetaAction ? '' : editingActionRow.remark,
                         actionLineId: isMetaAction ? undefined : editingActionRow.actionLineId,
+                        withPrevious:
+                            actionRows.findIndex(row => row.id === editingActionRow.id) === 0
+                                ? undefined
+                                : editingActionRow.withPrevious,
+                        quickComplete:
+                            editingActionRow.actionType === 'open' || editingActionRow.actionType === 'close'
+                                ? isQuickCompleteAction(editingActionRow)
+                                : undefined,
                         actionDuration:
                             editingActionRow.actionType === 'overview' || editingActionRow.actionType === 'focus'
-                                ? 2
-                                : editingActionRow.actionDuration,
+                                ? 4
+                                : editingActionRow.quickComplete &&
+                                    (editingActionRow.actionType === 'open' || editingActionRow.actionType === 'close')
+                                  ? 1
+                                  : editingActionRow.actionDuration,
                     },
                 })
             );
             setEditingActionRow(null);
+            setActionRowBeforeEditing(null);
         }
     };
 
@@ -1094,34 +1188,20 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                             </Text>
                                         </HStack>
 
-                                        <Input
-                                            size="sm"
-                                            value={editingSegmentRemark}
-                                            onChange={e => setEditingSegmentRemark(e.target.value)}
-                                            onBlur={handleConfirmSegmentRemark}
-                                            onKeyDown={e => {
-                                                if (e.key === 'Enter') handleConfirmSegmentRemark();
-                                            }}
-                                            placeholder={t('timeline.segmentRemarkPlaceholder', '输入线路段备注名')}
-                                            aria-label={t('timeline.segmentRemark', '线路段备注名')}
-                                        />
-
                                         <HStack>
                                             <Button
                                                 size="xs"
                                                 leftIcon={<MdAdd />}
                                                 onClick={() => handleStartPickElement(editingLineData.id)}
-                                                flex={1}
                                             >
                                                 {t('timeline.addElement', '添加元素')}
                                             </Button>
                                             <Button
                                                 size="xs"
-                                                leftIcon={<MdAdd />}
                                                 colorScheme="teal"
                                                 variant="outline"
+                                                leftIcon={<MdAdd />}
                                                 onClick={() => handleStartSegmentPick(editingLineData.id)}
-                                                flex={1}
                                             >
                                                 {t('timeline.addSegmentPath', '整段添加')}
                                             </Button>
@@ -1241,6 +1321,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                 flex={1}
                                                                 minWidth={0}
                                                                 noOfLines={1}
+                                                                wordBreak="break-all"
                                                                 cursor="pointer"
                                                                 color="blue.600"
                                                                 _hover={{ textDecoration: 'underline' }}
@@ -1289,6 +1370,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                     rightIcon={<MdExpandMore />}
                                                                     onClick={() =>
                                                                         setVersionPicker({
+                                                                            type: 'element',
                                                                             lineId: editingLineData.id,
                                                                             elementIndex: index,
                                                                             nodeId: el.id as NodeId,
@@ -1355,12 +1437,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                 onChange={e => setNewGroupName(e.target.value)}
                                                 placeholder={t('timeline.line.name', '线路名称')}
                                             />
-                                            <Input
-                                                size="xs"
-                                                value={newGroupRemark}
-                                                onChange={e => setNewGroupRemark(e.target.value)}
-                                                placeholder={t('timeline.line.remark', '线路备注')}
-                                            />
                                             <HStack spacing={2} width="100%">
                                                 <Text fontSize="xs">{t('timeline.line.color', '颜色')}:</Text>
                                                 <TimelineColorPicker
@@ -1399,18 +1475,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                         )
                                                                     }
                                                                     placeholder={t('timeline.line.name', '线路名称')}
-                                                                />
-                                                                <Input
-                                                                    size="xs"
-                                                                    value={editingGroup.remark ?? ''}
-                                                                    onChange={e =>
-                                                                        setEditingGroup(prev =>
-                                                                            prev
-                                                                                ? { ...prev, remark: e.target.value }
-                                                                                : null
-                                                                        )
-                                                                    }
-                                                                    placeholder={t('timeline.line.remark', '线路备注')}
                                                                 />
                                                                 <HStack spacing={2}>
                                                                     <Text fontSize="xs">
@@ -1458,15 +1522,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                             {groupSegments.length}{' '}
                                                                             {t('timeline.segments', '段')}
                                                                         </Text>
-                                                                        {group.remark && (
-                                                                            <Text
-                                                                                fontSize="xs"
-                                                                                color="gray.500"
-                                                                                isTruncated
-                                                                            >
-                                                                                {group.remark}
-                                                                            </Text>
-                                                                        )}
                                                                     </HStack>
                                                                     <HStack spacing={1}>
                                                                         <IconButton
@@ -1515,16 +1570,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                     >
                                                                                         {seg.elements?.length ?? 0}
                                                                                     </Badge>
-                                                                                    {seg.remark && (
-                                                                                        <Text
-                                                                                            fontSize="xs"
-                                                                                            color="gray.500"
-                                                                                            isTruncated
-                                                                                            maxW="120px"
-                                                                                        >
-                                                                                            {seg.remark}
-                                                                                        </Text>
-                                                                                    )}
                                                                                 </HStack>
                                                                                 <HStack spacing={0}>
                                                                                     <IconButton
@@ -1558,46 +1603,25 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
                                                                     {/* 添加线路段 */}
                                                                     {addingSegmentForGroupId === group.id ? (
-                                                                        <VStack spacing={1} align="stretch">
-                                                                            <Input
+                                                                        <HStack spacing={1}>
+                                                                            <Button
                                                                                 size="xs"
-                                                                                value={newSegmentRemark}
-                                                                                onChange={e =>
-                                                                                    setNewSegmentRemark(e.target.value)
+                                                                                onClick={() =>
+                                                                                    handleAddSegment(group.id)
                                                                                 }
-                                                                                onKeyDown={e => {
-                                                                                    if (e.key === 'Enter')
-                                                                                        handleAddSegment(group.id);
-                                                                                }}
-                                                                                placeholder={t(
-                                                                                    'timeline.segmentRemarkPlaceholder',
-                                                                                    '输入线路段备注名'
-                                                                                )}
-                                                                                autoFocus
-                                                                            />
-                                                                            <HStack spacing={1}>
-                                                                                <Button
-                                                                                    size="xs"
-                                                                                    onClick={() =>
-                                                                                        handleAddSegment(group.id)
-                                                                                    }
-                                                                                >
-                                                                                    {t('confirm', '确定')}
-                                                                                </Button>
-                                                                                <Button
-                                                                                    size="xs"
-                                                                                    variant="outline"
-                                                                                    onClick={() => {
-                                                                                        setAddingSegmentForGroupId(
-                                                                                            null
-                                                                                        );
-                                                                                        setNewSegmentRemark('');
-                                                                                    }}
-                                                                                >
-                                                                                    {t('cancel', '取消')}
-                                                                                </Button>
-                                                                            </HStack>
-                                                                        </VStack>
+                                                                            >
+                                                                                {t('confirm', '确定')}
+                                                                            </Button>
+                                                                            <Button
+                                                                                size="xs"
+                                                                                variant="outline"
+                                                                                onClick={() =>
+                                                                                    setAddingSegmentForGroupId(null)
+                                                                                }
+                                                                            >
+                                                                                {t('cancel', '取消')}
+                                                                            </Button>
+                                                                        </HStack>
                                                                     ) : (
                                                                         <Button
                                                                             size="xs"
@@ -1735,9 +1759,10 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                     }
                                                     if (nextType === 'open' || nextType === 'close') {
                                                         setNewActionDuration(
-                                                            getActionLineMinimumDuration(
-                                                                lines.find(line => line.id === newActionLineSegmentId)
-                                                            ).toString()
+                                                            getSuggestedActionDuration(
+                                                                newActionLineSegmentId,
+                                                                parseFloat(newNodeAnimationDuration) || 1
+                                                            )
                                                         );
                                                     }
                                                 }}
@@ -1799,31 +1824,102 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                         )}
 
                                         {/* 时长 */}
-                                        <HStack spacing={2} width="100%">
-                                            <Text fontSize="xs">{t('timeline.action.duration', '时长')}:</Text>
-                                            <Input
-                                                size="xs"
-                                                type="number"
-                                                step="0.1"
-                                                min={
-                                                    newActionType === 'open' || newActionType === 'close'
-                                                        ? getMinimumActionDuration(
-                                                              newActionType,
-                                                              newActionLineSegmentId
-                                                          )
-                                                        : undefined
-                                                }
-                                                value={
-                                                    newActionType === 'overview' || newActionType === 'focus'
-                                                        ? '2'
-                                                        : newActionDuration
-                                                }
-                                                isDisabled={newActionType === 'overview' || newActionType === 'focus'}
-                                                onChange={e => setNewActionDuration(e.target.value)}
-                                                width="80px"
-                                            />
-                                            <Text fontSize="xs">{t('timeline.second', '秒')}</Text>
-                                        </HStack>
+                                        {!newActionQuickComplete && (
+                                            <HStack spacing={2} width="100%">
+                                                <Text fontSize="xs">{t('timeline.action.duration', '时长')}:</Text>
+                                                <Input
+                                                    size="xs"
+                                                    type="number"
+                                                    step="0.1"
+                                                    min={
+                                                        newActionType === 'open' || newActionType === 'close'
+                                                            ? newActionQuickComplete
+                                                                ? 1
+                                                                : getMinimumActionDuration(
+                                                                      newActionType,
+                                                                      newActionLineSegmentId,
+                                                                      Math.max(
+                                                                          0.1,
+                                                                          parseFloat(newNodeAnimationDuration) || 1
+                                                                      )
+                                                                  )
+                                                            : undefined
+                                                    }
+                                                    value={
+                                                        newActionType === 'overview' || newActionType === 'focus'
+                                                            ? '4'
+                                                            : newActionQuickComplete
+                                                              ? '1'
+                                                              : newActionDuration
+                                                    }
+                                                    isDisabled={
+                                                        newActionType === 'overview' ||
+                                                        newActionType === 'focus' ||
+                                                        newActionQuickComplete
+                                                    }
+                                                    onChange={e => setNewActionDuration(e.target.value)}
+                                                    width="80px"
+                                                />
+                                                <Text fontSize="xs">{t('timeline.second', '秒')}</Text>
+                                                {(newActionType === 'open' || newActionType === 'close') &&
+                                                    !newActionQuickComplete && (
+                                                        <Checkbox
+                                                            size="sm"
+                                                            isChecked={newUseSuggestedDuration}
+                                                            onChange={event =>
+                                                                setNewUseSuggestedDuration(event.target.checked)
+                                                            }
+                                                            sx={{
+                                                                '&[data-checked]': {
+                                                                    bg: 'rgb(44, 122, 123)',
+                                                                    color: 'white',
+                                                                },
+                                                            }}
+                                                        >
+                                                            使用建议时长
+                                                        </Checkbox>
+                                                    )}
+                                            </HStack>
+                                        )}
+
+                                        {actionRows.length > 0 && (
+                                            <HStack spacing={2} width="100%">
+                                                <Text fontSize="xs">与上一动作同时:</Text>
+                                                <Switch
+                                                    size="sm"
+                                                    isChecked={newActionWithPrevious}
+                                                    onChange={e => setNewActionWithPrevious(e.target.checked)}
+                                                />
+                                            </HStack>
+                                        )}
+
+                                        {(newActionType === 'open' || newActionType === 'close') && (
+                                            <HStack spacing={2} width="100%">
+                                                <Text fontSize="xs">快速完成:</Text>
+                                                <Switch
+                                                    size="sm"
+                                                    isChecked={newActionQuickComplete}
+                                                    onChange={e => setNewActionQuickComplete(e.target.checked)}
+                                                />
+                                            </HStack>
+                                        )}
+
+                                        {(newActionType === 'open' || newActionType === 'close') &&
+                                            !newActionQuickComplete && (
+                                                <HStack spacing={2} width="100%">
+                                                    <Text fontSize="xs">车站动画时长:</Text>
+                                                    <Input
+                                                        size="xs"
+                                                        type="number"
+                                                        step="0.1"
+                                                        min={0.1}
+                                                        value={newNodeAnimationDuration}
+                                                        onChange={e => setNewNodeAnimationDuration(e.target.value)}
+                                                        width="80px"
+                                                    />
+                                                    <Text fontSize="xs">秒</Text>
+                                                </HStack>
+                                            )}
 
                                         {!isMetaAction && (
                                             <Input
@@ -1833,14 +1929,15 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                 placeholder={t('timeline.action.remark', '备注')}
                                             />
                                         )}
-                                        <Button
-                                            size="xs"
-                                            leftIcon={<MdAdd />}
-                                            onClick={handleAddActionRow}
-                                            width="100%"
-                                        >
-                                            {t('timeline.addAction', '添加动作')}
-                                        </Button>
+                                        <Tooltip label={t('timeline.addAction', '添加动作')} hasArrow>
+                                            <IconButton
+                                                size="xs"
+                                                icon={<MdAdd />}
+                                                aria-label={t('timeline.addAction', '添加动作')}
+                                                onClick={handleAddActionRow}
+                                                width="100%"
+                                            />
+                                        </Tooltip>
                                     </VStack>
 
                                     {/* 动作列表 */}
@@ -1884,251 +1981,464 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                     onDragEnd={() => setDragActionIndex(null)}
                                                 >
                                                     {editingActionRow?.id === row.id ? (
-                                                        <VStack spacing={1}>
-                                                            <Input
-                                                                size="xs"
-                                                                value={editingActionRow.date}
-                                                                isDisabled={
-                                                                    editingActionRow.actionType === 'overview' ||
-                                                                    editingActionRow.actionType === 'wait' ||
-                                                                    editingActionRow.actionType === 'focus'
-                                                                }
-                                                                onChange={e =>
-                                                                    setEditingActionRow(prev =>
-                                                                        prev ? { ...prev, date: e.target.value } : null
-                                                                    )
-                                                                }
-                                                                onBlur={() => {
-                                                                    if (
-                                                                        enableActionDateFormatValidation &&
-                                                                        editingActionRow.date &&
-                                                                        !isValidDateFormat(editingActionRow.date)
-                                                                    ) {
-                                                                        toast({
-                                                                            title: t('error'),
-                                                                            description: t(
-                                                                                'timeline.action.invalidDateFormat',
-                                                                                '日期格式无效，请输入 YYYY-MM-DD，或在设置中关闭动作日期格式校验'
-                                                                            ),
-                                                                            status: 'error',
-                                                                            duration: 5000,
-                                                                            isClosable: true,
-                                                                            position: 'bottom-right',
-                                                                        });
-                                                                        setEditingActionRow(prev =>
-                                                                            prev ? { ...prev, date: '' } : null
-                                                                        );
-                                                                    }
-                                                                }}
-                                                                placeholder="YYYY-MM-DD"
-                                                                borderColor={
-                                                                    enableActionDateFormatValidation &&
-                                                                    editingActionRow.date &&
-                                                                    !isValidDateFormat(editingActionRow.date)
-                                                                        ? 'red.300'
-                                                                        : undefined
-                                                                }
-                                                            />
-                                                            <Select
-                                                                size="xs"
-                                                                value={editingActionRow.actionType}
-                                                                onChange={e => {
-                                                                    const nextType = e.target
-                                                                        .value as ActionRow['actionType'];
-                                                                    const constraintState = getActionConstraintState(
-                                                                        actionRows,
-                                                                        index
-                                                                    );
-                                                                    if (
-                                                                        nextType === 'focus' &&
-                                                                        !constraintState.canAddFocus
-                                                                    )
-                                                                        return;
-                                                                    if (
-                                                                        nextType === 'overview' &&
-                                                                        !constraintState.canAddOverview
-                                                                    )
-                                                                        return;
-                                                                    setEditingActionRow(prev =>
-                                                                        prev
-                                                                            ? {
-                                                                                  ...prev,
-                                                                                  actionType: nextType,
-                                                                                  date:
-                                                                                      nextType === 'open' ||
-                                                                                      nextType === 'close'
-                                                                                          ? prev.date
-                                                                                          : '',
-                                                                                  remark:
-                                                                                      nextType === 'open' ||
-                                                                                      nextType === 'close'
-                                                                                          ? prev.remark
-                                                                                          : '',
-                                                                                  activeLineIds: [],
-                                                                                  actionLineId:
-                                                                                      nextType === 'open' ||
-                                                                                      nextType === 'close'
-                                                                                          ? prev.actionLineId
-                                                                                          : undefined,
-                                                                                  actionDuration:
-                                                                                      nextType === 'overview' ||
-                                                                                      nextType === 'focus'
-                                                                                          ? 2
-                                                                                          : prev.actionDuration,
-                                                                              }
-                                                                            : null
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <option value="open">
-                                                                    {t('timeline.action.open')}
-                                                                </option>
-                                                                <option value="close">
-                                                                    {t('timeline.action.close')}
-                                                                </option>
-                                                                <option
-                                                                    value="overview"
-                                                                    disabled={
-                                                                        !getActionConstraintState(actionRows, index)
-                                                                            .canAddOverview
-                                                                    }
-                                                                >
-                                                                    {t('timeline.action.overview')}
-                                                                </option>
-                                                                <option value="wait">
-                                                                    {t('timeline.action.wait')}
-                                                                </option>
-                                                                <option
-                                                                    value="focus"
-                                                                    disabled={
-                                                                        !getActionConstraintState(actionRows, index)
-                                                                            .canAddFocus
-                                                                    }
-                                                                >
-                                                                    {t('timeline.action.focus', '聚焦')}
-                                                                </option>
-                                                            </Select>
+                                                        <Modal
+                                                            isOpen
+                                                            onClose={requestCloseActionEditor}
+                                                            size={{ base: 'full', md: 'md' }}
+                                                        >
+                                                            <ModalOverlay />
+                                                            <ModalContent>
+                                                                <ModalHeader>编辑动作</ModalHeader>
+                                                                <ModalCloseButton />
+                                                                <ModalBody>
+                                                                    <VStack spacing={1}>
+                                                                        <Input
+                                                                            size="xs"
+                                                                            value={editingActionRow.date}
+                                                                            isDisabled={
+                                                                                editingActionRow.actionType ===
+                                                                                    'overview' ||
+                                                                                editingActionRow.actionType ===
+                                                                                    'wait' ||
+                                                                                editingActionRow.actionType === 'focus'
+                                                                            }
+                                                                            onChange={e =>
+                                                                                setEditingActionRow(prev =>
+                                                                                    prev
+                                                                                        ? {
+                                                                                              ...prev,
+                                                                                              date: e.target.value,
+                                                                                          }
+                                                                                        : null
+                                                                                )
+                                                                            }
+                                                                            onBlur={() => {
+                                                                                if (
+                                                                                    enableActionDateFormatValidation &&
+                                                                                    editingActionRow.date &&
+                                                                                    !isValidDateFormat(
+                                                                                        editingActionRow.date
+                                                                                    )
+                                                                                ) {
+                                                                                    toast({
+                                                                                        title: t('error'),
+                                                                                        description: t(
+                                                                                            'timeline.action.invalidDateFormat',
+                                                                                            '日期格式无效，请输入 YYYY-MM-DD，或在设置中关闭动作日期格式校验'
+                                                                                        ),
+                                                                                        status: 'error',
+                                                                                        duration: 5000,
+                                                                                        isClosable: true,
+                                                                                        position: 'bottom-right',
+                                                                                    });
+                                                                                    setEditingActionRow(prev =>
+                                                                                        prev
+                                                                                            ? { ...prev, date: '' }
+                                                                                            : null
+                                                                                    );
+                                                                                }
+                                                                            }}
+                                                                            placeholder="YYYY-MM-DD"
+                                                                            borderColor={
+                                                                                enableActionDateFormatValidation &&
+                                                                                editingActionRow.date &&
+                                                                                !isValidDateFormat(
+                                                                                    editingActionRow.date
+                                                                                )
+                                                                                    ? 'red.300'
+                                                                                    : undefined
+                                                                            }
+                                                                        />
+                                                                        <Select
+                                                                            size="xs"
+                                                                            value={editingActionRow.actionType}
+                                                                            onChange={e => {
+                                                                                const nextType = e.target
+                                                                                    .value as ActionRow['actionType'];
+                                                                                const constraintState =
+                                                                                    getActionConstraintState(
+                                                                                        actionRows,
+                                                                                        index
+                                                                                    );
+                                                                                if (
+                                                                                    nextType === 'focus' &&
+                                                                                    !constraintState.canAddFocus
+                                                                                )
+                                                                                    return;
+                                                                                if (
+                                                                                    nextType === 'overview' &&
+                                                                                    !constraintState.canAddOverview
+                                                                                )
+                                                                                    return;
+                                                                                setEditingActionRow(prev =>
+                                                                                    prev
+                                                                                        ? {
+                                                                                              ...prev,
+                                                                                              actionType: nextType,
+                                                                                              date:
+                                                                                                  nextType === 'open' ||
+                                                                                                  nextType === 'close'
+                                                                                                      ? prev.date
+                                                                                                      : '',
+                                                                                              remark:
+                                                                                                  nextType === 'open' ||
+                                                                                                  nextType === 'close'
+                                                                                                      ? prev.remark
+                                                                                                      : '',
+                                                                                              activeLineIds: [],
+                                                                                              actionLineId:
+                                                                                                  nextType === 'open' ||
+                                                                                                  nextType === 'close'
+                                                                                                      ? prev.actionLineId
+                                                                                                      : undefined,
+                                                                                              actionDuration:
+                                                                                                  nextType ===
+                                                                                                      'overview' ||
+                                                                                                  nextType === 'focus'
+                                                                                                      ? 4
+                                                                                                      : prev.actionDuration,
+                                                                                          }
+                                                                                        : null
+                                                                                );
+                                                                            }}
+                                                                        >
+                                                                            <option value="open">
+                                                                                {t('timeline.action.open')}
+                                                                            </option>
+                                                                            <option value="close">
+                                                                                {t('timeline.action.close')}
+                                                                            </option>
+                                                                            <option
+                                                                                value="overview"
+                                                                                disabled={
+                                                                                    !getActionConstraintState(
+                                                                                        actionRows,
+                                                                                        index
+                                                                                    ).canAddOverview
+                                                                                }
+                                                                            >
+                                                                                {t('timeline.action.overview')}
+                                                                            </option>
+                                                                            <option value="wait">
+                                                                                {t('timeline.action.wait')}
+                                                                            </option>
+                                                                            <option
+                                                                                value="focus"
+                                                                                disabled={
+                                                                                    !getActionConstraintState(
+                                                                                        actionRows,
+                                                                                        index
+                                                                                    ).canAddFocus
+                                                                                }
+                                                                            >
+                                                                                {t('timeline.action.focus', '聚焦')}
+                                                                            </option>
+                                                                        </Select>
 
-                                                            {/* 开通/停运 -> 线路段选择（模态框） */}
-                                                            {(editingActionRow.actionType === 'open' ||
-                                                                editingActionRow.actionType === 'close') && (
-                                                                <HStack spacing={2} width="100%">
-                                                                    <Text fontSize="xs">
-                                                                        {t('timeline.action.lineSegment')}:
-                                                                    </Text>
-                                                                    <Button
-                                                                        size="xs"
-                                                                        variant="outline"
-                                                                        onClick={() =>
-                                                                            handleOpenSegmentModal(
-                                                                                row.id,
-                                                                                editingActionRow.actionLineId ?? ''
-                                                                            )
-                                                                        }
-                                                                        flex={1}
-                                                                    >
-                                                                        {editingActionRow.actionLineId
-                                                                            ? (() => {
-                                                                                  const seg = lines.find(
-                                                                                      l =>
-                                                                                          l.id ===
-                                                                                          editingActionRow.actionLineId
-                                                                                  );
-                                                                                  const g = seg
-                                                                                      ? groups.find(
-                                                                                            gr => gr.id === seg.groupId
+                                                                        {/* 开通/停运 -> 线路段选择（模态框） */}
+                                                                        {(editingActionRow.actionType === 'open' ||
+                                                                            editingActionRow.actionType ===
+                                                                                'close') && (
+                                                                            <HStack spacing={2} width="100%">
+                                                                                <Text fontSize="xs">
+                                                                                    {t('timeline.action.lineSegment')}:
+                                                                                </Text>
+                                                                                <Button
+                                                                                    size="xs"
+                                                                                    variant="outline"
+                                                                                    onClick={() =>
+                                                                                        handleOpenSegmentModal(
+                                                                                            row.id,
+                                                                                            editingActionRow.actionLineId ??
+                                                                                                ''
                                                                                         )
-                                                                                      : undefined;
-                                                                                  return g
-                                                                                      ? `${g.text} > #${lines.indexOf(seg!) + 1}`
-                                                                                      : t(
-                                                                                            'timeline.action.selectSegment',
-                                                                                            '选择线路段'
-                                                                                        );
-                                                                              })()
-                                                                            : t(
-                                                                                  'timeline.action.selectSegment',
-                                                                                  '选择线路段'
-                                                                              )}
+                                                                                    }
+                                                                                    flex={1}
+                                                                                >
+                                                                                    {editingActionRow.actionLineId
+                                                                                        ? (() => {
+                                                                                              const seg = lines.find(
+                                                                                                  l =>
+                                                                                                      l.id ===
+                                                                                                      editingActionRow.actionLineId
+                                                                                              );
+                                                                                              const g = seg
+                                                                                                  ? groups.find(
+                                                                                                        gr =>
+                                                                                                            gr.id ===
+                                                                                                            seg.groupId
+                                                                                                    )
+                                                                                                  : undefined;
+                                                                                              return g
+                                                                                                  ? `${g.text} > #${lines.indexOf(seg!) + 1}`
+                                                                                                  : t(
+                                                                                                        'timeline.action.selectSegment',
+                                                                                                        '选择线路段'
+                                                                                                    );
+                                                                                          })()
+                                                                                        : t(
+                                                                                              'timeline.action.selectSegment',
+                                                                                              '选择线路段'
+                                                                                          )}
+                                                                                </Button>
+                                                                            </HStack>
+                                                                        )}
+
+                                                                        {editingActionRow.actionType === 'close' && (
+                                                                            <Button
+                                                                                size="xs"
+                                                                                variant="outline"
+                                                                                width="100%"
+                                                                                onClick={() =>
+                                                                                    openCloseNodeStylesModal(
+                                                                                        editingActionRow
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                设置停运后换乘站样式
+                                                                            </Button>
+                                                                        )}
+
+                                                                        {/* 时长编辑 */}
+                                                                        {!editingActionRow.quickComplete && (
+                                                                            <HStack spacing={2} width="100%">
+                                                                                <Text fontSize="xs">
+                                                                                    {t('timeline.action.duration')}:
+                                                                                </Text>
+                                                                                <Input
+                                                                                    size="xs"
+                                                                                    type="number"
+                                                                                    step="0.1"
+                                                                                    min={
+                                                                                        editingActionRow.quickComplete
+                                                                                            ? 1
+                                                                                            : editingActionRow.actionType ===
+                                                                                                    'open' ||
+                                                                                                editingActionRow.actionType ===
+                                                                                                    'close'
+                                                                                              ? getMinimumActionDuration(
+                                                                                                    editingActionRow.actionType,
+                                                                                                    editingActionRow.actionLineId,
+                                                                                                    editingActionRow.nodeAnimationDuration ??
+                                                                                                        1
+                                                                                                )
+                                                                                              : undefined
+                                                                                    }
+                                                                                    value={
+                                                                                        editingActionRow.actionType ===
+                                                                                            'overview' ||
+                                                                                        editingActionRow.actionType ===
+                                                                                            'focus'
+                                                                                            ? 4
+                                                                                            : editingActionRow.quickComplete
+                                                                                              ? 1
+                                                                                              : (editingActionRow.actionDuration ??
+                                                                                                '')
+                                                                                    }
+                                                                                    isDisabled={
+                                                                                        editingActionRow.actionType ===
+                                                                                            'overview' ||
+                                                                                        editingActionRow.actionType ===
+                                                                                            'focus' ||
+                                                                                        Boolean(
+                                                                                            editingActionRow.quickComplete
+                                                                                        )
+                                                                                    }
+                                                                                    onChange={e =>
+                                                                                        setEditingActionRow(prev =>
+                                                                                            prev
+                                                                                                ? {
+                                                                                                      ...prev,
+                                                                                                      actionDuration:
+                                                                                                          Number.isFinite(
+                                                                                                              Number(
+                                                                                                                  e
+                                                                                                                      .target
+                                                                                                                      .value
+                                                                                                              )
+                                                                                                          )
+                                                                                                              ? Number(
+                                                                                                                    e
+                                                                                                                        .target
+                                                                                                                        .value
+                                                                                                                )
+                                                                                                              : undefined,
+                                                                                                  }
+                                                                                                : null
+                                                                                        )
+                                                                                    }
+                                                                                    width="80px"
+                                                                                />
+                                                                                <Text fontSize="xs">
+                                                                                    {t('timeline.second')}
+                                                                                </Text>
+                                                                                {(editingActionRow.actionType ===
+                                                                                    'open' ||
+                                                                                    editingActionRow.actionType ===
+                                                                                        'close') &&
+                                                                                    !editingActionRow.quickComplete && (
+                                                                                        <Checkbox
+                                                                                            size="sm"
+                                                                                            isChecked={
+                                                                                                editingUseSuggestedDuration
+                                                                                            }
+                                                                                            onChange={event =>
+                                                                                                setEditingUseSuggestedDuration(
+                                                                                                    event.target.checked
+                                                                                                )
+                                                                                            }
+                                                                                            sx={{
+                                                                                                '&[data-checked]': {
+                                                                                                    bg: 'rgb(44, 122, 123)',
+                                                                                                    color: 'white',
+                                                                                                },
+                                                                                            }}
+                                                                                        >
+                                                                                            使用建议时长
+                                                                                        </Checkbox>
+                                                                                    )}
+                                                                            </HStack>
+                                                                        )}
+
+                                                                        {actionRows.findIndex(
+                                                                            row => row.id === editingActionRow.id
+                                                                        ) > 0 && (
+                                                                            <HStack spacing={2} width="100%">
+                                                                                <Text fontSize="xs">
+                                                                                    与上一动作同时:
+                                                                                </Text>
+                                                                                <Switch
+                                                                                    size="sm"
+                                                                                    isChecked={Boolean(
+                                                                                        editingActionRow.withPrevious
+                                                                                    )}
+                                                                                    onChange={e =>
+                                                                                        setEditingActionRow(prev =>
+                                                                                            prev
+                                                                                                ? {
+                                                                                                      ...prev,
+                                                                                                      withPrevious:
+                                                                                                          e.target
+                                                                                                              .checked,
+                                                                                                  }
+                                                                                                : null
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                            </HStack>
+                                                                        )}
+
+                                                                        {(editingActionRow.actionType === 'open' ||
+                                                                            editingActionRow.actionType ===
+                                                                                'close') && (
+                                                                            <HStack spacing={2} width="100%">
+                                                                                <Text fontSize="xs">快速完成:</Text>
+                                                                                <Switch
+                                                                                    size="sm"
+                                                                                    isChecked={Boolean(
+                                                                                        editingActionRow.quickComplete
+                                                                                    )}
+                                                                                    onChange={e =>
+                                                                                        setEditingActionRow(prev =>
+                                                                                            prev
+                                                                                                ? {
+                                                                                                      ...prev,
+                                                                                                      quickComplete:
+                                                                                                          e.target
+                                                                                                              .checked,
+                                                                                                      actionDuration: e
+                                                                                                          .target
+                                                                                                          .checked
+                                                                                                          ? 1
+                                                                                                          : prev.actionDuration,
+                                                                                                  }
+                                                                                                : null
+                                                                                        )
+                                                                                    }
+                                                                                />
+                                                                            </HStack>
+                                                                        )}
+
+                                                                        {(editingActionRow.actionType === 'open' ||
+                                                                            editingActionRow.actionType === 'close') &&
+                                                                            !editingActionRow.quickComplete && (
+                                                                                <HStack spacing={2} width="100%">
+                                                                                    <Text fontSize="xs">
+                                                                                        车站动画时长:
+                                                                                    </Text>
+                                                                                    <Input
+                                                                                        size="xs"
+                                                                                        type="number"
+                                                                                        step="0.1"
+                                                                                        min={0.1}
+                                                                                        value={
+                                                                                            editingActionRow.nodeAnimationDuration ??
+                                                                                            1
+                                                                                        }
+                                                                                        onChange={e =>
+                                                                                            setEditingActionRow(prev =>
+                                                                                                prev
+                                                                                                    ? {
+                                                                                                          ...prev,
+                                                                                                          nodeAnimationDuration:
+                                                                                                              Number(
+                                                                                                                  e
+                                                                                                                      .target
+                                                                                                                      .value
+                                                                                                              ) || 1,
+                                                                                                      }
+                                                                                                    : null
+                                                                                            )
+                                                                                        }
+                                                                                        width="80px"
+                                                                                    />
+                                                                                    <Text fontSize="xs">秒</Text>
+                                                                                </HStack>
+                                                                            )}
+
+                                                                        {(editingActionRow.actionType === 'open' ||
+                                                                            editingActionRow.actionType ===
+                                                                                'close') && (
+                                                                            <Input
+                                                                                size="xs"
+                                                                                value={editingActionRow.remark}
+                                                                                onChange={e =>
+                                                                                    setEditingActionRow(prev =>
+                                                                                        prev
+                                                                                            ? {
+                                                                                                  ...prev,
+                                                                                                  remark: e.target
+                                                                                                      .value,
+                                                                                              }
+                                                                                            : null
+                                                                                    )
+                                                                                }
+                                                                                placeholder={t(
+                                                                                    'timeline.action.remark'
+                                                                                )}
+                                                                            />
+                                                                        )}
+                                                                    </VStack>
+                                                                </ModalBody>
+                                                                <ModalFooter>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={requestCloseActionEditor}
+                                                                    >
+                                                                        {t('cancel')}
                                                                     </Button>
-                                                                </HStack>
-                                                            )}
-
-                                                            {/* 时长编辑 */}
-                                                            <HStack spacing={2} width="100%">
-                                                                <Text fontSize="xs">
-                                                                    {t('timeline.action.duration')}:
-                                                                </Text>
-                                                                <Input
-                                                                    size="xs"
-                                                                    type="number"
-                                                                    step="0.1"
-                                                                    min={
-                                                                        editingActionRow.actionType === 'open' ||
-                                                                        editingActionRow.actionType === 'close'
-                                                                            ? getMinimumActionDuration(
-                                                                                  editingActionRow.actionType,
-                                                                                  editingActionRow.actionLineId
-                                                                              )
-                                                                            : undefined
-                                                                    }
-                                                                    value={
-                                                                        editingActionRow.actionType === 'overview' ||
-                                                                        editingActionRow.actionType === 'focus'
-                                                                            ? 2
-                                                                            : (editingActionRow.actionDuration ?? '')
-                                                                    }
-                                                                    isDisabled={
-                                                                        editingActionRow.actionType === 'overview' ||
-                                                                        editingActionRow.actionType === 'focus'
-                                                                    }
-                                                                    onChange={e =>
-                                                                        setEditingActionRow(prev =>
-                                                                            prev
-                                                                                ? {
-                                                                                      ...prev,
-                                                                                      actionDuration: Number.isFinite(
-                                                                                          Number(e.target.value)
-                                                                                      )
-                                                                                          ? Number(e.target.value)
-                                                                                          : undefined,
-                                                                                  }
-                                                                                : null
-                                                                        )
-                                                                    }
-                                                                    width="80px"
-                                                                />
-                                                                <Text fontSize="xs">{t('timeline.second')}</Text>
-                                                            </HStack>
-
-                                                            {(editingActionRow.actionType === 'open' ||
-                                                                editingActionRow.actionType === 'close') && (
-                                                                <Input
-                                                                    size="xs"
-                                                                    value={editingActionRow.remark}
-                                                                    onChange={e =>
-                                                                        setEditingActionRow(prev =>
-                                                                            prev
-                                                                                ? { ...prev, remark: e.target.value }
-                                                                                : null
-                                                                        )
-                                                                    }
-                                                                    placeholder={t('timeline.action.remark')}
-                                                                />
-                                                            )}
-                                                            <HStack>
-                                                                <Button size="xs" onClick={handleUpdateActionRow}>
-                                                                    {t('confirm')}
-                                                                </Button>
-                                                                <Button
-                                                                    size="xs"
-                                                                    variant="outline"
-                                                                    onClick={() => setEditingActionRow(null)}
-                                                                >
-                                                                    {t('cancel')}
-                                                                </Button>
-                                                            </HStack>
-                                                        </VStack>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        colorScheme="teal"
+                                                                        ml={2}
+                                                                        onClick={handleUpdateActionRow}
+                                                                    >
+                                                                        {t('confirm')}
+                                                                    </Button>
+                                                                </ModalFooter>
+                                                            </ModalContent>
+                                                        </Modal>
                                                     ) : (
                                                         <Flex justify="space-between" align="center">
                                                             <HStack spacing={2} flex={1} minWidth={0}>
@@ -2183,7 +2493,11 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                     variant="ghost"
                                                                     icon={<MdEdit />}
                                                                     aria-label={t('edit')}
-                                                                    onClick={() => setEditingActionRow(row)}
+                                                                    onClick={() => {
+                                                                        setActionRowBeforeEditing(row);
+                                                                        setEditingUseSuggestedDuration(false);
+                                                                        setEditingActionRow(row);
+                                                                    }}
                                                                 />
                                                                 <IconButton
                                                                     size="xs"
@@ -2323,7 +2637,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                             {t('timeline.noSegments', '暂无线路段')}
                                                         </Text>
                                                     ) : (
-                                                        groupSegments.map((seg, segIndex) => (
+                                                        groupSegments.map(seg => (
                                                             <Flex
                                                                 key={seg.id}
                                                                 align="center"
@@ -2336,10 +2650,6 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                 <Badge fontSize="xs" variant="outline" mr={2}>
                                                                     {seg.elements?.length ?? 0}
                                                                 </Badge>
-                                                                <Text fontSize="xs">
-                                                                    {seg.remark ||
-                                                                        `${t('timeline.segment', '线路段')} #${segIndex + 1}`}
-                                                                </Text>
                                                             </Flex>
                                                         ))
                                                     )}
@@ -2426,6 +2736,127 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                     </ModalBody>
                 </ModalContent>
             </Modal>
+
+            <Modal
+                isOpen={!!closeNodeStylesModal}
+                onClose={requestCloseNodeStylesModal}
+                size={{ base: 'full', md: 'lg' }}
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>停运后换乘站样式</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack align="stretch" spacing={2}>
+                            {closeNodeStylesModal &&
+                            getCloseStyleNodes(closeNodeStylesModal.actionLineId).length === 0 ? (
+                                <Text fontSize="sm" color="gray.500">
+                                    目标线路段中没有多版本节点
+                                </Text>
+                            ) : (
+                                closeNodeStylesModal &&
+                                getCloseStyleNodes(closeNodeStylesModal.actionLineId).map(nodeId => {
+                                    const style = draftCloseNodeStyles[nodeId] ?? { visible: false, version: 1 };
+                                    return (
+                                        <HStack key={nodeId} p={2} borderWidth="1px" borderRadius="md">
+                                            <Text flex={1} fontSize="sm">
+                                                {getNodeDisplayName(graph.current, nodeId)}
+                                            </Text>
+                                            {style.visible && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    rightIcon={<MdExpandMore />}
+                                                    onClick={() =>
+                                                        setVersionPicker({
+                                                            type: 'closeStyle',
+                                                            nodeId,
+                                                            selectedVersion: style.version,
+                                                        })
+                                                    }
+                                                >
+                                                    {getNodeVersionName(nodeId, style.version)}
+                                                </Button>
+                                            )}
+                                            <Text fontSize="sm">停运后显示</Text>
+                                            <Switch
+                                                isChecked={style.visible}
+                                                onChange={event =>
+                                                    setDraftCloseNodeStyles(previous => ({
+                                                        ...previous,
+                                                        [nodeId]: { ...style, visible: event.target.checked },
+                                                    }))
+                                                }
+                                                aria-label={`停运后显示 ${getNodeDisplayName(graph.current, nodeId)}`}
+                                            />
+                                        </HStack>
+                                    );
+                                })
+                            )}
+                        </VStack>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button size="sm" variant="outline" onClick={requestCloseNodeStylesModal}>
+                            {t('cancel', '取消')}
+                        </Button>
+                        <Button
+                            size="sm"
+                            colorScheme="teal"
+                            ml={2}
+                            onClick={() => {
+                                if (!closeNodeStylesModal) return;
+                                const closeNodeStyles = Object.fromEntries(
+                                    Object.entries(draftCloseNodeStyles).filter(([, style]) => style.visible)
+                                ) as Record<NodeId, CloseNodeStyle>;
+                                dispatch(
+                                    updateActionRow({
+                                        id: closeNodeStylesModal.id,
+                                        updates: { closeNodeStyles },
+                                    })
+                                );
+                                setCloseNodeStylesModal(null);
+                                setCloseNodeStylesBeforeEditing({});
+                            }}
+                        >
+                            {t('confirm', '确定')}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <AlertDialog
+                isOpen={!!discardChangesTarget}
+                onClose={() => setDiscardChangesTarget(null)}
+                leastDestructiveRef={cancelDiscardRef}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>放弃未保存的更改？</AlertDialogHeader>
+                        <AlertDialogBody>关闭后，本次修改将不会保存。</AlertDialogBody>
+                        <AlertDialogFooter>
+                            <Button ref={cancelDiscardRef} onClick={() => setDiscardChangesTarget(null)}>
+                                {t('cancel')}
+                            </Button>
+                            <Button
+                                colorScheme="red"
+                                ml={3}
+                                onClick={() => {
+                                    if (discardChangesTarget === 'action') {
+                                        setEditingActionRow(null);
+                                        setActionRowBeforeEditing(null);
+                                    } else if (discardChangesTarget === 'closeStyle') {
+                                        setCloseNodeStylesModal(null);
+                                        setCloseNodeStylesBeforeEditing({});
+                                    }
+                                    setDiscardChangesTarget(null);
+                                }}
+                            >
+                                放弃更改
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
 
             {/* 节点历史版本选择 */}
             <Modal isOpen={!!versionPicker} onClose={() => setVersionPicker(null)} size={{ base: 'full', md: 'md' }}>
@@ -2543,11 +2974,21 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                             ml={2}
                             onClick={() => {
                                 if (!versionPicker) return;
-                                handleSetElementVersion(
-                                    versionPicker.lineId,
-                                    versionPicker.elementIndex,
-                                    versionPicker.selectedVersion
-                                );
+                                if (versionPicker.type === 'element') {
+                                    handleSetElementVersion(
+                                        versionPicker.lineId,
+                                        versionPicker.elementIndex,
+                                        versionPicker.selectedVersion
+                                    );
+                                } else {
+                                    setDraftCloseNodeStyles(previous => ({
+                                        ...previous,
+                                        [versionPicker.nodeId]: {
+                                            ...(previous[versionPicker.nodeId] ?? { visible: true, version: 1 }),
+                                            version: versionPicker.selectedVersion,
+                                        },
+                                    }));
+                                }
                                 setVersionPicker(null);
                             }}
                         >

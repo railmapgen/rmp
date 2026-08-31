@@ -11,6 +11,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
+import { getEdgeMileageInKilometers } from '../../../util/map-distance';
 import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
@@ -130,8 +131,9 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
     const {
-        preference: { autoParallel },
+        preference: { autoParallel, timelineFeatureEnabled },
     } = useRootSelector(state => state.app);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
     const { refresh, theme } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -227,6 +229,13 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
                 reconcileId: '',
                 parallelIndex: autoParallel ? 0 : -1,
             });
+            // 填充形状生成的线段同样遵循双视图开启时的实际地图里程自动填充规则。
+            if (mapEnabled && timelineFeatureEnabled) {
+                const mileage = getEdgeMileageInKilometers(graph, newLineId);
+                if (Number.isFinite(mileage) && mileage > 0) {
+                    graph.setEdgeAttribute(newLineId, 'mileage', mileage);
+                }
+            }
         }
 
         refreshAndSave();

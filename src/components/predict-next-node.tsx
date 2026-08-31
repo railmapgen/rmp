@@ -15,6 +15,7 @@ import {
     setSelected,
 } from '../redux/runtime/runtime-slice';
 import { getMousePosition } from '../util/helpers';
+import { getEdgeMileageInKilometers } from '../util/map-distance';
 import { useMakeStationName } from '../util/random-station-names';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
 import { linePaths } from './svgs/lines/lines';
@@ -39,8 +40,9 @@ const PredictNextNode = () => {
     const { activeSubscriptions } = useRootSelector(state => state.account);
     const {
         telemetry: { project: isAllowProjectTelemetry },
-        preference: { autoParallel, randomStationsNames },
+        preference: { autoParallel, randomStationsNames, timelineFeatureEnabled },
     } = useRootSelector(state => state.app);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
     const {
         selected,
         theme: runtimeTheme,
@@ -215,6 +217,13 @@ const PredictNextNode = () => {
             reconcileId: '',
             parallelIndex,
         });
+        // 预测节点创建的线段同样遵循双视图开启时的实际地图里程自动填充规则。
+        if (mapEnabled && timelineFeatureEnabled) {
+            const mileage = getEdgeMileageInKilometers(window.graph, newLineId);
+            if (Number.isFinite(mileage) && mileage > 0) {
+                window.graph.setEdgeAttribute(newLineId, 'mileage', mileage);
+            }
+        }
         if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type: pathType });
 
         refreshAndSave();

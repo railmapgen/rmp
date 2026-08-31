@@ -1,4 +1,64 @@
 {
+    "map": {
+        "loading": "正在加载地图……",
+        "loadError": "无法加载地理地图。",
+        "zoomInToEdit": "请放大地图以进行编辑。",
+        "style": {
+            "title": "地图样式",
+            "reset": "重置",
+            "type": "类型",
+            "enabled": "显示",
+            "widthScale": "宽度比例",
+            "roads": {
+                "title": "道路",
+                "casingColor": "轮廓",
+                "color": "表面",
+                "path": "路径",
+                "local": "本地道路",
+                "collector": "集散道路",
+                "arterial": "主干道"
+            },
+            "rails": { "title": "铁路", "metro": "地铁", "national": "国铁" },
+            "labels": {
+                "title": "标注",
+                "enabled": "显示所有标注",
+                "sizeScale": "大小比例",
+                "color": "文字",
+                "strokeColor": "轮廓",
+                "groups": {
+                    "places": "地点",
+                    "roads": "道路",
+                    "buildings": "建筑",
+                    "areas": "区域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地点",
+                    "place-medium": "中等地点",
+                    "place-minor": "次要地点",
+                    "road-arterial": "主干道",
+                    "road-collector": "集散道路",
+                    "building": "建筑",
+                    "area-water": "水域",
+                    "area-park": "公园",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "农田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅区",
+                    "area-commercial": "商业区",
+                    "area-industrial": "工业区",
+                    "area-education": "教育设施",
+                    "area-healthcare": "医疗设施",
+                    "transport-airport": "机场",
+                    "transport-rail": "火车站",
+                    "transport-metro": "地铁站",
+                    "transport-platform": "站台",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    },
     "color": "颜色",
     "warning": "警告",
     "error": "错误",
@@ -586,6 +646,36 @@
                     "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。",
                     "reconcileStyleDisabled": "此线段属于合并线段链，样式属性已禁用。最终渲染样式由基准线段控制。"
                 },
+                "bezier": {
+                    "displayName": "贝塞尔曲线",
+                    "along": "沿线偏移",
+                    "normal": "法线偏移",
+                    "sourceOffset": "起点端点偏移",
+                    "targetOffset": "终点端点偏移",
+                    "sourceOffsetX": "起点端点 X 偏移",
+                    "sourceOffsetY": "起点端点 Y 偏移",
+                    "targetOffsetX": "终点端点 X 偏移",
+                    "targetOffsetY": "终点端点 Y 偏移",
+                    "linkedOffset": "关联端点偏移"
+                },
+                "freeform": {
+                    "displayName": "自由曲线",
+                    "controlPointHint": "拖动经过所需控制点来绘制线段。",
+                    "outlineSettingsUnavailable": "自由曲线暂不支持轮廓设置。",
+                    "smoothing": "平滑度",
+                    "widthStops": "宽度节点",
+                    "widthStopIndex": "序号",
+                    "widthStopPosition": "位置（%）",
+                    "widthStopWidth": "宽度",
+                    "baseWidthHint": "线段宽度会沿路径变化。",
+                    "startCap": "起点端帽",
+                    "endCap": "终点端帽",
+                    "round": "圆头",
+                    "flat": "平头",
+                    "arrow": "箭头",
+                    "arrowLength": "箭头长度",
+                    "arrowWidth": "箭头宽度"
+                },
                 "simple": {
                     "displayName": "基本线段",
                     "offset": "偏移"
@@ -782,6 +872,10 @@
         "popoverHeader": "你正在浏览<1>{{environment}}</1>环境！",
         "popoverBody": "我们正在测试最新的RMP。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜索车站",
+        "mapToggle": {
+            "show": "显示地理地图",
+            "hide": "隐藏地理地图"
+        },
         "open": {
             "new": "新项目",
             "config": "导入项目",
@@ -856,6 +950,7 @@
             "disabledScaleOptionsSolution": "<link1>订阅</link1>并<link2>下载</link2>我们的桌面应用程序以渲染大型图像。",
             "imageTooBig": "图像太大，无法在您的浏览器中生成！",
             "isSystemFontsOnly": "仅用系统字体（字体显示可能不一致）。 ",
+            "shareInfo": "去水印（当我分享此图片时我会附上<1>地铁线路图绘制器</1>和它的链接）。",
             "shareInfo1": "当我分享此图片时我会附上",
             "shareInfo2": "和它的链接。",
             "termsAndConditions": "条款及细则",
@@ -886,7 +981,14 @@
                 "previewPlay": "播放",
                 "previewPause": "暂停",
                 "previewLoading": "渲染中…",
-                "previewFullscreen": "全屏"
+                "previewFullscreen": "全屏",
+                "jumpToAction": "跳转到动作",
+                "previousAction": "上一个动作",
+                "nextAction": "下一个动作",
+                "actionOption": "动作 {{index}}：{{type}}（{{remark}}）",
+                "actionOptionType": "动作 {{index}}：{{type}}",
+                "actionOptionWait": "动作 {{index}}：{{type}}（{{duration}} 秒）",
+                "noRemark": "无备注"
             }
         },
         "timeline": {
@@ -939,6 +1041,10 @@
             },
             "preference": {
                 "title": "偏好",
+                "map": "显示地理地图",
+                "mapEnabled": "显示地理地图图层",
+                "disableMapPerformanceOptimization": "禁用地图性能优化",
+                "mapPerformanceOptimizationProgress": "已优化：{{optimized}}/{{total}}",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
                 "autoParallel": "自动将新线段设置为与现有线段平行",
                 "randomStationNames": {
@@ -1133,9 +1239,6 @@
         "newLine": "新线路",
         "modify": "修改",
         "elements": "元素",
-        "segmentRemark": "线路段备注名",
-        "segmentRemarkPlaceholder": "输入线路段备注名",
-        "segmentRemarkRequired": "请输入线路段备注名",
         "addElement": "添加元素",
         "reverseAll": "全部反转",
         "noElements": "暂无元素，请点击\"添加元素\"",
@@ -1150,6 +1253,8 @@
         "end": "结束",
         "isStation": "视为车站",
         "mileage": "里程长度",
+        "mileageAutoFill": "按地图实际长度自动填充",
+        "mileageAutoFillDisabled": "需开启真实地图后才能按实际长度自动填充",
         "savedAtTimePoint": "变更已保存到当前时间点",
         "futurePointsAffected": "后续时间点将受影响",
         "attrs": {

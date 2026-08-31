@@ -24,7 +24,10 @@ import { setCurrentTime } from '../../redux/timeline/timeline-slice';
 import { ActionRow, DateRow, LineGroup } from '../../constants/timeline';
 import { PlayerAnimator, FrameState } from '../../util/player-animator';
 import { buildPhases } from '../../util/player-schedule';
-import { exportVideoWithFrameCallback, getActionLineMinimumDuration } from '../../util/video-export';
+import { exportVideoWithFrameCallback } from '../../util/video-export';
+import { calculateCanvasSize } from '../../util/helpers';
+import { renderMapLayerForExport } from '../../map/map-tile-controller';
+import { getActionDuration, scheduleActionRows } from '../../util/action-schedule';
 
 interface TimelinePlayerProps {
     isOpen: boolean;
@@ -43,12 +46,23 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
     );
 
     const svgAreaRef = React.useRef<HTMLDivElement>(null);
+    const miniMapMarkupRef = React.useRef('');
+    const graph = React.useRef(window.graph);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const animatorRef = React.useRef<PlayerAnimator | null>(null);
     const [isPlaying, setIsPlaying] = React.useState(false);
     const [playbackSpeed, setPlaybackSpeed] = React.useState(1);
     const [hudState, setHudState] = React.useState<FrameState | null>(null);
     const [isExporting, setIsExporting] = React.useState(false);
     const [playerTotalMs, setPlayerTotalMs] = React.useState(0);
+    const actionSchedule = React.useMemo(
+        () =>
+            scheduleActionRows(
+                actionRows,
+                actionRows.map(action => getActionDuration(action) * 1000)
+            ),
+        [actionRows]
+    );
 
     const bgColor = useColorModeValue('rgba(255,255,255,0.95)', 'rgba(26,32,44,0.95)');
 
@@ -64,18 +78,71 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
             const clonedSvg = canvasSvg.cloneNode(true) as SVGSVGElement;
             clonedSvg.querySelectorAll(':scope > g').forEach(group => group.removeAttribute('transform'));
             svgArea.appendChild(clonedSvg);
+            const miniMapSvg = clonedSvg.cloneNode(true) as SVGSVGElement;
+            if (miniMapSvg.matches('[data-map-layer], [data-map-raster], [data-map-attribution]')) {
+                miniMapSvg.removeAttribute('data-map-layer');
+                miniMapSvg.removeAttribute('data-map-raster');
+                miniMapSvg.removeAttribute('data-map-attribution');
+            }
+            miniMapSvg
+                .querySelectorAll(
+                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution]'
+                )
+                .forEach(element => element.remove());
+            miniMapSvg
+                .querySelectorAll(
+                    'text, [data-station-name], .station-name, .rmp-virtual-node, g[id^="stn_"] path, g[id^="misc_node_"] path, g[id^="node_"] path'
+                )
+                .forEach(element => element.remove());
+            miniMapSvg.querySelectorAll('defs, script, foreignObject').forEach(element => element.remove());
+            miniMapMarkupRef.current = miniMapSvg.innerHTML;
         }
 
-        // 将 diffs 从秒转毫秒构建调度
+        // 将 diffs 从秒转毫秒构建调度。线路段元素本身已按起点到终点保存，停运时据此逐条执行。
         const diffsMs = diffs.map(d => ({ ...d, time: d.time * 1000 }));
-        const schedule = buildPhases(diffsMs);
+        const edgeOrder = new Map<string, number>();
+        lines.forEach(line => {
+            line.elements.forEach((element, index) => {
+                if (typeof element.id === 'string' && element.id.startsWith('line_')) {
+                    edgeOrder.set(element.id, index);
+                }
+            });
+        });
+        const actionSchedule = scheduleActionRows(
+            actionRows,
+            actionRows.map(action => getActionDuration(action) * 1000)
+        );
+        const actionLineEdges = new Map<string, string[]>();
+        lines.forEach(line =>
+            actionLineEdges.set(
+                line.id,
+                line.elements
+                    .filter(element => typeof element.id === 'string' && element.id.startsWith('line_'))
+                    .map(element => element.id as string)
+            )
+        );
+        const rawSchedule = buildPhases(diffsMs, {
+            edgeOrder,
+            actionRows,
+            actionSchedule: actionSchedule.entries,
+            actionLineEdges,
+        });
 
-        // 播放总时长只包含动作阶段，用户已经可以显式添加全览。
-        // 不再使用 Redux 中用户设置的总时长，避免动作完成后长时间空转。
-        const lastEndMs = schedule.length > 0 ? Math.max(...schedule.map(p => p.endMs)) : 0;
-        const playerTotalMs = Math.max(lastEndMs, 1000);
+        // 预览以动作时长作为唯一总时长；diff 调度的默认绘制时长不能额外拉长播放时间。
+        const actionTotalMs = actionSchedule.totalDuration;
+        const rawScheduleDurationMs = rawSchedule.length > 0 ? Math.max(...rawSchedule.map(phase => phase.endMs)) : 0;
+        const scheduleScale =
+            actionTotalMs > 0 && rawScheduleDurationMs > actionTotalMs ? actionTotalMs / rawScheduleDurationMs : 1;
+        const schedule =
+            scheduleScale === 1
+                ? rawSchedule
+                : rawSchedule.map(phase => ({
+                      ...phase,
+                      startMs: phase.startMs * scheduleScale,
+                      endMs: phase.endMs * scheduleScale,
+                  }));
+        const playerTotalMs = Math.max(actionTotalMs, 1000);
         setPlayerTotalMs(playerTotalMs);
-
         // 整段添加等操作计算出的 reverse 标志 → 播放器绘制方向。
         // reverse 的边从路径末端开始绘制（backward）。
         const edgeDirections = new Map<string, 'forward' | 'backward'>();
@@ -106,7 +173,7 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
             animator.destroy();
             animatorRef.current = null;
         };
-    }, [isOpen, diffs, lines, totalDuration, dispatch]);
+    }, [isOpen, diffs, lines, actionRows, totalDuration, dispatch]);
 
     // 同步进度条
     React.useEffect(() => {
@@ -142,8 +209,24 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
         setIsExporting(true);
 
         try {
-            const svgElement = svgAreaRef.current.querySelector('svg');
+            const svgElement = svgAreaRef.current.querySelector<SVGSVGElement>('svg');
             if (!svgElement) return;
+
+            let mapLayerMarkup: string | undefined;
+            if (mapEnabled) {
+                const sourceCanvas = document.querySelector<SVGSVGElement>('#canvas');
+                const sourceMapLayer = sourceCanvas?.querySelector<SVGGElement>('[data-map-layer]');
+                const targetMapLayer = svgElement.querySelector<SVGGElement>('[data-map-layer]');
+
+                if (sourceCanvas && sourceMapLayer && targetMapLayer) {
+                    await renderMapLayerForExport(sourceMapLayer, targetMapLayer, calculateCanvasSize(graph.current));
+                    const mapStyle = sourceCanvas.querySelector<SVGStyleElement>('style[data-map-style]');
+                    if (mapStyle && !svgElement.querySelector('style[data-map-style]')) {
+                        svgElement.prepend(mapStyle.cloneNode(true));
+                    }
+                    mapLayerMarkup = `${mapStyle?.outerHTML ?? ''}${targetMapLayer.outerHTML}`;
+                }
+            }
 
             await exportVideoWithFrameCallback(
                 svgElement,
@@ -151,7 +234,7 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
                 (time: number) => {
                     animatorRef.current?.seek(time * 1000);
                 },
-                { fps: 10, quality: 0.9, format: 'webm' }
+                { fps: 10, quality: 90, format: 'webm', mapLayerMarkup }
             );
         } catch (err) {
             console.error('Video export failed:', err);
@@ -186,23 +269,21 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
         const timeSeconds = hudState.currentMs / 1000;
         let cursor = 0;
         const openedSegments = new Set<string>();
-        for (const action of actionRows) {
-            const line = action.actionLineId ? lines.find(item => item.id === action.actionLineId) : undefined;
-            const minimum =
-                action.actionType === 'open' || action.actionType === 'close'
-                    ? getActionLineMinimumDuration(line)
-                    : action.actionType === 'wait'
-                      ? 0.5
-                      : 1;
-            const duration = Math.max(action.actionDuration ?? 2, minimum);
-            if (cursor >= timeSeconds) break;
+        for (let index = 0; index < actionRows.length; index++) {
+            const action = actionRows[index];
+            const duration = getActionDuration(action);
+            const startTime = (actionSchedule.entries[index]?.startTime ?? cursor * 1000) / 1000;
+            if (startTime >= timeSeconds) break;
             if (action.actionLineId && (action.actionType === 'open' || action.actionType === 'close')) {
-                if (cursor + duration <= timeSeconds) {
+                const endTime = actionSchedule.entries[index]
+                    ? actionSchedule.entries[index].endTime / 1000
+                    : startTime + duration;
+                if (endTime <= timeSeconds) {
                     if (action.actionType === 'open') openedSegments.add(action.actionLineId);
                     else openedSegments.delete(action.actionLineId);
                 }
             }
-            cursor += duration;
+            cursor = Math.max(cursor, startTime + duration);
         }
         const groupIds = new Set(
             [...openedSegments]
@@ -218,18 +299,10 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
     const getCurrentAction = (): ActionRow | null => {
         if (!hudState || actionRows.length === 0) return null;
         const timeSeconds = hudState.currentMs / 1000;
-        let cursor = 0;
-        for (const action of actionRows) {
-            const line = action.actionLineId ? lines.find(item => item.id === action.actionLineId) : undefined;
-            const minimum =
-                action.actionType === 'open' || action.actionType === 'close'
-                    ? getActionLineMinimumDuration(line)
-                    : action.actionType === 'wait'
-                      ? 0.5
-                      : 1;
-            const duration = Math.max(action.actionDuration ?? 2, minimum);
-            if (timeSeconds < cursor + duration) return action;
-            cursor += duration;
+        for (let index = 0; index < actionRows.length; index++) {
+            const action = actionRows[index];
+            const entry = actionSchedule.entries[index];
+            if (entry && timeSeconds >= entry.startTime / 1000 && timeSeconds < entry.endTime / 1000) return action;
         }
         return actionRows[actionRows.length - 1] ?? null;
     };
@@ -242,7 +315,7 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
         ? groups.find(group => group.id === currentActionLine.groupId)
         : undefined;
     const hudLineGroups = currentActionGroup ? [currentActionGroup] : activeLines;
-    const hudRemark = currentActionLine?.remark || currentAction?.remark || currentActionGroup?.remark || '';
+    const hudRemark = currentAction?.remark || '';
 
     if (!isOpen) return null;
 
@@ -337,12 +410,14 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
                 {/* 右上：小地图 */}
                 <Box
                     position="absolute"
+                    zIndex={999}
+                    isolation="isolate"
                     top={4}
                     right={4}
                     width="200px"
                     height="150px"
-                    bg="rgba(0,0,0,0.5)"
-                    border="2px solid black"
+                    bg="#ffffff"
+                    border="4px solid black"
                     boxShadow="0 0 0 2px rgba(255,255,255,0.4)"
                     borderRadius="md"
                     overflow="hidden"
@@ -351,14 +426,22 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
                     <svg
                         width="100%"
                         height="100%"
+                        overflow="hidden"
+                        preserveAspectRatio="xMidYMid meet"
                         viewBox={svgAreaRef.current?.querySelector('svg')?.getAttribute('viewBox') || '0 0 500 500'}
                     >
+                        <rect width="100%" height="100%" fill="#ffffff" />
+                        <defs>
+                            <clipPath id="mini-map-viewport" clipPathUnits="objectBoundingBox">
+                                <rect width="1" height="1" />
+                            </clipPath>
+                        </defs>
                         {svgAreaRef.current?.querySelector('svg') && (
                             <g
+                                clipPath="url(#mini-map-viewport)"
                                 dangerouslySetInnerHTML={{
-                                    __html: svgAreaRef.current.querySelector('svg')?.innerHTML || '',
+                                    __html: miniMapMarkupRef.current,
                                 }}
-                                transform="scale(0.3)"
                             />
                         )}
                     </svg>

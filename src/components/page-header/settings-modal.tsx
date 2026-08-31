@@ -32,10 +32,12 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { StationCity } from '../../constants/constants';
+import { getMapOptimizationProgress } from '../../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setEnableActionDateFormatValidation,
     setGridLines,
@@ -47,13 +49,14 @@ import {
     setTimelineFeatureEnabled,
 } from '../../redux/app/app-slice';
 import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
-import { saveGraph } from '../../redux/param/param-slice';
+import { saveGraph, setMapEnabled } from '../../redux/param/param-slice';
 import { normalizeTimelineStationFlags } from '../../util/save';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { clearTimelineData } from '../../redux/timeline/timeline-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import { MapStyleSection } from './map-style-section';
 import { MasterManager } from './master-manager';
 import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
@@ -85,6 +88,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
             snapLines,
             predictNextNode,
             autoChangeStationType,
+            disableMapPerformanceOptimization,
             disableWarning: { changeType: disableWarningChangeType },
             timelineFeatureEnabled,
             enableActionDateFormatValidation,
@@ -94,6 +98,14 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         keepLastPath,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
+    const { mapEnabled } = useRootSelector(state => state.param.present);
+    const mapOptimizationProgress = React.useMemo(
+        () =>
+            isOpen
+                ? getMapOptimizationProgress(document.querySelector<SVGGElement>('[data-map-layer]'))
+                : { optimized: 0, total: 0 },
+        [isOpen]
+    );
 
     const handleTimelineFeatureToggle = (enabled: boolean) => {
         dispatch(setTimelineFeatureEnabled(enabled));
@@ -273,6 +285,34 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     </Select>
                                 </HStack>
                                 <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                    />
+                                </HStack>
+                                {mapEnabled && (
+                                    <Box mb="1" data-testid="map-performance-preference">
+                                        <HStack>
+                                            <Text flex="1">
+                                                {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                            </Text>
+                                            <Switch
+                                                isChecked={disableMapPerformanceOptimization}
+                                                onChange={({ target: { checked } }) =>
+                                                    dispatch(setDisableMapPerformanceOptimization(checked))
+                                                }
+                                            />
+                                        </HStack>
+                                        <Text color="gray.500" fontSize="sm">
+                                            {t('header.settings.preference.mapPerformanceOptimizationProgress', {
+                                                optimized: mapOptimizationProgress.optimized,
+                                                total: mapOptimizationProgress.total,
+                                            })}
+                                        </Text>
+                                    </Box>
+                                )}
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.gridline')}</Text>
                                     <Switch
                                         isChecked={gridLines}
@@ -329,6 +369,8 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 )}
                             </VStack>
                         </Box>
+
+                        {mapEnabled && <MapStyleSection />}
 
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">

@@ -37,11 +37,13 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.shmetroVirtualInt.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

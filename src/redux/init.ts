@@ -1,5 +1,6 @@
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
@@ -9,6 +10,7 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setEnableActionDateFormatValidation,
     setGridLines,
@@ -25,7 +27,7 @@ import {
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
 } from './app/app-slice';
-import { ParamState, setFullState } from './param/param-slice';
+import { initializeProject, ProjectSnapshot } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 import { loadTimeline } from './timeline/timeline-slice';
@@ -114,10 +116,14 @@ export const initStore = async (store: RootStore) => {
     if (store.getState().app.preference.timelineFeatureEnabled) {
         normalizeTimelineStationFlags(window.graph);
     }
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
-    store.dispatch(setFullState(state));
-    store.dispatch(refreshNodesThunk());
-    store.dispatch(refreshEdgesThunk());
+    const project: ProjectSnapshot = {
+        ...save,
+        mapEnabled: save.mapEnabled ?? false,
+        mapStyle: save.mapStyle ?? structuredClone(DEFAULT_MAP_STYLE),
+        graph,
+    };
+    store.dispatch(initializeProject(project));
+    await Promise.all([store.dispatch(refreshNodesThunk()), store.dispatch(refreshEdgesThunk())]);
 
     // Restore timeline state if present in the save
     if (timelineSave) {
@@ -139,15 +145,22 @@ export const initStore = async (store: RootStore) => {
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
 
     startRootListening({
-        predicate: (_action, currentState, previousState) => {
-            // TODO: check if the refresh nodes and edges will be dispatched in batch, otherwise
-            // there might be a performance issue.
-            // TODO: Dragging a node will trigger the refreshNodesThunk, however, the actual
-            // graph is not preserved as we want to reduce the number of refreshes. But this
-            // comparison will always return true on dragging a node.
+        predicate: (action, currentState, previousState) => {
+            const currentProject = currentState.param.present;
+            const previousProject = previousState.param.present;
+            if (action.type === 'param/saveGraph') return true;
+
             return (
-                currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
+                [
+                    'param/replaceProjectState',
+                    'param/setMapEnabled',
+                    'param/setMapStyle',
+                    'param/setSvgViewport',
+                    'param/setSvgViewBoxZoom',
+                    'param/setSvgViewBoxMin',
+                    'undo',
+                    'redo',
+                ].includes(action.type) && JSON.stringify(currentProject) !== JSON.stringify(previousProject)
             );
         },
         effect: (_action, listenerApi) => {

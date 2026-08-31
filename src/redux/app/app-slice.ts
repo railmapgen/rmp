@@ -50,6 +50,10 @@ export interface AppState {
         predictNextNode: boolean;
         autoChangeStationType: boolean;
         /**
+         * Whether to disable map raster performance optimization.
+         */
+        disableMapPerformanceOptimization: boolean;
+        /**
          * Whether to disable warnings.
          */
         disableWarning: {
@@ -95,6 +99,7 @@ export const initialState: AppState = {
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
+        disableMapPerformanceOptimization: false,
         disableWarning: {
             changeType: false,
         },
@@ -142,6 +147,9 @@ const appSlice = createSlice({
         },
         setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
             state.preference.autoChangeStationType = action.payload;
+        },
+        setDisableMapPerformanceOptimization: (state, action: PayloadAction<boolean>) => {
+            state.preference.disableMapPerformanceOptimization = action.payload;
         },
         setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
             state.preference.disableWarning.changeType = action.payload;
@@ -201,6 +209,7 @@ export const {
     setSnapLines,
     setPredictNextNode,
     setAutoChangeStationType,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setShowOnlyFavorites,
     toggleFavoriteLinePath,

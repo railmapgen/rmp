@@ -24,8 +24,8 @@ import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, setSelected } from '../../../redux/runtime/runtime-slice';
 import { changeLinePathType, changeLineStyleType } from '../../../util/change-types';
 import { getBaseReconciledLineID } from '../../../util/reconcile';
-import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import { localizedLineStyles } from '../tools/localized-order';
+import { linePaths, lineStyles } from '../../svgs/lines/lines';
 
 const legacySimplePathAvailableStyles = new Set([
     LineStyleType.ShmetroVirtualInt,
@@ -41,17 +41,23 @@ const legacySimplePathAvailableStyles = new Set([
  * on the current selection and subscription status.
  */
 const isLinePathAndStyleDisabled = (pathType: LinePathType, styleType: LineStyleType, pro: boolean) => {
+    const path = linePaths[pathType];
+    const style = lineStyles[styleType];
+    // Unknown legacy paths (e.g. imported from another app version) must not lock the current style options.
+    if (!path || !style) {
+        return false;
+    }
     // This must be placed first as the simple path is pro and all will be rejected in the next check.
     if (pathType === LinePathType.Simple && legacySimplePathAvailableStyles.has(styleType)) {
         return false;
     }
-    if (linePaths[pathType].isPro && !pro) {
+    if (path.isPro && !pro) {
         return true;
     }
-    if (lineStyles[styleType].isPro && !pro) {
+    if (style.isPro && !pro) {
         return true;
     }
-    if (!lineStyles[styleType].metadata.supportLinePathType.includes(pathType)) {
+    if (!style.metadata.supportLinePathType.includes(pathType)) {
         return true;
     }
     return false;

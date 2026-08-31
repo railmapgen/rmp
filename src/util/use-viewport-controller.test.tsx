@@ -10,10 +10,11 @@ type ViewportControllerApi = ReturnType<typeof useViewportController>;
 
 interface HookHarnessProps {
     viewport: LiveViewport;
+    onViewportChange?: (viewport: LiveViewport) => void;
 }
 
 const HookHarness = React.forwardRef<ViewportControllerApi, HookHarnessProps>((props, ref) => {
-    const controller = useViewportController({ viewport: props.viewport });
+    const controller = useViewportController({ viewport: props.viewport, onViewportChange: props.onViewportChange });
 
     React.useImperativeHandle(ref, () => controller, [controller]);
 
@@ -81,6 +82,28 @@ describe('useViewportController', () => {
         expect(store.getState().viewport.liveViewport).toEqual({ x: 30, y: 40, zoom: 50 });
     });
 
+    it('notifies viewport consumers after applying the latest RAF frame', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        const onViewportChange = vi.fn();
+
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} onViewportChange={onViewportChange} />, {
+            store,
+        });
+        onViewportChange.mockClear();
+
+        act(() => {
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 });
+            ref.current?.viewportPreview({ x: 30, y: 40, zoom: 50 });
+        });
+
+        expect(onViewportChange).not.toHaveBeenCalled();
+        flushRaf();
+
+        expect(onViewportChange).toHaveBeenCalledTimes(1);
+        expect(onViewportChange).toHaveBeenLastCalledWith({ x: 30, y: 40, zoom: 50 });
+    });
+
     it('returns the latest queued viewport before the RAF flushes', () => {
         const store = createStore();
         const ref = React.createRef<ViewportControllerApi>();
@@ -127,16 +150,16 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(149);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 0, y: 0 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 0, y: 0 });
         expect(store.getState().viewport.liveViewport).toEqual({ x: 40, y: 50, zoom: 60 });
 
         act(() => {
             vi.advanceTimersByTime(1);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(60);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 40, y: 50 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(60);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 40, y: 50 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -156,8 +179,8 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(200);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(90);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 5, y: 15 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(90);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 5, y: 15 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -181,8 +204,8 @@ describe('useViewportController', () => {
             ref.current?.panEnd({ x: 100, y: 40 });
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: -100, y: -40 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -100, y: -40 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
@@ -238,16 +261,16 @@ describe('useViewportController', () => {
             vi.advanceTimersByTime(149);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(100);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 0, y: 0 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(100);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 0, y: 0 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
 
         act(() => {
             vi.advanceTimersByTime(1);
         });
 
-        expect(store.getState().param.svgViewBoxZoom).toBe(60);
-        expect(store.getState().param.svgViewBoxMin).toEqual({ x: 40, y: 50 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(60);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 40, y: 50 });
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 

@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MAP_COMMON_ZOOM, MAP_TILE_SIZE, MAP_ZOOMED_SWITCH_THRESHOLD, worldPixelToGraph } from './map-config';
+import {
+    MAP_COMMON_ZOOM,
+    MAP_RASTER_TILE_SIZE,
+    MAP_TILE_SIZE,
+    MAP_ZOOMED_SWITCH_THRESHOLD,
+    worldPixelToGraph,
+} from './map-config';
 import {
     getMapOptimizationProgress,
     MapTileController,
@@ -75,6 +81,7 @@ const createSvgRoot = () => {
 const createMapSourceFixture = (options?: {
     exportOnlyOverviewX?: number;
     beforeResponse?: (url: string) => void | Promise<void>;
+    failBundleAttempts?: number;
 }) => {
     const overviewXs = [
         OVERVIEW_TILE.x,
@@ -155,6 +162,7 @@ const createMapSourceFixture = (options?: {
             bundle(ZOOMED_TILE.zoom, ZOOMED_TILE.x, ZOOMED_TILE.y),
         ],
     ]);
+    let bundleAttempts = 0;
     const fetcherMock = vi.fn(async (input: URL | RequestInfo, _init?: RequestInit) => {
         const requestUrl = new URL(input instanceof URL ? input.href : String(input));
         requestUrl.searchParams.delete('rmp-source-epoch');
@@ -162,6 +170,9 @@ const createMapSourceFixture = (options?: {
         const body = responses.get(url);
         if (body === undefined) return new Response(null, { status: 404 });
         await options?.beforeResponse?.(url);
+        if (url.includes('/bundles/') && ++bundleAttempts <= (options?.failBundleAttempts ?? 0)) {
+            return new Response(null, { status: 503 });
+        }
         return new Response(body, { status: 200 });
     });
     return {
@@ -172,6 +183,7 @@ const createMapSourceFixture = (options?: {
 
 describe('MapTileController', () => {
     afterEach(() => {
+        vi.useRealTimers();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
     });
@@ -224,6 +236,9 @@ describe('MapTileController', () => {
         const overviewTile = root.querySelector<SVGSVGElement>('[data-tile-key="8/214/104"]')!;
         expect(overviewTile.classList.contains('rmp-map-tile')).toBe(true);
         expect(overviewTile.dataset.level).toBe('overview');
+        expect(overviewTile.getAttribute('viewBox')).toBe(
+            `${overview.x * MAP_TILE_SIZE} ${overview.y * MAP_TILE_SIZE} 256 256`
+        );
         const attribution = root.querySelector<SVGGElement>('[data-map-attribution]')!;
         expect(attribution.querySelector('[data-map-attribution-text]')?.textContent).toBe(
             '© OpenStreetMap contributors'
@@ -267,6 +282,37 @@ describe('MapTileController', () => {
         expect(loading.at(-1)).toEqual([false, undefined]);
         controller.dispose();
         expect((fetcherMock.mock.calls[0][1] as RequestInit).signal?.aborted).toBe(true);
+        svg.remove();
+    });
+
+    it('retries failed bundle requests before completing the visible tile', async () => {
+        vi.useFakeTimers();
+        stubAnimationFrame();
+        const { fetcher, fetcherMock } = createMapSourceFixture({ failBundleAttempts: 2 });
+        const loading: Array<[boolean, MapLoadingProgress | undefined]> = [];
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            baseUrl: BASE_URL,
+            getViewportSize: () => ({ width: 100, height: 100 }),
+            onLoadingChange: (value, progress) => loading.push([value, progress]),
+            fetch: fetcher,
+            rasterEnabled: false,
+        });
+        const viewport = makeOverviewViewport(100, 100);
+        controller.updateViewport(viewport);
+        const initialization = controller.initialize();
+        await vi.runAllTimersAsync();
+        await initialization;
+        await vi.runAllTimersAsync();
+
+        expect(fetcherMock.mock.calls.filter(([input]) => String(input).includes('/bundles/overview/'))).toHaveLength(
+            3
+        );
+        expect(root.querySelector(`[data-tile-key="8/${OVERVIEW_TILE.x}/${OVERVIEW_TILE.y}"]`)).not.toBeNull();
+        expect(loading).toContainEqual([true, { completed: 0, total: 1 }]);
+        expect(loading.at(-1)).toEqual([false, undefined]);
+        controller.dispose();
         svg.remove();
     });
 
@@ -324,6 +370,7 @@ describe('MapTileController', () => {
             styleCss,
             rasterCache,
             rasterizer,
+            rasterizeOverview: true,
             rasterIdleDelayMs: 0,
             now: () => 1_000,
         });
@@ -340,14 +387,14 @@ describe('MapTileController', () => {
         const rasterRoot = rasterDocument.documentElement;
         const serializedTile = rasterRoot.querySelector<SVGSVGElement>('.rmp-map-tile');
         expect(rasterRoot.hasAttribute('data-map-layer')).toBe(true);
-        expect(rasterRoot.getAttribute('width')).toBe('4096');
-        expect(rasterRoot.getAttribute('height')).toBe('4096');
+        expect(rasterRoot.getAttribute('width')).toBe(String(MAP_RASTER_TILE_SIZE));
+        expect(rasterRoot.getAttribute('height')).toBe(String(MAP_RASTER_TILE_SIZE));
         expect(serializedTile?.parentElement).toBe(rasterRoot);
-        expect(serializedTile?.getAttribute('width')).toBe('4096');
-        expect(serializedTile?.getAttribute('height')).toBe('4096');
+        expect(serializedTile?.getAttribute('width')).toBe(String(MAP_RASTER_TILE_SIZE));
+        expect(serializedTile?.getAttribute('height')).toBe(String(MAP_RASTER_TILE_SIZE));
         expect(rasterRoot.querySelector('style')?.textContent).toBe(styleCss);
         expect(rasterDocument.querySelector('[data-map-layer] .rmp-map-tile .road')).not.toBeNull();
-        expect(rasterizer.render.mock.calls[0][1]).toBe(4096);
+        expect(rasterizer.render.mock.calls[0][1]).toBe(MAP_RASTER_TILE_SIZE);
 
         await vi.waitFor(() => expect(root.querySelector('[data-map-raster]')).not.toBeNull());
         expect(getMapOptimizationProgress(root)).toEqual({ optimized: 0, total: 1 });
@@ -508,6 +555,7 @@ describe('MapTileController', () => {
             fetch: fetcher,
             rasterCache,
             rasterizer,
+            rasterizeOverview: true,
             rasterIdleDelayMs: 0,
             now: () => 1_000,
         });

@@ -11,10 +11,12 @@ const mockStore = createStore({
         ...realStore.runtime,
         globalAlerts: {
             info: {
+                status: 'info',
                 message: 'Test info message',
                 url: 'https://example.com',
             },
             warning: {
+                status: 'warning',
                 message: 'Test warning message',
             },
         },

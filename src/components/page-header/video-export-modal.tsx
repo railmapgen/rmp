@@ -25,6 +25,8 @@ import {
     SliderTrack,
     Spinner,
     Text,
+    Tooltip,
+    VStack,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
@@ -39,9 +41,12 @@ import {
     MdPlayArrow,
     MdPlayCircleOutline,
     MdSkipNext,
+    MdPlaylistPlay,
     MdSkipPrevious,
 } from 'react-icons/md';
 import { Events } from '../../constants/constants';
+import { calculateCanvasSize } from '../../util/helpers';
+import { renderMapLayerForExport } from '../../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadBlobAs } from '../../util/download';
@@ -59,6 +64,32 @@ interface VideoExportModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
+
+const PREVIEW_PERSIST_KEY = 'video_preview_frame';
+const PREVIEW_PERSIST_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7天过期
+
+const getPersistedFrame = (): number | null => {
+    try {
+        const raw = localStorage.getItem(PREVIEW_PERSIST_KEY);
+        if (!raw) return null;
+        const { frame, ts } = JSON.parse(raw);
+        if (Date.now() - ts > PREVIEW_PERSIST_TTL_MS) {
+            localStorage.removeItem(PREVIEW_PERSIST_KEY);
+            return null;
+        }
+        return typeof frame === 'number' ? frame : null;
+    } catch {
+        return null;
+    }
+};
+
+const savePersistedFrame = (frame: number) => {
+    try {
+        localStorage.setItem(PREVIEW_PERSIST_KEY, JSON.stringify({ frame, ts: Date.now() }));
+    } catch {
+        // localStorage 不可用时静默忽略，不影响功能
+    }
+};
 
 const formatTime = (seconds: number): string => {
     const s = Math.max(0, Math.round(seconds));
@@ -88,6 +119,21 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     } = useRootSelector(state => state.timeline);
 
     const graph = React.useRef(window.graph);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const getMapLayerMarkup = React.useCallback(async () => {
+        if (!mapEnabled) return undefined;
+        const canvas = document.querySelector<SVGSVGElement>('#canvas');
+        const sourceMapLayer = canvas?.querySelector<SVGGElement>('[data-map-layer]');
+        if (!canvas || !sourceMapLayer) return undefined;
+
+        const bounds = calculateCanvasSize(graph.current);
+        const exportMapLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        exportMapLayer.setAttribute('data-map-layer', '');
+        await renderMapLayerForExport(sourceMapLayer, exportMapLayer, bounds);
+
+        const mapStyle = canvas.querySelector<SVGStyleElement>('style[data-map-style]');
+        return `${mapStyle?.outerHTML ?? ''}${exportMapLayer.outerHTML}`;
+    }, [mapEnabled]);
 
     const scales = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
     const scaleOptions: { [k: number]: string } = Object.fromEntries(scales.map(v => [v, `${v}%`]));
@@ -102,7 +148,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
     // Abort controller for the in-flight video export, so cancelling truly stops it.
     const abortControllerRef = React.useRef<AbortController | null>(null);
-    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
 
@@ -114,6 +159,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isPreviewPlaying, setIsPreviewPlaying] = React.useState(false);
     const [showPreviewControls, setShowPreviewControls] = React.useState(true);
     const [isPreviewFullscreen, setIsPreviewFullscreen] = React.useState(false);
+    const [isActionSelectorOpen, setIsActionSelectorOpen] = React.useState(false);
     const previewRef = React.useRef<VideoPreview | null>(null);
     const previewFrameRef = React.useRef(0);
     const previewPlayRef = React.useRef(false);
@@ -123,6 +169,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const previewSeekDraggingRef = React.useRef(false);
     // 预览画布舞台（用于全屏）
     const previewStageRef = React.useRef<HTMLDivElement | null>(null);
+    const previewFrameContainerRef = React.useRef<HTMLDivElement | null>(null);
     React.useEffect(() => {
         const handleFullscreenChange = () => {
             const fullscreen = document.fullscreenElement === previewStageRef.current;
@@ -132,32 +179,19 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
-    // 预览帧 SVG 的 HTML 字符串（由 React 渲染，避免 ref 直接操作 DOM 与虚拟 DOM 冲突）
-    const [previewSvgHtml, setPreviewSvgHtml] = React.useState('');
     // 渲染队列：并发请求合并，只渲染最新的目标帧，避免拖拽时并发渲染互相污染状态。
     // showLoading 标记本次队列是否需要展示加载状态（拖动/跳转时展示，播放时静默）
-    const previewQueueRef = React.useRef<{ running: boolean; next: number | null; showLoading: boolean }>({
+    const previewQueueRef = React.useRef<{
+        running: boolean;
+        next: number | null;
+        showLoading: boolean;
+        snapCameraToTarget: boolean;
+    }>({
         running: false,
         next: null,
         showLoading: false,
+        snapCameraToTarget: false,
     });
-
-    // #region debug-point A:preview-queue
-    const reportPreviewDebug = React.useCallback((hypothesisId: string, msg: string, data: Record<string, unknown>) => {
-        fetch('http://127.0.0.1:7777/event', {
-            method: 'POST',
-            body: JSON.stringify({
-                sessionId: 'preview-drag-freeze',
-                runId: 'pre-fix',
-                hypothesisId,
-                location: 'video-export-modal.tsx:preview-queue',
-                msg: `[DEBUG] ${msg}`,
-                data,
-                ts: Date.now(),
-            }),
-        }).catch(() => undefined);
-    }, []);
-    // #endregion
 
     // Auto-calculate video duration from action rows.
     // Uses each phase's effective durationWeight (which already includes the
@@ -223,7 +257,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 scale,
                 isSystemFontsOnly,
                 quality: videoQuality,
-                hideWatermark: isAttachSelected,
                 // Pass timeline data for animated video
                 timelineDiffs,
                 actionRows,
@@ -231,6 +264,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 lineGroups: groups,
                 // Pass existsNodeTypes for makeRenderReadySVGElement
                 existsNodeTypes,
+                mapLayerMarkup: await getMapLayerMarkup(),
                 signal: abortController.signal,
             };
 
@@ -274,38 +308,33 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         setIsPreviewPlaying(false);
     };
 
-    const renderPreviewFrame = async (frame: number) => {
+    const renderPreviewFrame = async (frame: number, snapCameraToTarget: boolean) => {
         const renderer = previewRef.current;
         if (!renderer) return;
-        const startedAt = performance.now();
-        reportPreviewDebug('B', 'render-start', { frame, running: previewQueueRef.current.running });
         try {
-            const svg = await renderer.renderFrame(frame);
-            // 序列化为 HTML 字符串交给 React 渲染（dangerouslySetInnerHTML），
-            // 避免用 ref 直接操作 DOM 与 React 的虚拟 DOM 冲突（卸载时 removeChild 报 NotFoundError）
+            const svg = await renderer.renderFrame(frame, snapCameraToTarget);
             svg.style.display = 'block';
             svg.style.width = '100%';
             svg.style.height = '100%';
-            setPreviewSvgHtml(svg.outerHTML);
-            svg.remove();
+            const container = previewFrameContainerRef.current;
+            if (!container) {
+                svg.remove();
+                return;
+            }
+            container.replaceChildren(svg);
             previewFrameRef.current = frame;
             setPreviewFrameIndex(frame);
-            reportPreviewDebug('B', 'render-success', { frame, durationMs: Math.round(performance.now() - startedAt) });
         } catch (error) {
-            reportPreviewDebug('D', 'render-error', {
-                frame,
-                durationMs: Math.round(performance.now() - startedAt),
-                error: String(error),
-            });
             console.error('Preview frame render failed:', error);
         }
     };
 
     // 合并式渲染队列：拖拽时只渲染最新的目标帧，避免并发渲染互相污染镜头状态。
     // showLoading=true（拖动/跳转）时，渲染期间展示转圈并禁用控件；播放时传 false 静默渲染
-    const enqueuePreview = (frame: number, showLoading: boolean) => {
+    const enqueuePreview = (frame: number, showLoading: boolean, snapCameraToTarget = false) => {
         const queue = previewQueueRef.current;
         queue.next = frame;
+        queue.snapCameraToTarget = snapCameraToTarget;
         if (showLoading) {
             queue.showLoading = true;
             // 立即置为加载中：即使队列已在运行（播放中/上次渲染未完），
@@ -317,9 +346,10 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         void (async () => {
             while (queue.next !== null) {
                 const target = queue.next;
+                const snapCameraToTarget = queue.snapCameraToTarget;
                 queue.next = null;
-                reportPreviewDebug('A', 'dequeue', { target, showLoading: queue.showLoading });
-                await renderPreviewFrame(target);
+                queue.snapCameraToTarget = false;
+                await renderPreviewFrame(target, snapCameraToTarget);
             }
             queue.running = false;
             if (queue.showLoading) {
@@ -334,17 +364,21 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         if (!renderer || previewPlayRef.current) return;
         previewPlayRef.current = true;
         setIsPreviewPlaying(true);
+        const frameIntervalMs = 1000 / videoFps;
+        const playbackStartedAt = performance.now() - previewFrameRef.current * frameIntervalMs;
         const loop = () => {
             if (!previewPlayRef.current) return;
-            if (previewFrameRef.current >= renderer.totalFrames - 1) {
+            const elapsedMs = performance.now() - playbackStartedAt;
+            const targetFrame = Math.min(renderer.totalFrames - 1, Math.floor(elapsedMs / frameIntervalMs));
+            if (targetFrame > previewFrameRef.current) {
+                enqueuePreview(targetFrame, false);
+            }
+            if (targetFrame >= renderer.totalFrames - 1) {
                 stopPreviewPlay();
                 return;
             }
-            const next = previewFrameRef.current + 1;
-            previewFrameRef.current = next;
-            setPreviewFrameIndex(next);
-            enqueuePreview(next, false);
-            previewPlayTimerRef.current = setTimeout(loop, 1000 / videoFps);
+            const nextFrameAt = (targetFrame + 1) * frameIntervalMs;
+            previewPlayTimerRef.current = setTimeout(loop, Math.max(0, nextFrameAt - elapsedMs));
         };
         loop();
     };
@@ -364,20 +398,23 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     isTransparent,
                     scale,
                     isSystemFontsOnly,
-                    hideWatermark: isAttachSelected,
                     actionRows,
                     timelineLines: lines,
                     lineGroups: groups,
                     existsNodeTypes,
+                    mapLayerMarkup: await getMapLayerMarkup(),
                 },
                 bgColor
             );
             previewRef.current?.dispose();
             previewRef.current = renderer;
             setPreviewTotalFrames(renderer.totalFrames);
-            previewFrameRef.current = 0;
-            setPreviewFrameIndex(0);
-            enqueuePreview(0, true);
+            // 恢复上次关闭时的帧位置，播放到末尾则重置到0
+            const savedFrame = getPersistedFrame();
+            const startFrame = savedFrame !== null && savedFrame < renderer.totalFrames ? savedFrame : 0;
+            previewFrameRef.current = startFrame;
+            setPreviewFrameIndex(startFrame);
+            enqueuePreview(startFrame, true);
         } catch (error) {
             console.error('Preview creation failed:', error);
             setIsPreviewOpen(false);
@@ -398,7 +435,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         previewSeekTargetRef.current = null;
         if (target === null) return;
         setIsPreviewRendering(true);
-        enqueuePreview(target, true);
+        enqueuePreview(target, true, true);
     };
 
     const seekToAdjacentAction = (direction: -1 | 1) => {
@@ -414,20 +451,33 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         previewFrameRef.current = target;
         setPreviewFrameIndex(target);
         setIsPreviewRendering(true);
-        enqueuePreview(target, true);
+        enqueuePreview(target, true, true);
+    };
+
+    const handleJumpToAction = (index: number) => {
+        const target = previewRef.current?.actionStartFrames[index];
+        if (target === undefined) return;
+        stopPreviewPlay();
+        previewFrameRef.current = target;
+        setPreviewFrameIndex(target);
+        setIsPreviewRendering(true);
+        enqueuePreview(target, true, true);
+        setIsActionSelectorOpen(false);
     };
 
     const handleClosePreview = () => {
         // 渲染加载中禁用关闭，避免在帧渲染进行中销毁渲染器导致未捕获错误
         if (isPreviewRendering) return;
         stopPreviewPlay();
+        savePersistedFrame(previewFrameRef.current);
         previewRef.current?.dispose();
         previewRef.current = null;
         if (document.fullscreenElement === previewStageRef.current) void document.exitFullscreen();
         setIsPreviewFullscreen(false);
+        setIsActionSelectorOpen(false);
         setIsPreviewOpen(false);
         setIsPreviewRendering(false);
-        setPreviewSvgHtml('');
+        previewFrameContainerRef.current?.replaceChildren();
     };
 
     // 预览画布全屏切换
@@ -527,41 +577,29 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
                         <RmgFields fields={videoFields} />
                         <br />
-                        <Checkbox
-                            isChecked={isSystemFontsOnly}
-                            isDisabled={isVideoGenerating}
-                            onChange={e => setIsSystemFontsOnly(e.target.checked)}
-                        >
-                            <Text>{t('header.download.isSystemFontsOnly')}</Text>
-                        </Checkbox>
-                        <Checkbox
-                            id="share_info_video"
-                            isChecked={isAttachSelected}
-                            isDisabled={isVideoGenerating}
-                            onChange={e => setIsAttachSelected(e.target.checked)}
-                        >
-                            <Text>
-                                {t('header.download.videoExport.shareInfo1')}
-                                <Link color="teal.500" href="https://railmapgen.org/rmp">
-                                    {t('header.about.rmp')} <Icon as={MdOpenInNew} />
-                                </Link>
-                                {t('header.download.videoExport.shareInfo2')}
-                            </Text>
-                        </Checkbox>
-                        <Checkbox
-                            id="agree_terms_video"
-                            isChecked={isTermsAndConditionsSelected}
-                            isDisabled={isVideoGenerating}
-                            onChange={e => setIsTermsAndConditionsSelected(e.target.checked)}
-                        >
-                            <Text>
-                                {t('header.download.termsAndConditionsInfo')}
-                                <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
-                                    {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
-                                </Link>
-                                {t('header.download.period')}
-                            </Text>
-                        </Checkbox>
+                        <VStack align="start" spacing={2}>
+                            <Checkbox
+                                isChecked={isSystemFontsOnly}
+                                isDisabled={isVideoGenerating}
+                                onChange={e => setIsSystemFontsOnly(e.target.checked)}
+                            >
+                                <Text>{t('header.download.isSystemFontsOnly')}</Text>
+                            </Checkbox>
+                            <Checkbox
+                                id="agree_terms_video"
+                                isChecked={isTermsAndConditionsSelected}
+                                isDisabled={isVideoGenerating}
+                                onChange={e => setIsTermsAndConditionsSelected(e.target.checked)}
+                            >
+                                <Text>
+                                    {t('header.download.termsAndConditionsInfo')}
+                                    <Link color="teal.500" onClick={() => setIsTermsAndConditionsModalOpen(true)}>
+                                        {t('header.download.termsAndConditions')} <Icon as={MdOpenInNew} />
+                                    </Link>
+                                    {t('header.download.period')}
+                                </Text>
+                            </Checkbox>
+                        </VStack>
 
                         {isVideoGenerating && (
                             <Alert status="info" mt="4">
@@ -646,12 +684,13 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             bg={bgColor}
                         >
                             <Box
-                                className="preview-frame"
+                                ref={previewFrameContainerRef}
+                                position="absolute"
+                                inset={0}
                                 width="100%"
                                 height="100%"
                                 pointerEvents="none"
                                 sx={{ '& > svg': { display: 'block', width: '100%', height: '100%' } }}
-                                dangerouslySetInnerHTML={{ __html: previewSvgHtml }}
                             />
                             {/* 加载中（首帧未就绪或拖动跳转渲染中）显示转圈，渲染完成后自动消失 */}
                             {isPreviewRendering && !previewSeekDraggingRef.current && (
@@ -682,20 +721,33 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                                     onPointerDown={event => event.stopPropagation()}
                                     onClick={event => event.stopPropagation()}
                                 >
-                                    <IconButton
-                                        aria-label="后退到上一个动作"
-                                        icon={<Icon as={MdSkipPrevious} />}
-                                        size="sm"
-                                        isDisabled={isPreviewRendering}
-                                        onClick={() => seekToAdjacentAction(-1)}
-                                    />
-                                    <IconButton
-                                        aria-label="前进到下一个动作"
-                                        icon={<Icon as={MdSkipNext} />}
-                                        size="sm"
-                                        isDisabled={isPreviewRendering}
-                                        onClick={() => seekToAdjacentAction(1)}
-                                    />
+                                    <Tooltip label={t('header.download.videoExport.previousAction')} hasArrow>
+                                        <IconButton
+                                            aria-label={t('header.download.videoExport.previousAction')}
+                                            icon={<Icon as={MdSkipPrevious} />}
+                                            size="sm"
+                                            isDisabled={isPreviewRendering}
+                                            onClick={() => seekToAdjacentAction(-1)}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip label={t('header.download.videoExport.nextAction')} hasArrow>
+                                        <IconButton
+                                            aria-label={t('header.download.videoExport.nextAction')}
+                                            icon={<Icon as={MdSkipNext} />}
+                                            size="sm"
+                                            isDisabled={isPreviewRendering}
+                                            onClick={() => seekToAdjacentAction(1)}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip label={t('header.download.videoExport.jumpToAction')} hasArrow>
+                                        <IconButton
+                                            aria-label={t('header.download.videoExport.jumpToAction')}
+                                            icon={<Icon as={MdPlaylistPlay} />}
+                                            size="sm"
+                                            isDisabled={isPreviewRendering}
+                                            onClick={() => setIsActionSelectorOpen(true)}
+                                        />
+                                    </Tooltip>
                                     <IconButton
                                         aria-label={
                                             isPreviewPlaying
@@ -745,20 +797,33 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                         </Box>
                         {!isPreviewFullscreen && (
                             <HStack mt={4} spacing={3} bg="white" p={2} borderRadius="md">
-                                <IconButton
-                                    aria-label="后退到上一个动作"
-                                    icon={<Icon as={MdSkipPrevious} />}
-                                    size="sm"
-                                    isDisabled={isPreviewRendering}
-                                    onClick={() => seekToAdjacentAction(-1)}
-                                />
-                                <IconButton
-                                    aria-label="前进到下一个动作"
-                                    icon={<Icon as={MdSkipNext} />}
-                                    size="sm"
-                                    isDisabled={isPreviewRendering}
-                                    onClick={() => seekToAdjacentAction(1)}
-                                />
+                                <Tooltip label={t('header.download.videoExport.previousAction')} hasArrow>
+                                    <IconButton
+                                        aria-label={t('header.download.videoExport.previousAction')}
+                                        icon={<Icon as={MdSkipPrevious} />}
+                                        size="sm"
+                                        isDisabled={isPreviewRendering}
+                                        onClick={() => seekToAdjacentAction(-1)}
+                                    />
+                                </Tooltip>
+                                <Tooltip label={t('header.download.videoExport.nextAction')} hasArrow>
+                                    <IconButton
+                                        aria-label={t('header.download.videoExport.nextAction')}
+                                        icon={<Icon as={MdSkipNext} />}
+                                        size="sm"
+                                        isDisabled={isPreviewRendering}
+                                        onClick={() => seekToAdjacentAction(1)}
+                                    />
+                                </Tooltip>
+                                <Tooltip label={t('header.download.videoExport.jumpToAction')} hasArrow>
+                                    <IconButton
+                                        aria-label={t('header.download.videoExport.jumpToAction')}
+                                        icon={<Icon as={MdPlaylistPlay} />}
+                                        size="sm"
+                                        isDisabled={isPreviewRendering}
+                                        onClick={() => setIsActionSelectorOpen(true)}
+                                    />
+                                </Tooltip>
                                 <IconButton
                                     aria-label={
                                         isPreviewPlaying
@@ -847,6 +912,49 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             </Button>
                         </HStack>
                     </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            <Modal
+                isOpen={isActionSelectorOpen}
+                onClose={() => setIsActionSelectorOpen(false)}
+                size="md"
+                scrollBehavior="inside"
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.download.videoExport.jumpToAction')}</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack align="stretch" spacing={2}>
+                            {actionRows.map((action, index) => (
+                                <Button
+                                    key={action.id}
+                                    justifyContent="flex-start"
+                                    variant="outline"
+                                    isDisabled={isPreviewRendering}
+                                    onClick={() => handleJumpToAction(index)}
+                                >
+                                    {action.actionType === 'focus' || action.actionType === 'overview'
+                                        ? t('header.download.videoExport.actionOptionType', {
+                                              index: index + 1,
+                                              type: t(`timeline.action.${action.actionType}`),
+                                          })
+                                        : action.actionType === 'wait'
+                                          ? t('header.download.videoExport.actionOptionWait', {
+                                                index: index + 1,
+                                                type: t(`timeline.action.${action.actionType}`),
+                                                duration: action.actionDuration ?? 2,
+                                            })
+                                          : t('header.download.videoExport.actionOption', {
+                                                index: index + 1,
+                                                type: t(`timeline.action.${action.actionType}`),
+                                                remark: action.remark || t('header.download.videoExport.noRemark'),
+                                            })}
+                                </Button>
+                            ))}
+                        </VStack>
+                    </ModalBody>
                 </ModalContent>
             </Modal>
 
