@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MAP_COMMON_ZOOM, MAP_TILE_SIZE, MAP_ZOOMED_SWITCH_THRESHOLD, worldPixelToGraph } from './map-config';
+import type { MapSourceSession } from './map-raster-cache';
 import { decodeMapRouting } from './map-routing';
 import {
     getMapOptimizationProgress,
@@ -298,6 +299,7 @@ const createRegionalMapSourceFixture = (options?: {
 
 describe('MapTileController', () => {
     afterEach(() => {
+        vi.useRealTimers();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
     });
@@ -351,6 +353,92 @@ describe('MapTileController', () => {
             expect(root.querySelector(`[data-tile-key="13/${japanZoomed.x}/${japanZoomed.y}"]`)).not.toBeNull();
         });
         expect(root.querySelector('[data-tile-key^="8/"]')).toBeNull();
+
+        controller.dispose();
+        svg.remove();
+    });
+
+    it('keeps loaded regional sessions available for raster optimization until restart', async () => {
+        vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+        stubAnimationFrame();
+        const NativeUrl = URL;
+        class TestUrl extends NativeUrl {}
+        let objectUrlId = 0;
+        TestUrl.createObjectURL = vi.fn(() => `blob:map-raster-${++objectUrlId}`);
+        TestUrl.revokeObjectURL = vi.fn();
+        vi.stubGlobal('URL', TestUrl);
+
+        let now = 1_000;
+        const { chinaOverview, fetcher, japanOverview, routing } = createRegionalMapSourceFixture();
+        const sessions = new Map<string, MapSourceSession>([
+            [
+                `${BASE_URL}manifest.json`,
+                {
+                    sourceKey: `${BASE_URL}manifest.json`,
+                    epoch: 'china-epoch',
+                    expiresAt: 11_000,
+                    refreshSource: false,
+                },
+            ],
+            [
+                `${JAPAN_BASE_URL}manifest.json`,
+                {
+                    sourceKey: `${JAPAN_BASE_URL}manifest.json`,
+                    epoch: 'japan-epoch',
+                    expiresAt: 21_000,
+                    refreshSource: false,
+                },
+            ],
+        ]);
+        const rasterCache = {
+            getSourceSession: vi.fn(async (sourceKey: string) => sessions.get(sourceKey)!),
+            confirmSourceSession: vi.fn(async (session: MapSourceSession) => session),
+            getRaster: vi.fn(async () => undefined),
+            putRaster: vi.fn(async () => undefined),
+        };
+        const rasterizer = {
+            render: vi.fn(async () => new Blob(['raster'], { type: 'image/webp' })),
+            dispose: vi.fn(),
+        };
+        vi.spyOn(console, 'info').mockImplementation(() => undefined);
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 3_000, height: 1_000 }),
+            fetch: fetcher,
+            rasterCache,
+            rasterizer,
+            rasterIdleDelayMs: 0,
+            now: () => now,
+        });
+        const viewport = { x: -4_000, y: -5_500, zoom: 800 };
+        controller.updateViewport(viewport);
+        await controller.initialize();
+
+        await vi.waitFor(() => expect(root.querySelectorAll('[data-map-raster]')).toHaveLength(2));
+        for (const raster of root.querySelectorAll<SVGImageElement>('[data-map-raster]')) {
+            raster.dispatchEvent(new Event('load'));
+        }
+
+        now = 11_000;
+        await vi.advanceTimersByTimeAsync(10_000);
+
+        expect(root.querySelectorAll('[data-map-raster]')).toHaveLength(2);
+        expect(
+            root.querySelector(`[data-map-raster][data-tile-key="8/${chinaOverview.x}/${chinaOverview.y}"]`)
+        ).not.toBeNull();
+        expect(
+            root.querySelector(`[data-map-raster][data-tile-key="8/${japanOverview.x}/${japanOverview.y}"]`)
+        ).not.toBeNull();
+
+        controller.updateViewport({ ...viewport, x: 1_000_000, y: 1_000_000 });
+        await vi.waitFor(() => expect(root.querySelector('.rmp-map-tile')).toBeNull());
+        controller.updateViewport(viewport);
+
+        await vi.waitFor(() => expect(rasterizer.render).toHaveBeenCalledTimes(4));
+        await vi.waitFor(() => expect(root.querySelectorAll('[data-map-raster]')).toHaveLength(2));
+        expect(rasterCache.getSourceSession).toHaveBeenCalledTimes(2);
 
         controller.dispose();
         svg.remove();

@@ -290,7 +290,6 @@ export class MapTileController {
     private mountFrame: number | undefined;
     private mountQueue: MountQueueEntry[] = [];
     private rasterTimer: ReturnType<typeof setTimeout> | undefined;
-    private sourceExpiryTimer: ReturnType<typeof setTimeout> | undefined;
     private styleCss: string;
     private styleKey: string;
     private rasterEnabled: boolean;
@@ -476,11 +475,9 @@ export class MapTileController {
         if (this.renderFrame !== undefined) cancelAnimationFrame(this.renderFrame);
         if (this.mountFrame !== undefined) cancelAnimationFrame(this.mountFrame);
         if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
-        if (this.sourceExpiryTimer !== undefined) clearTimeout(this.sourceExpiryTimer);
         this.renderFrame = undefined;
         this.mountFrame = undefined;
         this.rasterTimer = undefined;
-        this.sourceExpiryTimer = undefined;
         this.mountQueue = [];
         this.clearMountedTiles();
         this.pending.clear();
@@ -516,7 +513,6 @@ export class MapTileController {
                 this.sources.set(source.ownerId, result);
                 this.sourceAttributions.add(normalizeMapAttribution(result.attribution));
                 setMapAttributionText(this.attribution, [...this.sourceAttributions].sort().join(' · '));
-                this.scheduleSourceExpiryCheck();
                 return result;
             })
             .catch(error => {
@@ -1166,7 +1162,6 @@ export class MapTileController {
     }
 
     private canContinueRasterWork(revision: number) {
-        const now = this.now();
         if (
             this.disposed ||
             !this.rasterEnabled ||
@@ -1176,10 +1171,7 @@ export class MapTileController {
         ) {
             return false;
         }
-        for (const request of this.desired.values()) {
-            if (request.source.session.expiresAt <= now) return false;
-        }
-        return now - this.lastActivityAt >= this.rasterIdleDelayMs;
+        return this.now() - this.lastActivityAt >= this.rasterIdleDelayMs;
     }
 
     private canUseRasterResult(mounted: MountedTile, revision: number) {
@@ -1284,26 +1276,6 @@ export class MapTileController {
         mounted.rasterUrl = undefined;
         mounted.rasterReady = false;
         mounted.svg.style.removeProperty('display');
-    }
-
-    private scheduleSourceExpiryCheck() {
-        if (this.sourceExpiryTimer !== undefined) clearTimeout(this.sourceExpiryTimer);
-        this.sourceExpiryTimer = undefined;
-        if (this.sources.size === 0 || this.disposed) return;
-        const nextExpiry = Math.min(...[...this.sources.values()].map(source => source.session.expiresAt));
-        const remaining = nextExpiry - this.now();
-        if (remaining <= 0) {
-            this.rasterRevision += 1;
-            this.rasterRequests.clear();
-            this.showAllSvgTiles();
-            if (this.rasterTimer !== undefined) clearTimeout(this.rasterTimer);
-            this.rasterTimer = undefined;
-            return;
-        }
-        this.sourceExpiryTimer = setTimeout(
-            () => this.scheduleSourceExpiryCheck(),
-            Math.min(remaining, 24 * 60 * 60 * 1000)
-        );
     }
 
     /** Cache hits stay silent; only newly rendered tiles produce diagnostic progress. */

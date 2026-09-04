@@ -36,6 +36,22 @@ describe('MapRasterCache', () => {
         expect(retry.epoch).not.toBe(next.epoch);
     });
 
+    it('rolls regional source epochs independently when each source is loaded', async () => {
+        const cache = makeCache();
+        const china = await cache.getSourceSession('https://cn.tiles.example/manifest.json', 1_000);
+        const japan = await cache.getSourceSession('https://jp.tiles.example/manifest.json', 2_000);
+        await cache.confirmSourceSession(china);
+        await cache.confirmSourceSession(japan);
+
+        const chinaNext = await cache.getSourceSession(china.sourceKey, china.expiresAt);
+        const japanCurrent = await cache.getSourceSession(japan.sourceKey, china.expiresAt);
+
+        expect(chinaNext.refreshSource).toBe(true);
+        expect(chinaNext.epoch).not.toBe(china.epoch);
+        expect(japanCurrent.refreshSource).toBe(false);
+        expect(japanCurrent.epoch).toBe(japan.epoch);
+    });
+
     it('only returns rasters for the exact source epoch and style', async () => {
         const cache = makeCache();
         const session = await cache.getSourceSession('https://tiles.example/', 1_000);
