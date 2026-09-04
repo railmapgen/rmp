@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/fmetro';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -417,6 +418,7 @@ const foshanMetroBasicStationIcon = (
 
 const foshanMetroBasicStation: Station<FoshanMetroBasicStationAttributes> = {
     component: FoshanMetroBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: foshanMetroBasicStationIcon,
     defaultAttrs: defaultFoshanMetroBasicStationAttributes,
     attrsComponent: foshanMetroBasicStationAttrsComponents,

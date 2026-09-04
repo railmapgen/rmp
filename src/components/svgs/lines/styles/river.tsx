@@ -70,11 +70,13 @@ const river: LineStyle<RiverAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.river.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

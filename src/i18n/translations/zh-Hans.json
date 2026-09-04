@@ -472,6 +472,7 @@
                     "terminal": "终点站",
                     "terminalNameRotate": "终点站名旋转",
                     "shareTracks": "轨道共享",
+                    "noTrackShare": "无轨道共享",
                     "shareTracksIndex": "轨道共享索引"
                 },
                 "londonTubeInt": {
@@ -597,6 +598,36 @@
                 },
                 "rayGuided": {
                     "displayName": "任意角度线段"
+                },
+                "bezier": {
+                    "displayName": "贝塞尔曲线",
+                    "along": "沿线位置",
+                    "normal": "法向偏移",
+                    "sourceOffset": "起点偏移",
+                    "targetOffset": "终点偏移",
+                    "linkedOffset": "联动的端点偏移",
+                    "sourceOffsetX": "起点 X 偏移",
+                    "sourceOffsetY": "起点 Y 偏移",
+                    "targetOffsetX": "终点 X 偏移",
+                    "targetOffsetY": "终点 Y 偏移"
+                },
+                "freeform": {
+                    "displayName": "自由绘制线段",
+                    "outlineSettingsUnavailable": "可变宽度和两端端头设置暂未开放。",
+                    "controlPointHint": "拖动蓝色控制点可调整线路走向；双击线路可在对应位置添加控制点，右击蓝色控制点可将其删除。",
+                    "widthStops": "宽度点",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "位置 (%)",
+                    "widthStopWidth": "宽度 (px)",
+                    "baseWidthHint": "5px 是线段基准宽度",
+                    "smoothing": "平滑度",
+                    "startCap": "起点端帽",
+                    "endCap": "终点端帽",
+                    "round": "圆形",
+                    "flat": "平直",
+                    "arrow": "箭头",
+                    "arrowLength": "箭头长度",
+                    "arrowWidth": "箭头宽度"
                 },
                 "singleColor": {
                     "displayName": "纯色样式"
@@ -773,11 +804,17 @@
             "noPathFound": "所选颜色在这两站之间没有找到路径。",
             "pathAdded": "成功将 {{count}} 个元素添加进轨道。",
             "pathAlreadyAdded": "此路径中的所有元素都已存在于轨道中。",
+            "cursorBefore": "将新增内容插入第 {{position}} 项之前",
+            "cursorEnd": "将新增内容插入轨道末尾",
             "empty": "轨道还是空的。先在上方选择元素，再开始构建时间线。",
             "missingCoverage": "还有 {{nodeCount}} 个节点、{{edgeCount}} 条线段未加入时间线。",
             "highlightMissing": "高亮遗漏",
             "clearMissingHighlight": "取消高亮",
             "coverageComplete": "所有节点和线段都已加入时间线。"
+        },
+        "mapToggle": {
+            "show": "显示地理地图",
+            "hide": "隐藏地理地图"
         },
         "open": {
             "new": "新项目",
@@ -937,6 +974,7 @@
             },
             "preference": {
                 "title": "偏好",
+                "mapEnabled": "显示地理地图图层",
                 "keepLastPath": "在下一次操作中持续画线段直到点击背景",
                 "autoParallel": "自动将新线段设置为与现有线段平行",
                 "randomStationNames": {
@@ -957,6 +995,8 @@
                 "snapline": "磁性吸附到参考线",
                 "predictNextNode": "当选择一个节点时预测下一个节点",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "disableMapPerformanceOptimization": "禁用地图性能优化",
+                "mapPerformanceOptimizationProgress": "已优化：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "更改车站或线段类型时禁用警告"
             },
             "shortcuts": {
@@ -1072,8 +1112,8 @@
             "contactUs": "联系我们",
             "github": "项目仓库",
             "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
-            "slack": "Slack群组",
-            "slackContent": "在这些Slack频道中讨论!"
+            "zulip": "Zulip 社区",
+            "zulipContent": "加入我们的 Zulip 社区！"
         }
     },
 
@@ -1104,5 +1144,69 @@
         }
     },
 
-    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。"
+    "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
+    "map": {
+        "loading": "正在加载地图",
+        "loadError": "无法加载地图底图。",
+        "zoomInToEdit": "请放大地图以进行编辑。",
+        "style": {
+            "title": "地图样式",
+            "reset": "恢复默认",
+            "type": "类型",
+            "enabled": "显示",
+            "widthScale": "宽度倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "描边",
+                "color": "路面",
+                "path": "小径",
+                "local": "支路",
+                "collector": "次干路",
+                "arterial": "主干路"
+            },
+            "rails": {
+                "title": "铁路",
+                "metro": "地铁",
+                "national": "国铁"
+            },
+            "labels": {
+                "title": "标签",
+                "enabled": "显示全部标签",
+                "sizeScale": "字号倍率",
+                "color": "文字",
+                "strokeColor": "描边",
+                "groups": {
+                    "places": "地名",
+                    "roads": "道路",
+                    "buildings": "建筑",
+                    "areas": "区域",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地名",
+                    "place-medium": "中等地名",
+                    "place-minor": "次要地名",
+                    "road-arterial": "主干路",
+                    "road-collector": "次干路",
+                    "building": "建筑",
+                    "area-water": "水域",
+                    "area-park": "公园",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "农田",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅区",
+                    "area-commercial": "商业区",
+                    "area-industrial": "工业区",
+                    "area-education": "教育设施",
+                    "area-healthcare": "医疗设施",
+                    "transport-airport": "机场",
+                    "transport-rail": "国铁车站",
+                    "transport-metro": "地铁车站",
+                    "transport-platform": "站台",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    }
 }

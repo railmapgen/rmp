@@ -9,6 +9,8 @@ import {
     getTimelineCoverage,
     getTimelineElementCenter,
     getTimelineEntryTitle,
+    insertTimelineEntries,
+    insertTimelineEntry,
     moveTimelineEntry,
     normalizeTimelineDocument,
     removeTimelineEntry,
@@ -54,6 +56,20 @@ describe('timeline utilities', () => {
         expect(next.track).toHaveLength(1);
         expect(deduped.track).toHaveLength(1);
         expect(deduped.track[0].refId).toBe('stn_a');
+    });
+
+    it('insertTimelineEntry should insert at the requested cursor position', () => {
+        const initial = appendTimelineEntry(appendTimelineEntry({ version: 1, track: [] }, 'stn_a'), 'stn_c');
+        const next = insertTimelineEntry(initial, 'stn_b', 1);
+
+        expect(next.track.map(entry => entry.refId)).toEqual(['stn_a', 'stn_b', 'stn_c']);
+    });
+
+    it('insertTimelineEntries should preserve order and skip duplicate refs', () => {
+        const initial = appendTimelineEntry({ version: 1, track: [] }, 'stn_c');
+        const next = insertTimelineEntries(initial, ['stn_a', 'stn_b', 'stn_a', 'stn_c'], 0);
+
+        expect(next.track.map(entry => entry.refId)).toEqual(['stn_a', 'stn_b', 'stn_c']);
     });
 
     it('moveTimelineEntry should reorder clips', () => {

@@ -77,11 +77,13 @@ const londonLutonAirportDART: LineStyle<LondonLutonAirportDARTAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonLutonAirportDART.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

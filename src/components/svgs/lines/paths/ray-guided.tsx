@@ -247,7 +247,10 @@ const rayGuidedPath: LinePath<RayGuidedPathAttributes> = {
     icon: rayGuidedIcon,
     defaultAttrs: defaultRayGuidedPathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.rayGuided.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.rayGuided.displayName',
+        supportsReconcile: true,
+    },
     isPro: true,
 };
 

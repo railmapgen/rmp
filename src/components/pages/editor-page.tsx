@@ -5,14 +5,20 @@ const ToolsPanel = React.lazy(() => import('../panels/tools/tools'));
 const SvgWrapper = React.lazy(() => import('../svg-wrapper'));
 const DetailsPanel = React.lazy(() => import('../panels/details/details'));
 
-export default function EditorPage() {
+interface EditorPageProps {
+    isMapOverview: boolean;
+}
+
+export default function EditorPage({ isMapOverview }: EditorPageProps) {
     return (
         <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
             {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
             have the right parent container for its `position: 'absolute'` calculation. */}
-            <React.Suspense fallback={null}>
-                <ToolsPanel />
-            </React.Suspense>
+            {!isMapOverview && (
+                <React.Suspense fallback={null}>
+                    <ToolsPanel />
+                </React.Suspense>
+            )}
             <React.Suspense fallback={null}>
                 <SvgWrapper />
             </React.Suspense>

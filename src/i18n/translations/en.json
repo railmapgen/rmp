@@ -473,6 +473,7 @@
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
+                    "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
@@ -598,6 +599,36 @@
                 },
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
+                },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along position",
+                    "normal": "Normal offset",
+                    "sourceOffset": "Source offset",
+                    "targetOffset": "Target offset",
+                    "linkedOffset": "Linked endpoint offset",
+                    "sourceOffsetX": "Source X offset",
+                    "sourceOffsetY": "Source Y offset",
+                    "targetOffsetX": "Target X offset",
+                    "targetOffsetY": "Target Y offset"
+                },
+                "freeform": {
+                    "displayName": "Freeform path",
+                    "outlineSettingsUnavailable": "Variable width and start/end cap settings are not available yet.",
+                    "controlPointHint": "Drag a blue control point to adjust the path. Double-click the path to add a control point there, or right-click a blue control point to remove it.",
+                    "widthStops": "Width stops",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "Position (%)",
+                    "widthStopWidth": "Width (px)",
+                    "baseWidthHint": "5px is the baseline line width.",
+                    "smoothing": "Smoothing",
+                    "startCap": "Start cap",
+                    "endCap": "End cap",
+                    "round": "Round",
+                    "flat": "Flat",
+                    "arrow": "Arrow",
+                    "arrowLength": "Arrow length",
+                    "arrowWidth": "Arrow width"
                 },
                 "singleColor": {
                     "displayName": "Single color style"
@@ -774,11 +805,17 @@
             "noPathFound": "No path found between selected stations along this line.",
             "pathAdded": "Successfully added {{count}} elements to the track.",
             "pathAlreadyAdded": "All elements in this path are already added.",
+            "cursorBefore": "Insert new content before item {{position}}",
+            "cursorEnd": "Insert new content at the end of the track",
             "empty": "The track is empty. Select an element above to start building the timeline.",
             "missingCoverage": "Nodes not added: {{nodeCount}}; line segments not added: {{edgeCount}}.",
             "highlightMissing": "Highlight missing",
             "clearMissingHighlight": "Clear highlight",
             "coverageComplete": "All nodes and edges are added to the timeline."
+        },
+        "mapToggle": {
+            "show": "Show geographic map",
+            "hide": "Hide geographic map"
         },
         "open": {
             "new": "New project",
@@ -938,6 +975,7 @@
             },
             "preference": {
                 "title": "Preference",
+                "mapEnabled": "Show geographic map layer",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
@@ -958,6 +996,8 @@
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "disableMapPerformanceOptimization": "Disable map performance optimization",
+                "mapPerformanceOptimizationProgress": "Optimized: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {
@@ -1073,8 +1113,8 @@
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
-            "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "zulip": "Zulip community",
+            "zulipContent": "Join our community on Zulip!"
         }
     },
 
@@ -1105,5 +1145,69 @@
         }
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
+    "map": {
+        "loading": "Loading map",
+        "loadError": "Unable to load the map background.",
+        "zoomInToEdit": "Zoom in to edit the map.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "enabled": "Show",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": {
+                "title": "Railways",
+                "metro": "Metro",
+                "national": "National railway"
+            },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show all labels",
+                "sizeScale": "Size scale",
+                "color": "Text",
+                "strokeColor": "Outline",
+                "groups": {
+                    "places": "Places",
+                    "roads": "Roads",
+                    "buildings": "Buildings",
+                    "areas": "Areas",
+                    "transport": "Transport"
+                },
+                "categories": {
+                    "place-major": "Major places",
+                    "place-medium": "Medium places",
+                    "place-minor": "Minor places",
+                    "road-arterial": "Arterial roads",
+                    "road-collector": "Collector roads",
+                    "building": "Buildings",
+                    "area-water": "Water",
+                    "area-park": "Parks",
+                    "area-grass": "Grass",
+                    "area-forest": "Forests",
+                    "area-farmland": "Farmland",
+                    "area-cemetery": "Cemeteries",
+                    "area-residential": "Residential areas",
+                    "area-commercial": "Commercial areas",
+                    "area-industrial": "Industrial areas",
+                    "area-education": "Education",
+                    "area-healthcare": "Healthcare",
+                    "transport-airport": "Airports",
+                    "transport-rail": "Railway stations",
+                    "transport-metro": "Metro stations",
+                    "transport-platform": "Platforms",
+                    "transport-entrance": "Entrances"
+                }
+            }
+        }
+    }
 }

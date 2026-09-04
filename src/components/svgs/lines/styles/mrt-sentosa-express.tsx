@@ -47,11 +47,13 @@ const mrtSentosaExpress: LineStyle<MRTSentosaExpressAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.mrtSentosaExpress.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

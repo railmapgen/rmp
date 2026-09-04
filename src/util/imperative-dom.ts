@@ -9,17 +9,14 @@ type NodeTransformElementId = NodeId | `${NodeId}.pre` | `${NodeId}.post`;
 type LineElement = Element & { id: LineId; type: 'line'; line: LineRenderElement };
 
 /**
- * Directly updates the nodes' transform attribute to bypass React's render cycle.
+ * Directly offsets an element's SVG transform to bypass React's render cycle.
  * Used for high-frequency coordinate updates (e.g., dragging) where Virtual DOM
  * reconciliation would cause noticeable lag.
- * @param id The SVG group id to move: the main node layer, or its `.pre` / `.post` companion layer.
+ * @param el The rendered SVG element to move.
  * @param dx The horizontal offset to apply in SVG coordinates.
  * @param dy The vertical offset to apply in SVG coordinates.
  */
-const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-
+const offsetTransform = (el: globalThis.Element, dx: number, dy: number) => {
     const transform = el.getAttribute('transform') || '';
     const regex = /translate\(([-\d.]+)[,\s]+([-\d.]+)\)/;
     const match = transform.match(regex);
@@ -43,6 +40,11 @@ const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number)
     }
 };
 
+const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number) => {
+    const el = document.getElementById(id);
+    if (el) offsetTransform(el, dx, dy);
+};
+
 /**
  * Offsets every rendered SVG layer for a logical node so split station/node renderers stay visually aligned.
  * @param id The logical node id whose rendered layers should be moved together.
@@ -52,6 +54,9 @@ const offsetNodeTransform = (id: NodeTransformElementId, dx: number, dy: number)
 const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
     const layerIds: NodeTransformElementId[] = [id, `${id}.pre`, `${id}.post`];
     layerIds.forEach(layerId => offsetNodeTransform(layerId, dx, dy));
+    document.querySelectorAll('[data-node-overlay-id]').forEach(element => {
+        if (element.getAttribute('data-node-overlay-id') === id) offsetTransform(element, dx, dy);
+    });
 };
 
 /**
@@ -59,15 +64,15 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
  * Necessary for complex line styles where a single logical line may consist of multiple
  * visual path elements that need to stay in sync during real-time interaction.
  */
-const updatePathDRecursive = (id: string, pathD: Path) => {
+const updatePathDRecursive = (id: string, path: Path) => {
     const root = document.getElementById(id);
-    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(path => {
-        updatePathD(path, pathD);
+    root?.querySelectorAll<SVGPathElement>('path[d]').forEach(pathElement => {
+        updatePathD(pathElement, path);
     });
 };
 
-const updatePathD = (elem: SVGPathElement, pathD: Path) => {
-    elem.setAttribute('d', pathD.d);
+const updatePathD = (elem: SVGPathElement, path: Path) => {
+    elem.setAttribute('d', path.d);
 };
 
 const isLineElement = (element: Element): element is LineElement => element.type === 'line' && !!element.line;
@@ -104,6 +109,7 @@ export const moveNodesAndRedrawLines = (
         .forEach(element => {
             const { id, line } = element;
             const style = line.attr.style;
+
             if (lineStyles[style].pathGenerator) {
                 const path = lineStyles[style].pathGenerator!(
                     line.path,

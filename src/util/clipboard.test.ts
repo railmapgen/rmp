@@ -1,6 +1,7 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
+import { CityCode, EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationType } from '../constants/stations';
 import {
@@ -28,6 +29,34 @@ const makeGenericLayers = (count: number) =>
         dash: 0,
         gap: 0,
     }));
+
+const makeLinePathsClipboard = (types: LinePathType[]) => {
+    const sourceGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+    const nodeId1 = 'stn_node1' as NodeId;
+    const nodeId2 = 'stn_node2' as NodeId;
+    sourceGraph.addNode(nodeId1, { x: 0, y: 0, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+    sourceGraph.addNode(nodeId2, { x: 100, y: 100, type: StationType.ShmetroBasic, visible: true, zIndex: 0 });
+
+    const selected = new Set<Id>([nodeId1, nodeId2]);
+    types.forEach(type => {
+        const edgeId = `line_${type}` as LineId;
+        sourceGraph.addDirectedEdgeWithKey(edgeId, nodeId1, nodeId2, {
+            type,
+            style: LineStyleType.SingleColor,
+            visible: true,
+            zIndex: 0,
+            reconcileId: '',
+            parallelIndex: -1,
+            [type]: {},
+            [LineStyleType.SingleColor]: {
+                color: [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white],
+            },
+        } as EdgeAttributes);
+        selected.add(edgeId);
+    });
+
+    return exportSelectedNodesAndEdges(sourceGraph, selected);
+};
 
 describe('Unit tests for specific attributes clipboard functions', () => {
     let graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -298,6 +327,17 @@ describe('Unit tests for specific attributes clipboard functions', () => {
             expect(destGraph.getEdgeAttribute(edgeId, LineStyleType.Generic)).toEqual({
                 layers: makeGenericLayers(2),
             });
+        });
+
+        it('retains every known path when pasting restricted existing content', () => {
+            const types = Object.values(LinePathType);
+            const clipboardText = makeLinePathsClipboard(types);
+            const destGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+
+            const { nodes, edges } = importSelectedNodesAndEdges(clipboardText, destGraph, false, true, false, 0, 0);
+
+            expect(nodes).toEqual(new Set(['stn_node1', 'stn_node2']));
+            expect([...edges].map(edge => destGraph.getEdgeAttribute(edge, 'type'))).toEqual(types);
         });
     });
 

@@ -267,7 +267,15 @@ const measureRenderedEdgeLengths = async (
     isSystemFontsOnly: boolean,
     languages: TextLanguage[]
 ): Promise<Map<LineId, number>> => {
-    const { elem } = await makeRenderReadySVGElement(graph, true, isSystemFontsOnly, languages, false, 2);
+    const { elem } = await makeRenderReadySVGElement(
+        graph,
+        store.getState().param.present.mapEnabled,
+        true,
+        isSystemFontsOnly,
+        languages,
+        false,
+        2
+    );
     const edgeLengths = new Map<LineId, number>();
 
     try {
@@ -847,7 +855,15 @@ const createFrameSVG = async (
 ): Promise<{ elem: SVGSVGElement; width: number; height: number; cameraCenter: { x: number; y: number } }> => {
     const frameStationGraph = createFrameStationGraph(graph, visibleEdges, autoChangeStationType);
     const basicStations = getBasicStations(frameStationGraph);
-    const { elem } = await makeRenderReadySVGElement(graph, true, isSystemFontsOnly, languages, false, 2);
+    const { elem } = await makeRenderReadySVGElement(
+        graph,
+        store.getState().param.present.mapEnabled,
+        true,
+        isSystemFontsOnly,
+        languages,
+        false,
+        2
+    );
 
     graph.forEachNode(node => {
         if (!visibleNodes.has(node as NodeId)) {

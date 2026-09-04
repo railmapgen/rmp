@@ -1,11 +1,14 @@
 /* eslint-disable import/order */
+import type { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { AttrsProps, LineId } from './constants';
+import { AttrsProps, EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, OverlayProps } from './constants';
 import type { SimplePathAttributes } from '../components/svgs/lines/paths/simple';
 import type { DiagonalPathAttributes } from '../components/svgs/lines/paths/diagonal';
 import type { PerpendicularPathAttributes } from '../components/svgs/lines/paths/perpendicular';
 import type { RotatePerpendicularPathAttributes } from '../components/svgs/lines/paths/rotate-perpendicular';
 import type { RayGuidedPathAttributes } from '../components/svgs/lines/paths/ray-guided';
+import type { BezierPathAttributes } from '../components/svgs/lines/paths/bezier-model';
+import type { FreeformPathAttributes } from '../components/svgs/lines/paths/freeform-model';
 import type { SingleColorAttributes } from '../components/svgs/lines/styles/single-color';
 import type { GenericAttributes } from '../components/svgs/lines/styles/generic';
 import type { UnknownLineAttributes } from '../components/svgs/lines/styles/unknown';
@@ -41,7 +44,7 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
-import type { OpenPath, Path } from './path';
+import type { Path, PathPoint } from './path';
 
 export enum LinePathType {
     Diagonal = 'diagonal',
@@ -49,6 +52,8 @@ export enum LinePathType {
     RotatePerpendicular = 'ro-perp',
     RayGuided = 'ray-guided',
     Simple = 'simple',
+    Bezier = 'bezier',
+    Freeform = 'freeform',
 }
 
 export interface ExternalLinePathAttributes {
@@ -57,6 +62,8 @@ export interface ExternalLinePathAttributes {
     [LinePathType.Perpendicular]?: PerpendicularPathAttributes;
     [LinePathType.RotatePerpendicular]?: RotatePerpendicularPathAttributes;
     [LinePathType.RayGuided]?: RayGuidedPathAttributes;
+    [LinePathType.Bezier]?: BezierPathAttributes;
+    [LinePathType.Freeform]?: FreeformPathAttributes;
 }
 
 export enum LineStyleType {
@@ -167,7 +174,11 @@ export interface LineStyleComponentProps<
      * Sometimes you might need to know the path type and call different generating algorithms.
      */
     type: LinePathType;
-    path: OpenPath;
+    /**
+     * The path-owned geometry to paint. Styles must inspect its kind before applying algorithms that require an open
+     * centerline; filled path types can provide their outline directly as a closed area.
+     */
+    path: Path;
     styleAttrs: T;
     /**
      * ONLY NEEDED IN SINGLE-COLOR AS USERS WILL ONLY DRAW LINES IN THIS STYLE.
@@ -220,6 +231,64 @@ export interface LinePathAttrsProps<T extends LinePathAttributes> extends AttrsP
 }
 
 export interface LinePathAttributes {}
+
+/** Mutable, gesture-scoped state owned by a path with a custom drawing lifecycle. */
+export interface LinePathDrawingSession<T extends LinePathAttributes> {
+    /** Receives each pointer move forwarded by the canvas in absolute SVG coordinates. */
+    pointerMove: (pointer: PathPoint) => void;
+    /**
+     * Builds the persisted attributes after release over a connectable target.
+     * Returning `undefined` cancels creation, for example when the sampled path is too short to be meaningful.
+     */
+    createAttrs: (target: PathPoint, pointer: PathPoint) => T | undefined;
+    /**
+     * Produces transient path geometry from the latest absolute SVG pointer without mutating the graph.
+     *
+     * Returning geometry instead of rendered JSX lets the selected line style paint previews with the same
+     * centerline-vs-area policy used by committed lines.
+     */
+    getPreviewPath: (pointer: PathPoint) => Path | undefined;
+}
+
+/**
+ * Lets a path retain gesture-specific pointer data without putting transient drawing state into React or the graph.
+ * The canvas creates one session on pointer down and discards it on pointer up, so implementations may mutate their
+ * private session data but must not treat it as persisted state.
+ */
+export interface LinePathDrawingBehavior<T extends LinePathAttributes> {
+    /** Starts a drawing session with the source and initial pointer in absolute SVG coordinates. */
+    createSession: (source: PathPoint, pointer: PathPoint) => LinePathDrawingSession<T>;
+}
+
+/**
+ * Describes why an edge is entering path-owned normalization.
+ *
+ * A newly authored edge may need path defaults when no compatible neighbour exists, while an existing edge update
+ * must preserve its authored path attributes in that situation. Import/load flows do not use either mode because
+ * serialized attributes must be preserved verbatim.
+ */
+export type LinePathEdgeAttrsNormalizationMode = 'created' | 'updated';
+
+/**
+ * Maintains a LinePath-specific invariant after an edge exists in the graph but before that change is persisted.
+ *
+ * Implementations are synchronous and mutate only the current edge's path-owned attributes. They must not dispatch,
+ * save the graph, refresh the UI, or rewrite peer edges; the transaction coordinator owns those steps. Looking up
+ * adjacent peers is allowed, but peers in `ignoredEdgeIds` must not be used as source-of-truth data.
+ *
+ * The coordinator processes a complete semantic change set in a stable order. `ignoredEdgeIds` contains the current
+ * edge and every changed edge that has not been normalized yet, preventing partially updated data from becoming an
+ * anchor. An earlier normalized edge is removed from the set and may then anchor a later edge. Newly created edges may
+ * initialize path-owned attributes from adjacent peers; updated edges preserve their current attributes when no
+ * matching peer exists.
+ */
+export type LinePathEdgeAttrsNormalizer = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    edgeId: LineId,
+    mode: LinePathEdgeAttrsNormalizationMode,
+    ignoredEdgeIds: ReadonlySet<LineId>
+) => void;
+
 /**
  * The type a line path should export.
  */
@@ -238,6 +307,33 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
      */
     attrsComponent: React.FC<LinePathAttrsProps<T>>;
     /**
+     * Optional direct-manipulation UI for path geometry that cannot be edited conveniently in the details panel,
+     * such as control points or width handles.
+     *
+     * The canvas mounts it only when exactly one edge of this path type is selected and renders it after the normal
+     * line layer. An overlay should therefore render transient controls rather than another source-of-truth line,
+     * stop pointer events that must not reach canvas selection, and explicitly save/refresh any graph mutations.
+     */
+    overlayComponent?: React.FC<OverlayProps<LineId>>;
+    /**
+     * Optional drawing lifecycle for paths whose attributes depend on the full pointer trajectory rather than only
+     * the source and target nodes.
+     *
+     * The session receives absolute SVG coordinates, owns high-frequency transient samples, supplies its own preview,
+     * and creates the final path attributes only after release on a valid target. When omitted, the canvas previews
+     * the path with `generatePath` and persists a clone of `defaultAttrs`, which is appropriate for endpoint-derived
+     * paths. Implementations may return `undefined` from `createAttrs` to reject an invalid gesture.
+     */
+    drawingBehavior?: LinePathDrawingBehavior<T>;
+    /**
+     * Optional normalization for path-owned attributes after semantic edge creation or mutation.
+     *
+     * Loading and copying existing data should not invoke it. Generic graph-editing code calls the registered hook
+     * without knowing the path-specific attributes it maintains. The hook runs in place before the graph is saved;
+     * it should only maintain invariants owned by this LinePath and must not perform persistence or UI work.
+     */
+    normalizeEdgeAttrs?: LinePathEdgeAttrsNormalizer;
+    /**
      * Metadata for this line path.
      */
     metadata: {
@@ -245,6 +341,12 @@ export interface LinePath<T extends LinePathAttributes> extends LineBase<T> {
          * The name displayed in the tools and details panels. In react-i18next index format.
          */
         displayName: string;
+        /**
+         * Whether this path geometry can participate in a reconciled line.
+         *
+         * A line is eligible only when both its path and style support reconcile.
+         */
+        supportsReconcile: boolean;
     };
 }
 
@@ -313,11 +415,11 @@ export interface LineStyle<T extends LineStyleAttributes> extends LineBase<T> {
 /**
  * The generator type of a line path.
  */
-export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => OpenPath;
+export type PathGenerator<T> = (x1: number, x2: number, y1: number, y2: number, attrs?: T) => Path;
 
 /**
  * The generator type of a line style.
  * This is used when a line style needs to generate complex paths based on the original path.
  * It takes the original path and return a record of paths with different keys.
  */
-export type StylePathGenerator<T> = (path: OpenPath, type: LinePathType, attrs: T) => Record<string, Path>;
+export type StylePathGenerator<T> = (path: Path, type: LinePathType, attrs: T) => Record<string, Path>;

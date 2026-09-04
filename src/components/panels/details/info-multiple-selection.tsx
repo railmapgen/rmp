@@ -22,9 +22,9 @@ export default function InfoMultipleSection() {
     const graph = React.useRef(window.graph);
     const getVisible = (id: string) =>
         graph.current.hasNode(id)
-            ? (graph.current.getNodeAttribute(id, 'visible') ?? true)
+            ? graph.current.getNodeAttribute(id, 'visible')
             : graph.current.hasEdge(id)
-              ? (graph.current.getEdgeAttribute(id, 'visible') ?? true)
+              ? graph.current.getEdgeAttribute(id, 'visible')
               : true;
 
     const selectionKey = [...selected].sort().join('\n');
@@ -70,9 +70,7 @@ export default function InfoMultipleSection() {
 
         selected.forEach(id => {
             const visible =
-                nextState === 'mixed'
-                    ? (initialVisibilityRef.current!.visibleById.get(id) ?? true)
-                    : nextState === 'visible';
+                nextState === 'mixed' ? initialVisibilityRef.current!.visibleById.get(id)! : nextState === 'visible';
             if (graph.current.hasNode(id)) {
                 graph.current.setNodeAttribute(id, 'visible', visible);
                 hasNode = true;

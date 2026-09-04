@@ -17,6 +17,7 @@ export default function AppRoot() {
     const dispatch = useRootDispatch();
     const {
         paletteAppClip: { input },
+        isMapOverview,
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -82,7 +83,7 @@ export default function AppRoot() {
                     <RmgErrorBoundary allowReset>
                         <React.Suspense fallback={loadingFallback}>
                             <Routes>
-                                <Route path="/" element={<EditorPage />} />
+                                <Route path="/" element={<EditorPage isMapOverview={isMapOverview} />} />
                                 <Route path="/timeline" element={<TimelinePage />} />
                                 <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>

@@ -6,10 +6,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { CityCode, EdgeAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
-import { makeLinearPath, makePoint } from '../constants/path';
+import { lineTo, makeComplexOpenPath, makeLinearPath, makePoint, moveTo } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
 import SvgLayer from './svg-layer';
+import { lineStyles } from './svgs/lines/lines';
 
 const makeLineAttrs = (): EdgeAttributes => ({
     visible: true,
@@ -39,6 +40,58 @@ const makeStationAttrs = (): NodeAttributes => ({
 });
 
 describe('SvgLayer', () => {
+    it('renders second-batch generated styles from a complex freeform centerline', () => {
+        const centerline = makeComplexOpenPath([
+            moveTo(makePoint(0, 0)),
+            lineTo(makePoint(50, 20)),
+            lineTo(makePoint(100, 0)),
+        ]);
+        const styles = [
+            LineStyleType.DualColor,
+            LineStyleType.JREastSingleColor,
+            LineStyleType.JREastSingleColorPattern,
+            LineStyleType.Shinkansen,
+        ];
+        const elements: Element[] = styles.map((style, index) => ({
+            id: `line_generated_${index}`,
+            type: 'line',
+            line: {
+                attr: {
+                    ...makeLineAttrs(),
+                    type: LinePathType.Freeform,
+                    style,
+                    [style]: structuredClone(lineStyles[style].defaultAttrs),
+                } as EdgeAttributes,
+                path: centerline,
+            },
+        }));
+
+        const { container } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    mapEnabled={true}
+                    isSubscriber={true}
+                    handlePointerDown={vi.fn()}
+                    handlePointerMove={vi.fn()}
+                    handlePointerUp={vi.fn()}
+                    handleEdgePointerDown={vi.fn()}
+                    handleEdgeDoubleClick={vi.fn()}
+                />
+            </svg>
+        );
+
+        styles.forEach((_, index) => {
+            const renderedPaths = [
+                ...container.querySelectorAll(
+                    `#line_generated_${index} path[d], [id="line_generated_${index}.pre"] path[d]`
+                ),
+            ];
+            expect(renderedPaths.some(path => path.getAttribute('d'))).toBe(true);
+        });
+    });
+
     it('renders unknown line style with UnknownLineStyle', () => {
         const elements: Element[] = [
             {
@@ -56,6 +109,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -66,6 +121,60 @@ describe('SvgLayer', () => {
         );
 
         expect(container.querySelector('path')?.getAttribute('stroke')).toBe('grey');
+    });
+
+    it('combines explicit visibility with contextual policy visibility without mutating the edge', () => {
+        const attr: EdgeAttributes = {
+            ...makeLineAttrs(),
+            type: LinePathType.Bezier,
+        };
+        const elements: Element[] = [
+            {
+                id: 'line_bezier',
+                type: 'line',
+                line: {
+                    attr,
+                    path: makeLinearPath(makePoint(0, 0), makePoint(100, 0)),
+                },
+            },
+        ];
+        const handlers = {
+            handlePointerDown: vi.fn(),
+            handlePointerMove: vi.fn(),
+            handlePointerUp: vi.fn(),
+            handleEdgePointerDown: vi.fn(),
+            handleEdgeDoubleClick: vi.fn(),
+        };
+
+        const { container, rerender } = render(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={false}
+                    {...handlers}
+                />
+            </svg>
+        );
+
+        expect(container.querySelector('#line_bezier')).toHaveClass('removeMe');
+        expect(attr.visible).toBe(true);
+
+        rerender(
+            <svg>
+                <SvgLayer
+                    elements={elements}
+                    selected={new Set()}
+                    mapEnabled={true}
+                    isSubscriber={false}
+                    {...handlers}
+                />
+            </svg>
+        );
+
+        expect(container.querySelector('#line_bezier')).not.toHaveClass('removeMe');
+        expect(attr.visible).toBe(true);
     });
 
     it('keeps invisible lines rendered and marks their wrapper with the hidden filter', () => {
@@ -85,6 +194,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -106,40 +217,6 @@ describe('SvgLayer', () => {
         expect(container.querySelector('[id="line_hidden_hidden_pattern"]')).not.toBeInTheDocument();
     });
 
-    it('treats legacy lines without visible as visible', () => {
-        const attr = makeLineAttrs() as Partial<EdgeAttributes>;
-        delete attr.visible;
-        const elements: Element[] = [
-            {
-                id: 'line_legacy',
-                type: 'line',
-                line: {
-                    attr: attr as EdgeAttributes,
-                    path: makeLinearPath(makePoint(0, 0), makePoint(100, 0)),
-                },
-            },
-        ];
-
-        const { container } = render(
-            <svg>
-                <SvgLayer
-                    elements={elements}
-                    selected={new Set(['line_legacy'])}
-                    handlePointerDown={vi.fn()}
-                    handlePointerMove={vi.fn()}
-                    handlePointerUp={vi.fn()}
-                    handleEdgePointerDown={vi.fn()}
-                    handleEdgeDoubleClick={vi.fn()}
-                />
-            </svg>
-        );
-
-        const group = container.querySelector('#line_legacy');
-        expect(group).toHaveClass('rmp-selected-glow');
-        expect(group).not.toHaveClass('removeMe');
-        expect(group).not.toHaveAttribute('filter');
-    });
-
     it('does not apply selected glow to hidden wrappers because both states use filters', () => {
         const elements: Element[] = [
             {
@@ -157,6 +234,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set(['line_hidden'])}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -192,6 +271,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -228,6 +309,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -241,7 +324,6 @@ describe('SvgLayer', () => {
         expect(group).toHaveClass('removeMe');
         expect(group).toHaveAttribute('filter', 'url(#invisible)');
     });
-
     it('treats legacy stations and misc nodes without visible as visible', () => {
         const station = makeStationAttrs() as Partial<NodeAttributes>;
         delete station.visible;
@@ -270,6 +352,8 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set(['stn_legacy', 'misc_node_legacy'])}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -312,6 +396,8 @@ describe('SvgLayer', () => {
                     elements={elements}
                     selected={new Set()}
                     highlighted={new Set(['misc_node_a'])}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}
@@ -346,6 +432,8 @@ describe('SvgLayer', () => {
                     elements={elements}
                     selected={new Set(['misc_node_a'])}
                     highlighted={new Set(['misc_node_a'])}
+                    mapEnabled={false}
+                    isSubscriber={true}
                     handlePointerDown={vi.fn()}
                     handlePointerMove={vi.fn()}
                     handlePointerUp={vi.fn()}

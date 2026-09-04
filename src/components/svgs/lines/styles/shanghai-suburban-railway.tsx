@@ -91,11 +91,13 @@ const shanghaiSuburbanRailway: LineStyle<ShanghaiSuburbanRailwayAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.shanghaiSuburbanRailway.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

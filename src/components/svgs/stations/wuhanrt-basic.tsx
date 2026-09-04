@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -244,6 +245,7 @@ const wuhanRTBasicStationIcon = (
 
 const wuhanRTBasicStation: Station<WuhanRTBasicStationAttributes> = {
     component: WuhanRTBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: wuhanRTBasicStationIcon,
     defaultAttrs: defaultWuhanRTBasicStationAttributes,
     attrsComponent: wuhanRTBasicAttrsComponent,
