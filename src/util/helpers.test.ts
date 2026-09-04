@@ -1,7 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
-import { calculateCanvasSize, roundToMultiple } from './helpers';
+import { MiscNodeType } from '../constants/nodes';
+import { calculateCanvasSize, roundToMultiple, roundToRotateAngle, transformedBoundingBox } from './helpers';
 
 describe('unit tests for round to multiple function', () => {
     // Test rounding to the nearest integer when base=1
@@ -61,6 +62,23 @@ describe('unit tests for round to multiple function', () => {
     });
 });
 
+describe('roundToRotateAngle', () => {
+    it.each([
+        [0, 0],
+        [22, 0],
+        [23, 45],
+        [337, 315],
+        [338, 0],
+        [359, 0],
+        [360, 0],
+        [-23, 315],
+        [-45, 315],
+        [-360, 0],
+    ])('rounds and normalizes %s degrees to %s degrees', (value, expected) => {
+        expect(roundToRotateAngle(value)).toBe(expected);
+    });
+});
+
 describe('calculateCanvasSize', () => {
     it('should fall back to 100x100 when the graph is empty', () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
@@ -70,6 +88,64 @@ describe('calculateCanvasSize', () => {
             yMin: 0,
             xMax: 100,
             yMax: 100,
+        });
+    });
+
+    it('excludes policy-hidden elements from export bounds', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('hidden', {
+            visible: true,
+            zIndex: 0,
+            x: 1000,
+            y: 1000,
+            type: MiscNodeType.Virtual,
+        });
+        const hidden = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        hidden.id = 'hidden';
+        hidden.classList.add('removeMe');
+        document.body.append(hidden);
+
+        try {
+            expect(calculateCanvasSize(graph)).toEqual({
+                xMin: 0,
+                yMin: 0,
+                xMax: 100,
+                yMax: 100,
+            });
+        } finally {
+            hidden.remove();
+        }
+    });
+});
+
+describe('transformedBoundingBox', () => {
+    it('preserves bounds located entirely in negative coordinates', () => {
+        const identityMatrix = {
+            inverse: () => identityMatrix,
+            multiply: () => identityMatrix,
+        };
+        const createPoint = () => ({
+            x: 0,
+            y: 0,
+            matrixTransform() {
+                return { x: this.x, y: this.y };
+            },
+        });
+        const parent = {
+            getScreenCTM: () => identityMatrix,
+        };
+        const element = {
+            getBBox: () => ({ x: -20, y: -30, width: 5, height: 6 }),
+            ownerSVGElement: { createSVGPoint: createPoint },
+            parentNode: parent,
+            getScreenCTM: () => identityMatrix,
+        } as unknown as SVGSVGElement;
+
+        expect(transformedBoundingBox(element)).toEqual({
+            x: -20,
+            y: -30,
+            width: 5,
+            height: 6,
         });
     });
 });

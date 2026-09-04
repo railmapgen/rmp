@@ -1,4 +1,5 @@
 import React from 'react';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 
 const Virtual = (props: NodeComponentProps<VirtualAttributes>) => {
@@ -52,6 +53,7 @@ const virtualIcon = (
 
 const virtual: Node<VirtualAttributes> = {
     component: Virtual,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: virtualIcon,
     defaultAttrs: defaultVirtualAttributes,
     attrsComponent,

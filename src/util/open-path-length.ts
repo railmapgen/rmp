@@ -1,4 +1,5 @@
 import { makePoint, OpenPath, PathPoint } from '../constants/path';
+import { clamp } from './number';
 import { getOpenPathPrimitives, OpenPathPrimitive, primitiveLength, primitiveToBezier } from './open-path-primitives';
 
 /**
@@ -27,9 +28,6 @@ export interface PrimitiveArcLocation {
     primitiveIndex: number;
     t: number;
 }
-
-/** Clamp helper for arc lengths and normalized parameters. */
-const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
 /** Sum authored segment lengths to obtain the total length of a primitive list. */
 export const getPrimitiveListLength = (primitives: readonly OpenPathPrimitive[]): number =>

@@ -64,11 +64,13 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.lrtSingleColor.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

@@ -177,4 +177,40 @@ describe('findConnectedSameStyleEdges', () => {
         const result = findConnectedSameStyleEdges(graph, 'line_1' as LineId);
         expect(result.sort()).toEqual(['line_1', 'line_2', 'line_3']);
     });
+
+    it('should group Generic lines by rendered layer attributes rather than layer IDs', () => {
+        const graph = new MultiDirectedGraph() as TestGraph;
+        addStation(graph, 'stn_a', 0, 0);
+        addStation(graph, 'stn_b', 100, 0);
+        addStation(graph, 'stn_c', 200, 0);
+        addStation(graph, 'stn_d', 300, 0);
+        const addGenericLine = (id: LineId, source: string, target: string, layerId: string, width: number) => {
+            graph.addDirectedEdgeWithKey(id, source, target, {
+                visible: true,
+                zIndex: 0,
+                type: LinePathType.Diagonal,
+                style: LineStyleType.Generic,
+                reconcileId: '',
+                parallelIndex: -1,
+                [LineStyleType.Generic]: {
+                    layers: [
+                        {
+                            id: layerId,
+                            color: [...RED],
+                            width,
+                            opacity: 1,
+                            linecap: 'round',
+                            dash: 4,
+                            gap: 2,
+                        },
+                    ],
+                },
+            } as EdgeAttributes);
+        };
+        addGenericLine('line_1', 'stn_a', 'stn_b', 'layer_a', 5);
+        addGenericLine('line_2', 'stn_b', 'stn_c', 'layer_b', 5);
+        addGenericLine('line_3', 'stn_c', 'stn_d', 'layer_c', 8);
+
+        expect(findConnectedSameStyleEdges(graph, 'line_1')).toEqual(['line_1', 'line_2']);
+    });
 });

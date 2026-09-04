@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootDispatch, RootState } from '..';
-import { setSvgViewport, setSvgViewBoxMin, setSvgViewBoxZoom } from '../param/param-slice';
+import {
+    applyRedoAction,
+    applyUndoAction,
+    replaceProjectState,
+    setSvgViewport,
+    setSvgViewBoxMin,
+    setSvgViewBoxZoom,
+} from '../param/param-slice';
 
 export interface LiveViewport {
     x: number;
@@ -8,6 +15,7 @@ export interface LiveViewport {
     zoom: number;
 }
 
+/** Holds an in-progress viewport preview before it is persisted in the project snapshot. */
 export interface ViewportState {
     liveViewport?: LiveViewport;
 }
@@ -22,8 +30,8 @@ export const commitLiveViewport = (viewport?: LiveViewport) => (dispatch: RootDi
 
     if (!nextViewport) return;
 
-    const persistedMin = state.param.svgViewBoxMin;
-    const persistedZoom = state.param.svgViewBoxZoom;
+    const persistedMin = state.param.present.svgViewBoxMin;
+    const persistedZoom = state.param.present.svgViewBoxZoom;
     const shouldUpdateZoom = persistedZoom !== nextViewport.zoom;
     const shouldUpdateMin = persistedMin.x !== nextViewport.x || persistedMin.y !== nextViewport.y;
 
@@ -64,6 +72,9 @@ const viewportSlice = createSlice({
         },
     },
     extraReducers: builder => {
+        // Persisted viewport changes discard their transient preview. Graph-scoped
+        // history deliberately keeps it so undo/redo cannot move the current view;
+        // project-scoped history clears it to expose the restored project viewport.
         builder
             .addCase(setSvgViewport, state => {
                 state.liveViewport = undefined;
@@ -73,6 +84,15 @@ const viewportSlice = createSlice({
             })
             .addCase(setSvgViewBoxMin, state => {
                 state.liveViewport = undefined;
+            })
+            .addCase(replaceProjectState, state => {
+                state.liveViewport = undefined;
+            })
+            .addCase(applyUndoAction, (state, action) => {
+                if (action.payload === 'project') state.liveViewport = undefined;
+            })
+            .addCase(applyRedoAction, (state, action) => {
+                if (action.payload === 'project') state.liveViewport = undefined;
             });
     },
 });

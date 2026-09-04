@@ -1,6 +1,7 @@
 import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
+import { PathPoint } from './path';
 import { ExternalStationAttributes, StationType } from './stations';
 
 /**
@@ -68,8 +69,17 @@ export type StnId = `stn_${string}`;
 export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
 export type NodeId = StnId | MiscNodeId;
-
 export type Id = NodeId | LineId;
+
+/** Viewport context supplied to an editor overlay. */
+export interface OverlayProps<T extends Id> {
+    /** The single selected graph element whose direct-manipulation UI is being shown. */
+    id: T;
+    /** Used to keep handles visually usable instead of shrinking or growing with the canvas. */
+    svgViewBoxZoom: number;
+    /** Used to convert screen pointer positions into SVG coordinates. */
+    svgViewBoxMin: PathPoint;
+}
 
 /**
  * Indicate which station/line/node/edge is currently in mouse control. (Runtime only)

@@ -68,7 +68,10 @@ const simplePath: LinePath<SimplePathAttributes> = {
     icon: simpleLineIcon,
     defaultAttrs: defaultSimplePathAttributes,
     attrsComponent,
-    metadata: { displayName: 'panel.details.lines.simple.displayName' },
+    metadata: {
+        displayName: 'panel.details.lines.simple.displayName',
+        supportsReconcile: true,
+    },
     isPro: true,
 };
 

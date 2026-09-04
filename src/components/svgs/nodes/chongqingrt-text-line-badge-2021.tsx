@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -198,6 +199,7 @@ const chongqingRTTextLineBadge2021Icon = (
 
 const chongqingRTTextLineBadge2021: Node<ChongqingRTTextLineBadge2021Attributes> = {
     component: ChongqingRTTextLineBadge2021,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: chongqingRTTextLineBadge2021Icon,
     defaultAttrs: defaultChongqingRTTextLineBadge2021Attributes,
     attrsComponent: ChongqingRTNumLineBadge2021AttrsComponent,

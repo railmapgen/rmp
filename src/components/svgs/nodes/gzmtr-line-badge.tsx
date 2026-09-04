@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -157,6 +158,7 @@ const gzmtrLineBadgeIcon = (
 
 const gzmtrLineBadge: Node<GzmtrLineBadgeAttributes> = {
     component: GzmtrLineBadge,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: gzmtrLineBadgeIcon,
     defaultAttrs: defaultGzmtrLineBadgeAttributes,
     attrsComponent: gzmtrLineBadgeAttrsComponents,

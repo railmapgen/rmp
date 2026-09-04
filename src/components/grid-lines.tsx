@@ -11,8 +11,8 @@ export interface GridLinesProps {
 const GridLines = React.memo((props: GridLinesProps) => {
     const { svgWidth, svgHeight } = props;
     const liveViewport = useRootSelector(state => state.viewport.liveViewport);
-    const svgViewBoxMin = useRootSelector(state => state.param.svgViewBoxMin);
-    const svgViewBoxZoom = useRootSelector(state => state.param.svgViewBoxZoom);
+    const svgViewBoxMin = useRootSelector(state => state.param.present.svgViewBoxMin);
+    const svgViewBoxZoom = useRootSelector(state => state.param.present.svgViewBoxZoom);
     const isToolsExpanded = useRootSelector(state => state.app.preference.toolsPanel.expand);
 
     const currentMin = liveViewport ? { x: liveViewport.x, y: liveViewport.y } : svgViewBoxMin;

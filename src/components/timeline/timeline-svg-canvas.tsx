@@ -16,6 +16,8 @@ export default function TimelineSvgCanvas({ selectedId, highlightedIds, onSelect
     const {
         refresh: { nodes: refreshNodes, edges: refreshEdges },
     } = useRootSelector(state => state.runtime);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
 
     const elements = React.useMemo(
         () => [...getLines(graph.current), ...getNodes(graph.current)],
@@ -38,6 +40,8 @@ export default function TimelineSvgCanvas({ selectedId, highlightedIds, onSelect
             elements={elements}
             selected={selected}
             highlighted={highlightedIds}
+            mapEnabled={mapEnabled}
+            isSubscriber={isSubscriber}
             handlePointerDown={handlePointerDown}
             handlePointerMove={() => {}}
             handlePointerUp={() => {}}

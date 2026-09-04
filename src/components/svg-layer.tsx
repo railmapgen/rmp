@@ -4,6 +4,7 @@ import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constan
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { Element } from '../util/process-elements';
+import { isLinePolicyVisible } from '../util/line-path-availability';
 import { UnknownNode } from './svgs/common/unknown';
 import { lineStyles } from './svgs/lines/lines';
 import { UnknownLineStyle } from './svgs/lines/styles/unknown';
@@ -19,6 +20,8 @@ interface SvgLayerProps {
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgeDoubleClick: (edge: LineId, e: React.MouseEvent<SVGElement>) => void;
+    mapEnabled: boolean;
+    isSubscriber: boolean;
 }
 
 // HELP NEEDED: Why component is not this type?
@@ -37,6 +40,8 @@ const SvgLayer = React.memo(
             handlePointerUp,
             handleEdgePointerDown,
             handleEdgeDoubleClick,
+            mapEnabled,
+            isSubscriber,
         } = props;
 
         const layers = Object.fromEntries(
@@ -58,10 +63,12 @@ const SvgLayer = React.memo(
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
-                const visible = element.line!.attr.visible ?? true;
+                const effectiveEdgeVisible =
+                    (element.line!.attr.visible ?? true) &&
+                    isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber);
                 const wrapperProps = {
-                    className: visible ? glowClassName : 'removeMe',
-                    filter: visible ? undefined : 'url(#invisible)',
+                    className: effectiveEdgeVisible ? glowClassName : 'removeMe',
+                    filter: effectiveEdgeVisible ? undefined : 'url(#invisible)',
                 };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
@@ -273,7 +280,9 @@ const SvgLayer = React.memo(
     (prevProps, nextProps) =>
         prevProps.elements === nextProps.elements &&
         prevProps.selected === nextProps.selected &&
-        prevProps.highlighted === nextProps.highlighted
+        prevProps.highlighted === nextProps.highlighted &&
+        prevProps.mapEnabled === nextProps.mapEnabled &&
+        prevProps.isSubscriber === nextProps.isSubscriber
 );
 
 export default SvgLayer;

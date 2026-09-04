@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -513,6 +514,7 @@ const chengduRTBasicStationIcon = (
 
 const chengduRTBasicStation: Station<ChengduRTBasicStationAttributes> = {
     component: ChengduRTBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: chengduRTBasicStationIcon,
     defaultAttrs: defaultChengduRTBasicStationAttributes,
     attrsComponent: ChengduRTBasicAttrsComponent,

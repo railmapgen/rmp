@@ -29,6 +29,7 @@ import {
 } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
 import { sendErrorNotification } from '../../../util/notifications';
+import { normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -163,7 +164,9 @@ const DetailsPanel = () => {
             return;
         }
 
-        hardRefresh();
+        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     };
 
     const handleReconcile = () => {

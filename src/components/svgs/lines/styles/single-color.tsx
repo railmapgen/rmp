@@ -73,6 +73,8 @@ const singleColor: LineStyle<SingleColorAttributes> = {
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Freeform,
+            LinePathType.Bezier,
         ],
         supportsReconcile: true,
     },

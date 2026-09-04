@@ -72,8 +72,14 @@ describe('StationNameTranslateButton', () => {
         const mockStore = createStore({
             param: {
                 ...realState.param,
-                present: presentGraph.export(),
-                past: [previousGraph.export()],
+                present: { ...realState.param.present, graph: presentGraph.export() },
+                past: [
+                    {
+                        scope: 'graph',
+                        ...realState.param.present,
+                        graph: previousGraph.export(),
+                    },
+                ],
                 future: [],
             },
         });
@@ -88,10 +94,10 @@ describe('StationNameTranslateButton', () => {
 
         fireEvent.keyDown(englishTextarea, { key: 'z', ctrlKey: true });
 
-        expect(getSavedEnglishName(mockStore.getState().param.present)).toBe('');
-        const [futureGraph] = mockStore.getState().param.future;
-        expect(futureGraph).toBeDefined();
-        expect(getSavedEnglishName(futureGraph!)).toBe('Nan Jing Dong Lu');
+        expect(getSavedEnglishName(mockStore.getState().param.present.graph)).toBe('');
+        const [futureEntry] = mockStore.getState().param.future;
+        expect(futureEntry?.scope).toBe('graph');
+        expect(getSavedEnglishName(futureEntry!.graph)).toBe('Nan Jing Dong Lu');
         const stationAttrs = window.graph.getNodeAttribute('stn_test', StationType.ShmetroBasic) as StationAttributes;
         expect(stationAttrs.names[1]).toBe('');
     });

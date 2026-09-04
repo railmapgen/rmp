@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -17,6 +18,8 @@ import {
     getPreciseNameOffsetsSelectState,
     useDraggableStationName,
 } from '../../../util/use-draggable-station-name';
+import { roundToRotateAngle } from '../../../util/helpers';
+import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText } from '../common/multiline-text';
 import { ROTATE_CONST } from './shmetro-basic-2020';
 
@@ -28,11 +31,10 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
         rotate = defaultShanghaiSuburbanRailwayStationAttributes.rotate,
     } = attrs[StationType.ShanghaiSuburbanRailway] ?? defaultShanghaiSuburbanRailwayStationAttributes;
 
+    const rotateConst = ROTATE_CONST[roundToRotateAngle(rotate)];
     const textDy =
-        ROTATE_CONST[rotate].textDy + // fixed dy for each rotation
-        (names[ROTATE_CONST[rotate].namesPos].split('\n').length - 1) *
-            ROTATE_CONST[rotate].lineHeight *
-            ROTATE_CONST[rotate].polarity; // dynamic dy of n lines (either zh or en)
+        rotateConst.textDy + // fixed dy for each rotation
+        (names[rotateConst.namesPos].split('\n').length - 1) * rotateConst.lineHeight * rotateConst.polarity; // dynamic dy of n lines (either zh or en)
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -48,9 +50,9 @@ const ShanghaiSuburbanRailwayStation = (props: StationComponentProps) => {
     );
 
     const defaultNameLayout: NameLayout = {
-        x: ROTATE_CONST[rotate].textDx,
+        x: rotateConst.textDx,
         y: textDy,
-        anchor: ROTATE_CONST[rotate].textAnchor,
+        anchor: rotateConst.textAnchor,
     };
     const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
         id,
@@ -173,16 +175,15 @@ const shanghaiSuburbanRailwayAttrsComponent = (props: AttrsProps<ShanghaiSuburba
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: rotateSelect.value,
-            options: rotateSelect.options,
-            disabledOptions: rotateSelect.disabledOptions,
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                delete attrs.preciseNameOffsets;
-                handleAttrsUpdate(id, attrs);
-            },
+            component: (
+                <RotateField
+                    type={StationType.ShanghaiSuburbanRailway}
+                    defaultAttributes={defaultShanghaiSuburbanRailwayStationAttributes}
+                    rotateSelect={rotateSelect}
+                />
+            ),
             minW: 'full',
         },
     ];
@@ -198,6 +199,7 @@ const shanghaiSuburbanRailwayStationIcon = (
 
 const shanghaiSuburbanRailwayStation: Station<ShanghaiSuburbanRailwayStationAttributes> = {
     component: ShanghaiSuburbanRailwayStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: shanghaiSuburbanRailwayStationIcon,
     defaultAttrs: defaultShanghaiSuburbanRailwayStationAttributes,
     attrsComponent: shanghaiSuburbanRailwayAttrsComponent,

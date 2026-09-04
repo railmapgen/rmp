@@ -12,6 +12,7 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
@@ -26,7 +27,7 @@ import {
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
 } from './app/app-slice';
-import { ParamState, setFullState } from './param/param-slice';
+import { initializeProject } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 import { setFullState as setTimelineFullState } from './timeline/timeline-slice';
@@ -67,6 +68,8 @@ export const initStore = async (store: RootStore) => {
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
         if ('autoChangeStationType' in appState.preference)
             store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
+        if ('disableMapPerformanceOptimization' in appState.preference)
+            store.dispatch(setDisableMapPerformanceOptimization(appState.preference.disableMapPerformanceOptimization));
         if ('disableWarning' in appState.preference) {
             if ('changeType' in appState.preference.disableWarning)
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
@@ -103,41 +106,31 @@ export const initStore = async (store: RootStore) => {
         store.dispatch(setActiveSubscriptions(loginState.activeSubscriptions));
     }
 
-    // Upgrade param and inject to ParamState.
+    // Upgrade the serialized save, then initialize the current project without
+    // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, graph, timeline, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(graph);
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
-    store.dispatch(setFullState(state));
+    const { version, timeline, ...project } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(project.graph);
+    store.dispatch(initializeProject(project));
     store.dispatch(
         setTimelineFullState({ present: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()) })
     );
+    // TODO(graph-mutation-pipeline): Route initialization through one explicit
+    // refresh request; see docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
 
     startRootListening({
-        predicate: (_action, currentState, previousState) => {
-            // TODO: check if the refresh nodes and edges will be dispatched in batch, otherwise
-            // there might be a performance issue.
-            // TODO: Dragging a node will trigger the refreshNodesThunk, however, the actual
-            // graph is not preserved as we want to reduce the number of refreshes. But this
-            // comparison will always return true on dragging a node.
-            return (
-                currentState.param !== previousState.param ||
-                currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges ||
-                currentState.timeline.present !== previousState.timeline.present
-            );
-        },
+        predicate: (_action, currentState, previousState) =>
+            currentState.param.present !== previousState.param.present ||
+            currentState.timeline.present !== previousState.timeline.present,
         effect: (_action, listenerApi) => {
             try {
-                localStorage.setItem(
-                    LocalStorageKey.PARAM,
-                    stringifyParam(store.getState().param, store.getState().timeline.present)
-                );
+                const state = listenerApi.getState();
+                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(state.param, state.timeline.present));
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {

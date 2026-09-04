@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -326,6 +327,7 @@ const jrEastImportantStationIcon = (
 
 const jrEastImportantStation: Station<JREastImportantStationAttributes> = {
     component: JREastImportantStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: jrEastImportantStationIcon,
     defaultAttrs: defaultJREastImportantStationAttributes,
     attrsComponent: jrEastImportantAttrsComponent,

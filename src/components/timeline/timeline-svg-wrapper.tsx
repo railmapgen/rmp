@@ -41,7 +41,7 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
     const containerRef = React.useRef<HTMLDivElement>(null);
     const graph = React.useRef(window.graph);
 
-    const { svgViewBoxMin, svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { svgViewBoxMin, svgViewBoxZoom } = useRootSelector(state => state.param.present);
 
     const [size, setSize] = React.useState({ width: 1, height: 1 });
     const [viewport, setViewport] = React.useState<Viewport>({

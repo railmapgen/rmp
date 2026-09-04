@@ -22,6 +22,7 @@ interface Point {
  */
 interface UseViewportControllerOptions {
     viewport: LiveViewport;
+    onViewportChange?: (viewport: LiveViewport) => void;
 }
 
 /**
@@ -92,7 +93,7 @@ interface ViewportFrameState {
  * - higher-level application decisions such as how wheel zoom should be calculated
  * - tool mode changes, selection logic, or business-specific branching
  */
-export const useViewportController = ({ viewport }: UseViewportControllerOptions) => {
+export const useViewportController = ({ viewport, onViewportChange }: UseViewportControllerOptions) => {
     const dispatch = useRootDispatch();
     const store = useRootStore();
 
@@ -104,6 +105,16 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
      * every high-frequency interaction event.
      */
     const viewportRef = React.useRef<SVGGElement>(null);
+
+    /**
+     * `updateViewportTransform` is shared by the frame scheduler and must remain
+     * stable, while its observer may change when a consumer closes over current
+     * project state or an imperative component handle. Reading the observer from
+     * a ref gives every frame the latest callback without rebuilding the generic
+     * viewport scheduler or moving map-specific behavior into this hook.
+     */
+    const viewportObserverRef = React.useRef(onViewportChange);
+    viewportObserverRef.current = onViewportChange;
 
     /**
      * Ref to the root `<svg>` element.
@@ -175,6 +186,7 @@ export const useViewportController = ({ viewport }: UseViewportControllerOptions
         const y = -nextViewport.y * scale;
 
         viewportRef.current.setAttribute('transform', `translate(${x}, ${y}) scale(${scale})`);
+        viewportObserverRef.current?.(nextViewport);
     }, []);
 
     /**

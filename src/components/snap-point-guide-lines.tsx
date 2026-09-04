@@ -7,7 +7,7 @@ interface SnapPointGuideLinesProps {
 
 const SnapPointGuideLines = (props: SnapPointGuideLinesProps) => {
     const { activeSnapPoint } = props;
-    const { svgViewBoxZoom } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom } = useRootSelector(state => state.param.present);
     const getSnapPointGuideLineProps = (snap: SnapPoint) => {
         const coords = [{ x: snap.x, y: snap.y }, ...snap.originalNodesPos];
         const sortedCoords = coords.sort((a, b) => (a.x === b.x ? a.y - b.y : a.x - b.x));

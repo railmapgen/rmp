@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import { defaultStationAttributes, Station, StationComponentProps, StationType } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -84,6 +85,7 @@ const OsakaMetroStationIcon = (
             fill="currentColor"
         />
         <text
+            {...getLangStyle(TextLanguage.berlin)}
             x="12"
             y="12"
             transform={`translate(0, ${LAYOUT_CONSTANTS.STATION.FONT_SIZE * LAYOUT_CONSTANTS.ICON_RATIO * 0.4})`}
@@ -112,6 +114,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
                 fill={bgColor}
             />
             <text
+                {...getLangStyle(TextLanguage.berlin)}
                 y={(LAYOUT_CONSTANTS.STATION.HEIGHT - LAYOUT_CONSTANTS.STATION.FONT_SIZE) / 2}
                 textAnchor="middle"
                 fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE}
@@ -133,6 +136,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
             />
             {lineCode.length === 1 ? (
                 <text
+                    {...getLangStyle(TextLanguage.berlin)}
                     y={(LAYOUT_CONSTANTS.STATION.HEIGHT - LAYOUT_CONSTANTS.STATION.FONT_SIZE) / 2 - 0.5}
                     textAnchor="middle"
                     fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}
@@ -144,6 +148,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
             ) : (
                 <>
                     <text
+                        {...getLangStyle(TextLanguage.berlin)}
                         textAnchor="middle"
                         fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}
                         fontWeight={LAYOUT_CONSTANTS.STATION.FONT_WEIGHT}
@@ -152,6 +157,7 @@ const OsakaMetroSvg = (props: { interchangeInfo: InterchangeInfo; stationType: O
                         {lineCode.toUpperCase()}
                     </text>
                     <text
+                        {...getLangStyle(TextLanguage.berlin)}
                         y={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2.75}
                         textAnchor="middle"
                         fontSize={LAYOUT_CONSTANTS.STATION.FONT_SIZE - 2}
@@ -806,6 +812,7 @@ const OsakaMetroAttrsComponent = (props: AttrsProps<OsakaMetroStationAttributes>
 
 const osakaMetroStation: Station<OsakaMetroStationAttributes> = {
     component: OsakaMetroStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: OsakaMetroStationIcon,
     defaultAttrs: defaultOsakaMetroStationAttributes,
     attrsComponent: OsakaMetroAttrsComponent,

@@ -10,4 +10,6 @@ export enum GlobalAlertId {
     OpenFileFailed = 'open-file-failed',
     ImportRmgProjectFailed = 'import-rmg-project-failed',
     DownloadImageTooBig = 'download-image-too-big',
+    MapLoading = 'map-loading',
+    MapOverviewEdit = 'map-overview-edit',
 }

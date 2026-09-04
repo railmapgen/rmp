@@ -5,7 +5,7 @@ import timelineReducer, { resetTimeline, setFullState, setTimelineDocument, Time
 describe('timeline slice', () => {
     it('should replace state with setFullState', () => {
         const nextState = timelineReducer(
-            { present: createEmptyTimelineDocument() },
+            { present: createEmptyTimelineDocument(), past: [], future: [] },
             setFullState({
                 present: {
                     version: 1,
@@ -19,7 +19,7 @@ describe('timeline slice', () => {
     });
 
     it('should set and reset the timeline document', () => {
-        const initialState: TimelineState = { present: createEmptyTimelineDocument() };
+        const initialState: TimelineState = { present: createEmptyTimelineDocument(), past: [], future: [] };
         const updatedState = timelineReducer(
             initialState,
             setTimelineDocument({

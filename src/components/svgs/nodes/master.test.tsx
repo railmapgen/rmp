@@ -20,9 +20,13 @@ vi.mock('@railmapgen/rmg-components', () => ({
     RmgLineBadge: () => <span />,
 }));
 
-vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
-}));
+vi.mock('react-i18next', async () => {
+    const actual = await vi.importActual('react-i18next');
+    return {
+        ...actual,
+        useTranslation: () => ({ t: (key: string) => key }),
+    };
+});
 
 vi.mock('../../page-header/master-import', () => ({
     MasterImport: () => null,

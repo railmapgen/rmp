@@ -1,7 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
-import { SerializedGraph } from 'graphology-types';
 import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
@@ -40,26 +39,24 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { TimelineDocument } from '../constants/timeline';
-import { ParamState } from '../redux/param/param-slice';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
 /**
  * The save format of the project.
- * For fields other than `version`, see ParamState.
+ * For project fields, see ProjectSnapshot.
  */
-export interface RMPSave {
+export interface RMPSave extends ProjectSnapshot {
     /**
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
-    graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-    svgViewBoxZoom: number;
-    svgViewBoxMin: { x: number; y: number };
     timeline?: TimelineDocument;
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 78;
+export const CURRENT_VERSION = 79;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -165,15 +162,16 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Return a valid save string from ParamState.
+ * Returns a save containing only the current project snapshot, never its undo
+ * and redo stacks. Images are attached only when supplied by an export flow.
  */
 export const stringifyParam = (
-    paramState: ParamState,
-    timeline: TimelineDocument,
-    images?: { id: string; base64: string }[]
+    paramState: ParamState & Pick<RMPSave, 'images'>,
+    timeline?: TimelineDocument,
+    images = paramState.images
 ) => {
-    const { present, past, future, ...param } = paramState;
-    const save: RMPSave = { ...param, graph: present, timeline, version: CURRENT_VERSION };
+    const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
+    if (timeline) save.timeline = timeline;
     if (images) save.images = images;
     return JSON.stringify(save);
 };
@@ -1041,7 +1039,22 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    /** The unreleased real-map schema starts with the map hidden for existing saves. */
     77: param =>
-        // Bump save version to add top-level timeline data to the project save.
-        JSON.stringify({ ...JSON.parse(param), version: 78 }),
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        }),
+    /** Reconcile version 78 saves created by the timeline and real-map branches. */
+    78: param => {
+        const save = JSON.parse(param) as Partial<RMPSave>;
+        return JSON.stringify({
+            ...save,
+            version: 79,
+            mapEnabled: save.mapEnabled ?? false,
+            mapStyle: save.mapStyle ?? DEFAULT_MAP_STYLE,
+        });
+    },
 };

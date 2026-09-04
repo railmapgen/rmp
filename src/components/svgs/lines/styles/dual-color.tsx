@@ -13,14 +13,15 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
-import { useRootDispatch, useRootSelector } from '../../../../redux';
-import { saveGraph } from '../../../../redux/param/param-slice';
-import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
 import { makeOpenPathParallel } from '../../../../util/bezier-parallel';
-import { OpenPath } from '../../../../constants/path';
+import { Path, makeEmptyOpenPath } from '../../../../constants/path';
+import { isOpenPath } from '../../../../util/path';
 import { ColorField } from '../../../panels/details/color-field';
 
-const dualColorPathGenerator = (path: OpenPath, type: LinePathType, attrs: DualColorAttributes) => {
+const dualColorPathGenerator = (path: Path, type: LinePathType, attrs: DualColorAttributes) => {
+    if (!isOpenPath(path)) {
+        return { pathA: makeEmptyOpenPath(), pathB: makeEmptyOpenPath() };
+    }
     const [pathA, pathB] = makeOpenPathParallel(path, -1.25, 1.25);
     return { pathA, pathB };
 };
@@ -79,30 +80,15 @@ const defaultDualColorAttributes: DualColorAttributes = {
     colorB: [CityCode.Shanghai, 'maglevB', '#F5A74E', MonoColour.white],
 };
 
-const DualColorSwitch = () => {
+const DualColorSwitch = ({ id, attrs, handleAttrsUpdate }: AttrsProps<DualColorAttributes>) => {
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
-
-    const { selected } = useRootSelector(state => state.runtime);
-    const [selectedFirst] = selected;
-    const graph = React.useRef(window.graph);
 
     return (
         <IconButton
             aria-label={t('panel.details.lines.dualColor.swap')}
             icon={<MdOutlineSwapVert />}
             size="sm"
-            onClick={() => {
-                const attrs =
-                    graph.current.getEdgeAttribute(selectedFirst, LineStyleType.DualColor) ??
-                    defaultDualColorAttributes;
-                const tmp = attrs.colorA;
-                attrs.colorA = attrs.colorB;
-                attrs.colorB = tmp;
-                graph.current.mergeEdgeAttributes(selectedFirst, { [LineStyleType.DualColor]: attrs });
-                dispatch(saveGraph(graph.current.export()));
-                dispatch(refreshEdgesThunk());
-            }}
+            onClick={() => handleAttrsUpdate(id, { ...attrs, colorA: attrs.colorB, colorB: attrs.colorA })}
         />
     );
 };
@@ -114,7 +100,7 @@ const dualColorAttrsComponent = (props: AttrsProps<DualColorAttributes>) => {
         {
             type: 'custom',
             label: t('panel.details.lines.dualColor.swap'),
-            component: <DualColorSwitch />,
+            component: <DualColorSwitch {...props} />,
             minW: 'full',
         },
         {
@@ -152,7 +138,13 @@ const dualColor: LineStyle<DualColorAttributes> = {
     isSameStyle: (a, b) => a.colorA[2] === b.colorA[2] && a.colorB[2] === b.colorB[2],
     metadata: {
         displayName: 'panel.details.lines.dualColor.displayName',
-        supportLinePathType: [LinePathType.Diagonal, LinePathType.Perpendicular, LinePathType.RotatePerpendicular],
+        supportLinePathType: [
+            LinePathType.Freeform,
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.Bezier,
+        ],
         supportsReconcile: true,
     },
 };

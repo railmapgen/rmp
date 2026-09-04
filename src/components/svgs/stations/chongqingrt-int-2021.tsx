@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -415,6 +416,7 @@ const chongqingRTIntStation2021Icon = (
 
 const chongqingRTIntStation2021: Station<ChongqingRTIntStation2021Attributes> = {
     component: ChongqingRTIntStation2021,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: chongqingRTIntStation2021Icon,
     defaultAttrs: defaultChongqingRTIntStation2021Attributes,
     attrsComponent: ChongqingRTInt2021AttrsComponent,

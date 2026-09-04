@@ -8,10 +8,11 @@ import { MdEdit, MdHelp, MdRedo, MdSettings, MdTimeline, MdTranslate, MdUndo } f
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
-import { redoAction, undoAction } from '../../redux/param/param-slice';
+import { redoAction, undoAction } from '../../redux/project-history';
 import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
+import { MapToggleButton } from './map-toggle-button';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
@@ -129,6 +130,8 @@ export default function WindowHeader() {
                             </MenuList>
                         </Menu>
                     )}
+
+                    <MapToggleButton />
 
                     <IconButton
                         size="sm"
