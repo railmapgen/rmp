@@ -2,7 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { GlobalAlertId } from '../constants/global-alerts';
-import { isMapZoomed, MAP_TILE_BASE_URL } from '../map/map-config';
+import { isMapZoomed } from '../map/map-config';
+import { MAP_ROUTING } from '../map/map-routing';
 import { compileMapStyleCss } from '../map/map-style';
 import { MapTileController, type MapLoadingProgress } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
@@ -176,7 +177,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
         const mapLayer = mapLayerRef.current;
         const controller = new MapTileController({
             root: mapLayer,
-            baseUrl: MAP_TILE_BASE_URL,
+            routing: MAP_ROUTING,
             styleCss: mapStyleCssRef.current,
             rasterEnabled: rasterEnabledRef.current,
             getViewportSize: () => {
@@ -188,6 +189,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
                 };
             },
             onLoadingChange: updateLoadingAlert,
+            onSourceError: (_source, error) => notifyLoadError(error),
         });
         mapControllerRef.current = controller;
         controller.setInteractionActive(

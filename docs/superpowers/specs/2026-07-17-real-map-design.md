@@ -206,9 +206,11 @@ Runtime responsibilities are split as follows:
 - Byte-aware in-memory LRUs cache parsed bundles and imported SVG tile
   templates.
 - An IndexedDB cache stores generated raster tiles against a source epoch,
-  map-style key, tile key, and raster resolution. Source epochs expire after 30
-  days, and periodic pruning keeps the raster cache within its configured byte
-  budget.
+  map-style key, tile key, and raster resolution. Each regional source checks
+  its epoch when it is first loaded by a controller; epochs expire after 30 days,
+  and periodic pruning keeps the raster cache within its configured byte budget.
+  The controller does not schedule in-place raster invalidation; a later source
+  load applies any elapsed expiry.
 - `MapTileController` owns visible tile calculation, request deduplication,
   bounded fetching, generation cancellation, SVG parsing, DOM cloning,
   mounting, detached export rendering, and optional raster replacement.
