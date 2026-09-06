@@ -187,6 +187,8 @@ const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; 
 };
 
 const loadedLangs: TextLanguage[] = [];
+const encodedFontsStyleCache = new Map<string, Promise<string>>();
+
 export const loadFont = async (lang: TextLanguage) => {
     const fontObj = FONTS[lang];
     if (!fontObj || loadedLangs.includes(lang)) return;
@@ -199,14 +201,19 @@ export const loadFont = async (lang: TextLanguage) => {
 
 export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
     const s = document.createElement('style');
-
-    const cssPromises = await Promise.allSettled(
-        languages.filter(lang => lang in FONTS).map(lang => rmgRuntime.getFontCSS(FONTS[lang]!.name))
-    );
-    const cssTexts = cssPromises
-        .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
-        .map(promise => promise.value);
-    s.textContent += cssTexts.join('\n');
-
+    const key = [...new Set(languages)].sort().join('|');
+    let cssPromise = encodedFontsStyleCache.get(key);
+    if (!cssPromise) {
+        cssPromise = Promise.allSettled(
+            languages.filter(lang => lang in FONTS).map(lang => rmgRuntime.getFontCSS(FONTS[lang]!.name))
+        ).then(cssPromises =>
+            cssPromises
+                .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
+                .map(promise => promise.value)
+                .join('\n')
+        );
+        encodedFontsStyleCache.set(key, cssPromise);
+    }
+    s.textContent = await cssPromise;
     return s;
 };

@@ -163,6 +163,17 @@ export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xM
     positionMapAttribution(mapAttribution, bounds.xMin + 8, bounds.yMax - 8);
 };
 
+const facilitiesSvgTextCache = new Map<FacilitiesType, Promise<string>>();
+
+const loadFacilitiesSvgText = (type: FacilitiesType) => {
+    let textPromise = facilitiesSvgTextCache.get(type);
+    if (!textPromise) {
+        textPromise = fetch(`images/facilities/${type}.svg`).then(response => response.text());
+        facilitiesSvgTextCache.set(type, textPromise);
+    }
+    return textPromise;
+};
+
 const loadFacilitiesSvg = async (
     elem: SVGSVGElement,
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>
@@ -182,11 +193,7 @@ const loadFacilitiesSvg = async (
         const facilitiesTypesExists = Object.entries(facilitiesTypesToNodesMapping)
             .filter(([_, v]) => v.length > 0)
             .map(([k, _]) => k as FacilitiesType);
-        const svgs = await Promise.all(
-            (await Promise.all(facilitiesTypesExists.map(async t => await fetch(`images/facilities/${t}.svg`)))).map(
-                rep => rep.text()
-            )
-        );
+        const svgs = await Promise.all(facilitiesTypesExists.map(loadFacilitiesSvgText));
         // extract the svg element from the svg file and append it as symbol to elem
         facilitiesTypesExists.forEach((t, i) => {
             const temp = document.createElement('div');

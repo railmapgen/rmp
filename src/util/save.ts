@@ -74,7 +74,7 @@ export interface RMPSave {
     };
 }
 
-export const CURRENT_VERSION = 77;
+export const CURRENT_VERSION = 79;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1124,4 +1124,14 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             });
         return JSON.stringify({ ...p, version: 77, graph: graph.export() });
     },
+    /** The unreleased real-map schema starts with the map hidden for existing saves. */
+    77: param =>
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        }),
+    /** Bump save version to support animation timeline. Timeline state is optional and old saves load without it. */
+    78: param => JSON.stringify({ ...JSON.parse(param), version: 79 }),
 };

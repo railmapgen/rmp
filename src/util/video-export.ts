@@ -416,8 +416,8 @@ const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
     const bounds = calculateCanvasSize(graph);
     const graphWidth = Math.max(bounds.xMax - bounds.xMin, 1);
     const graphHeight = Math.max(bounds.yMax - bounds.yMin, 1);
-    const fitWidthZoom = (CAMERA_SAFE_VIEWPORT_WIDTH / (graphWidth * 1.12)) * 100;
-    const fitHeightZoom = (CAMERA_SAFE_VIEWPORT_HEIGHT / (graphHeight * 1.12)) * 100;
+    const fitWidthZoom = (CAMERA_VIEWPORT_WIDTH / (graphWidth * 1.12)) * 100;
+    const fitHeightZoom = (CAMERA_VIEWPORT_HEIGHT / (graphHeight * 1.12)) * 100;
     return Math.max(0.1, Math.min(100, Math.min(fitWidthZoom, fitHeightZoom)));
 };
 
@@ -473,10 +473,7 @@ const getVisibleOverviewZoom = (
         0.1,
         Math.min(
             100,
-            Math.min(
-                (CAMERA_SAFE_VIEWPORT_WIDTH / (width * 1.12)) * 100,
-                (CAMERA_SAFE_VIEWPORT_HEIGHT / (height * 1.12)) * 100
-            )
+            Math.min((CAMERA_VIEWPORT_WIDTH / (width * 1.12)) * 100, (CAMERA_VIEWPORT_HEIGHT / (height * 1.12)) * 100)
         )
     );
 };
@@ -499,31 +496,18 @@ const computeSafeCameraFromBounds = (bounds: GraphBounds): { center: { x: number
     const bboxW = Math.max(bounds.xMax - bounds.xMin, 1);
     const bboxH = Math.max(bounds.yMax - bounds.yMin, 1);
 
-    // 输出像素安全矩形（像素坐标，左上角为原点）
-    const safeL = CAMERA_SAFE_INSETS.left;
-    const safeT = CAMERA_SAFE_INSETS.top;
-    const safeR = VIDEO_EXPORT_OUTPUT_WIDTH - CAMERA_SAFE_INSETS.right;
-    const safeB = VIDEO_EXPORT_OUTPUT_HEIGHT - CAMERA_SAFE_INSETS.bottom;
-    const safeW = safeR - safeL;
-    const safeH = safeB - safeT;
-
-    // 世界单位/像素：让内容在安全矩形内额外留 12% 余量（与既有观感一致）
-    const scale = Math.max(bboxW / safeW, bboxH / safeH) * 1.12;
-
-    // zoom = CAMERA_VIEWPORT_HEIGHT * 100 / (scale * OUTPUT_HEIGHT)
+    // 内容必须落在 HUD 之间的安全矩形内；缩放和中心偏移都要按该矩形计算。
+    const scale = Math.max(bboxW / CAMERA_SAFE_WIDTH, bboxH / CAMERA_SAFE_HEIGHT) * 1.12;
     const zoom = (CAMERA_VIEWPORT_HEIGHT * 100) / (scale * VIDEO_EXPORT_OUTPUT_HEIGHT);
-
-    const halfW = VIDEO_EXPORT_OUTPUT_WIDTH / 2;
-    const halfH = VIDEO_EXPORT_OUTPUT_HEIGHT / 2;
-
-    // 中心可行区间（保证 px 落在 [safeL, safeR]、py 落在 [safeT, safeB]），取中点避免偏向一侧
-    const cxMin = bounds.xMax + (halfW - safeR) * scale;
-    const cxMax = bounds.xMin + (halfW - safeL) * scale;
-    const cyMin = bounds.yMax + (halfH - safeB) * scale;
-    const cyMax = bounds.yMin + (halfH - safeT) * scale;
+    const contentCenter = { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
+    const safeCenterX = CAMERA_SAFE_INSETS.left + CAMERA_SAFE_WIDTH / 2;
+    const safeCenterY = CAMERA_SAFE_INSETS.top + CAMERA_SAFE_HEIGHT / 2;
 
     return {
-        center: { x: (cxMin + cxMax) / 2, y: (cyMin + cyMax) / 2 },
+        center: {
+            x: contentCenter.x - (safeCenterX - VIDEO_EXPORT_OUTPUT_WIDTH / 2) * scale,
+            y: contentCenter.y - (safeCenterY - VIDEO_EXPORT_OUTPUT_HEIGHT / 2) * scale,
+        },
         zoom,
     };
 };
@@ -532,8 +516,22 @@ const getSafeOverviewCamera = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     visibleNodes: Set<NodeId>,
     visibleEdges: Set<LineId>
-): { center: { x: number; y: number }; zoom: number } =>
-    computeSafeCameraFromBounds(getVisibleBounds(graph, visibleNodes, visibleEdges));
+): { center: { x: number; y: number }; zoom: number } => {
+    const bounds = getVisibleBounds(graph, visibleNodes, visibleEdges);
+    const width = Math.max(bounds.xMax - bounds.xMin, 1);
+    const height = Math.max(bounds.yMax - bounds.yMin, 1);
+    const zoom = Math.max(
+        0.1,
+        Math.min(
+            100,
+            Math.min((CAMERA_VIEWPORT_WIDTH / (width * 1.12)) * 100, (CAMERA_VIEWPORT_HEIGHT / (height * 1.12)) * 100)
+        )
+    );
+    return {
+        center: { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 },
+        zoom,
+    };
+};
 
 // ── 内容包围盒测量（纳入站名文本等真实渲染宽度） ─────────────────────────────────
 
@@ -546,9 +544,9 @@ const getMeasureContentContainer = (): HTMLDivElement => {
         measureContentContainer.style.position = 'fixed';
         measureContentContainer.style.left = '-100000px';
         measureContentContainer.style.top = '-100000px';
-        measureContentContainer.style.width = '0';
-        measureContentContainer.style.height = '0';
-        measureContentContainer.style.overflow = 'hidden';
+        measureContentContainer.style.width = `${VIDEO_EXPORT_OUTPUT_WIDTH}px`;
+        measureContentContainer.style.height = `${VIDEO_EXPORT_OUTPUT_HEIGHT}px`;
+        measureContentContainer.style.overflow = 'visible';
         measureContentContainer.style.pointerEvents = 'none';
         document.body.appendChild(measureContentContainer);
     }
@@ -560,21 +558,70 @@ const getMeasureContentContainer = (): HTMLDivElement => {
  * getVisibleBounds 只采样节点/边端点坐标，会漏掉站名文本标签的宽度；全览时若只用端点坐标，
  * 长站名（如"广州火车站"）会向左溢出、被左上统计卡片遮挡。这里改为读取真实渲染盒。
  */
-const measureFrameContentBounds = (elem: SVGSVGElement): GraphBounds | null => {
+const measureFrameContentBounds = (
+    elem: SVGSVGElement,
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    visibleNodes: Set<NodeId>,
+    visibleEdges: Set<LineId>
+): GraphBounds | null => {
+    const originalParent = elem.parentNode;
+    const originalNextSibling = elem.nextSibling;
     const mapLayer = elem.querySelector('[data-map-layer]');
-    if (mapLayer) (mapLayer as SVGElement).setAttribute('visibility', 'hidden');
+    const mapParent = mapLayer?.parentNode;
+    const mapNextSibling = mapLayer?.nextSibling;
+    // 地理地图不属于节点、线段及其附属文本的全览范围，测量时从 SVG 中移除。
+    mapLayer?.remove();
     try {
         const container = getMeasureContentContainer();
         container.appendChild(elem);
-        const bbox = elem.getBBox();
-        elem.remove();
-        if (!bbox || (bbox.width === 0 && bbox.height === 0)) return null;
-        return { xMin: bbox.x, xMax: bbox.x + bbox.width, yMin: bbox.y, yMax: bbox.y + bbox.height };
+        const rootScreenMatrix = elem.getScreenCTM();
+        if (!rootScreenMatrix) return null;
+        const inverseRootScreenMatrix = rootScreenMatrix.inverse();
+        let bounds: GraphBounds | null = null;
+        const contentIds = new Set<string>();
+        visibleNodes.forEach(id => contentIds.add(id));
+        visibleEdges.forEach(id => contentIds.add(id));
+        [...contentIds].forEach(id => {
+            [id, `${id}.pre`, `${id}.post`].forEach(groupId => {
+                const element = elem.querySelector<SVGGElement>(`#${CSS.escape(groupId)}`);
+                if (!element) return;
+                const style = window.getComputedStyle(element);
+                if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return;
+                let rect: DOMRect;
+                try {
+                    // group 的最终渲染矩形包含其所有子节点，因而会同时包含 text 的宽高、dx/dy、锚点、基线和描边。
+                    rect = element.getBoundingClientRect();
+                } catch {
+                    return;
+                }
+                if (rect.width === 0 && rect.height === 0) return;
+                const corners = [
+                    new DOMPoint(rect.left, rect.top),
+                    new DOMPoint(rect.right, rect.top),
+                    new DOMPoint(rect.left, rect.bottom),
+                    new DOMPoint(rect.right, rect.bottom),
+                ].map(point => point.matrixTransform(inverseRootScreenMatrix));
+                const xMin = Math.min(...corners.map(point => point.x));
+                const xMax = Math.max(...corners.map(point => point.x));
+                const yMin = Math.min(...corners.map(point => point.y));
+                const yMax = Math.max(...corners.map(point => point.y));
+                bounds = bounds
+                    ? {
+                          xMin: Math.min(bounds.xMin, xMin),
+                          xMax: Math.max(bounds.xMax, xMax),
+                          yMin: Math.min(bounds.yMin, yMin),
+                          yMax: Math.max(bounds.yMax, yMax),
+                      }
+                    : { xMin, xMax, yMin, yMax };
+            });
+        });
+        if (originalParent) originalParent.insertBefore(elem, originalNextSibling);
+        return bounds;
     } catch {
-        elem.remove();
+        if (originalParent) originalParent.insertBefore(elem, originalNextSibling);
         return null;
     } finally {
-        if (mapLayer) (mapLayer as SVGElement).setAttribute('visibility', '');
+        if (mapLayer && mapParent) mapParent.insertBefore(mapLayer, mapNextSibling || null!);
     }
 };
 
@@ -608,12 +655,13 @@ const getBoundsFitZoom = (bounds: GraphBounds): number => {
 
 // ── Edge progress animation ────────────────────────────────────────────────────
 
-const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boolean) => {
+const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boolean, edgeLength?: number) => {
     const pathElements = Array.from(edgeElem.querySelectorAll('path'));
     if (pathElements.length === 0) return;
     const clampedProgress = clamp01(progress);
-    for (const pathElem of pathElements) {
-        const totalLength = pathElem.getTotalLength();
+    for (const [index, pathElem] of pathElements.entries()) {
+        const totalLength =
+            pathElements.length === 1 && index === 0 && edgeLength ? edgeLength : pathElem.getTotalLength();
         if (totalLength <= 0) continue;
         const dashLength = totalLength * clampedProgress;
         pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
@@ -782,7 +830,8 @@ const applyCameraViewBox = (
     center: { x: number; y: number },
     effectiveZoom: number
 ) => {
-    const fallbackBounds = calculateCanvasSize(graph);
+    // elem 同样处于 detached 状态，不能作为 calculateCanvasSize 的查询根（见 createFrameSVG 内注释）
+    const fallbackBounds = calculateCanvasSize(graph, 50);
     const fallbackCenter = {
         x: (fallbackBounds.xMin + fallbackBounds.xMax) / 2,
         y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
@@ -966,7 +1015,7 @@ const createVideoInfoOverlay = (
                 miniMapY + mmOffsetY - graphBounds.yMin * mmScale
             }) scale(${mmScale})`
         );
-        // 导入完整图形，但小地图只显示线路和节点主体，不显示站名文字。
+        // 导入完整图形，但小地图只隐藏站名文字，保留线路和节点图形。
         Array.from(fullGraphSnapshot.children).forEach(child => {
             const source = child as Element;
             if (
@@ -984,9 +1033,21 @@ const createVideoInfoOverlay = (
                 return;
             imported
                 .querySelectorAll(
-                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution], text, [data-station-name], .station-name, .rmp-virtual-node, g[id^="stn_"] path, g[id^="misc_node_"] path, g[id^="node_"] path'
+                    '[data-map-layer], [data-map-raster], [data-map-tiles], style[data-map-style], [data-map-attribution], text, [data-station-name], .station-name, .rmp-virtual-node, .removeMe'
                 )
-                .forEach(label => label.remove());
+                .forEach(element => element.remove());
+            imported.querySelectorAll<SVGPathElement>('path').forEach(path => {
+                if (path.closest('g[id^="stn_"], g[id^="misc_node_"], g[id^="node_"]')) path.remove();
+            });
+            // 当前帧快照中的线段可能因主画布动画被设置了 visibility:hidden。
+            // 小地图要显示当前帧已经进入绘制流程的线段，因此只清除 visibility；
+            // 保留 opacity 和 stroke-dasharray/stroke-dashoffset，让渐显和绘制进度仍然生效。
+            imported.removeAttribute('visibility');
+            if (imported.matches('[data-editor-layer]')) imported.removeAttribute('display');
+            imported.querySelectorAll<SVGElement>('*').forEach(element => {
+                element.removeAttribute('visibility');
+                if (element.matches('[data-editor-layer]')) element.removeAttribute('display');
+            });
             mmContent.appendChild(imported);
         });
         svg.appendChild(mmContent);
@@ -1208,7 +1269,8 @@ const createFrameSVG = async (
     /** 已解析的地图图层模板，预览时复用以避免每帧重复解析大体积 SVG */
     mapLayerTemplate?: SVGSVGElement,
     /** 全览专用安全相机（来自 processFrame 返回值）：存在时优先使用其精确值，跳过弹簧追赶系统 */
-    safeOverviewCamera?: { center: { x: number; y: number }; zoom: number }
+    safeOverviewCamera?: { center: { x: number; y: number }; zoom: number },
+    edgeLengths?: Map<LineId, number>
 ): Promise<{
     elem: SVGSVGElement;
     width: number;
@@ -1324,7 +1386,12 @@ const createFrameSVG = async (
         if (!edgeElem) return;
         const anim = animatingElements.get(edgeId);
         const progress = anim?.kind === 'edge' ? anim.progress : 1;
-        applyEdgeProgress(edgeElem, anim?.quickComplete ? 1 : progress, anim?.reverse ?? false);
+        applyEdgeProgress(
+            edgeElem,
+            anim?.quickComplete ? 1 : progress,
+            anim?.reverse ?? false,
+            edgeLengths?.get(edgeId)
+        );
         if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
         const edgeMileage = graph.getEdgeAttribute(edgeId, 'mileage');
         mileage += typeof edgeMileage === 'number' && Number.isFinite(edgeMileage) ? edgeMileage * progress : 0;
@@ -1356,13 +1423,17 @@ const createFrameSVG = async (
     // 此前 safeOverviewCamera 直接覆盖 finalCameraCenter/finalZoom，跳过了弹簧-阻尼追击与 smoothstep 缩放缓动，
     // 导致全览时视口瞬间跳变。这里只把它作为目标：中心交给弹簧-阻尼逐帧收敛，缩放交给缓动过渡。
     let refinedSafeCamera: { center: { x: number; y: number }; zoom: number } | undefined;
+    let contentBounds: GraphBounds | null = null;
     if (safeOverviewCamera) {
-        const contentBounds = measureFrameContentBounds(elem);
+        contentBounds = measureFrameContentBounds(elem, graph, visibleNodes, visibleEdges);
         refinedSafeCamera = contentBounds ? computeSafeCameraFromBounds(contentBounds) : safeOverviewCamera;
     }
 
     // Camera system（惯性弹簧-阻尼模型）
-    const fallbackBounds = calculateCanvasSize(graph);
+    // 注意：此处 elem 尚未挂载到文档（detached），不能把帧 SVG 传给 calculateCanvasSize，
+    // 否则 getScreenCTM/getBBox 失效导致包围盒错误，小地图缩放错乱而显示空白。
+    // 必须查询主画布（已挂载），transformedBoundingBox 会抵消 viewport 变换得到世界坐标。
+    const fallbackBounds = calculateCanvasSize(graph, 50);
     const fallbackCenter = {
         x: (fallbackBounds.xMin + fallbackBounds.xMax) / 2,
         y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
@@ -1412,8 +1483,8 @@ const createFrameSVG = async (
     // Clone SVG for mini-map BEFORE viewBox modification (preserves original coordinates)
     const frameSnapshot = elem.cloneNode(true) as SVGSVGElement;
 
-    // 视口渲染值：中心取弹簧-阻尼输出（保留惯性），缩放向"含文本精确安全相机"缓动（smoothstep）。
-    // 非全览时使用外部计算好的 effectiveZoom（含 focusZoom 过渡）；全览时重算为平滑缓动值。
+    // 使用弹簧-阻尼模型输出的中心，避免全览目标变化时视口突然跳变。
+    // 缩放仍通过 smoothstep 平滑过渡到全览目标。
     const finalCameraCenter = nextCameraCenter;
     const finalZoom = refinedSafeCamera
         ? getEffectiveZoom(overviewEaseProgress, userScale, refinedSafeCamera.zoom)
@@ -1427,7 +1498,7 @@ const createFrameSVG = async (
         const nodeGroup = elem.getElementById(id);
         return nodeGroup?.getAttribute('visibility') !== 'hidden';
     }).length;
-    const graphBounds: GraphBounds = {
+    const graphBounds: GraphBounds = contentBounds ?? {
         xMin: fallbackBounds.xMin,
         xMax: fallbackBounds.xMax,
         yMin: fallbackBounds.yMin,
@@ -2378,7 +2449,8 @@ async function exportAsWebM(
             nodeVersions,
             ctx.mapLayerMarkup,
             undefined,
-            safeOverviewCamera
+            safeOverviewCamera,
+            edgeLengths
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -2612,7 +2684,8 @@ async function exportAsMP4(
             nodeVersions,
             mapLayerMarkup,
             undefined,
-            safeOverviewCamera
+            safeOverviewCamera,
+            edgeLengths
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -2794,6 +2867,7 @@ async function exportFallbackWebM(
         frameRate: fps,
         transparent: isTransparent,
     });
+    const edgeLengths = await calculateEdgeLengths(graph, languages, isSystemFontsOnly);
 
     const allNodes = new Set<NodeId>();
     const allEdges = new Set<LineId>();
@@ -2915,7 +2989,8 @@ async function exportFallbackWebM(
             nodeVersions,
             mapLayerMarkup,
             undefined,
-            safeOverviewCamera
+            safeOverviewCamera,
+            edgeLengths
         );
         cameraCenter = nc;
         cameraVelocity = nv;
@@ -2962,6 +3037,7 @@ async function exportFallbackMP4(
     const nodeStartFrame = new Map<NodeId, number>();
     const nodeVersions = new Map<NodeId, number>();
     const frameMs = 1000 / fps;
+    const edgeLengths = await calculateEdgeLengths(graph, languages, isSystemFontsOnly);
 
     // 渲染单帧并返回画布（WebCodecs 离线编码与 MediaRecorder 回退共用）
     const renderFrame = async (frame: number): Promise<HTMLCanvasElement> => {
@@ -3062,7 +3138,8 @@ async function exportFallbackMP4(
             nodeVersions,
             mapLayerMarkup,
             undefined,
-            safeOverviewCamera
+            safeOverviewCamera,
+            edgeLengths
         );
         cameraCenter = nc;
         cameraVelocity = nv;
@@ -3528,7 +3605,8 @@ export const createVideoPreview = async (
                 nodeVersions,
                 ctx.mapLayerMarkup,
                 mapLayerTemplate,
-                safeOverviewCamera
+                safeOverviewCamera,
+                edgeLengths
             );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
