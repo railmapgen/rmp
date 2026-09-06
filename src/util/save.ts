@@ -1001,7 +1001,8 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             .forEach(node => {
                 const type = graph.getNodeAttribute(node, 'type');
                 const attr = graph.getNodeAttribute(node, type) as any as
-                    BjsubwayBasicStationAttributes | BjsubwayIntStationAttributes;
+                    | BjsubwayBasicStationAttributes
+                    | BjsubwayIntStationAttributes;
                 if (typeof (attr as any).scale !== 'number') {
                     (attr as any).scale = 1;
                     graph.mergeNodeAttributes(node, { [type]: attr });

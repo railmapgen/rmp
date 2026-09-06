@@ -27,7 +27,8 @@ type EdgesWithAttrs = {
  * For stations, the 'names' field is omitted.
  */
 export type NodeSpecificAttributes =
-    Omit<NonNullable<ExternalStationAttributes[StationType]>, 'names'> | NonNullable<MiscNodeAttributes[MiscNodeType]>;
+    | Omit<NonNullable<ExternalStationAttributes[StationType]>, 'names'>
+    | NonNullable<MiscNodeAttributes[MiscNodeType]>;
 
 /**
  * Union type for all specific line style attributes.

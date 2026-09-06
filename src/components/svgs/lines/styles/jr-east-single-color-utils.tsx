@@ -21,7 +21,9 @@ export interface JREastSingleColorDecorationAttributes {
 }
 
 export interface JREastSingleColorSharedAttributes
-    extends LinePathAttributes, ColorAttribute, JREastSingleColorDecorationAttributes {}
+    extends LinePathAttributes,
+        ColorAttribute,
+        JREastSingleColorDecorationAttributes {}
 
 export const defaultJREastSingleColorDecorationAttributes: JREastSingleColorDecorationAttributes = {
     decoration: 'none',
