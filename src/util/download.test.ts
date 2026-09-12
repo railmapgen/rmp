@@ -28,6 +28,35 @@ describe('download RMP info rules', () => {
 });
 
 describe('map export attribution', () => {
+    it('prepares frame geometry in the detached clone before removing editor-only content', async () => {
+        const canvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        canvas.id = 'canvas';
+        canvas.innerHTML = '<g data-editor-layer><g id="live-node" /></g>';
+        document.body.append(canvas);
+        try {
+            const { elem } = await makeRenderReadySVGElement(
+                new MultiDirectedGraph(),
+                false,
+                true,
+                true,
+                [],
+                false,
+                2,
+                clone => {
+                    clone.querySelector('[data-editor-layer]')!.innerHTML =
+                        '<g id="frame-node" /><g class="removeMe" />';
+                }
+            );
+            expect(elem.getElementById('frame-node')).not.toBeNull();
+            expect(elem.querySelector('.removeMe')).toBeNull();
+            expect(elem.getElementById('live-node')).toBeNull();
+            expect(canvas.getElementById('live-node')).not.toBeNull();
+            expect(canvas.getElementById('frame-node')).toBeNull();
+        } finally {
+            canvas.remove();
+        }
+    });
+
     it('exports original SVG tiles instead of live raster overlays', () => {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const tile = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

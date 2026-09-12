@@ -4,7 +4,12 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import stations from '../components/svgs/stations/stations';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { StationType } from '../constants/stations';
-import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
+import {
+    createEmptyTimelineDocument,
+    TimelineDocument,
+    TimelineElementEntry,
+    TimelineEntry,
+} from '../constants/timeline';
 import {
     applyNodeRevealAnimation,
     applyZoomScale,
@@ -67,18 +72,25 @@ const addEdge = (
     });
 };
 
-const toTimeline = (...entries: TimelineEntry[]): TimelineDocument => ({ version: 1, track: entries });
+const toTimeline = (...entries: TimelineEntry[]): TimelineDocument => ({
+    ...createEmptyTimelineDocument(),
+    track: entries,
+});
 
-const nodeEntry = (refId: `stn_${string}`, index: number): TimelineEntry => ({
+const nodeEntry = (refId: `stn_${string}`, index: number): TimelineElementEntry => ({
     id: `timeline_node_${index}`,
     kind: 'node',
     refId,
+    phase: 'enter',
+    showAnimation: true,
 });
 
-const edgeEntry = (refId: `line_${string}`, index: number): TimelineEntry => ({
+const edgeEntry = (refId: `line_${string}`, index: number): TimelineElementEntry => ({
     id: `timeline_edge_${index}`,
     kind: 'edge',
     refId,
+    phase: 'enter',
+    showAnimation: true,
 });
 
 describe('video export resolution', () => {
@@ -279,6 +291,44 @@ describe('generateAnimationSequence', () => {
         expect(sequence.steps).toEqual([
             { id: 'stn_a', kind: 'node', reverse: false },
             { id: 'line_ab', kind: 'edge', reverse: false },
+            { id: 'stn_b', kind: 'node', reverse: false },
+        ]);
+    });
+
+    it('preserves entrance order and direction when a pro timeline includes keyframes and exits', () => {
+        const graph = makeGraph();
+        addNode(graph, 'stn_a', 0, 0);
+        addNode(graph, 'stn_b', 100, 0);
+        addNode(graph, 'stn_c', 200, 0);
+        addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
+        addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
+
+        const entrances = [
+            nodeEntry('stn_c', 1),
+            nodeEntry('stn_a', 2),
+            edgeEntry('line_ab', 3),
+            edgeEntry('line_bc', 4),
+            nodeEntry('stn_b', 5),
+        ];
+        const timeline: TimelineDocument = {
+            ...toTimeline(
+                ...entrances.slice(0, 3),
+                { id: 'timeline_keyframe', kind: 'keyframe', refId: 'stn_c', x: 300, y: 100 },
+                { ...nodeEntry('stn_c', 6), phase: 'exit' },
+                { ...edgeEntry('line_ab', 7), phase: 'exit' },
+                ...entrances.slice(3)
+            ),
+            mode: 'pro',
+        };
+
+        const sequence = generateAnimationSequence(graph, timeline);
+
+        expect(sequence).toEqual(generateAnimationSequence(graph, toTimeline(...entrances)));
+        expect(sequence.steps).toEqual([
+            { id: 'stn_c', kind: 'node', reverse: false },
+            { id: 'stn_a', kind: 'node', reverse: false },
+            { id: 'line_ab', kind: 'edge', reverse: false },
+            { id: 'line_bc', kind: 'edge', reverse: true },
             { id: 'stn_b', kind: 'node', reverse: false },
         ]);
     });

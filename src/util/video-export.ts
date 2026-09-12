@@ -3,6 +3,7 @@ import WebMWriter from 'webm-writer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Provider } from 'react-redux';
+import { utils } from '@railmapgen/svg-assets';
 import {
     EdgeAttributes,
     ExternalStationAttributes,
@@ -14,14 +15,18 @@ import {
     StnId,
 } from '../constants/constants';
 import stations from '../components/svgs/stations/stations';
+import SvgLayer from '../components/svg-layer';
 import { StationType } from '../constants/stations';
-import { TimelineDocument, TimelineEntry } from '../constants/timeline';
+import { isElementEntry, TimelineDocument, TimelineEntry } from '../constants/timeline';
 import i18n from '../i18n/config';
 import store from '../redux';
 import { TextLanguage } from './fonts';
 import { changeStationType, checkAndChangeStationIntType } from './change-types';
 import { makeRenderReadySVGElement } from './download';
 import { calculateCanvasSize } from './helpers';
+import { getLines, getNodes } from './process-elements';
+import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
+import { createVideoExportCanvas } from './video-export-canvas';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -112,10 +117,7 @@ const VideoExportCSS = `
 
 let watermarkLogoMarkupCache: string | undefined;
 
-type CameraFocus =
-    | { kind: 'none' }
-    | { kind: 'node'; id: NodeId }
-    | { kind: 'edge'; id: LineId; progress: number; reverse: boolean };
+type CameraFocus = VideoCameraFocus;
 
 const isStationNodeId = (id: Id): id is StnId => id.startsWith('stn_');
 
@@ -231,7 +233,9 @@ const measureRenderedEdgeLengths = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeIds: LineId[],
     isSystemFontsOnly: boolean,
-    languages: TextLanguage[]
+    languages: TextLanguage[],
+    renderGeometry = false,
+    sourceCanvas?: SVGSVGElement
 ): Promise<Map<LineId, number>> => {
     const { elem } = await makeRenderReadySVGElement(
         graph,
@@ -240,7 +244,9 @@ const measureRenderedEdgeLengths = async (
         isSystemFontsOnly,
         languages,
         false,
-        2
+        2,
+        renderGeometry ? clone => renderVideoFrameGeometry(graph, clone) : undefined,
+        sourceCanvas
     );
     const edgeLengths = new Map<LineId, number>();
 
@@ -259,9 +265,15 @@ const buildTimelineSequence = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     timeline: TimelineEntry[]
 ): AnimationSequence => {
-    const validTimeline = timeline.filter(entry =>
-        entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId)
-    );
+    // Resolve traversal from entrance order. Authored playback applies exits and
+    // keyframes separately, without treating them as extra line entrances.
+    const validTimeline = timeline
+        .filter(isElementEntry)
+        .filter(
+            entry =>
+                entry.phase === 'enter' &&
+                (entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId))
+        );
     const edgeDirections: Array<boolean | undefined> = Array(validTimeline.length).fill(undefined);
 
     const getEdgeExtremities = (index: number): [NodeId, NodeId] => {
@@ -696,7 +708,7 @@ export const generateAnimationSequence = (
     return buildFallbackSequence(graph);
 };
 
-const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boolean) => {
+const applyEdgeProgress = (edgeElem: Element, progress: number, reverse: boolean) => {
     const pathElements = Array.from(edgeElem.querySelectorAll('path'));
     if (pathElements.length === 0) return;
 
@@ -800,6 +812,47 @@ export const embedVideoExportStyles = (elem: SVGSVGElement) => {
     elem.prepend(style);
 };
 
+/** Rebuild the detached graph layer before export cleanup embeds fonts and facility symbols. */
+export const renderVideoFrameGeometry = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    elem: SVGSVGElement
+) => {
+    let layer = elem.querySelector<SVGGElement>('[data-editor-layer]');
+    if (!layer) {
+        layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layer.setAttribute('data-editor-layer', '');
+        elem.appendChild(layer);
+    }
+    layer.removeAttribute('display');
+    const state = store.getState();
+    layer.innerHTML = renderToStaticMarkup(
+        React.createElement(
+            StaticMarkupProvider,
+            { store },
+            React.createElement(
+                utils.SvgAssetsContextProvider,
+                null,
+                React.createElement(SvgLayer, {
+                    elements: [...getLines(graph, { showReconcileWarnings: false }), ...getNodes(graph)],
+                    selected: new Set<Id>(),
+                    mapEnabled: state.param.present.mapEnabled,
+                    isSubscriber: !!state.account.activeSubscriptions.RMP_CLOUD,
+                    handlePointerDown: () => {},
+                    handlePointerMove: () => {},
+                    handlePointerUp: () => {},
+                    handleEdgePointerDown: () => {},
+                    handleEdgeDoubleClick: () => {},
+                })
+            )
+        )
+    );
+};
+
+const getElementGroups = (elem: SVGSVGElement, id: Id): SVGElement[] =>
+    [id, `${id}.pre`, `${id}.post`]
+        .map(groupId => elem.getElementById(groupId))
+        .filter((group): group is SVGElement => group !== null);
+
 const createFrameSVG = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     visibleNodes: Set<NodeId>,
@@ -817,7 +870,10 @@ const createFrameSVG = async (
     outputHeight: number,
     hideWatermark: boolean,
     isSystemFontsOnly: boolean,
-    languages: TextLanguage[]
+    languages: TextLanguage[],
+    renderGeometry = false,
+    disabledNodeAnimations = new Set<NodeId>(),
+    sourceCanvas?: SVGSVGElement
 ): Promise<{ elem: SVGSVGElement; width: number; height: number; cameraCenter: { x: number; y: number } }> => {
     const frameStationGraph = createFrameStationGraph(graph, visibleEdges, autoChangeStationType);
     const basicStations = getBasicStations(frameStationGraph);
@@ -828,16 +884,18 @@ const createFrameSVG = async (
         isSystemFontsOnly,
         languages,
         false,
-        2
+        2,
+        renderGeometry ? clone => renderVideoFrameGeometry(frameStationGraph, clone) : undefined,
+        sourceCanvas
     );
 
     graph.forEachNode(node => {
         if (!visibleNodes.has(node as NodeId)) {
-            elem.getElementById(node)?.remove();
+            getElementGroups(elem, node as NodeId).forEach(group => group.remove());
         }
     });
 
-    applyFrameStationAppearance(graph, frameStationGraph, elem);
+    if (!renderGeometry) applyFrameStationAppearance(graph, frameStationGraph, elem);
     embedVideoExportStyles(elem);
 
     const changedStations = new Set<StnId>();
@@ -855,16 +913,15 @@ const createFrameSVG = async (
     graph.forEachEdge(edge => {
         const edgeId = edge as LineId;
         if (!visibleEdges.has(edgeId)) {
-            elem.getElementById(edgeId)?.remove();
+            getElementGroups(elem, edgeId).forEach(group => group.remove());
             return;
         }
 
-        const edgeElem = elem.getElementById(edgeId) as HTMLElement | null;
-        if (!edgeElem) return;
-
         const progress = edgeProgress.get(edgeId) ?? 1;
         if (progress < 1) {
-            applyEdgeProgress(edgeElem, progress, edgeDirections.get(edgeId) ?? false);
+            getElementGroups(elem, edgeId).forEach(group =>
+                applyEdgeProgress(group, progress, edgeDirections.get(edgeId) ?? false)
+            );
         }
     });
 
@@ -872,30 +929,30 @@ const createFrameSVG = async (
         const nodeId = node as NodeId;
         if (!visibleNodes.has(nodeId)) return;
 
-        const nodeGroup = elem.getElementById(nodeId) as SVGElement | null;
-        if (!nodeGroup) return;
-
         const revealProgress = nodeProgress.get(nodeId) ?? 1;
         const nodeTextProgress = textProgress.get(nodeId) ?? revealProgress;
-        const transitionProgress = isStationNodeId(nodeId)
-            ? getStationTransitionProgress(graph, focus, nodeId as StnId)
-            : undefined;
-        applyNodeRevealAnimation(
-            nodeGroup,
-            revealProgress,
-            nodeTextProgress,
-            transitionProgress,
-            isStationNodeId(nodeId)
-        );
-
-        if (transitionProgress !== undefined && isStationNodeId(nodeId) && changedStations.has(nodeId)) {
-            const revealOpacity = Number(nodeGroup.getAttribute('opacity') ?? 1);
-            const transitionOpacity = clamp01(0.92 + transitionProgress * 0.08);
-            nodeGroup.setAttribute(
-                'opacity',
-                `${(Number.isFinite(revealOpacity) ? revealOpacity : 1) * transitionOpacity}`
+        const transitionProgress =
+            isStationNodeId(nodeId) && !disabledNodeAnimations.has(nodeId)
+                ? getStationTransitionProgress(graph, focus, nodeId as StnId)
+                : undefined;
+        getElementGroups(elem, nodeId).forEach(nodeGroup => {
+            applyNodeRevealAnimation(
+                nodeGroup,
+                revealProgress,
+                nodeTextProgress,
+                transitionProgress,
+                isStationNodeId(nodeId)
             );
-        }
+
+            if (transitionProgress !== undefined && isStationNodeId(nodeId) && changedStations.has(nodeId)) {
+                const revealOpacity = Number(nodeGroup.getAttribute('opacity') ?? 1);
+                const transitionOpacity = clamp01(0.92 + transitionProgress * 0.08);
+                nodeGroup.setAttribute(
+                    'opacity',
+                    `${(Number.isFinite(revealOpacity) ? revealOpacity : 1) * transitionOpacity}`
+                );
+            }
+        });
     });
 
     const fallbackBounds = calculateCanvasSize(graph);
@@ -963,6 +1020,29 @@ export const exportVideo = async (
     bgColor: string,
     onProgress?: (progress: number) => void
 ): Promise<Blob> => {
+    const { mapEnabled, mapStyle, svgViewBoxMin, svgViewBoxZoom } = store.getState().param.present;
+    const source = createVideoExportCanvas(
+        mapEnabled,
+        mapStyle,
+        { ...svgViewBoxMin, zoom: svgViewBoxZoom },
+        getVideoExportDimensions(options.resolution)
+    );
+    try {
+        return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress);
+    } finally {
+        source.dispose();
+    }
+};
+
+const renderVideo = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument,
+    languages: TextLanguage[],
+    options: VideoExportOptions,
+    bgColor: string,
+    source: ReturnType<typeof createVideoExportCanvas>,
+    onProgress?: (progress: number) => void
+): Promise<Blob> => {
     const {
         fps,
         speedMultiplier,
@@ -975,6 +1055,16 @@ export const exportVideo = async (
         quality,
         hideWatermark,
     } = options;
+    const usesAuthoredPlayback = timeline.track.some(
+        entry => entry.kind === 'keyframe' || entry.phase === 'exit' || entry.showAnimation === false
+    );
+    const renderGeometry = usesAuthoredPlayback || source.renderGeometry;
+    if (renderGeometry) {
+        // Keep the editor graph untouched, and render each authored line independently so
+        // one reconciled segment can enter/exit without affecting the rest of its group.
+        graph = graph.copy();
+        graph.forEachEdge(edge => graph.setEdgeAttribute(edge, 'reconcileId', ''));
+    }
     const sequence = generateAnimationSequence(graph, timeline);
     const { width: outputWidth, height: outputHeight } = getVideoExportDimensions(resolution);
 
@@ -1004,7 +1094,28 @@ export const exportVideo = async (
 
         playbackSegments.push({ kind: 'step', step, duration: 0 });
     });
-    const measuredEdgeLengths = await measureRenderedEdgeLengths(graph, sequence.edges, isSystemFontsOnly, languages);
+    const measuredEdgeLengths = await measureRenderedEdgeLengths(
+        graph,
+        sequence.edges,
+        isSystemFontsOnly,
+        languages,
+        renderGeometry,
+        source.canvas
+    );
+    const multiplier = Number.isFinite(speedMultiplier)
+        ? Math.max(videoExportSpeedRange.min, Math.min(videoExportSpeedRange.max, speedMultiplier))
+        : videoExportSpeedRange.default;
+    const authoredPlayback = usesAuthoredPlayback
+        ? createVideoTimelinePlayback(
+              graph,
+              timeline,
+              measuredEdgeLengths,
+              new Map(
+                  sequence.steps.filter(step => step.kind === 'edge').map(step => [step.id as LineId, step.reverse])
+              ),
+              { fps, drawingSpeed: BaseDrawingSpeed * multiplier, nodeSeconds: NodeRevealSeconds / multiplier }
+          )
+        : undefined;
     const playbackEdgeLengths: number[] = [];
     playbackSegments.forEach(segment => {
         if (segment.kind === 'step' && segment.step.kind === 'edge') {
@@ -1028,7 +1139,7 @@ export const exportVideo = async (
         }
     });
     const animationDuration = Math.max(
-        playbackSegments.reduce<number>((sum, segment) => sum + segment.duration, 0),
+        authoredPlayback?.duration ?? playbackSegments.reduce<number>((sum, segment) => sum + segment.duration, 0),
         1
     );
     // Include the endpoint frame, and leave at least one second for node-only timelines to reveal their labels.
@@ -1061,16 +1172,35 @@ export const exportVideo = async (
     const nodeFirstVisibleFrame = new Map<NodeId, number>();
 
     for (let frame = 0; frame < totalFrames; frame++) {
-        const visibleNodes = new Set<NodeId>();
-        const visibleEdges = new Set<LineId>();
-        const nodeProgress = new Map<NodeId, number>();
-        const textProgress = new Map<NodeId, number>();
-        const edgeProgress = new Map<LineId, number>();
-        const edgeDirections = new Map<LineId, boolean>();
+        let visibleNodes = new Set<NodeId>();
+        let visibleEdges = new Set<LineId>();
+        let nodeProgress = new Map<NodeId, number>();
+        let textProgress = new Map<NodeId, number>();
+        let edgeProgress = new Map<LineId, number>();
+        let edgeDirections = new Map<LineId, boolean>();
         let focus: CameraFocus = { kind: 'none' };
         let nextZoom = currentZoom;
+        let frameGraph = graph;
+        let disabledNodeAnimations = new Set<NodeId>();
 
-        if (frame < animationFrames) {
+        if (authoredPlayback) {
+            const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
+            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
+                state);
+            textProgress = nodeProgress;
+            focus = state.focus;
+            frameGraph = graph.copy();
+            state.positions.forEach((position, nodeId) => frameGraph.mergeNodeAttributes(nodeId, position));
+            if (frame >= animationFrames) {
+                focus = { kind: 'none' };
+                const finalFullscreenZoom = applyZoomScale(getOverviewZoom(frameGraph), fullscreenScale);
+                nextZoom = interpolateCameraZoom(
+                    currentZoom,
+                    finalFullscreenZoom,
+                    getOverviewZoomProgress(frame - animationFrames, overviewFrames)
+                );
+            }
+        } else if (frame < animationFrames) {
             const weightedProgress = Math.min(frame / fps, animationDuration);
             let lastEdgeStartWeight = 0;
             let lastEdgeWeight = 0;
@@ -1179,7 +1309,7 @@ export const exportVideo = async (
             });
         }
 
-        const previousBasicStations = getBasicStationsForFrame(graph, previousVisibleEdges, autoChangeStationType);
+        const previousBasicStations = getBasicStationsForFrame(frameGraph, previousVisibleEdges, autoChangeStationType);
 
         const {
             elem,
@@ -1187,7 +1317,7 @@ export const exportVideo = async (
             height,
             cameraCenter: nextCameraCenter,
         } = await createFrameSVG(
-            graph,
+            frameGraph,
             visibleNodes,
             visibleEdges,
             nodeProgress,
@@ -1203,7 +1333,10 @@ export const exportVideo = async (
             outputHeight,
             hideWatermark,
             isSystemFontsOnly,
-            languages
+            languages,
+            renderGeometry,
+            disabledNodeAnimations,
+            source.canvas
         );
         cameraCenter = nextCameraCenter;
         const canvas = await renderSVGToCanvas(elem, width, height, isTransparent, bgColor);
