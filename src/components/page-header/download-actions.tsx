@@ -28,7 +28,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs } from 'react-icons/md';
+import { MdDownload, MdImage, MdOpenInNew, MdSave, MdSaveAs, MdVideoLibrary } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
 import { isTauri } from '../../constants/server';
@@ -42,6 +42,7 @@ import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { stringifyParam } from '../../util/save';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
+import VideoExportModal from './video-export-modal';
 
 const PNG_EXPORT_SCALES = [25, 50, 100, 150, 200, 250, 300, 400, 500, 750, 1000, 1500, 2000];
 
@@ -117,7 +118,7 @@ export default function DownloadActions() {
             value: scale,
             options: scaleOptions,
             onChange: value => {
-                setScale(value as number);
+                setScale(Number(value));
                 setIsCanvasSizeSupported(undefined);
             },
         },
@@ -129,6 +130,7 @@ export default function DownloadActions() {
         },
     ];
     const [isDownloadModalOpen, setIsDownloadModalOpen] = React.useState(false);
+    const [isVideoExportModalOpen, setIsVideoExportModalOpen] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
@@ -337,6 +339,12 @@ export default function DownloadActions() {
                 >
                     {t('header.download.image')}
                 </MenuItem>
+                <MenuItem icon={<MdVideoLibrary />} onClick={() => setIsVideoExportModalOpen(true)}>
+                    {t('header.download.video')}
+                    <Badge ml="1" colorScheme="blue">
+                        New
+                    </Badge>
+                </MenuItem>
             </MenuList>
 
             <Modal size="2xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
@@ -473,6 +481,8 @@ export default function DownloadActions() {
                     />
                 </ModalContent>
             </Modal>
+
+            <VideoExportModal isOpen={isVideoExportModalOpen} onClose={() => setIsVideoExportModalOpen(false)} />
 
             <ToRmgModal isOpen={isToRmgOpen} onClose={() => setIsToRmgOpen(false)} />
         </Menu>

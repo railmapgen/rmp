@@ -1,6 +1,7 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { MultiDirectedGraph } from 'graphology';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
 import { render } from '../../test-utils';
@@ -64,7 +65,9 @@ describe('DownloadActions', () => {
 
         render(
             <RmgThemeProvider>
-                <DownloadActions />
+                <MemoryRouter>
+                    <DownloadActions />
+                </MemoryRouter>
             </RmgThemeProvider>,
             { store: testStore }
         );
@@ -83,7 +86,9 @@ describe('DownloadActions', () => {
 
         render(
             <RmgThemeProvider>
-                <DownloadActions />
+                <MemoryRouter>
+                    <DownloadActions />
+                </MemoryRouter>
             </RmgThemeProvider>,
             { store: createStore() }
         );
