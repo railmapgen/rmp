@@ -11,7 +11,6 @@ vi.mock('../../util/video-export', async importOriginal => ({
     ...(await importOriginal<typeof import('../../util/video-export')>()),
     exportVideo: vi.fn().mockResolvedValue(new Blob()),
 }));
-vi.mock('../../util/video-transcode', () => ({ transcodeWebMToMP4: vi.fn().mockResolvedValue(new Blob()) }));
 vi.mock('../../util/download', () => ({ downloadBlobAs: vi.fn() }));
 
 describe('VideoExportModal speed setting', () => {
@@ -42,6 +41,7 @@ describe('VideoExportModal speed setting', () => {
         await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
         const options = vi.mocked(exportVideo).mock.calls[0][3];
         expect(options.speedMultiplier).toBe(2);
+        expect(options.format).toBe('mp4');
         expect(options).not.toHaveProperty('duration');
     });
 });

@@ -909,7 +909,6 @@
                 "autoChangeStationTypeHint": "When enabled, the following supported interchange stations are updated automatically based on the lines currently visible in the video: {{stations}}.",
                 "autoChangeStationTypeWarning": "If station-name positioning or interchange information in the video differs from the current map, turn off “Automatically switch basic and interchange stations” to render stations exactly as they appear on the map.",
                 "generating": "Generating video...",
-                "transcoding": "Converting to MP4...",
                 "progress": "Progress: {{progress}}%",
                 "description": "This feature exports an animated video showing nodes and lines being drawn progressively.",
                 "timelineGuide": "Stations and lines are rendered in the order set on the timeline. If the timeline has not been configured, the default order is used.",
@@ -922,7 +921,7 @@
                     "mp4": "MP4"
                 },
                 "mp4Transparency": "MP4 does not support transparent backgrounds. The current interface background will be used.",
-                "error": "Video export failed. Please try again.",
+                "error": "Video export failed. Please try again, or lower the resolution or frame rate.",
                 "noNodes": "Cannot export video: No nodes in the graph."
             },
             "2rmg": {

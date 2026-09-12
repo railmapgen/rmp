@@ -10,7 +10,7 @@ import svgr from 'vite-plugin-svgr';
 export default defineConfig({
     base: '/rmp/',
     optimizeDeps: {
-        exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util', '@ffmpeg/core'],
+        exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/core'],
     },
     plugins: [
         react(),

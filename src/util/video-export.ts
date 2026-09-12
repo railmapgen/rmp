@@ -1,5 +1,4 @@
 import { MultiDirectedGraph } from 'graphology';
-import WebMWriter from 'webm-writer';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Provider } from 'react-redux';
@@ -27,6 +26,7 @@ import { calculateCanvasSize } from './helpers';
 import { getLines, getNodes } from './process-elements';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoExportCanvas } from './video-export-canvas';
+import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions } from './video-encoder';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -60,16 +60,13 @@ export const videoExportResolutions: Record<VideoExportResolution, { width: numb
     '4k': { width: 3840, height: 2160 },
 } as const;
 
-export interface VideoExportOptions {
-    fps: number;
+export interface VideoExportOptions extends VideoEncodingOptions {
     speedMultiplier: number;
     resolution: VideoExportResolution;
-    isTransparent: boolean;
     autoChangeStationType: boolean;
     scale: number;
     fullscreenScale: number;
     isSystemFontsOnly: boolean;
-    quality: number;
     hideWatermark: boolean;
 }
 
@@ -874,7 +871,7 @@ const createFrameSVG = async (
     renderGeometry = false,
     disabledNodeAnimations = new Set<NodeId>(),
     sourceCanvas?: SVGSVGElement
-): Promise<{ elem: SVGSVGElement; width: number; height: number; cameraCenter: { x: number; y: number } }> => {
+): Promise<{ elem: SVGSVGElement; cameraCenter: { x: number; y: number } }> => {
     const frameStationGraph = createFrameStationGraph(graph, visibleEdges, autoChangeStationType);
     const basicStations = getBasicStations(frameStationGraph);
     const { elem } = await makeRenderReadySVGElement(
@@ -976,23 +973,19 @@ const createFrameSVG = async (
 
     return {
         elem,
-        width: outputWidth,
-        height: outputHeight,
         cameraCenter: nextCameraCenter,
     };
 };
 const renderSVGToCanvas = async (
     svgElem: SVGSVGElement,
-    width: number,
-    height: number,
+    canvas: HTMLCanvasElement,
     isTransparent: boolean,
     bgColor: string
-): Promise<HTMLCanvasElement> => {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext('2d')!;
+): Promise<void> => {
+    const { width, height } = canvas;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not create video canvas');
+    ctx.clearRect(0, 0, width, height);
     if (!isTransparent) {
         ctx.fillStyle = bgColor;
         ctx.fillRect(0, 0, width, height);
@@ -1004,10 +997,14 @@ const renderSVGToCanvas = async (
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => {
-            ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas);
+            try {
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve();
+            } catch (error) {
+                reject(error);
+            }
         };
-        img.onerror = reject;
+        img.onerror = () => reject(new Error('Could not render video SVG'));
         img.src = src;
     });
 };
@@ -1028,7 +1025,14 @@ export const exportVideo = async (
         getVideoExportDimensions(options.resolution)
     );
     try {
-        return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress);
+        try {
+            return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress);
+        } catch (error) {
+            if (!(error instanceof NativeVideoEncodingError)) throw error;
+            console.warn('Browser video encoding failed; retrying with software encoding.', error);
+            onProgress?.(0);
+            return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress, true);
+        }
     } finally {
         source.dispose();
     }
@@ -1041,7 +1045,8 @@ const renderVideo = async (
     options: VideoExportOptions,
     bgColor: string,
     source: ReturnType<typeof createVideoExportCanvas>,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    forceSoftware = false
 ): Promise<Blob> => {
     const {
         fps,
@@ -1052,7 +1057,6 @@ const renderVideo = async (
         scale,
         fullscreenScale,
         isSystemFontsOnly,
-        quality,
         hideWatermark,
     } = options;
     const usesAuthoredPlayback = timeline.track.some(
@@ -1154,201 +1158,217 @@ const renderVideo = async (
     }
     let cameraCenter: { x: number; y: number } | undefined;
 
-    const videoWriter = new WebMWriter({
-        quality: quality / 100,
-        frameRate: fps,
-        transparent: isTransparent,
-    });
-    const allNodes = new Set<NodeId>();
-    const allEdges = new Set<LineId>();
-    graph.forEachNode(node => {
-        allNodes.add(node as NodeId);
-    });
-    graph.forEachEdge(edge => {
-        const edgeId = edge as LineId;
-        allEdges.add(edgeId);
-    });
-    let previousVisibleEdges = new Set<LineId>();
-    const nodeFirstVisibleFrame = new Map<NodeId, number>();
+    const canvas = document.createElement('canvas');
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
+    let videoWriter: Awaited<ReturnType<typeof createVideoFrameWriter>> | undefined;
+    try {
+        videoWriter = await createVideoFrameWriter(canvas, options, forceSoftware);
+        const allNodes = new Set<NodeId>();
+        const allEdges = new Set<LineId>();
+        graph.forEachNode(node => {
+            allNodes.add(node as NodeId);
+        });
+        graph.forEachEdge(edge => {
+            const edgeId = edge as LineId;
+            allEdges.add(edgeId);
+        });
+        let previousVisibleEdges = new Set<LineId>();
+        const nodeFirstVisibleFrame = new Map<NodeId, number>();
 
-    for (let frame = 0; frame < totalFrames; frame++) {
-        let visibleNodes = new Set<NodeId>();
-        let visibleEdges = new Set<LineId>();
-        let nodeProgress = new Map<NodeId, number>();
-        let textProgress = new Map<NodeId, number>();
-        let edgeProgress = new Map<LineId, number>();
-        let edgeDirections = new Map<LineId, boolean>();
-        let focus: CameraFocus = { kind: 'none' };
-        let nextZoom = currentZoom;
-        let frameGraph = graph;
-        let disabledNodeAnimations = new Set<NodeId>();
+        for (let frame = 0; frame < totalFrames; frame++) {
+            let visibleNodes = new Set<NodeId>();
+            let visibleEdges = new Set<LineId>();
+            let nodeProgress = new Map<NodeId, number>();
+            let textProgress = new Map<NodeId, number>();
+            let edgeProgress = new Map<LineId, number>();
+            let edgeDirections = new Map<LineId, boolean>();
+            let focus: CameraFocus = { kind: 'none' };
+            let nextZoom = currentZoom;
+            let frameGraph = graph;
+            let disabledNodeAnimations = new Set<NodeId>();
 
-        if (authoredPlayback) {
-            const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
-            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
-                state);
-            textProgress = nodeProgress;
-            focus = state.focus;
-            frameGraph = graph.copy();
-            state.positions.forEach((position, nodeId) => frameGraph.mergeNodeAttributes(nodeId, position));
-            if (frame >= animationFrames) {
-                focus = { kind: 'none' };
-                const finalFullscreenZoom = applyZoomScale(getOverviewZoom(frameGraph), fullscreenScale);
-                nextZoom = interpolateCameraZoom(
-                    currentZoom,
-                    finalFullscreenZoom,
-                    getOverviewZoomProgress(frame - animationFrames, overviewFrames)
-                );
-            }
-        } else if (frame < animationFrames) {
-            const weightedProgress = Math.min(frame / fps, animationDuration);
-            let lastEdgeStartWeight = 0;
-            let lastEdgeWeight = 0;
-            let lastEdgeStep: AnimationStep | undefined;
-
-            playbackSegments.forEach((segment, index) => {
-                const startWeight = cumulativeWeights[index];
-                const weight = segment.duration;
-                const endWeight = startWeight + weight;
-
-                if (segment.kind === 'step' && segment.step.kind === 'edge') {
-                    lastEdgeStartWeight = startWeight;
-                    lastEdgeWeight = weight;
-                    lastEdgeStep = segment.step;
+            if (authoredPlayback) {
+                const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
+                ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
+                    state);
+                textProgress = nodeProgress;
+                focus = state.focus;
+                frameGraph = graph.copy();
+                state.positions.forEach((position, nodeId) => frameGraph.mergeNodeAttributes(nodeId, position));
+                if (frame >= animationFrames) {
+                    focus = { kind: 'none' };
+                    const finalFullscreenZoom = applyZoomScale(getOverviewZoom(frameGraph), fullscreenScale);
+                    nextZoom = interpolateCameraZoom(
+                        currentZoom,
+                        finalFullscreenZoom,
+                        getOverviewZoomProgress(frame - animationFrames, overviewFrames)
+                    );
                 }
+            } else if (frame < animationFrames) {
+                const weightedProgress = Math.min(frame / fps, animationDuration);
+                let lastEdgeStartWeight = 0;
+                let lastEdgeWeight = 0;
+                let lastEdgeStep: AnimationStep | undefined;
 
-                if (weightedProgress < startWeight) return;
+                playbackSegments.forEach((segment, index) => {
+                    const startWeight = cumulativeWeights[index];
+                    const weight = segment.duration;
+                    const endWeight = startWeight + weight;
 
-                if (segment.kind === 'pause') {
-                    const previousEdgeId = segment.previousEdgeId;
-                    visibleEdges.add(previousEdgeId);
-                    const previousEdgeReverse = edgeDirections.get(previousEdgeId) ?? false;
-                    edgeDirections.set(previousEdgeId, previousEdgeReverse);
-                    edgeProgress.set(previousEdgeId, 1);
-                    focus = {
-                        kind: 'edge',
-                        id: previousEdgeId,
-                        progress: 1,
-                        reverse: previousEdgeReverse,
-                    };
-                    return;
-                }
-
-                const step = segment.step;
-
-                if (step.kind === 'node') {
-                    const nodeId = step.id as NodeId;
-                    let activationProgress = 1;
-                    if (isStationNodeId(nodeId) && lastEdgeStep && graph.hasEdge(lastEdgeStep.id)) {
-                        const edgeId = lastEdgeStep.id as LineId;
-                        const [source, target] = graph.extremities(edgeId);
-                        const arrivalNode = lastEdgeStep.reverse ? source : target;
-                        if (nodeId === arrivalNode) {
-                            activationProgress = getStationActivationProgress(
-                                measuredEdgeLengths.get(edgeId) ?? 0,
-                                currentZoom
-                            );
-                        }
+                    if (segment.kind === 'step' && segment.step.kind === 'edge') {
+                        lastEdgeStartWeight = startWeight;
+                        lastEdgeWeight = weight;
+                        lastEdgeStep = segment.step;
                     }
-                    const activationWeight =
-                        index === 0 || lastEdgeWeight === 0
-                            ? 0
-                            : lastEdgeStartWeight + lastEdgeWeight * activationProgress;
-                    if (weightedProgress >= activationWeight) {
-                        visibleNodes.add(nodeId);
-                        if (!nodeFirstVisibleFrame.has(nodeId)) {
-                            nodeFirstVisibleFrame.set(nodeId, frame);
-                        }
-                        const nodeStartFrame = nodeFirstVisibleFrame.get(nodeId) ?? frame;
-                        const revealProgress = getNodeRevealProgressForFrame(nodeId, frame, nodeStartFrame, fps);
-                        nodeProgress.set(nodeId, revealProgress.nodeProgress);
-                        textProgress.set(nodeId, revealProgress.textProgress);
-                        if (weightedProgress >= lastEdgeStartWeight + lastEdgeWeight) {
-                            focus = { kind: 'node', id: nodeId };
-                        }
+
+                    if (weightedProgress < startWeight) return;
+
+                    if (segment.kind === 'pause') {
+                        const previousEdgeId = segment.previousEdgeId;
+                        visibleEdges.add(previousEdgeId);
+                        const previousEdgeReverse = edgeDirections.get(previousEdgeId) ?? false;
+                        edgeDirections.set(previousEdgeId, previousEdgeReverse);
+                        edgeProgress.set(previousEdgeId, 1);
+                        focus = {
+                            kind: 'edge',
+                            id: previousEdgeId,
+                            progress: 1,
+                            reverse: previousEdgeReverse,
+                        };
+                        return;
                     }
-                    return;
-                }
 
-                const edgeId = step.id as LineId;
+                    const step = segment.step;
 
-                visibleEdges.add(edgeId);
-                edgeDirections.set(edgeId, step.reverse);
-                if (weightedProgress >= endWeight) {
-                    edgeProgress.set(edgeId, 1);
+                    if (step.kind === 'node') {
+                        const nodeId = step.id as NodeId;
+                        let activationProgress = 1;
+                        if (isStationNodeId(nodeId) && lastEdgeStep && graph.hasEdge(lastEdgeStep.id)) {
+                            const edgeId = lastEdgeStep.id as LineId;
+                            const [source, target] = graph.extremities(edgeId);
+                            const arrivalNode = lastEdgeStep.reverse ? source : target;
+                            if (nodeId === arrivalNode) {
+                                activationProgress = getStationActivationProgress(
+                                    measuredEdgeLengths.get(edgeId) ?? 0,
+                                    currentZoom
+                                );
+                            }
+                        }
+                        const activationWeight =
+                            index === 0 || lastEdgeWeight === 0
+                                ? 0
+                                : lastEdgeStartWeight + lastEdgeWeight * activationProgress;
+                        if (weightedProgress >= activationWeight) {
+                            visibleNodes.add(nodeId);
+                            if (!nodeFirstVisibleFrame.has(nodeId)) {
+                                nodeFirstVisibleFrame.set(nodeId, frame);
+                            }
+                            const nodeStartFrame = nodeFirstVisibleFrame.get(nodeId) ?? frame;
+                            const revealProgress = getNodeRevealProgressForFrame(nodeId, frame, nodeStartFrame, fps);
+                            nodeProgress.set(nodeId, revealProgress.nodeProgress);
+                            textProgress.set(nodeId, revealProgress.textProgress);
+                            if (weightedProgress >= lastEdgeStartWeight + lastEdgeWeight) {
+                                focus = { kind: 'node', id: nodeId };
+                            }
+                        }
+                        return;
+                    }
+
+                    const edgeId = step.id as LineId;
+
+                    visibleEdges.add(edgeId);
+                    edgeDirections.set(edgeId, step.reverse);
+                    if (weightedProgress >= endWeight) {
+                        edgeProgress.set(edgeId, 1);
+                        focus = {
+                            kind: 'edge',
+                            id: edgeId,
+                            progress: 1,
+                            reverse: edgeDirections.get(edgeId) ?? false,
+                        };
+                        return;
+                    }
+
+                    const progress = Math.max(
+                        0,
+                        Math.min(1, (weightedProgress - startWeight) / Math.max(weight, 1e-6))
+                    );
+                    edgeProgress.set(edgeId, progress);
                     focus = {
                         kind: 'edge',
                         id: edgeId,
-                        progress: 1,
+                        progress,
                         reverse: edgeDirections.get(edgeId) ?? false,
                     };
-                    return;
-                }
+                });
+            } else {
+                const overviewProgress = getOverviewZoomProgress(frame - animationFrames, overviewFrames);
+                nextZoom = interpolateCameraZoom(currentZoom, fullscreenZoom, overviewProgress);
+                allNodes.forEach(nodeId => {
+                    visibleNodes.add(nodeId);
+                    nodeProgress.set(nodeId, 1);
+                    textProgress.set(nodeId, 1);
+                });
+                allEdges.forEach(edgeId => {
+                    visibleEdges.add(edgeId);
+                    edgeDirections.set(edgeId, false);
+                    edgeProgress.set(edgeId, 1);
+                });
+            }
 
-                const progress = Math.max(0, Math.min(1, (weightedProgress - startWeight) / Math.max(weight, 1e-6)));
-                edgeProgress.set(edgeId, progress);
-                focus = {
-                    kind: 'edge',
-                    id: edgeId,
-                    progress,
-                    reverse: edgeDirections.get(edgeId) ?? false,
-                };
-            });
-        } else {
-            const overviewProgress = getOverviewZoomProgress(frame - animationFrames, overviewFrames);
-            nextZoom = interpolateCameraZoom(currentZoom, fullscreenZoom, overviewProgress);
-            allNodes.forEach(nodeId => {
-                visibleNodes.add(nodeId);
-                nodeProgress.set(nodeId, 1);
-                textProgress.set(nodeId, 1);
-            });
-            allEdges.forEach(edgeId => {
-                visibleEdges.add(edgeId);
-                edgeDirections.set(edgeId, false);
-                edgeProgress.set(edgeId, 1);
-            });
+            const previousBasicStations = getBasicStationsForFrame(
+                frameGraph,
+                previousVisibleEdges,
+                autoChangeStationType
+            );
+
+            const { elem, cameraCenter: nextCameraCenter } = await createFrameSVG(
+                frameGraph,
+                visibleNodes,
+                visibleEdges,
+                nodeProgress,
+                textProgress,
+                edgeProgress,
+                edgeDirections,
+                focus,
+                cameraCenter,
+                previousBasicStations,
+                autoChangeStationType,
+                nextZoom,
+                outputWidth,
+                outputHeight,
+                hideWatermark,
+                isSystemFontsOnly,
+                languages,
+                renderGeometry,
+                disabledNodeAnimations,
+                source.canvas
+            );
+            cameraCenter = nextCameraCenter;
+            try {
+                await renderSVGToCanvas(elem, canvas, isTransparent && options.format === 'webm', bgColor);
+                await videoWriter.addFrame(frame);
+            } finally {
+                elem.remove();
+            }
+
+            if (onProgress) {
+                onProgress((frame + 1) / (totalFrames + 1));
+            }
+
+            previousVisibleEdges = new Set(visibleEdges);
         }
 
-        const previousBasicStations = getBasicStationsForFrame(frameGraph, previousVisibleEdges, autoChangeStationType);
-
-        const {
-            elem,
-            width,
-            height,
-            cameraCenter: nextCameraCenter,
-        } = await createFrameSVG(
-            frameGraph,
-            visibleNodes,
-            visibleEdges,
-            nodeProgress,
-            textProgress,
-            edgeProgress,
-            edgeDirections,
-            focus,
-            cameraCenter,
-            previousBasicStations,
-            autoChangeStationType,
-            nextZoom,
-            outputWidth,
-            outputHeight,
-            hideWatermark,
-            isSystemFontsOnly,
-            languages,
-            renderGeometry,
-            disabledNodeAnimations,
-            source.canvas
-        );
-        cameraCenter = nextCameraCenter;
-        const canvas = await renderSVGToCanvas(elem, width, height, isTransparent, bgColor);
-        videoWriter.addFrame(canvas);
-        elem.remove();
-
-        if (onProgress) {
-            onProgress((frame + 1) / totalFrames);
+        const blob = await videoWriter.complete();
+        onProgress?.(1);
+        return blob;
+    } finally {
+        try {
+            await videoWriter?.dispose();
+        } finally {
+            canvas.width = 0;
+            canvas.height = 0;
         }
-
-        previousVisibleEdges = new Set(visibleEdges);
     }
-
-    return await videoWriter.complete();
 };

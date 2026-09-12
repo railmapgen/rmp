@@ -13,7 +13,6 @@
         "@emotion/styled": "^11.14.1",
         "@ffmpeg/core": "^0.12.10",
         "@ffmpeg/ffmpeg": "^0.12.15",
-        "@ffmpeg/util": "^0.12.2",
         "@railmapgen/rmg-components": "^10.1.19",
         "@railmapgen/rmg-palette-resources": "^3.0.0",
         "@railmapgen/rmg-runtime": "^12.0.3",
@@ -25,6 +24,7 @@
         "expr-eval": "^2.0.2",
         "graphology": "^0.26.0",
         "graphology-utils": "^2.5.2",
+        "mediabunny": "^1.56.1",
         "mime-types": "^3.0.1",
         "nanoid": "^5.0.9",
         "pinyin-pro": "^3.28.1",
@@ -36,8 +36,7 @@
         "react-router-dom": "^7.12.0",
         "react-use-event-hook": "^0.9.6",
         "rollup": "^4.62.5",
-        "vite-plugin-svgr": "^4.5.0",
-        "webm-writer": "^1.0.0"
+        "vite-plugin-svgr": "^4.5.0"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.28.3",

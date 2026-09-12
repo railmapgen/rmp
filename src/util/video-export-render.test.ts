@@ -9,17 +9,22 @@ import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '..
 import { makeRenderReadySVGElement } from './download';
 import * as videoExportCanvas from './video-export-canvas';
 import { exportVideo, VideoExportOptions } from './video-export';
+import { createVideoFrameWriter, NativeVideoEncodingError } from './video-encoder';
 
 const { addFrame, complete } = vi.hoisted(() => ({
     addFrame: vi.fn(),
     complete: vi.fn().mockResolvedValue(new Blob()),
 }));
-vi.mock('webm-writer', () => ({ default: vi.fn(() => ({ addFrame, complete })) }));
+vi.mock('./video-encoder', async importOriginal => ({
+    ...(await importOriginal<typeof import('./video-encoder')>()),
+    createVideoFrameWriter: vi.fn(async () => ({ addFrame, complete, dispose: vi.fn() })),
+}));
 vi.mock('./download', () => ({ makeRenderReadySVGElement: vi.fn() }));
 
 const renderedSVGs: SVGSVGElement[] = [];
 let editorCanvas: SVGSVGElement;
 const defaultOptions: VideoExportOptions = {
+    format: 'mp4',
     fps: 30,
     speedMultiplier: 1,
     resolution: '720p',
@@ -80,6 +85,7 @@ beforeEach(() => {
         }
     );
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+        clearRect: vi.fn(),
         fillRect: vi.fn(),
         drawImage: vi.fn(),
     } as unknown as CanvasRenderingContext2D);
@@ -295,6 +301,41 @@ describe('authored video frames', () => {
         ).rejects.toThrow('SVG preparation failed');
         expect(dispose).toHaveBeenCalledOnce();
         expect(complete).not.toHaveBeenCalled();
+    });
+
+    it('restarts failed native encoding from frame zero and releases both writers and canvases', async () => {
+        const firstDispose = vi.fn();
+        const secondDispose = vi.fn();
+        const firstAdd = vi.fn().mockRejectedValue(new NativeVideoEncodingError(new Error('Encoder failed')));
+        vi.mocked(createVideoFrameWriter)
+            .mockResolvedValueOnce({ addFrame: firstAdd, complete, dispose: firstDispose })
+            .mockResolvedValueOnce({ addFrame, complete, dispose: secondDispose });
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+        const onProgress = vi.fn();
+        await exportVideo(makeGraph(200), createEmptyTimelineDocument(), [], defaultOptions, 'white', onProgress);
+        const attempts = vi.mocked(createVideoFrameWriter).mock.calls;
+        expect(attempts.map(call => call[2])).toEqual([false, true]);
+        expect(attempts[0][0]).not.toBe(attempts[1][0]);
+        attempts.forEach(([canvas]) => expect([canvas.width, canvas.height]).toEqual([0, 0]));
+        expect(firstDispose).toHaveBeenCalledOnce();
+        expect(secondDispose).toHaveBeenCalledOnce();
+        expect(firstAdd).toHaveBeenCalledWith(0);
+        expect(addFrame).toHaveBeenNthCalledWith(1, 0);
+        expect(addFrame).toHaveBeenCalledTimes(91);
+        expect(onProgress).toHaveBeenLastCalledWith(1);
+    });
+
+    it('releases a failed software writer without retrying or reporting completion', async () => {
+        const dispose = vi.fn();
+        vi.mocked(createVideoFrameWriter).mockResolvedValueOnce({ addFrame, complete, dispose });
+        complete.mockRejectedValueOnce(new Error('Software encoding failed'));
+        const onProgress = vi.fn();
+        await expect(
+            exportVideo(makeGraph(200), createEmptyTimelineDocument(), [], defaultOptions, 'white', onProgress)
+        ).rejects.toThrow('Software encoding failed');
+        expect(createVideoFrameWriter).toHaveBeenCalledOnce();
+        expect(dispose).toHaveBeenCalledOnce();
+        expect(onProgress).not.toHaveBeenCalledWith(1);
     });
 
     it('preserves simple entrance timing when only the editor mode changes', async () => {

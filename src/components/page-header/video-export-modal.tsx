@@ -85,7 +85,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [videoResolution, setVideoResolution] = React.useState<VideoExportResolution>('720p');
     const [videoProgress, setVideoProgress] = React.useState(0);
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
-    const [isVideoTranscoding, setIsVideoTranscoding] = React.useState(false);
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
@@ -120,6 +119,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
         try {
             const options: VideoExportOptions = {
+                format: videoFormat,
                 fps: videoFps,
                 speedMultiplier: videoSpeedMultiplier,
                 resolution: videoResolution,
@@ -132,18 +132,9 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 hideWatermark: isAttachSelected,
             };
 
-            const renderingProgressWeight = videoFormat === 'mp4' ? 0.8 : 1;
-            let blob = await exportVideo(graph.current, timeline, languages, options, bgColor, progress =>
-                setVideoProgress(Math.floor(progress * renderingProgressWeight * 100))
+            const blob = await exportVideo(graph.current, timeline, languages, options, bgColor, progress =>
+                setVideoProgress(progress * 100)
             );
-
-            if (videoFormat === 'mp4') {
-                setIsVideoTranscoding(true);
-                const { transcodeWebMToMP4 } = await import('../../util/video-transcode');
-                blob = await transcodeWebMToMP4(blob, progress =>
-                    setVideoProgress(Math.floor((renderingProgressWeight + progress * 0.2) * 100))
-                );
-            }
 
             downloadBlobAs(`RMP_${new Date().valueOf()}.${videoFormat}`, blob);
         } catch (error) {
@@ -157,7 +148,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             );
         } finally {
             setIsVideoGenerating(false);
-            setIsVideoTranscoding(false);
             setVideoProgress(0);
         }
     };
@@ -394,15 +384,9 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                         <Alert status="info" mt="4">
                             <AlertIcon />
                             <Box flex="1">
-                                <AlertTitle>
-                                    {t(
-                                        isVideoTranscoding
-                                            ? 'header.download.videoExport.transcoding'
-                                            : 'header.download.videoExport.generating'
-                                    )}
-                                </AlertTitle>
-                                <AlertDescription>
-                                    {t('header.download.videoExport.progress', { progress: videoProgress })}
+                                <AlertTitle>{t('header.download.videoExport.generating')}</AlertTitle>
+                                <AlertDescription sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                                    {t('header.download.videoExport.progress', { progress: videoProgress.toFixed(1) })}
                                 </AlertDescription>
                                 <Progress
                                     value={videoProgress}
@@ -414,6 +398,12 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                                     mt={2}
                                     hasStripe
                                     isAnimated
+                                    sx={{
+                                        '& [role="progressbar"]': {
+                                            transition: 'width 0.2s linear',
+                                            '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+                                        },
+                                    }}
                                 />
                             </Box>
                         </Alert>

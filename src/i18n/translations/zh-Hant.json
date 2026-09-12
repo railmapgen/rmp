@@ -908,7 +908,6 @@
                 "autoChangeStationTypeHint": "開啟後，將根據影片中目前已顯示的線路自動調整以下支援的轉乘車站：{{stations}}。",
                 "autoChangeStationTypeWarning": "如果影片中的車站名稱位置或轉乘資訊與目前地圖不一致，請關閉「自動切換基本車站與轉乘車站」，以完全按照地圖目前狀態渲染車站。",
                 "generating": "正在產生影片...",
-                "transcoding": "正在轉換為 MP4...",
                 "progress": "進度：{{progress}}%",
                 "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
                 "timelineGuide": "影片會按照時間線中設定的順序依次渲染車站和線路；如果尚未設定時間線，則使用預設順序。",
@@ -921,7 +920,7 @@
                     "mp4": "MP4"
                 },
                 "mp4Transparency": "MP4 不支援透明背景，將使用目前介面背景色。",
-                "error": "影片匯出失敗，請重試。",
+                "error": "影片匯出失敗，請重試或降低解析度、影格率。",
                 "noNodes": "無法匯出影片：圖中沒有節點。"
             },
             "2rmg": {
