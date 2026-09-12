@@ -19,6 +19,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, StnId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { replaceProject } from '../../redux/project-history';
 import { autoPopulateTransfer, changeStationsTypeInBatch } from '../../util/change-types';
@@ -84,6 +85,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                 mapStyle,
                 svgViewBoxZoom: 100,
                 svgViewBoxMin: { x: 0, y: 0 },
+                timeline: createEmptyTimelineDocument(),
             })
         );
         setText('');

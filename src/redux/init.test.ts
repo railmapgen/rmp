@@ -5,6 +5,7 @@ import { createStore } from '.';
 import { initStore } from './init';
 import { saveGraph, setSvgViewport } from './param/param-slice';
 import { refreshEdgesThunk } from './runtime/runtime-slice';
+import { setTimelineDocument } from './timeline/timeline-slice';
 
 vi.mock('../util/rmt-save', () => ({
     onLocalStorageChangeRMT: vi.fn(),
@@ -55,6 +56,27 @@ describe('project persistence', () => {
         await flushListenerEffects();
 
         expect(localStorage.getItem(LocalStorageKey.PARAM)).toBeTruthy();
+        expect(onRMPSaveUpdate).toHaveBeenCalledTimes(1);
+    });
+
+    it('persists timeline changes', async () => {
+        const timeline = {
+            version: 1 as const,
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_saved',
+                    kind: 'node' as const,
+                    refId: 'misc_node_saved' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
+        };
+        store.dispatch(setTimelineDocument(timeline));
+        await flushListenerEffects();
+
+        expect(JSON.parse(localStorage.getItem(LocalStorageKey.PARAM)!).timeline).toEqual(timeline);
         expect(onRMPSaveUpdate).toHaveBeenCalledTimes(1);
     });
 });

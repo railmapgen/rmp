@@ -1,10 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
+import { createEmptyTimelineDocument } from '../constants/timeline';
 import type { RootDispatch, RootState } from '.';
 import {
     applyRedoAction,
     applyUndoAction,
     ParamGraph,
-    ProjectSnapshot,
+    ProjectReplacement,
     replaceProjectState,
 } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
@@ -31,9 +32,9 @@ const refreshGraphState = (dispatch: RootDispatch) => {
  * Replaces the live graph before committing project history so a malformed
  * graph cannot leave Redux pointing at a project that failed to open.
  */
-export const replaceProject = (project: ProjectSnapshot) => (dispatch: RootDispatch) => {
+export const replaceProject = (project: ProjectReplacement) => (dispatch: RootDispatch, getState: () => RootState) => {
     replaceWindowGraph(project.graph);
-    dispatch(replaceProjectState(project));
+    dispatch(replaceProjectState(project, getState().timeline.present));
     return refreshGraphState(dispatch);
 };
 
@@ -43,7 +44,14 @@ export const undoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
-    dispatch(applyUndoAction(entry.scope));
+    dispatch(
+        applyUndoAction(
+            entry.scope,
+            entry.scope === 'project'
+                ? { current: getState().timeline.present, restored: entry.timeline ?? createEmptyTimelineDocument() }
+                : undefined
+        )
+    );
     return refreshGraphState(dispatch);
 };
 
@@ -53,6 +61,13 @@ export const redoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
-    dispatch(applyRedoAction(entry.scope));
+    dispatch(
+        applyRedoAction(
+            entry.scope,
+            entry.scope === 'project'
+                ? { current: getState().timeline.present, restored: entry.timeline ?? createEmptyTimelineDocument() }
+                : undefined
+        )
+    );
     return refreshGraphState(dispatch);
 };

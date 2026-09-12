@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { MdInsertDriveFile, MdNoteAdd, MdOpenInNew, MdSchool, MdUpload } from 'react-icons/md';
 import { EdgeAttributes, Events, GraphAttributes, LocalStorageKey, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { replaceProject } from '../../redux/project-history';
@@ -15,6 +16,7 @@ import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
+import { normalizeTimelineDocument } from '../../util/timeline';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -46,13 +48,14 @@ export default function OpenActions() {
                 mapStyle,
                 svgViewBoxZoom: 100,
                 svgViewBoxMin: { x: 0, y: 0 },
+                timeline: createEmptyTimelineDocument(),
             })
         );
     };
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, timeline, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
 
         const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         nextGraph.import(save.graph);
@@ -73,6 +76,7 @@ export default function OpenActions() {
                     typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'
                         ? svgViewBoxMin
                         : { x: 0, y: 0 },
+                timeline: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()),
             })
         );
 

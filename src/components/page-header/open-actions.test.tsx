@@ -2,10 +2,12 @@ import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { createStore } from '../../redux';
 import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { setMapEnabled, setMapStyle, setSvgViewport } from '../../redux/param/param-slice';
+import { setTimelineDocument } from '../../redux/timeline/timeline-slice';
 import { render } from '../../test-utils';
 import { stringifyParam } from '../../util/save';
 import OpenActions from './open-actions';
@@ -64,6 +66,21 @@ describe('OpenActions', () => {
         mapStyle.roads.arterial.color = '#123456';
         store.dispatch(setMapEnabled(true));
         store.dispatch(setMapStyle(mapStyle));
+        store.dispatch(
+            setTimelineDocument({
+                version: 1,
+                mode: 'quick',
+                track: [
+                    {
+                        id: 'clip_existing',
+                        kind: 'node',
+                        refId: 'misc_node_existing',
+                        phase: 'enter',
+                        showAnimation: true,
+                    },
+                ],
+            })
+        );
         const { container } = render(
             <RmgThemeProvider>
                 <OpenActions />
@@ -76,6 +93,7 @@ describe('OpenActions', () => {
 
         await waitFor(() => expect(store.getState().param.present.mapEnabled).toBe(false));
         expect(store.getState().param.present.mapStyle).toEqual(mapStyle);
+        expect(store.getState().timeline.present).toEqual(createEmptyTimelineDocument());
         expect(store.getState().param.past.at(-1)).toMatchObject({
             scope: 'project',
             mapEnabled: true,
@@ -90,7 +108,21 @@ describe('OpenActions', () => {
         sourceStore.dispatch(setMapEnabled(true));
         sourceStore.dispatch(setMapStyle(mapStyle));
         sourceStore.dispatch(setSvgViewport({ zoom: 55, min: { x: 12, y: 34 } }));
-        const save = stringifyParam(sourceStore.getState().param);
+        const timeline = {
+            version: 1 as const,
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_uploaded',
+                    kind: 'node' as const,
+                    refId: 'misc_node_uploaded' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
+        };
+        sourceStore.dispatch(setTimelineDocument(timeline));
+        const save = stringifyParam(sourceStore.getState().param, timeline);
         const store = createStore();
         render(
             <RmgThemeProvider>
@@ -107,5 +139,6 @@ describe('OpenActions', () => {
         expect(store.getState().param.present.mapStyle).toEqual(mapStyle);
         expect(store.getState().param.present.svgViewBoxZoom).toBe(55);
         expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 12, y: 34 });
+        expect(store.getState().timeline.present).toEqual(timeline);
     });
 });

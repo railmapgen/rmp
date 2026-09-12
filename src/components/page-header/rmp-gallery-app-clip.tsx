@@ -5,11 +5,13 @@ import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { EdgeAttributes, Events, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { shared_work_endpoint } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { replaceProject } from '../../redux/project-history';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
+import { normalizeTimelineDocument } from '../../util/timeline';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
@@ -51,7 +53,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleOpenWork = async (rmpSave: RMPSave) => {
         // works may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
+        const { version, images, timeline, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
 
         const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         nextGraph.import(save.graph);
@@ -72,6 +74,7 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
                     typeof svgViewBoxMin.x === 'number' && typeof svgViewBoxMin.y === 'number'
                         ? svgViewBoxMin
                         : { x: 0, y: 0 },
+                timeline: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()),
             })
         );
 

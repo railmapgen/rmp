@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '../redux';
 import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
@@ -138,6 +139,57 @@ describe('Unit tests for param upgrade function', () => {
         expect(allKeys.reduce((acc, cur) => acc + cur, 0)).toEqual(((CURRENT_VERSION - 1) * CURRENT_VERSION) / 2);
         // Maximum of allKeys equals CURRENT_VERSION - 1.
         expect(Math.max(...allKeys) + 1).toEqual(CURRENT_VERSION);
+    });
+
+    it('stringifyParam should export timeline at the top level', () => {
+        const paramState = createStore().getState().param;
+        const timeline = {
+            version: 1 as const,
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_1',
+                    kind: 'node' as const,
+                    refId: 'stn_a' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
+        };
+
+        const save = JSON.parse(stringifyParam(paramState, timeline));
+
+        expect(save.timeline).toEqual(timeline);
+        expect(save.graph).toBeDefined();
+    });
+
+    it('77 -> 78', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"timeline":{"version":1,"track":[]},"version":77}';
+        const newParam = UPGRADE_COLLECTION[77](oldParam);
+        const upgraded = JSON.parse(newParam);
+
+        expect(upgraded.version).toBe(78);
+        // Timeline structure is normalized when a save is loaded, not during parameter upgrades.
+        expect(upgraded.timeline).toEqual({ version: 1, track: [] });
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it('78 -> 79 reconciles saves from the timeline and real-map branches', () => {
+        const timelineSave = JSON.stringify({
+            graph: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline: createEmptyTimelineDocument(),
+            version: 78,
+        });
+        const upgraded = JSON.parse(UPGRADE_COLLECTION[78](timelineSave));
+
+        expect(upgraded.version).toBe(79);
+        expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
     });
 
     it('1 -> 2', () => {

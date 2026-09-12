@@ -38,6 +38,7 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { TimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
@@ -51,10 +52,11 @@ export interface RMPSave extends ProjectSnapshot {
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
+    timeline?: TimelineDocument;
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 78;
+export const CURRENT_VERSION = 79;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -163,9 +165,14 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
  * Returns a save containing only the current project snapshot, never its undo
  * and redo stacks. Images are attached only when supplied by an export flow.
  */
-export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
+export const stringifyParam = (
+    paramState: ParamState & Pick<RMPSave, 'images'>,
+    timeline?: TimelineDocument,
+    images = paramState.images
+) => {
     const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
-    if (paramState.images) save.images = paramState.images;
+    if (timeline) save.timeline = timeline;
+    if (images) save.images = images;
     return JSON.stringify(save);
 };
 
@@ -1040,4 +1047,14 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
+    /** Reconcile version 78 saves created by the timeline and real-map branches. */
+    78: param => {
+        const save = JSON.parse(param) as Partial<RMPSave>;
+        return JSON.stringify({
+            ...save,
+            version: 79,
+            mapEnabled: save.mapEnabled ?? false,
+            mapStyle: save.mapStyle ?? DEFAULT_MAP_STYLE,
+        });
+    },
 };

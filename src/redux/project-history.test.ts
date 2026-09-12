@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defaultRadialTouchMenuState } from '../components/touch/radial-touch-menu';
 import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
+import { createEmptyTimelineDocument } from '../constants/timeline';
+import { appendTimelineEntry } from '../util/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '.';
 import {
@@ -23,6 +25,7 @@ import {
     setSelected,
     showDetailsPanel,
 } from './runtime/runtime-slice';
+import { redoTimeline, setTimelineDocument, undoTimeline } from './timeline/timeline-slice';
 import { setLiveViewport } from './viewport/viewport-slice';
 
 const createGraph = (nodeId?: string): ParamGraph => {
@@ -110,15 +113,44 @@ describe('project history', () => {
     it('undoes and redoes all persistent project fields while resetting transient state', async () => {
         const previousProject = createProject(false, 'previous', '#111111', 25, { x: 300, y: 400 });
         const nextProject = createProject(true, 'next', '#222222', 50, { x: 500, y: 600 });
+        const previousTimeline = {
+            version: 1 as const,
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_previous',
+                    kind: 'node' as const,
+                    refId: 'misc_node_previous' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
+        };
+        const nextTimeline = {
+            version: 1 as const,
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_next',
+                    kind: 'node' as const,
+                    refId: 'misc_node_next' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
+        };
         const testStore = createProjectStore(previousProject);
+        testStore.dispatch(setTimelineDocument(previousTimeline));
 
         setTransientInteractionState(testStore);
-        await testStore.dispatch(replaceProject(nextProject));
+        await testStore.dispatch(replaceProject({ ...nextProject, timeline: nextTimeline }));
 
         expectCurrentProject(testStore, nextProject);
+        expect(testStore.getState().timeline.present).toEqual(nextTimeline);
         expect(testStore.getState().param.past.at(-1)).toEqual({
             scope: 'project',
             ...previousProject,
+            timeline: previousTimeline,
         });
         expectTransientInteractionStateReset(testStore);
 
@@ -126,12 +158,14 @@ describe('project history', () => {
         await testStore.dispatch(undoAction());
 
         expectCurrentProject(testStore, previousProject);
+        expect(testStore.getState().timeline.present).toEqual(previousTimeline);
         expectTransientInteractionStateReset(testStore);
 
         setTransientInteractionState(testStore);
         await testStore.dispatch(redoAction());
 
         expectCurrentProject(testStore, nextProject);
+        expect(testStore.getState().timeline.present).toEqual(nextTimeline);
         expectTransientInteractionStateReset(testStore);
     });
 
@@ -166,6 +200,52 @@ describe('project history', () => {
         expect(testStore.getState().runtime.isDetailsOpen).toBe('show');
         expect(testStore.getState().runtime.radialTouchMenu.visible).toBe(true);
         expect(testStore.getState().viewport.liveViewport).toEqual({ x: 700, y: 800, zoom: 90 });
+    });
+
+    it('keeps project snapshots paired with their timelines across independent timeline edits', async () => {
+        const first = createProject(false, 'misc_node_first', '#111111', 100, { x: 0, y: 0 });
+        const second = createProject(false, 'misc_node_second', '#222222', 100, { x: 0, y: 0 });
+        const firstTimeline = appendTimelineEntry(createEmptyTimelineDocument(), 'misc_node_first');
+        const secondTimeline = appendTimelineEntry(createEmptyTimelineDocument(), 'misc_node_second');
+        const editedSecond = { ...secondTimeline, mode: 'pro' as const };
+        const testStore = createProjectStore(first);
+        testStore.dispatch(setTimelineDocument(firstTimeline));
+        await testStore.dispatch(replaceProject({ ...second, timeline: secondTimeline }));
+
+        testStore.dispatch(undoTimeline());
+        expect(testStore.getState().timeline.present).toEqual(secondTimeline);
+        testStore.dispatch(setTimelineDocument(editedSecond));
+        testStore.dispatch(undoTimeline());
+        testStore.dispatch(redoTimeline());
+        expectCurrentProject(testStore, second);
+
+        await testStore.dispatch(undoAction());
+        expectCurrentProject(testStore, first);
+        expect(testStore.getState().timeline).toEqual({ present: firstTimeline, past: [], future: [] });
+        await testStore.dispatch(redoAction());
+        expectCurrentProject(testStore, second);
+        expect(testStore.getState().timeline).toEqual({ present: editedSecond, past: [], future: [] });
+    });
+
+    it('preserves timeline redo through graph edits and restores later timeline edits on project redo', async () => {
+        const first = createProject(false, 'misc_node_first', '#111111', 100, { x: 0, y: 0 });
+        const testStore = createProjectStore(first);
+        const timeline = appendTimelineEntry(createEmptyTimelineDocument(), 'misc_node_first');
+        testStore.dispatch(setTimelineDocument(timeline));
+        testStore.dispatch(undoTimeline());
+        testStore.dispatch(saveGraph(first.graph));
+        testStore.dispatch(redoTimeline());
+        expect(testStore.getState().timeline.present).toEqual(timeline);
+
+        const second = createProject(false, 'misc_node_second', '#222222', 100, { x: 0, y: 0 });
+        await testStore.dispatch(replaceProject(second));
+        await testStore.dispatch(undoAction());
+        const editedFirst = { ...timeline, mode: 'pro' as const };
+        testStore.dispatch(setTimelineDocument(editedFirst));
+        await testStore.dispatch(redoAction());
+        await testStore.dispatch(undoAction());
+        expectCurrentProject(testStore, first);
+        expect(testStore.getState().timeline.present).toEqual(editedFirst);
     });
 
     it('keeps graph and project entries ordered across mixed undo and redo operations', async () => {
