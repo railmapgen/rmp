@@ -870,7 +870,8 @@
                     "sharing": "分享与许可"
                 },
                 "fps": "每秒帧数 (FPS)",
-                "duration": "时长（秒）",
+                "speed": "绘制速度",
+                "speedHint": "视频时长将根据线路长度和绘制速度自动计算。",
                 "resolution": "视频分辨率",
                 "resolutions": {
                     "720p": "720p（1280×720）",

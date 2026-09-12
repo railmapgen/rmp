@@ -40,6 +40,7 @@ import {
     exportVideo,
     VideoExportOptions,
     VideoExportResolution,
+    videoExportSpeedRange,
 } from '../../util/video-export';
 import TermsAndConditionsModal from './terms-and-conditions';
 
@@ -78,7 +79,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
 
     const [videoFps, setVideoFps] = React.useState<30 | 60>(30);
-    const [videoDuration, setVideoDuration] = React.useState(10);
+    const [videoSpeedMultiplier, setVideoSpeedMultiplier] = React.useState<number>(videoExportSpeedRange.default);
     const [videoQuality, setVideoQuality] = React.useState(95);
     const [videoFormat, setVideoFormat] = React.useState<'webm' | 'mp4'>('mp4');
     const [videoResolution, setVideoResolution] = React.useState<VideoExportResolution>('720p');
@@ -88,13 +89,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isAttachSelected, setIsAttachSelected] = React.useState(false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
-
-    const validateAndSetDuration = (value: string) => {
-        const num = Number(value);
-        if (!isNaN(num) && num >= 1 && num <= 300) {
-            setVideoDuration(num);
-        }
-    };
 
     const validateAndSetScale = (value: string, setter: React.Dispatch<React.SetStateAction<number>>) => {
         const num = Number(value);
@@ -127,7 +121,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         try {
             const options: VideoExportOptions = {
                 fps: videoFps,
-                duration: videoDuration,
+                speedMultiplier: videoSpeedMultiplier,
                 resolution: videoResolution,
                 isTransparent,
                 autoChangeStationType,
@@ -196,10 +190,14 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             minW: 'full',
         },
         {
-            type: 'input',
-            label: t('header.download.videoExport.duration'),
-            value: videoDuration.toString(),
-            onChange: validateAndSetDuration,
+            type: 'slider',
+            label: `${t('header.download.videoExport.speed')} (${videoSpeedMultiplier.toFixed(1)}×)`,
+            helper: t('header.download.videoExport.speedHint'),
+            value: videoSpeedMultiplier,
+            min: videoExportSpeedRange.min,
+            max: videoExportSpeedRange.max,
+            step: videoExportSpeedRange.step,
+            onChange: setVideoSpeedMultiplier,
             minW: 'full',
         },
         {

@@ -870,7 +870,8 @@
                     "sharing": "分享與授權"
                 },
                 "fps": "每秒影格數 (FPS)",
-                "duration": "時長（秒）",
+                "speed": "繪製速度",
+                "speedHint": "影片時長將根據路線長度和繪製速度自動計算。",
                 "resolution": "影片解析度",
                 "resolutions": {
                     "720p": "720p（1280×720）",

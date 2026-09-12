@@ -306,55 +306,62 @@ describe('generateAnimationSequence', () => {
 });
 
 describe('getPlaybackSegmentDurations', () => {
-    it('reserves one second for a camera reposition pause', () => {
-        const durations = getPlaybackSegmentDurations(270, 30, [100, 100], 1);
+    it('uses a fixed drawing speed and reserves one second for a camera reposition pause', () => {
+        const durations = getPlaybackSegmentDurations(30, [100, 200], 1);
 
         expect(durations).toEqual({
-            edgeDurations: [4, 4],
+            edgeDurations: [1, 2],
             pauseDuration: 1,
         });
     });
 
-    it('shortens the pause when the configured video duration is too short', () => {
-        const durations = getPlaybackSegmentDurations(27, 30, [100, 100], 1);
+    it('does not change existing edge durations when the timeline grows or adds pauses', () => {
+        const shortTimeline = getPlaybackSegmentDurations(30, [100, 200], 0);
+        const longTimeline = getPlaybackSegmentDurations(30, [100, 200, 3000], 2);
 
-        expect(durations.pauseDuration).toBeCloseTo(5 / 6);
-        expect(durations.edgeDurations).toEqual([1 / 30, 1 / 30]);
-        expect(durations.pauseDuration + durations.edgeDurations.reduce((sum, value) => sum + value, 0)).toBeCloseTo(
-            0.9
+        expect(longTimeline.edgeDurations.slice(0, 2)).toEqual(shortTimeline.edgeDurations);
+        expect(longTimeline.edgeDurations[2]).toBe(30);
+        expect(shortTimeline.pauseDuration).toBe(0);
+        expect(longTimeline.pauseDuration).toBe(1);
+    });
+
+    it.each([0.5, 1, 1.5, 2])('scales drawing speed by %s without changing camera pauses', multiplier => {
+        const durations = getPlaybackSegmentDurations(30, [100, 200], 1, multiplier);
+
+        expect(durations.edgeDurations).toEqual([1 / multiplier, 2 / multiplier]);
+        expect(durations.pauseDuration).toBe(1);
+    });
+
+    it('keeps drawing speed consistent at different frame rates', () => {
+        expect(getPlaybackSegmentDurations(60, [100, 200], 1, 1.5)).toEqual(
+            getPlaybackSegmentDurations(30, [100, 200], 1, 1.5)
         );
     });
 
-    it('shares all available animation time between connected edges when no pause is needed', () => {
-        const durations = getPlaybackSegmentDurations(270, 30, [100, 100], 0);
-
-        expect(durations).toEqual({
-            edgeDurations: [4.5, 4.5],
-            pauseDuration: 0,
-        });
-    });
-
-    it('allocates drawing time in proportion to rendered line length', () => {
-        const durations = getPlaybackSegmentDurations(270, 30, [100, 200], 0);
-
-        expect(durations.edgeDurations[0]).toBeCloseTo(3);
-        expect(durations.edgeDurations[1]).toBeCloseTo(6);
-        expect(100 / durations.edgeDurations[0]).toBeCloseTo(200 / durations.edgeDurations[1]);
-    });
-
-    it('gives very short lines at least one frame and redistributes the remaining time', () => {
-        const durations = getPlaybackSegmentDurations(90, 30, [1, 1000], 0);
-
+    it('gives very short lines at least one frame without accelerating other lines', () => {
+        const durations = getPlaybackSegmentDurations(30, [1, 1000], 0);
         expect(durations.edgeDurations[0]).toBeCloseTo(1 / 30);
-        expect(durations.edgeDurations[1]).toBeCloseTo(3 - 1 / 30);
-        expect(durations.edgeDurations.reduce((sum, value) => sum + value, 0)).toBeCloseTo(3);
+        expect(durations.edgeDurations[1]).toBe(10);
     });
 
-    it('falls back to equal durations when every line length is invalid', () => {
-        const durations = getPlaybackSegmentDurations(90, 30, [0, Number.NaN, -1], 0);
+    it('uses one frame for invalid line lengths', () => {
+        const durations = getPlaybackSegmentDurations(30, [0, Number.NaN, -1, Number.POSITIVE_INFINITY], 0);
 
-        expect(durations.edgeDurations).toEqual([1, 1, 1]);
+        expect(durations.edgeDurations).toEqual(Array(4).fill(1 / 30));
         expect(durations.pauseDuration).toBe(0);
+    });
+
+    it.each([
+        [0, 2],
+        [10, 0.5],
+        [Number.NaN, 1],
+        [Number.POSITIVE_INFINITY, 1],
+    ])('handles an out-of-range speed multiplier of %s', (multiplier, expectedDuration) => {
+        expect(getPlaybackSegmentDurations(30, [100], 0, multiplier).edgeDurations).toEqual([expectedDuration]);
+    });
+
+    it('handles a timeline with no edges', () => {
+        expect(getPlaybackSegmentDurations(30, [], 0)).toEqual({ edgeDurations: [], pauseDuration: 0 });
     });
 });
 

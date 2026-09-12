@@ -106,7 +106,7 @@ export default function WindowHeader() {
 
                     {!isTimelinePage && <OpenActions />}
 
-                    {!isTimelinePage && <DownloadActions />}
+                    <DownloadActions />
 
                     <IconButton
                         size="sm"

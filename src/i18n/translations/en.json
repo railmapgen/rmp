@@ -871,7 +871,8 @@
                     "sharing": "Sharing and permissions"
                 },
                 "fps": "Frames per second (FPS)",
-                "duration": "Duration (seconds)",
+                "speed": "Drawing speed",
+                "speedHint": "Video duration is calculated automatically from line length and drawing speed.",
                 "resolution": "Video resolution",
                 "resolutions": {
                     "720p": "720p (1280×720)",

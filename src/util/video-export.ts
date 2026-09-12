@@ -57,7 +57,7 @@ export const videoExportResolutions: Record<VideoExportResolution, { width: numb
 
 export interface VideoExportOptions {
     fps: number;
-    duration: number;
+    speedMultiplier: number;
     resolution: VideoExportResolution;
     isTransparent: boolean;
     autoChangeStationType: boolean;
@@ -80,11 +80,14 @@ export interface AnimationSequence {
     edges: LineId[];
 }
 
-const NodeAniationRatio = 0;
+// Drawing speed is measured in SVG/map coordinate units per second, regardless of output resolution or zoom.
+const BaseDrawingSpeed = 100;
+export const videoExportSpeedRange = { min: 0.5, max: 2, step: 0.1, default: 1 } as const;
 const NodeRevealSeconds = 0.2;
 const NodeTextDelaySeconds = 0.05;
 const NodeTextRevealSeconds = 0.8;
 const CameraRepositionPauseSeconds = 1;
+const OverviewSeconds = 1;
 const StationTransitionScale = 0.96;
 const HorizontalGroupingThreshold = 50;
 const CameraViewportZoom = 40;
@@ -174,65 +177,28 @@ type PlaybackSegment =
     | { kind: 'pause'; previousEdgeId: LineId; duration: number };
 
 export const getPlaybackSegmentDurations = (
-    animationFrames: number,
     fps: number,
     edgeLengths: number[],
-    pauseCount: number
+    pauseCount: number,
+    speedMultiplier: number = videoExportSpeedRange.default
 ): { edgeDurations: number[]; pauseDuration: number } => {
-    if (edgeLengths.length === 0 || fps <= 0) {
+    if (edgeLengths.length === 0 || !Number.isFinite(fps) || fps <= 0) {
         return { edgeDurations: [], pauseDuration: 0 };
     }
 
-    const edgeCount = edgeLengths.length;
-    const animationDuration = Math.max(1, animationFrames) / fps;
+    const multiplier = Number.isFinite(speedMultiplier)
+        ? Math.max(videoExportSpeedRange.min, Math.min(videoExportSpeedRange.max, speedMultiplier))
+        : videoExportSpeedRange.default;
+    const drawingSpeed = BaseDrawingSpeed * multiplier;
     const minimumEdgeDuration = 1 / fps;
-    const minimumTotalEdgeDuration = edgeCount * minimumEdgeDuration;
-    const maximumPauseDuration =
-        pauseCount > 0 ? Math.max(0, (animationDuration - minimumTotalEdgeDuration) / pauseCount) : 0;
-    const pauseDuration = Math.min(CameraRepositionPauseSeconds, maximumPauseDuration);
-    const edgeDurationBudget = Math.max(minimumTotalEdgeDuration, animationDuration - pauseCount * pauseDuration);
-    const normalizedLengths = edgeLengths.map(length => (Number.isFinite(length) && length > 0 ? length : 0));
-
-    if (normalizedLengths.every(length => length === 0)) {
-        return {
-            edgeDurations: Array(edgeCount).fill(edgeDurationBudget / edgeCount),
-            pauseDuration,
-        };
-    }
-
-    const edgeDurations = Array(edgeCount).fill(0) as number[];
-    let remainingDuration = edgeDurationBudget;
-    let remainingIndices = normalizedLengths.map((_length, index) => index);
-
-    while (remainingIndices.length > 0) {
-        const remainingLength = remainingIndices.reduce((sum, index) => sum + normalizedLengths[index], 0);
-        if (remainingLength <= 0) {
-            const equalDuration = remainingDuration / remainingIndices.length;
-            remainingIndices.forEach(index => {
-                edgeDurations[index] = equalDuration;
-            });
-            break;
-        }
-
-        const minimumDurationIndices = remainingIndices.filter(
-            index => (remainingDuration * normalizedLengths[index]) / remainingLength < minimumEdgeDuration
-        );
-        if (minimumDurationIndices.length === 0) {
-            remainingIndices.forEach(index => {
-                edgeDurations[index] = (remainingDuration * normalizedLengths[index]) / remainingLength;
-            });
-            break;
-        }
-
-        minimumDurationIndices.forEach(index => {
-            edgeDurations[index] = minimumEdgeDuration;
-        });
-        remainingDuration -= minimumDurationIndices.length * minimumEdgeDuration;
-        const minimumDurationIndexSet = new Set(minimumDurationIndices);
-        remainingIndices = remainingIndices.filter(index => !minimumDurationIndexSet.has(index));
-    }
-
-    return { edgeDurations, pauseDuration };
+    return {
+        edgeDurations: edgeLengths.map(length =>
+            Number.isFinite(length) && length > 0
+                ? Math.max(minimumEdgeDuration, length / drawingSpeed)
+                : minimumEdgeDuration
+        ),
+        pauseDuration: pauseCount > 0 ? CameraRepositionPauseSeconds : 0,
+    };
 };
 
 export const getRenderedEdgeLength = (
@@ -999,7 +965,7 @@ export const exportVideo = async (
 ): Promise<Blob> => {
     const {
         fps,
-        duration,
+        speedMultiplier,
         resolution,
         isTransparent,
         autoChangeStationType,
@@ -1016,9 +982,6 @@ export const exportVideo = async (
         throw new Error('No timeline steps to animate');
     }
 
-    const totalFrames = Math.max(1, Math.floor(fps * duration));
-    const overviewFrames = Math.max(1, Math.round(totalFrames * 0.1));
-    const animationFrames = Math.max(1, totalFrames - overviewFrames);
     const fitToElementsZoom = getOverviewZoom(graph);
     const currentZoom = applyZoomScale(fitToElementsZoom, scale);
     const fullscreenZoom = applyZoomScale(fitToElementsZoom, fullscreenScale);
@@ -1039,7 +1002,7 @@ export const exportVideo = async (
             return;
         }
 
-        playbackSegments.push({ kind: 'step', step, duration: NodeAniationRatio });
+        playbackSegments.push({ kind: 'step', step, duration: 0 });
     });
     const measuredEdgeLengths = await measureRenderedEdgeLengths(graph, sequence.edges, isSystemFontsOnly, languages);
     const playbackEdgeLengths: number[] = [];
@@ -1050,10 +1013,10 @@ export const exportVideo = async (
     });
     const pauseSegmentCount = playbackSegments.filter(segment => segment.kind === 'pause').length;
     const { edgeDurations, pauseDuration } = getPlaybackSegmentDurations(
-        animationFrames,
         fps,
         playbackEdgeLengths,
-        pauseSegmentCount
+        pauseSegmentCount,
+        speedMultiplier
     );
     let edgeDurationIndex = 0;
     playbackSegments.forEach(segment => {
@@ -1064,10 +1027,14 @@ export const exportVideo = async (
             edgeDurationIndex++;
         }
     });
-    const totalWeight = Math.max(
+    const animationDuration = Math.max(
         playbackSegments.reduce<number>((sum, segment) => sum + segment.duration, 0),
         1
     );
+    // Include the endpoint frame, and leave at least one second for node-only timelines to reveal their labels.
+    const animationFrames = Math.ceil(animationDuration * fps) + 1;
+    const overviewFrames = Math.max(1, Math.round(OverviewSeconds * fps));
+    const totalFrames = animationFrames + overviewFrames;
     const cumulativeWeights: number[] = [];
     let runningWeight = 0;
     for (const segment of playbackSegments) {
@@ -1104,8 +1071,7 @@ export const exportVideo = async (
         let nextZoom = currentZoom;
 
         if (frame < animationFrames) {
-            const frameProgress = animationFrames === 1 ? 1 : frame / (animationFrames - 1);
-            const weightedProgress = frameProgress * totalWeight;
+            const weightedProgress = Math.min(frame / fps, animationDuration);
             let lastEdgeStartWeight = 0;
             let lastEdgeWeight = 0;
             let lastEdgeStep: AnimationStep | undefined;
