@@ -1,6 +1,7 @@
-import { Badge, Box, Button, Flex, HStack, Text, VStack, useToast } from '@chakra-ui/react';
+import { Badge, Box, Button, Flex, HStack, IconButton, Text, Tooltip, VStack, useToast } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdAdd, MdAltRoute } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
 import { TimelineDocument } from '../../constants/timeline';
 import { useRootSelector } from '../../redux';
@@ -247,56 +248,96 @@ export default function TimelineTrackPanel({
 
                     <HStack flexShrink={0} spacing={3} wrap="wrap" justify="flex-end">
                         {selectedEntry?.kind === 'node' && adjacentLineColors.length > 0 && (
-                            <>
-                                <Text fontSize="sm" color="gray.500">
+                            <HStack
+                                spacing={2}
+                                wrap="wrap"
+                                align="center"
+                                px={3}
+                                py={2}
+                                bg="blue.50"
+                                borderWidth="1px"
+                                borderColor="blue.200"
+                                borderRadius="md"
+                            >
+                                <Badge
+                                    colorScheme="blue"
+                                    variant="solid"
+                                    borderRadius="md"
+                                    px={2}
+                                    py={1}
+                                    display="inline-flex"
+                                    alignItems="center"
+                                    gap={1}
+                                    textTransform="none"
+                                >
+                                    <MdAltRoute />
+                                    {t('header.timelinePage.addPathFromHere')}
+                                </Badge>
+                                <Text fontSize="xs" color="blue.700" fontWeight="medium">
                                     {t('header.timelinePage.addPathByColor')}
                                 </Text>
-                                <HStack spacing={2} wrap="wrap">
-                                    {adjacentLineColors.map(info => {
-                                        const isMultiColor = info.color.length > 1;
-                                        const bg = isMultiColor
-                                            ? `linear-gradient(135deg, ${info.color
-                                                  .map(
-                                                      (c, i, arr) =>
-                                                          `${c} ${(i * 100) / arr.length}%, ${c} ${((i + 1) * 100) / arr.length}%`
-                                                  )
-                                                  .join(', ')})`
-                                            : info.color[0];
-                                        const textColor = isMultiColor
-                                            ? 'white'
-                                            : info.color[0] === '#ffffff'
-                                              ? 'black'
-                                              : 'white';
-                                        const borderWidth = !isMultiColor && info.color[0] === '#ffffff' ? '1px' : '0';
+                                {adjacentLineColors.map(info => {
+                                    const isMultiColor = info.color.length > 1;
+                                    const bg = isMultiColor
+                                        ? `linear-gradient(135deg, ${info.color
+                                              .map(
+                                                  (c, i, arr) =>
+                                                      `${c} ${(i * 100) / arr.length}%, ${c} ${((i + 1) * 100) / arr.length}%`
+                                              )
+                                              .join(', ')})`
+                                        : info.color[0];
+                                    const textColor = isMultiColor
+                                        ? 'white'
+                                        : info.color[0] === '#ffffff'
+                                          ? 'black'
+                                          : 'white';
+                                    const borderWidth = !isMultiColor && info.color[0] === '#ffffff' ? '1px' : '0';
 
-                                        return (
-                                            <Button
-                                                key={info.themeStr}
-                                                size="sm"
-                                                bg={bg}
-                                                color={textColor}
-                                                borderWidth={borderWidth}
-                                                borderColor="gray.300"
-                                                _hover={{ bg, filter: 'brightness(0.9)' }}
-                                                onClick={() =>
-                                                    setPathMode({
-                                                        startNode: selectedEntry.refId as NodeId,
-                                                        step: 'select_dest',
-                                                        themeStr: info.themeStr,
-                                                    })
-                                                }
-                                            >
-                                                {info.label || '\u00A0\u00A0\u00A0\u00A0'}
-                                            </Button>
-                                        );
-                                    })}
-                                </HStack>
-                                <Box w="1px" h="20px" bg="gray.300" />
-                            </>
+                                    return (
+                                        <Button
+                                            key={info.themeStr}
+                                            size="sm"
+                                            bg={bg}
+                                            color={textColor}
+                                            borderWidth={borderWidth}
+                                            borderColor="gray.300"
+                                            _hover={{ bg, filter: 'brightness(0.9)' }}
+                                            onClick={() =>
+                                                setPathMode({
+                                                    startNode: selectedEntry.refId as NodeId,
+                                                    step: 'select_dest',
+                                                    themeStr: info.themeStr,
+                                                })
+                                            }
+                                        >
+                                            {info.label || '\u00A0\u00A0\u00A0\u00A0'}
+                                        </Button>
+                                    );
+                                })}
+                            </HStack>
                         )}
-                        <Button onClick={handleAddSelected} isDisabled={!hasSelectedEntry || isDuplicate}>
-                            {isDuplicate ? t('header.timelinePage.alreadyAdded') : t('header.timelinePage.addSelected')}
-                        </Button>
+                        <Tooltip
+                            label={
+                                isDuplicate
+                                    ? t('header.timelinePage.alreadyAdded')
+                                    : t('header.timelinePage.addSelected')
+                            }
+                            hasArrow
+                        >
+                            <IconButton
+                                aria-label={
+                                    isDuplicate
+                                        ? t('header.timelinePage.alreadyAdded')
+                                        : t('header.timelinePage.addSelected')
+                                }
+                                variant="outline"
+                                size="lg"
+                                icon={<MdAdd />}
+                                colorScheme="blue"
+                                onClick={handleAddSelected}
+                                isDisabled={!hasSelectedEntry || isDuplicate}
+                            />
+                        </Tooltip>
                     </HStack>
                 </Flex>
             )}
