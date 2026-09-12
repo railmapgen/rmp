@@ -1,15 +1,19 @@
-import { Badge, Box, CloseButton, Text, VStack } from '@chakra-ui/react';
+import { Badge, Box, CloseButton, Flex, IconButton, Text, Tooltip, VStack } from '@chakra-ui/react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../../constants/constants';
-import { TimelineEntry } from '../../constants/timeline';
+import { MdAnimation } from 'react-icons/md';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { TimelineElementEntry } from '../../constants/timeline';
 import { getTimelineEntryAccent, getTimelineEntrySubtitle, getTimelineEntryTitle } from '../../util/timeline';
 
 interface TimelineClipProps {
-    entry: TimelineEntry;
+    entry: TimelineElementEntry;
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    isPro: boolean;
     isSelected: boolean;
     onSelect: () => void;
+    onToggleAnimation: () => void;
     onRemove: () => void;
     onDragStart: () => void;
     onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
@@ -19,13 +23,16 @@ interface TimelineClipProps {
 export default function TimelineClip({
     entry,
     graph,
+    isPro,
     isSelected,
     onSelect,
+    onToggleAnimation,
     onRemove,
     onDragStart,
     onDragOver,
     onDragEnd,
 }: TimelineClipProps) {
+    const { t } = useTranslation();
     const accent = getTimelineEntryAccent(graph, entry);
     const exists = entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId);
 
@@ -82,9 +89,40 @@ export default function TimelineClip({
             />
 
             <VStack align="start" spacing={2} pl={2} pr={6}>
-                <Badge colorScheme={entry.kind === 'node' ? 'blue' : 'green'}>
-                    {entry.kind === 'node' ? 'Node' : 'Edge'}
-                </Badge>
+                <Flex align="center" gap={1} wrap="wrap">
+                    <Badge
+                        colorScheme={entry.kind === 'node' ? 'blue' : 'green'}
+                        display="inline-flex"
+                        alignItems="center"
+                        gap={1}
+                    >
+                        {entry.kind === 'node' ? 'Node' : 'Edge'}
+                    </Badge>
+                    {isPro && (
+                        <Badge colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'} variant="subtle">
+                            {entry.phase === 'exit'
+                                ? t('header.timelinePage.exitPhase')
+                                : t('header.timelinePage.enterPhase')}
+                        </Badge>
+                    )}
+                    {isPro && (
+                        <Tooltip label={t('header.timelinePage.showAnimation')} hasArrow>
+                            <IconButton
+                                aria-label={t('header.timelinePage.showAnimation')}
+                                aria-pressed={entry.showAnimation}
+                                icon={<MdAnimation />}
+                                size="xs"
+                                variant="ghost"
+                                color={entry.showAnimation ? 'gray.500' : 'gray.300'}
+                                opacity={entry.showAnimation ? 1 : 0.55}
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    onToggleAnimation();
+                                }}
+                            />
+                        </Tooltip>
+                    )}
+                </Flex>
                 <Text fontWeight="bold" noOfLines={2}>
                     {getTimelineEntryTitle(graph, entry)}
                 </Text>

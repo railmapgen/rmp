@@ -6,6 +6,11 @@ import { createStore } from '../../redux';
 import { render } from '../../test-utils';
 import TimelineSvgWrapper from './timeline-svg-wrapper';
 
+function ControlledCanvas() {
+    const [viewport, setViewport] = React.useState({ x: 0, y: 0, zoom: 100 });
+    return <TimelineSvgWrapper onSelect={vi.fn()} viewport={viewport} onViewportChange={setViewport} />;
+}
+
 describe('TimelineSvgWrapper', () => {
     const resizeObservers: Array<(entries: ResizeObserverEntry[]) => void> = [];
 
@@ -54,7 +59,7 @@ describe('TimelineSvgWrapper', () => {
 
     it('should pan the viewport when dragging the background', () => {
         const store = createStore();
-        const { container } = render(<TimelineSvgWrapper onSelect={vi.fn()} />, { store });
+        const { container } = render(<ControlledCanvas />, { store });
 
         const svg = container.querySelector('svg') as SVGSVGElement;
         const viewportGroup = container.querySelector('svg g[transform]') as SVGGElement;
@@ -85,7 +90,7 @@ describe('TimelineSvgWrapper', () => {
 
     it('should zoom the viewport on wheel', () => {
         const store = createStore();
-        const { container } = render(<TimelineSvgWrapper onSelect={vi.fn()} />, { store });
+        const { container } = render(<ControlledCanvas />, { store });
 
         const svg = container.querySelector('svg') as SVGSVGElement;
         const viewportGroup = container.querySelector('svg g[transform]') as SVGGElement;

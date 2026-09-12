@@ -69,7 +69,16 @@ describe('OpenActions', () => {
         store.dispatch(
             setTimelineDocument({
                 version: 1,
-                track: [{ id: 'clip_existing', kind: 'node', refId: 'misc_node_existing' }],
+                mode: 'quick',
+                track: [
+                    {
+                        id: 'clip_existing',
+                        kind: 'node',
+                        refId: 'misc_node_existing',
+                        phase: 'enter',
+                        showAnimation: true,
+                    },
+                ],
             })
         );
         const { container } = render(
@@ -101,7 +110,16 @@ describe('OpenActions', () => {
         sourceStore.dispatch(setSvgViewport({ zoom: 55, min: { x: 12, y: 34 } }));
         const timeline = {
             version: 1 as const,
-            track: [{ id: 'clip_uploaded', kind: 'node' as const, refId: 'misc_node_uploaded' as const }],
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_uploaded',
+                    kind: 'node' as const,
+                    refId: 'misc_node_uploaded' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
         };
         sourceStore.dispatch(setTimelineDocument(timeline));
         const save = stringifyParam(sourceStore.getState().param, timeline);

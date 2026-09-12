@@ -1,10 +1,11 @@
 import { Badge, Box, Button, Flex, HStack, IconButton, Text, Tooltip, VStack, useToast } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAltRoute } from 'react-icons/md';
+import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSkipNext, MdSkipPrevious, MdSwapHoriz } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
-import { TimelineDocument } from '../../constants/timeline';
-import { useRootSelector } from '../../redux';
+import { isElementEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import {
     findShortestPathByLine,
     getAdjacentLineColors,
@@ -20,64 +21,87 @@ import TimelineTrack from './timeline-track';
 interface TimelineTrackPanelProps {
     document: TimelineDocument;
     selectedId?: Id;
+    selectedEntryId?: string;
     missingNodeCount: number;
     missingEdgeCount: number;
     isCoverageComplete: boolean;
     isMissingHighlightShown: boolean;
     onToggleMissingHighlight: () => void;
-    onSelectEntry: (refId: Id) => void;
+    onSelectEntry: (entry: TimelineEntry) => void;
+    onCursorChange: (index: number) => void;
     onDocumentChange: (document: TimelineDocument) => void;
 }
 
 export default function TimelineTrackPanel({
     document,
     selectedId,
+    selectedEntryId,
     missingNodeCount,
     missingEdgeCount,
     isCoverageComplete,
     isMissingHighlightShown,
     onToggleMissingHighlight,
     onSelectEntry,
+    onCursorChange,
     onDocumentChange,
 }: TimelineTrackPanelProps) {
     const { t } = useTranslation();
     const toast = useToast();
+    const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const [draftDocument, setDraftDocument] = React.useState(document);
-    const [insertionIndex, setInsertionIndex] = React.useState(document.track.length);
     const dragEntryIdRef = React.useRef<string | null>(null);
     const dragDocumentRef = React.useRef(document);
 
     const [pathMode, setPathMode] = React.useState<{
         startNode: NodeId;
-        step: 'select_color' | 'select_dest';
-        themeStr?: string;
+        themeStr: string;
     } | null>(null);
+    const [isPlaying, setIsPlaying] = React.useState(false);
 
     const {
+        timelineCursor: insertionIndex,
         refresh: { nodes: refreshNodes, edges: refreshEdges },
     } = useRootSelector(state => state.runtime);
+    const isPro = draftDocument.mode === 'pro';
+
+    React.useEffect(() => {
+        if (!isPlaying || !isPro) return;
+
+        const timer = window.setInterval(() => {
+            const next = insertionIndex + 1;
+            if (next > draftDocument.track.length) {
+                setIsPlaying(false);
+                return;
+            }
+            onCursorChange(next);
+        }, 300);
+
+        return () => window.clearInterval(timer);
+    }, [draftDocument.track.length, insertionIndex, isPlaying, isPro, onCursorChange]);
 
     React.useEffect(() => {
         setDraftDocument(document);
-        setInsertionIndex(currentIndex => Math.min(currentIndex, document.track.length));
         dragDocumentRef.current = document;
     }, [document]);
 
     React.useEffect(() => {
-        if (
-            pathMode?.step === 'select_dest' &&
-            selectedId &&
-            !selectedId.startsWith('line_') &&
-            selectedId !== pathMode.startNode
-        ) {
+        if (document.track.length < insertionIndex) dispatch(setTimelineCursor(document.track.length));
+    }, [document.track.length, dispatch, insertionIndex]);
+
+    React.useEffect(() => {
+        if (!isPro) setIsPlaying(false);
+    }, [isPro]);
+
+    React.useEffect(() => {
+        if (pathMode && selectedId && !selectedId.startsWith('line_') && selectedId !== pathMode.startNode) {
             const destNode = selectedId as NodeId;
-            const path = findShortestPathByLine(graph.current, pathMode.startNode, destNode, pathMode.themeStr!);
+            const path = findShortestPathByLine(graph.current, pathMode.startNode, destNode, pathMode.themeStr);
             if (path) {
                 const nextDocument = insertTimelineEntries(draftDocument, path, insertionIndex);
                 const addedCount = nextDocument.track.length - draftDocument.track.length;
                 if (addedCount > 0) {
-                    setInsertionIndex(Math.min(insertionIndex, draftDocument.track.length) + addedCount);
+                    onCursorChange(Math.min(insertionIndex, draftDocument.track.length) + addedCount);
                     toast({
                         title: t('header.timelinePage.pathAdded', { count: addedCount }),
                         status: 'success',
@@ -106,24 +130,34 @@ export default function TimelineTrackPanel({
         }
     }, [selectedId, pathMode, draftDocument, insertionIndex, onDocumentChange, t, toast]);
 
-    const selectedEntry = React.useMemo(() => {
+    const selectedEntry = React.useMemo((): TimelineEntry | undefined => {
         if (!selectedId) return undefined;
         if (selectedId.startsWith('line_')) {
             return {
                 id: 'selected',
-                kind: 'edge' as const,
+                kind: 'edge',
                 refId: selectedId as `line_${string}`,
+                phase: 'enter',
+                showAnimation: true,
             };
         }
         return {
             id: 'selected',
-            kind: 'node' as const,
+            kind: 'node',
             refId: selectedId as NodeId,
+            phase: 'enter',
+            showAnimation: true,
         };
     }, [selectedId]);
 
     const hasSelectedEntry = !!selectedEntry;
-    const isDuplicate = !!selectedId && draftDocument.track.some(entry => entry.refId === selectedId);
+    const isDuplicate =
+        !!selectedId && draftDocument.track.some(entry => isElementEntry(entry) && entry.refId === selectedId);
+    const handleToggleMode = () => {
+        const nextDocument: TimelineDocument = { ...draftDocument, mode: isPro ? 'quick' : 'pro' };
+        setDraftDocument(nextDocument);
+        onDocumentChange(nextDocument);
+    };
     const insertionLabel =
         insertionIndex === draftDocument.track.length
             ? t('header.timelinePage.cursorEnd')
@@ -141,20 +175,32 @@ export default function TimelineTrackPanel({
         const nextDocument = insertTimelineEntry(draftDocument, selectedId, insertionIndex);
         if (nextDocument === draftDocument) return;
 
-        setInsertionIndex(Math.min(insertionIndex, draftDocument.track.length) + 1);
+        onCursorChange(Math.min(insertionIndex, draftDocument.track.length) + 1);
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
     };
 
     const handleRemoveEntry = (entryId: string) => {
-        const removedIndex = draftDocument.track.findIndex(entry => entry.id === entryId);
         const nextDocument = removeTimelineEntry(draftDocument, entryId);
-        if (nextDocument === draftDocument || removedIndex === -1) return;
+        if (nextDocument === draftDocument) return;
 
-        setInsertionIndex(currentIndex => {
-            const adjustedIndex = removedIndex < currentIndex ? currentIndex - 1 : currentIndex;
-            return Math.min(adjustedIndex, nextDocument.track.length);
-        });
+        const remainingIds = new Set(nextDocument.track.map(entry => entry.id));
+        const nextCursor = draftDocument.track
+            .slice(0, insertionIndex)
+            .filter(entry => remainingIds.has(entry.id)).length;
+        onCursorChange(nextCursor);
+        setDraftDocument(nextDocument);
+        onDocumentChange(nextDocument);
+    };
+    const handleToggleAnimation = (entryId: string) => {
+        const nextDocument: TimelineDocument = {
+            ...draftDocument,
+            track: draftDocument.track.map(entry =>
+                entry.id === entryId && isElementEntry(entry)
+                    ? { ...entry, showAnimation: !entry.showAnimation }
+                    : entry
+            ),
+        };
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
     };
@@ -200,7 +246,7 @@ export default function TimelineTrackPanel({
                     </Flex>
                 </Box>
             ) : (
-                <Flex justify="space-between" align="center" wrap="wrap" gap={3}>
+                <Flex justify="space-between" align="center" wrap="wrap" gap={3} position="relative">
                     <VStack align="start" spacing={1} flex={1} minW={0}>
                         <HStack spacing={2}>
                             <Text fontWeight="bold">{t('header.timelinePage.trackTitle')}</Text>
@@ -208,6 +254,38 @@ export default function TimelineTrackPanel({
                             <Text fontSize="xs" color="blue.600" noOfLines={1}>
                                 {insertionLabel}
                             </Text>
+                            <Tooltip
+                                label={
+                                    isPro
+                                        ? t('header.timelinePage.switchToQuick')
+                                        : t('header.timelinePage.switchToPro')
+                                }
+                                hasArrow
+                            >
+                                <Badge
+                                    as="button"
+                                    type="button"
+                                    aria-label={
+                                        isPro
+                                            ? t('header.timelinePage.switchToQuick')
+                                            : t('header.timelinePage.switchToPro')
+                                    }
+                                    colorScheme={isPro ? 'purple' : 'blue'}
+                                    variant="subtle"
+                                    borderRadius="md"
+                                    px={2}
+                                    py={1}
+                                    display="inline-flex"
+                                    alignItems="center"
+                                    gap={1}
+                                    textTransform="none"
+                                    cursor="pointer"
+                                    onClick={handleToggleMode}
+                                >
+                                    <MdSwapHoriz />
+                                    {isPro ? t('header.timelinePage.quickMode') : t('header.timelinePage.proMode')}
+                                </Badge>
+                            </Tooltip>
                         </HStack>
                         {hasSelectedEntry ? (
                             <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
@@ -245,6 +323,44 @@ export default function TimelineTrackPanel({
                             </HStack>
                         )}
                     </VStack>
+                    {isPro && (
+                        <HStack
+                            spacing={1}
+                            position="absolute"
+                            left="50%"
+                            transform="translateX(-50%)"
+                            aria-label={t('header.timelinePage.playbackControls')}
+                        >
+                            <IconButton
+                                size="md"
+                                variant="ghost"
+                                aria-label={t('header.timelinePage.previousFrame')}
+                                icon={<MdSkipPrevious size="1.5em" />}
+                                isDisabled={insertionIndex <= 0}
+                                onClick={() => onCursorChange(insertionIndex - 1)}
+                            />
+                            <IconButton
+                                size="md"
+                                variant="solid"
+                                colorScheme="purple"
+                                aria-label={
+                                    isPlaying
+                                        ? t('header.timelinePage.pausePreview')
+                                        : t('header.timelinePage.playPreview')
+                                }
+                                icon={isPlaying ? <MdPause size="1.5em" /> : <MdPlayArrow size="1.5em" />}
+                                onClick={() => setIsPlaying(value => !value)}
+                            />
+                            <IconButton
+                                size="md"
+                                variant="ghost"
+                                aria-label={t('header.timelinePage.nextFrame')}
+                                icon={<MdSkipNext size="1.5em" />}
+                                isDisabled={insertionIndex >= draftDocument.track.length}
+                                onClick={() => onCursorChange(insertionIndex + 1)}
+                            />
+                        </HStack>
+                    )}
 
                     <HStack flexShrink={0} spacing={3} wrap="wrap" justify="flex-end">
                         {selectedEntry?.kind === 'node' && adjacentLineColors.length > 0 && (
@@ -305,7 +421,6 @@ export default function TimelineTrackPanel({
                                             onClick={() =>
                                                 setPathMode({
                                                     startNode: selectedEntry.refId as NodeId,
-                                                    step: 'select_dest',
                                                     themeStr: info.themeStr,
                                                 })
                                             }
@@ -358,9 +473,11 @@ export default function TimelineTrackPanel({
                         document={draftDocument}
                         graph={graph.current}
                         selectedId={selectedId}
+                        selectedEntryId={selectedEntryId}
                         insertionIndex={insertionIndex}
                         onSelectEntry={onSelectEntry}
-                        onInsertionIndexChange={setInsertionIndex}
+                        onToggleAnimation={handleToggleAnimation}
+                        onInsertionIndexChange={onCursorChange}
                         onRemoveEntry={handleRemoveEntry}
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}

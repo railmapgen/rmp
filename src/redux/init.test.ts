@@ -62,7 +62,16 @@ describe('project persistence', () => {
     it('persists timeline changes', async () => {
         const timeline = {
             version: 1 as const,
-            track: [{ id: 'clip_saved', kind: 'node' as const, refId: 'misc_node_saved' as const }],
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_saved',
+                    kind: 'node' as const,
+                    refId: 'misc_node_saved' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
         };
         store.dispatch(setTimelineDocument(timeline));
         await flushListenerEffects();

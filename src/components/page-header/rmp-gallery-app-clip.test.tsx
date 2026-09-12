@@ -62,7 +62,16 @@ describe('RmpGalleryAppClip', () => {
         sourceStore.dispatch(setSvgViewport({ zoom: 45, min: { x: 67, y: 89 } }));
         const timeline = {
             version: 1 as const,
-            track: [{ id: 'clip_gallery', kind: 'node' as const, refId: 'misc_node_gallery' as const }],
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_gallery',
+                    kind: 'node' as const,
+                    refId: 'misc_node_gallery' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
         };
         sourceStore.dispatch(setTimelineDocument(timeline));
         const save = JSON.parse(stringifyParam(sourceStore.getState().param, timeline));

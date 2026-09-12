@@ -1,6 +1,6 @@
-import { createSlice, current, isDraft, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, current, isAnyOf, isDraft, PayloadAction } from '@reduxjs/toolkit';
 import { createEmptyTimelineDocument, TimelineDocument } from '../../constants/timeline';
-import { applyRedoAction, applyUndoAction, MAX_UNDO_SIZE, replaceProjectState, saveGraph } from '../param/param-slice';
+import { applyRedoAction, applyUndoAction, MAX_UNDO_SIZE, replaceProjectState } from '../param/param-slice';
 
 export interface TimelineState {
     present: TimelineDocument;
@@ -29,38 +29,44 @@ const timelineSlice = createSlice({
             return { present: structuredClone(action.payload.present), past: [], future: [] };
         },
         setTimelineDocument: (state, action: PayloadAction<TimelineDocument>) => {
+            if (JSON.stringify(state.present) === JSON.stringify(action.payload)) return;
+            state.future = [];
+            pushPast(state, state.present);
             state.present = structuredClone(action.payload);
         },
-        resetTimeline: state => {
-            state.present = createEmptyTimelineDocument();
+        undoTimeline: state => {
+            const previous = state.past.pop();
+            if (!previous) return;
+            state.future.unshift(cloneDocument(state.present));
+            state.present = previous;
+        },
+        redoTimeline: state => {
+            const next = state.future.shift();
+            if (!next) return;
+            pushPast(state, state.present);
+            state.present = next;
+        },
+        resetTimeline: () => {
+            return {
+                present: createEmptyTimelineDocument(),
+                past: [],
+                future: [],
+            };
         },
     },
     extraReducers: builder => {
         builder
-            .addCase(replaceProjectState, (state, action) => {
-                state.future = [];
-                pushPast(state, state.present);
-                state.present = cloneDocument(action.payload.timeline ?? createEmptyTimelineDocument());
-            })
-            .addCase(saveGraph, state => {
-                state.future = [];
-            })
-            .addCase(applyUndoAction, (state, action) => {
-                if (action.payload !== 'project') return;
-                const previous = state.past.pop();
-                if (!previous) return;
-                state.future.unshift(cloneDocument(state.present));
-                state.present = previous;
-            })
-            .addCase(applyRedoAction, (state, action) => {
-                if (action.payload !== 'project') return;
-                const next = state.future.shift();
-                if (!next) return;
-                pushPast(state, state.present);
-                state.present = next;
+            .addCase(replaceProjectState, (_state, action) => ({
+                present: cloneDocument(action.payload.timeline ?? createEmptyTimelineDocument()),
+                past: [],
+                future: [],
+            }))
+            .addMatcher(isAnyOf(applyUndoAction, applyRedoAction), (_state, action) => {
+                if (action.payload !== 'project' || !action.meta.timelines) return;
+                return { present: cloneDocument(action.meta.timelines.restored), past: [], future: [] };
             });
     },
 });
 
-export const { setFullState, setTimelineDocument, resetTimeline } = timelineSlice.actions;
+export const { setFullState, setTimelineDocument, undoTimeline, redoTimeline, resetTimeline } = timelineSlice.actions;
 export default timelineSlice.reducer;
