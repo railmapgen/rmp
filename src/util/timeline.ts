@@ -12,9 +12,13 @@ import {
 } from '../constants/constants';
 import {
     createEmptyTimelineDocument,
+    isElementEntry,
     isNodeTimelineEntry,
     TimelineDocument,
+    TimelineElementEntry,
     TimelineEntry,
+    TimelineKeyframeEntry,
+    TimelinePhase,
 } from '../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -44,14 +48,94 @@ const getNodePrimaryName = (graph: TimelineGraph, nodeId: NodeId): string => {
     return type;
 };
 
-export const createTimelineEntry = (refId: Id): TimelineEntry => {
+export const createTimelineEntry = (refId: Id, phase: TimelinePhase = 'enter'): TimelineElementEntry => {
     return isNodeTimelineEntry(refId)
-        ? { id: `timeline_${nanoid(10)}`, kind: 'node', refId }
-        : { id: `timeline_${nanoid(10)}`, kind: 'edge', refId };
+        ? { id: `timeline_${nanoid(10)}`, kind: 'node', refId, phase, showAnimation: true }
+        : { id: `timeline_${nanoid(10)}`, kind: 'edge', refId, phase, showAnimation: true };
+};
+
+export const insertTimelineExitEntry = (
+    doc: TimelineDocument,
+    refId: Id,
+    index: number
+): { document: TimelineDocument; cursor: number } => {
+    const enterIndex = doc.track.findIndex(
+        entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'enter'
+    );
+    if (
+        enterIndex === -1 ||
+        doc.track.some(entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'exit')
+    ) {
+        return { document: doc, cursor: index };
+    }
+
+    const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
+    const lastKeyframeIndex = doc.track.findLastIndex(entry => entry.kind === 'keyframe' && entry.refId === refId);
+    const targetIndex = Math.max(insertionIndex, enterIndex + 1, lastKeyframeIndex + 1);
+    const track = [...doc.track];
+    track.splice(targetIndex, 0, createTimelineEntry(refId, 'exit'));
+
+    return {
+        document: { ...doc, track },
+        cursor: targetIndex + 1,
+    };
+};
+
+export const createKeyframeEntry = (
+    graph: TimelineGraph,
+    refId: NodeId,
+    position?: { x: number; y: number }
+): TimelineKeyframeEntry => {
+    const x = position?.x ?? (graph.hasNode(refId) ? graph.getNodeAttribute(refId, 'x') : 0);
+    const y = position?.y ?? (graph.hasNode(refId) ? graph.getNodeAttribute(refId, 'y') : 0);
+    return { id: `timeline_${nanoid(10)}`, kind: 'keyframe', refId, x, y };
+};
+
+export const updateKeyframePosition = (
+    doc: TimelineDocument,
+    entryId: string,
+    x: number,
+    y: number
+): TimelineDocument => ({
+    ...doc,
+    track: doc.track.map(entry => (entry.id === entryId && entry.kind === 'keyframe' ? { ...entry, x, y } : entry)),
+});
+
+/**
+ * Insert a keyframe for `refId` at the given cursor index.
+ * A station must enter the frame before it can be keyframed, so the enter entry
+ * is added first when it is missing from the track.
+ */
+export const insertKeyframeEntry = (
+    doc: TimelineDocument,
+    graph: TimelineGraph,
+    refId: NodeId,
+    index: number
+): { document: TimelineDocument; cursor: number } => {
+    const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
+    const track = [...doc.track];
+    let cursor = insertionIndex;
+
+    const enterIndex = track.findIndex(
+        entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'enter'
+    );
+    if (enterIndex === -1) {
+        track.splice(cursor, 0, createTimelineEntry(refId));
+        cursor += 1;
+    } else {
+        cursor = Math.max(cursor, enterIndex + 1);
+    }
+    const exitIndex = track.findIndex(
+        entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'exit'
+    );
+    if (exitIndex !== -1) cursor = Math.min(cursor, exitIndex);
+    track.splice(cursor, 0, createKeyframeEntry(graph, refId));
+
+    return { document: { ...doc, track }, cursor };
 };
 
 export const insertTimelineEntry = (doc: TimelineDocument, refId: Id, index: number): TimelineDocument => {
-    if (doc.track.some(entry => entry.refId === refId)) return doc;
+    if (doc.track.some(entry => isElementEntry(entry) && entry.refId === refId)) return doc;
 
     const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
     const track = [...doc.track];
@@ -67,10 +151,19 @@ export const appendTimelineEntry = (doc: TimelineDocument, refId: Id): TimelineD
     return insertTimelineEntry(doc, refId, doc.track.length);
 };
 
-export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): TimelineDocument => ({
-    ...doc,
-    track: doc.track.filter(entry => entry.id !== entryId),
-});
+export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): TimelineDocument => {
+    const removedEntry = doc.track.find(entry => entry.id === entryId);
+    if (!removedEntry) return doc;
+
+    // Exit phases and keyframes depend on the enter card and are removed in the same undoable edit.
+    const removeDependents = isElementEntry(removedEntry) && removedEntry.phase === 'enter';
+    return {
+        ...doc,
+        track: doc.track.filter(entry =>
+            removeDependents ? entry.refId !== removedEntry.refId : entry.id !== entryId
+        ),
+    };
+};
 
 export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIndex: number): TimelineDocument => {
     if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return doc;
@@ -80,29 +173,68 @@ export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIn
     const [entry] = track.splice(fromIndex, 1);
     track.splice(toIndex, 0, entry);
 
+    let visible = false;
+    for (const candidate of track) {
+        if (candidate.refId !== entry.refId) continue;
+        if (isElementEntry(candidate) && candidate.phase === 'enter') visible = true;
+        else {
+            if (!visible) return doc;
+            if (isElementEntry(candidate)) visible = false;
+        }
+    }
+
     return {
         ...doc,
         track,
     };
 };
 
-export const normalizeTimelineDocument = (doc?: TimelineDocument | null): TimelineDocument => {
+interface RawTimelineEntry {
+    id?: unknown;
+    kind?: unknown;
+    refId?: unknown;
+    phase?: unknown;
+    showAnimation?: unknown;
+    x?: unknown;
+    y?: unknown;
+}
+
+const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undefined => {
+    if (!entry || typeof entry.id !== 'string' || typeof entry.refId !== 'string') return undefined;
+
+    if (entry.kind === 'keyframe') {
+        if (typeof entry.x !== 'number' || !Number.isFinite(entry.x)) return undefined;
+        if (typeof entry.y !== 'number' || !Number.isFinite(entry.y)) return undefined;
+        return { id: entry.id, kind: 'keyframe', refId: entry.refId as NodeId, x: entry.x, y: entry.y };
+    }
+
+    if (entry.kind === 'node' || entry.kind === 'edge') {
+        const phase = entry.phase === 'exit' ? ('exit' as const) : ('enter' as const);
+        const showAnimation = entry.showAnimation !== false;
+        return entry.kind === 'node'
+            ? { id: entry.id, kind: 'node', refId: entry.refId as NodeId, phase, showAnimation }
+            : { id: entry.id, kind: 'edge', refId: entry.refId as LineId, phase, showAnimation };
+    }
+
+    return undefined;
+};
+
+export type TimelineDocumentLike = Partial<Omit<TimelineDocument, 'track'>> & { track?: unknown };
+
+export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): TimelineDocument => {
     if (!doc || !Array.isArray(doc.track)) return createEmptyTimelineDocument();
 
     return {
         version: 1,
-        track: doc.track.filter(
-            (entry): entry is TimelineEntry =>
-                !!entry &&
-                typeof entry.id === 'string' &&
-                (entry.kind === 'node' || entry.kind === 'edge') &&
-                typeof entry.refId === 'string'
-        ),
+        mode: doc.mode === 'pro' ? 'pro' : 'quick',
+        track: (doc.track as RawTimelineEntry[])
+            .map(entry => normalizeTimelineEntry(entry))
+            .filter((entry): entry is TimelineEntry => !!entry),
     };
 };
 
 export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument): TimelineCoverage => {
-    const addedRefs = new Set<Id>(doc.track.map(entry => entry.refId));
+    const addedRefs = new Set<Id>(doc.track.filter(isElementEntry).map(entry => entry.refId));
     const missingNodeIds = graph.nodes().filter(node => !addedRefs.has(node as NodeId)) as NodeId[];
     const missingEdgeIds = graph.edges().filter(edge => !addedRefs.has(edge as LineId)) as LineId[];
     const missingIds = [...missingNodeIds, ...missingEdgeIds];
@@ -118,6 +250,10 @@ export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument)
 };
 
 export const getTimelineEntryTitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'keyframe') {
+        return graph.hasNode(entry.refId) ? getNodePrimaryName(graph, entry.refId) : entry.refId;
+    }
+
     if (entry.kind === 'node') {
         return getNodePrimaryName(graph, entry.refId);
     }
@@ -129,6 +265,10 @@ export const getTimelineEntryTitle = (graph: TimelineGraph, entry: TimelineEntry
 };
 
 export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'keyframe') {
+        return `${Math.round(entry.x * 100) / 100}, ${Math.round(entry.y * 100) / 100}`;
+    }
+
     if (entry.kind === 'node') {
         if (!graph.hasNode(entry.refId)) return 'Missing node';
         return graph.getNodeAttribute(entry.refId, 'type');
@@ -140,6 +280,7 @@ export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEn
 };
 
 export const getTimelineEntryAccent = (graph: TimelineGraph, entry: TimelineEntry): string[] => {
+    if (entry.kind === 'keyframe') return ['#805AD5'];
     if (entry.kind === 'node' && entry.refId.startsWith('stn_')) return ['#c3e1f3'];
     if (entry.kind === 'node' && entry.refId.startsWith('misc_')) return ['#f3c3e1'];
     if (!graph.hasEdge(entry.refId)) return ['#718096'];
@@ -247,12 +388,91 @@ export const getAdjacentLineColors = (graph: TimelineGraph, nodeId: NodeId) => {
             const label = theme && theme[1] !== 'other' ? theme[1] : '';
             lines.set(themeStr, {
                 themeStr,
-                color: getTimelineEntryAccent(graph, { kind: 'edge', refId: edgeId, id: '' }),
+                color: getTimelineEntryAccent(graph, {
+                    kind: 'edge',
+                    refId: edgeId,
+                    id: '',
+                    phase: 'enter',
+                    showAnimation: true,
+                }),
                 label,
             });
         }
     });
     return Array.from(lines.values());
+};
+
+export interface TimelinePreviewState {
+    visibleIds: Set<Id>;
+    /**
+     * Interpolated positions of keyframed nodes at the cursor, overriding the graph position.
+     */
+    positions: Map<NodeId, { x: number; y: number }>;
+}
+
+interface TimelineKeyframeAt extends TimelineKeyframeEntry {
+    index: number;
+}
+
+const interpolateKeyframes = (
+    frames: TimelineKeyframeAt[],
+    cursor: number,
+    origin: { x: number; y: number }
+): { x: number; y: number } => {
+    let before: TimelineKeyframeAt | undefined;
+    let after: TimelineKeyframeAt | undefined;
+    for (const frame of frames) {
+        if (frame.index <= cursor) before = frame;
+        else {
+            after = frame;
+            break;
+        }
+    }
+
+    if (before && after) {
+        const t = (cursor - before.index) / (after.index - before.index);
+        return { x: before.x + (after.x - before.x) * t, y: before.y + (after.y - before.y) * t };
+    }
+    if (before) return { x: before.x, y: before.y };
+    return origin;
+};
+
+/**
+ * Compute the canvas state at the timeline cursor.
+ * Elements are visible from their enter card through their exit card, inclusive.
+ * They disappear only when the cursor moves past the exit card.
+ * Keyframed nodes get their position interpolated between the surrounding keyframes.
+ */
+export const getTimelinePreviewState = (
+    graph: TimelineGraph,
+    doc: TimelineDocument,
+    cursor: number
+): TimelinePreviewState => {
+    const visibleIds = new Set<Id>();
+    const keyframesByRef = new Map<NodeId, TimelineKeyframeAt[]>();
+
+    doc.track.forEach((entry, index) => {
+        if (entry.kind === 'keyframe') {
+            const frames = keyframesByRef.get(entry.refId) ?? [];
+            frames.push({ ...entry, index });
+            keyframesByRef.set(entry.refId, frames);
+            return;
+        }
+
+        if (index <= cursor) {
+            if (entry.phase === 'enter') visibleIds.add(entry.refId);
+            else if (index < cursor) visibleIds.delete(entry.refId);
+        }
+    });
+
+    const positions = new Map<NodeId, { x: number; y: number }>();
+    keyframesByRef.forEach((frames, refId) => {
+        if (!graph.hasNode(refId)) return;
+        const origin = { x: graph.getNodeAttribute(refId, 'x'), y: graph.getNodeAttribute(refId, 'y') };
+        positions.set(refId, interpolateKeyframes(frames, cursor, origin));
+    });
+
+    return { visibleIds, positions };
 };
 
 export const findShortestPathByLine = (
@@ -289,14 +509,14 @@ export const findShortestPathByLine = (
 };
 
 export const insertTimelineEntries = (doc: TimelineDocument, refIds: Id[], index: number): TimelineDocument => {
-    const existingRefs = new Set<Id>(doc.track.map(entry => entry.refId));
+    const existingRefs = new Set<Id>(doc.track.filter(isElementEntry).map(entry => entry.refId));
     const entries = refIds
         .filter(refId => {
             if (existingRefs.has(refId)) return false;
             existingRefs.add(refId);
             return true;
         })
-        .map(createTimelineEntry);
+        .map(refId => createTimelineEntry(refId));
 
     if (entries.length === 0) return doc;
 

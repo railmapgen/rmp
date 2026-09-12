@@ -99,6 +99,11 @@ interface RuntimeState {
     globalAlerts: Partial<
         Record<GlobalAlertId, { status: AlertStatus; message: string; url?: string; linkedApp?: string }>
     >;
+    /**
+     * The playhead of the timeline editor, shared between the timeline page and the window header.
+     * It is the index where new entries are inserted and the frame previewed in professional mode.
+     */
+    timelineCursor: number;
 }
 
 const initialState: RuntimeState = {
@@ -131,6 +136,7 @@ const initialState: RuntimeState = {
     existsNodeTypes: new Set<NodeType>(),
     isMapOverview: false,
     globalAlerts: {},
+    timelineCursor: 0,
 };
 
 /**
@@ -247,6 +253,7 @@ const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
     state.lastTool = undefined;
     state.isDetailsOpen = 'close';
     state.radialTouchMenu = defaultRadialTouchMenuState;
+    state.timelineCursor = 0;
 };
 
 const runtimeSlice = createSlice({
@@ -351,6 +358,9 @@ const runtimeSlice = createSlice({
         setMapOverview: (state, action: PayloadAction<boolean>) => {
             state.isMapOverview = action.payload;
         },
+        setTimelineCursor: (state, action: PayloadAction<number>) => {
+            state.timelineCursor = Math.max(0, Math.floor(action.payload));
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -418,6 +428,7 @@ export const {
     setRadialTouchMenu,
     closeRadialTouchMenu,
     setMapOverview,
+    setTimelineCursor,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

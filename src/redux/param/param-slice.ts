@@ -49,6 +49,8 @@ export type HistoryScope = 'graph' | 'project';
 /** A project snapshot together with the policy used to restore it. */
 export interface HistoryEntry extends ProjectSnapshot {
     scope: HistoryScope;
+    /** Present only for whole-project history; timeline edits keep their own undo stack. */
+    timeline?: TimelineDocument;
 }
 
 /**
@@ -89,8 +91,13 @@ const initialState: ParamState = {
 // The scope is read from the stack head by the history thunk. Keeping it on the
 // action lets other slices follow the same restore policy, while this reducer
 // verifies that it still matches the stack head before changing either stack.
-export const applyUndoAction = createAction<HistoryScope>('undo');
-export const applyRedoAction = createAction<HistoryScope>('redo');
+const prepareHistoryAction = (
+    scope: HistoryScope,
+    timelines?: { current: TimelineDocument; restored: TimelineDocument }
+) => ({ payload: scope, meta: { timelines } });
+
+export const applyUndoAction = createAction('undo', prepareHistoryAction);
+export const applyRedoAction = createAction('redo', prepareHistoryAction);
 
 const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
     state.past.push(entry);
@@ -102,9 +109,14 @@ const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
  * Graph history replaces only the graph so undo/redo preserves the current map
  * settings and viewport; project history replaces the entire snapshot.
  */
-const restoreHistoryEntry = (state: Draft<ParamState>, entry: Draft<HistoryEntry>): Draft<HistoryEntry> => {
-    const current = { scope: entry.scope, ...state.present };
-    const { scope, ...snapshot } = entry;
+const restoreHistoryEntry = (
+    state: Draft<ParamState>,
+    entry: Draft<HistoryEntry>,
+    currentTimeline?: TimelineDocument
+): Draft<HistoryEntry> => {
+    const current: HistoryEntry = { scope: entry.scope, ...state.present };
+    if (entry.scope === 'project' && currentTimeline) current.timeline = structuredClone(currentTimeline);
+    const { scope, timeline: _timeline, ...snapshot } = entry;
     state.present =
         scope === 'project'
             ? snapshot
@@ -141,11 +153,22 @@ const paramSlice = createSlice({
             };
         },
         /** Records a whole-project replacement, including its persisted viewport. */
-        replaceProjectState: (state, action: PayloadAction<ProjectReplacement>) => {
-            state.future = [];
-            pushPast(state, { scope: 'project', ...state.present });
-            const { mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin } = action.payload;
-            state.present = structuredClone({ mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin });
+        replaceProjectState: {
+            prepare: (project: ProjectReplacement, previousTimeline?: TimelineDocument) => ({
+                payload: project,
+                meta: { previousTimeline },
+            }),
+            reducer: (
+                state,
+                action: PayloadAction<ProjectReplacement, string, { previousTimeline?: TimelineDocument }>
+            ) => {
+                state.future = [];
+                const previous: HistoryEntry = { scope: 'project', ...state.present };
+                if (action.meta.previousTimeline) previous.timeline = structuredClone(action.meta.previousTimeline);
+                pushPast(state, previous);
+                const { mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin } = action.payload;
+                state.present = structuredClone({ mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin });
+            },
         },
         setSvgViewport: (state, action: PayloadAction<{ zoom: number; min: { x: number; y: number } }>) => {
             state.present.svgViewBoxZoom = action.payload.zoom;
@@ -171,14 +194,14 @@ const paramSlice = createSlice({
                 const previous = state.past[state.past.length - 1]!;
                 if (previous.scope !== action.payload) return;
                 state.past.pop();
-                state.future.unshift(restoreHistoryEntry(state, previous));
+                state.future.unshift(restoreHistoryEntry(state, previous, action.meta.timelines?.current));
             })
             .addCase(applyRedoAction, (state, action) => {
                 if (state.future.length === 0) return;
                 const next = state.future[0]!;
                 if (next.scope !== action.payload) return;
                 state.future.shift();
-                pushPast(state, restoreHistoryEntry(state, next));
+                pushPast(state, restoreHistoryEntry(state, next, action.meta.timelines?.current));
             });
     },
 });

@@ -145,7 +145,16 @@ describe('Unit tests for param upgrade function', () => {
         const paramState = createStore().getState().param;
         const timeline = {
             version: 1 as const,
-            track: [{ id: 'clip_1', kind: 'node' as const, refId: 'stn_a' as const }],
+            mode: 'quick' as const,
+            track: [
+                {
+                    id: 'clip_1',
+                    kind: 'node' as const,
+                    refId: 'stn_a' as const,
+                    phase: 'enter' as const,
+                    showAnimation: true,
+                },
+            ],
         };
 
         const save = JSON.parse(stringifyParam(paramState, timeline));
@@ -161,7 +170,8 @@ describe('Unit tests for param upgrade function', () => {
         const upgraded = JSON.parse(newParam);
 
         expect(upgraded.version).toBe(78);
-        expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
+        // Timeline structure is normalized when a save is loaded, not during parameter upgrades.
+        expect(upgraded.timeline).toEqual({ version: 1, track: [] });
         expect(upgraded.mapEnabled).toBe(false);
         expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
     });
