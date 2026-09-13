@@ -90,28 +90,17 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
-export const getTargetSnapCellKey = (x: number, y: number, cellSize = TARGET_SNAP_CELL_SIZE) =>
-    `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`;
-
-/**
- * Bucket viewport nodes into cells. Each node is written into every cell whose points could be within
- * TARGET_SNAP_RADIUS of the node center, so move-time lookup is a single map.get(cellKey).
- */
-export const buildTargetSnapCellMap = (
-    graph: typeof window.graph,
-    nodes: readonly NodeId[],
-    cellSize = TARGET_SNAP_CELL_SIZE,
-    radius = TARGET_SNAP_RADIUS
-): Map<string, NodeId[]> => {
+/** Viewport nodes → cell map with ±TARGET_SNAP_RADIUS fan-out (counterpart to getSnapLines for target snap). */
+const buildTargetSnapCellMap = (graph: typeof window.graph, nodes: readonly NodeId[]) => {
     const map = new Map<string, NodeId[]>();
     for (const id of nodes) {
         if (!connectableNodesType.includes(graph.getNodeAttribute(id, 'type'))) continue;
         const x = graph.getNodeAttribute(id, 'x');
         const y = graph.getNodeAttribute(id, 'y');
-        const ix0 = Math.floor((x - radius) / cellSize);
-        const ix1 = Math.floor((x + radius) / cellSize);
-        const iy0 = Math.floor((y - radius) / cellSize);
-        const iy1 = Math.floor((y + radius) / cellSize);
+        const ix0 = Math.floor((x - TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const ix1 = Math.floor((x + TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const iy0 = Math.floor((y - TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const iy1 = Math.floor((y + TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
         for (let ix = ix0; ix <= ix1; ix++) {
             for (let iy = iy0; iy <= iy1; iy++) {
                 const key = `${ix},${iy}`;
@@ -122,30 +111,6 @@ export const buildTargetSnapCellMap = (
         }
     }
     return map;
-};
-
-export const findNearestConnectableWithinRadius = (
-    graph: typeof window.graph,
-    cursor: PathPoint,
-    source: NodeId | undefined,
-    candidates: readonly NodeId[],
-    radius = TARGET_SNAP_RADIUS
-): NodeId | undefined => {
-    let bestNode: NodeId | undefined;
-    let bestDist = radius;
-
-    for (const nodeId of candidates) {
-        if (nodeId === source) continue;
-        const x = graph.getNodeAttribute(nodeId, 'x');
-        const y = graph.getNodeAttribute(nodeId, 'y');
-        const dist = Math.hypot(x - cursor.x, y - cursor.y);
-        if (dist < bestDist) {
-            bestDist = dist;
-            bestNode = nodeId;
-        }
-    }
-
-    return bestNode;
 };
 
 const SvgCanvas = () => {
@@ -208,19 +173,6 @@ const SvgCanvas = () => {
         const node = target?.id.slice(target.matchedPrefix.length);
         return isConnectableNode(node) ? node : undefined;
     };
-    const refreshViewportNodeCaches = (buildSnapLines: boolean) => {
-        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-        const nodes = findNodesInRectangle(
-            graph.current,
-            ...(Object.values(svgViewRange) as [number, number, number, number])
-        );
-        setNodesInViewRange(nodes);
-        targetSnapCellMapRef.current = buildTargetSnapCellMap(graph.current, nodes);
-        if (buildSnapLines) {
-            setSnapLines(getSnapLines(graph.current, nodes));
-        }
-        return nodes;
-    };
 
     // all possible snap lines in the current view, pre-calculated for performance
     const [snapLines, setSnapLines] = React.useState<SnapLine[]>([]);
@@ -234,8 +186,18 @@ const SvgCanvas = () => {
     React.useEffect(
         () => {
             if (!pointerPosition) return;
-            refreshViewportNodeCaches(useSnapLines);
-            if (!useSnapLines) setSnapLines([]);
+            const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+            const nodesInViewRange = findNodesInRectangle(
+                graph.current,
+                ...(Object.values(svgViewRange) as [number, number, number, number])
+            );
+            setNodesInViewRange(nodesInViewRange);
+            targetSnapCellMapRef.current = buildTargetSnapCellMap(graph.current, nodesInViewRange);
+            if (useSnapLines) {
+                setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+            } else {
+                setSnapLines([]);
+            }
         },
         // the dependency array is carefully selected to prevent unnecessary recalculation
         // it will only be calculated on the pointer down event, or every times the view box
@@ -471,11 +433,21 @@ const SvgCanvas = () => {
                     gesture.target = domTarget;
                 } else {
                     // Empty map / empty cell → no radius snap (DOM-only until the viewport effect builds the map).
-                    const candidates =
-                        targetSnapCellMapRef.current.get(getTargetSnapCellKey(pointer.x, pointer.y)) ?? [];
-                    gesture.target = candidates.length
-                        ? findNearestConnectableWithinRadius(graph.current, pointer, gesture.source, candidates)
-                        : undefined;
+                    const cellKey = `${Math.floor(pointer.x / TARGET_SNAP_CELL_SIZE)},${Math.floor(pointer.y / TARGET_SNAP_CELL_SIZE)}`;
+                    const candidates = targetSnapCellMapRef.current.get(cellKey) ?? [];
+                    let bestNode: NodeId | undefined;
+                    let bestDist = TARGET_SNAP_RADIUS;
+                    for (const nodeId of candidates) {
+                        if (nodeId === gesture.source) continue;
+                        const x = graph.current.getNodeAttribute(nodeId, 'x');
+                        const y = graph.current.getNodeAttribute(nodeId, 'y');
+                        const dist = Math.hypot(x - pointer.x, y - pointer.y);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestNode = nodeId;
+                        }
+                    }
+                    gesture.target = bestNode;
                 }
                 gesture.session?.pointerMove(pointer);
             }
