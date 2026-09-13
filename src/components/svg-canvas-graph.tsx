@@ -84,12 +84,7 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
-/**
- * Find the nearest connectable node within LINE_SNAP_RADIUS of a graph-space cursor.
- * Pass 1 uses node centers (covers virtual / misc nodes without stn_core_*).
- * Pass 2 samples stn_core_* outlines (or BBox for non-geometry elements) for tighter station snaps.
- */
-export const findNearestConnectableWithinRadius = (
+const findNearestConnectableWithinRadius = (
     graph: typeof window.graph,
     cursor: PathPoint,
     source: NodeId | undefined,

@@ -29,13 +29,6 @@ type StyleComponent = React.FC<
     LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
 >;
 
-const resolveWrapperClassName = (visible: boolean, isSelected: boolean, isLineTarget: boolean) => {
-    if (!visible) return 'removeMe';
-    if (isLineTarget) return 'rmp-line-target-glow';
-    if (isSelected) return 'rmp-selected-glow';
-    return undefined;
-};
-
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
         const {
@@ -68,7 +61,13 @@ const SvgLayer = React.memo(
                 const effectiveEdgeVisible =
                     element.line!.attr.visible && isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber);
                 const wrapperProps = {
-                    className: resolveWrapperClassName(effectiveEdgeVisible, isSelected, isLineTarget),
+                    className: effectiveEdgeVisible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: effectiveEdgeVisible ? undefined : 'url(#invisible)',
                 };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
@@ -136,7 +135,13 @@ const SvgLayer = React.memo(
                 const type = attr.type as StationType;
                 const visible = attr.visible;
                 const wrapperProps = {
-                    className: resolveWrapperClassName(visible, isSelected, isLineTarget),
+                    className: visible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
                 };
 
@@ -204,7 +209,13 @@ const SvgLayer = React.memo(
                 const type = attr.type as MiscNodeType;
                 const visible = attr.visible;
                 const wrapperProps = {
-                    className: resolveWrapperClassName(visible, isSelected, isLineTarget),
+                    className: visible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
                 };
 
