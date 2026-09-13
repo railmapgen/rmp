@@ -6,9 +6,10 @@ export const NODES_MOVE_DISTANCE = 5;
 // SVG-unit radius within which the line tool snaps the endpoint to a connectable node.
 export const TARGET_SNAP_RADIUS = 20;
 
-// SVG-unit grid size for the target-snap cell map.
-// Larger than TARGET_SNAP_RADIUS so most strokes stay in one cell; keep ~5–10× radius.
-export const TARGET_SNAP_CELL_SIZE = TARGET_SNAP_RADIUS * 8;
+// Spatial-hash cell size for target snap (move does one map.get(cellKey)).
+// Equal to RADIUS: ±R fan-out writes each node into a small neighborhood, so map
+// size stays O(nodes) (a few cells per node; ≤ ~9× connectable nodes).
+export const TARGET_SNAP_CELL_SIZE = TARGET_SNAP_RADIUS;
 
 /**
  * Structure for guide lines when dragging / moving the nodes.
