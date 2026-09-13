@@ -2,7 +2,7 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LINE_SNAP_RADIUS, NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import { LINE_SNAP_CELL_SIZE, LINE_SNAP_RADIUS, NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
@@ -84,76 +84,47 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
-const findNearestConnectableWithinRadius = (
+export const getLineSnapCellKey = (x: number, y: number, cellSize = LINE_SNAP_CELL_SIZE) =>
+    `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`;
+
+/** Nodes whose centers lie in the cell AABB expanded by LINE_SNAP_RADIUS (covers every point inside the cell). */
+export const collectLineSnapCandidatesForCell = (
+    graph: typeof window.graph,
+    cellKey: string,
+    source: NodeId | undefined,
+    cellSize = LINE_SNAP_CELL_SIZE,
+    radius = LINE_SNAP_RADIUS
+): NodeId[] => {
+    const [ix, iy] = cellKey.split(',').map(Number);
+    const minX = ix * cellSize - radius;
+    const minY = iy * cellSize - radius;
+    const maxX = (ix + 1) * cellSize + radius;
+    const maxY = (iy + 1) * cellSize + radius;
+    return findNodesInRectangle(graph, minX, minY, maxX, maxY).filter(
+        id => id !== source && connectableNodesType.includes(graph.getNodeAttribute(id, 'type'))
+    );
+};
+
+export const findNearestConnectableWithinRadius = (
     graph: typeof window.graph,
     cursor: PathPoint,
     source: NodeId | undefined,
-    svgViewBoxZoom: number,
-    svgViewBoxMin: { x: number; y: number },
-    canvas: SVGSVGElement | null
+    candidates: readonly NodeId[],
+    radius = LINE_SNAP_RADIUS
 ): NodeId | undefined => {
     let bestNode: NodeId | undefined;
-    let bestDist = LINE_SNAP_RADIUS;
+    let bestDist = radius;
 
-    graph.forEachNode((nodeId, attrs) => {
-        if (nodeId === source) return;
-        if (!connectableNodesType.includes(attrs.type)) return;
-        const dist = Math.hypot(attrs.x - cursor.x, attrs.y - cursor.y);
+    for (const nodeId of candidates) {
+        if (nodeId === source) continue;
+        const x = graph.getNodeAttribute(nodeId, 'x');
+        const y = graph.getNodeAttribute(nodeId, 'y');
+        const dist = Math.hypot(x - cursor.x, y - cursor.y);
         if (dist < bestDist) {
             bestDist = dist;
-            bestNode = nodeId as NodeId;
+            bestNode = nodeId;
         }
-    });
-
-    if (!canvas) return bestNode;
-
-    const svgRect = canvas.getBoundingClientRect();
-    document.querySelectorAll<SVGGraphicsElement>('[id^="stn_core_"]').forEach(stnCoreEl => {
-        const nodeId = stnCoreEl.id.slice('stn_core_'.length) as NodeId;
-        if (nodeId === source) return;
-        if (!graph.hasNode(nodeId)) return;
-        if (!connectableNodesType.includes(graph.getNodeAttribute(nodeId, 'type'))) return;
-
-        const ctm = stnCoreEl.getScreenCTM();
-        if (!ctm) return;
-
-        const toGraph = (lx: number, ly: number) => {
-            const screenX = ctm.a * lx + ctm.c * ly + ctm.e;
-            const screenY = ctm.b * lx + ctm.d * ly + ctm.f;
-            return pointerPosToSVGCoord(screenX - svgRect.left, screenY - svgRect.top, svgViewBoxZoom, svgViewBoxMin);
-        };
-
-        if (stnCoreEl instanceof SVGGeometryElement) {
-            const totalLength = stnCoreEl.getTotalLength();
-            if (totalLength > 0) {
-                const sampleCount = Math.max(20, Math.ceil(totalLength / 10));
-                for (let i = 0; i < sampleCount; i++) {
-                    const pt = stnCoreEl.getPointAtLength((i / sampleCount) * totalLength);
-                    const gp = toGraph(pt.x, pt.y);
-                    const dist = Math.hypot(gp.x - cursor.x, gp.y - cursor.y);
-                    if (dist < bestDist) {
-                        bestDist = dist;
-                        bestNode = nodeId;
-                    }
-                }
-            }
-        } else {
-            const { x: bx, y: by, width: bw, height: bh } = stnCoreEl.getBBox();
-            const p0 = toGraph(bx, by);
-            const p1 = toGraph(bx + bw, by + bh);
-            const wx1 = Math.min(p0.x, p1.x);
-            const wx2 = Math.max(p0.x, p1.x);
-            const wy1 = Math.min(p0.y, p1.y);
-            const wy2 = Math.max(p0.y, p1.y);
-            const ddx = Math.max(wx1 - cursor.x, 0, cursor.x - wx2);
-            const ddy = Math.max(wy1 - cursor.y, 0, cursor.y - wy2);
-            const dist = Math.hypot(ddx, ddy);
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestNode = nodeId;
-            }
-        }
-    });
+    }
 
     return bestNode;
 };
@@ -197,6 +168,8 @@ const SvgCanvas = () => {
     // existing preview when they do not provide custom drawing behaviour.
     const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
     const svgCanvasRef = React.useRef<SVGSVGElement | null>(null);
+    // Amortize findNodesInRectangle: refresh connectable candidates only when the pointer crosses a snap cell.
+    const lineSnapCellCache = React.useRef<{ cellKey: string; candidates: NodeId[] } | undefined>(undefined);
 
     const getNodePoint = (node: NodeId): PathPoint => ({
         x: graph.current.getNodeAttribute(node, 'x'),
@@ -215,6 +188,16 @@ const SvgCanvas = () => {
         const target = findConnectableTarget(document.elementsFromPoint(event.clientX, event.clientY));
         const node = target?.id.slice(target.matchedPrefix.length);
         return isConnectableNode(node) ? node : undefined;
+    };
+    const getCachedLineSnapCandidates = (pointer: PathPoint, source: NodeId) => {
+        const cellKey = getLineSnapCellKey(pointer.x, pointer.y);
+        if (lineSnapCellCache.current?.cellKey !== cellKey) {
+            lineSnapCellCache.current = {
+                cellKey,
+                candidates: collectLineSnapCandidatesForCell(graph.current, cellKey, source),
+            };
+        }
+        return lineSnapCellCache.current.candidates;
     };
 
     // all possible snap lines in the current view, pre-calculated for performance
@@ -252,6 +235,7 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         drawingGesture.current = undefined;
+        lineSnapCellCache.current = undefined;
         const { path, style } = getLinePathAndStyle(mode);
         if (path && style && canUseLine(path, style, mapEnabled, isSubscriber)) {
             const sourcePoint = getNodePoint(node);
@@ -473,9 +457,7 @@ const SvgCanvas = () => {
                               graph.current,
                               pointer,
                               gesture.source,
-                              svgViewBoxZoom,
-                              svgViewBoxMin,
-                              svgCanvasRef.current
+                              getCachedLineSnapCandidates(pointer, gesture.source)
                           );
                 gesture.session?.pointerMove(pointer);
             }
@@ -485,6 +467,7 @@ const SvgCanvas = () => {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const gesture = drawingGesture.current;
         drawingGesture.current = undefined;
+        lineSnapCellCache.current = undefined;
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
