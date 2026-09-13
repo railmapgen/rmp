@@ -3,9 +3,11 @@ import { Id, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { isLinePolicyVisible } from '../util/line-path-availability';
 import { Element } from '../util/process-elements';
-import { UnknownLineStyle, UnknownNode } from './svgs/common/unknown';
+import { UnknownNode } from './svgs/common/unknown';
 import { lineStyles } from './svgs/lines/lines';
+import { UnknownLineStyle } from './svgs/lines/styles/unknown';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as allStations } from './svgs/stations/stations';
 
@@ -17,12 +19,22 @@ interface SvgLayerProps {
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handleEdgePointerDown: (edge: LineId, e: React.PointerEvent<SVGElement>) => void;
+    handleEdgeDoubleClick: (edge: LineId, e: React.MouseEvent<SVGElement>) => void;
+    mapEnabled: boolean;
+    isSubscriber: boolean;
 }
 
 // HELP NEEDED: Why component is not this type?
 type StyleComponent = React.FC<
     LineStyleComponentProps<NonNullable<ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]>>
 >;
+
+const resolveWrapperClassName = (visible: boolean, isSelected: boolean, isLineTarget: boolean) => {
+    if (!visible) return 'removeMe';
+    if (isLineTarget) return 'rmp-line-target-glow';
+    if (isSelected) return 'rmp-selected-glow';
+    return undefined;
+};
 
 const SvgLayer = React.memo(
     (props: SvgLayerProps) => {
@@ -34,6 +46,9 @@ const SvgLayer = React.memo(
             handlePointerMove,
             handlePointerUp,
             handleEdgePointerDown,
+            handleEdgeDoubleClick,
+            mapEnabled,
+            isSubscriber,
         } = props;
 
         const layers = Object.fromEntries(
@@ -44,14 +59,18 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
-            const selectedGlowClassName = isSelected ? 'rmp-selected-glow' : undefined;
-            const lineTargetGlowClassName = element.id === lineTarget ? 'rmp-line-target-glow' : undefined;
-            const combinedGlowClassName = lineTargetGlowClassName ?? selectedGlowClassName;
+            const isLineTarget = element.id === lineTarget;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
                 const type = element.line!.attr.type;
                 const style = element.line!.attr.style;
+                const effectiveEdgeVisible =
+                    element.line!.attr.visible && isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber);
+                const wrapperProps = {
+                    className: resolveWrapperClassName(effectiveEdgeVisible, isSelected, isLineTarget),
+                    filter: effectiveEdgeVisible ? undefined : 'url(#invisible)',
+                };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
                     ExternalLineStyleAttributes[keyof ExternalLineStyleAttributes]
                 >;
@@ -59,7 +78,12 @@ const SvgLayer = React.memo(
                 const PreStyleComponent = lineStyles[style]?.preComponent as StyleComponent | undefined;
                 if (PreStyleComponent) {
                     layers[element.line!.attr.zIndex].pre.push(
-                        <g key={`${id}.pre`} id={`${id}.pre`} className={combinedGlowClassName}>
+                        <g
+                            key={`${id}.pre`}
+                            id={`${id}.pre`}
+                            {...wrapperProps}
+                            onDoubleClick={e => handleEdgeDoubleClick(id, e)}
+                        >
                             <PreStyleComponent
                                 id={id}
                                 type={type}
@@ -74,7 +98,7 @@ const SvgLayer = React.memo(
 
                 const StyleComponent = (lineStyles[style]?.component ?? UnknownLineStyle) as StyleComponent;
                 layers[element.line!.attr.zIndex].main.push(
-                    <g key={id} id={id} className={combinedGlowClassName}>
+                    <g key={id} id={id} {...wrapperProps} onDoubleClick={e => handleEdgeDoubleClick(id, e)}>
                         <StyleComponent
                             id={id}
                             type={type}
@@ -89,7 +113,12 @@ const SvgLayer = React.memo(
                 const PostStyleComponent = lineStyles[style]?.postComponent as StyleComponent | undefined;
                 if (PostStyleComponent) {
                     layers[element.line!.attr.zIndex].post.push(
-                        <g key={`${id}.post`} id={`${id}.post`} className={combinedGlowClassName}>
+                        <g
+                            key={`${id}.post`}
+                            id={`${id}.post`}
+                            {...wrapperProps}
+                            onDoubleClick={e => handleEdgeDoubleClick(id, e)}
+                        >
                             <PostStyleComponent
                                 id={id}
                                 type={type}
@@ -105,6 +134,11 @@ const SvgLayer = React.memo(
                 const id = element.id as StnId;
                 const attr = element.station!;
                 const type = attr.type as StationType;
+                const visible = attr.visible;
+                const wrapperProps = {
+                    className: resolveWrapperClassName(visible, isSelected, isLineTarget),
+                    filter: visible ? undefined : 'url(#invisible)',
+                };
 
                 const PreStationComponent = allStations[type]?.preComponent;
                 if (PreStationComponent) {
@@ -113,7 +147,7 @@ const SvgLayer = React.memo(
                             key={`${element.id}.pre`}
                             id={`${element.id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={combinedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PreStationComponent
                                 id={id}
@@ -130,7 +164,7 @@ const SvgLayer = React.memo(
 
                 const StationComponent = allStations[type]?.component ?? UnknownNode;
                 layers[element.station!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={combinedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} {...wrapperProps}>
                         <StationComponent
                             id={id}
                             x={attr.x}
@@ -150,7 +184,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={combinedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PostStationComponent
                                 id={id}
@@ -168,6 +202,11 @@ const SvgLayer = React.memo(
                 const id = element.id as MiscNodeId;
                 const attr = element.miscNode!;
                 const type = attr.type as MiscNodeType;
+                const visible = attr.visible;
+                const wrapperProps = {
+                    className: resolveWrapperClassName(visible, isSelected, isLineTarget),
+                    filter: visible ? undefined : 'url(#invisible)',
+                };
 
                 const PreMiscNodeComponent = miscNodes[type]?.preComponent;
                 if (PreMiscNodeComponent) {
@@ -176,7 +215,7 @@ const SvgLayer = React.memo(
                             key={`${id}.pre`}
                             id={`${id}.pre`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={combinedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PreMiscNodeComponent
                                 id={id}
@@ -194,7 +233,7 @@ const SvgLayer = React.memo(
 
                 const MiscNodeComponent = miscNodes[type]?.component ?? UnknownNode;
                 layers[element.miscNode!.zIndex].main.push(
-                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} className={combinedGlowClassName}>
+                    <g key={id} id={id} transform={`translate(${attr.x}, ${attr.y})`} {...wrapperProps}>
                         <MiscNodeComponent
                             id={id}
                             x={attr.x}
@@ -215,7 +254,7 @@ const SvgLayer = React.memo(
                             key={`${id}.post`}
                             id={`${id}.post`}
                             transform={`translate(${attr.x}, ${attr.y})`}
-                            className={combinedGlowClassName}
+                            {...wrapperProps}
                         >
                             <PostMiscNodeComponent
                                 id={id}
@@ -242,7 +281,9 @@ const SvgLayer = React.memo(
     (prevProps, nextProps) =>
         prevProps.elements === nextProps.elements &&
         prevProps.selected === nextProps.selected &&
-        prevProps.lineTarget === nextProps.lineTarget
+        prevProps.lineTarget === nextProps.lineTarget &&
+        prevProps.mapEnabled === nextProps.mapEnabled &&
+        prevProps.isSubscriber === nextProps.isSubscriber
 );
 
 export default SvgLayer;

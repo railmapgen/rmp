@@ -24,7 +24,7 @@ const MTRRaceDays = (props: LineStyleComponentProps<MTRRaceDaysAttributes>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH}
@@ -70,12 +70,15 @@ const mtrRaceDays: LineStyle<MTRRaceDaysAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.mtrRaceDays.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

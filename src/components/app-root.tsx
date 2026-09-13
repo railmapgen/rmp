@@ -17,6 +17,7 @@ export default function AppRoot() {
     const dispatch = useRootDispatch();
     const {
         paletteAppClip: { input },
+        isMapOverview,
     } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -82,9 +83,11 @@ export default function AppRoot() {
                     <Flex direction="row" height="100%" overflow="hidden" sx={{ position: 'relative' }}>
                         {/* `position: 'relative'` is used to make sure RmgSidePanel in DetailsPanel
                         have the right parent container for its `position: 'absolute'` calculation. */}
-                        <React.Suspense fallback={null}>
-                            <ToolsPanel />
-                        </React.Suspense>
+                        {!isMapOverview && (
+                            <React.Suspense fallback={null}>
+                                <ToolsPanel />
+                            </React.Suspense>
+                        )}
                         <React.Suspense fallback={loadingFallback}>
                             <SvgWrapper />
                         </React.Suspense>

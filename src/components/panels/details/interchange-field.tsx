@@ -150,11 +150,11 @@ export const InterchangeField = (props: {
         }
     };
 
-    const handleAddInterchangeGroup = () => handleAdd(attr.transfer.length)(0, [...runtimeTheme, '', '']);
+    const handleAddInterchangeGroup = () => handleAdd(transfer.length)(0, [...runtimeTheme, '', '']);
 
     return (
         <VStack align="flex-start" ml="1">
-            {attr.transfer.map((infoList, i) => (
+            {transfer.map((infoList, i) => (
                 <React.Fragment key={`${infoList.toString()}-${i}`}>
                     <FormLabel fontSize="xs">
                         {i === 0
@@ -177,7 +177,7 @@ export const InterchangeField = (props: {
                 </React.Fragment>
             ))}
 
-            {maximumTransfers[attr.transfer.length] > 0 && (
+            {maximumTransfers[transfer.length] > 0 && (
                 <Button
                     size="xs"
                     variant="ghost"

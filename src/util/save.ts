@@ -1,7 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
-import { SerializedGraph } from 'graphology-types';
 import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
@@ -39,25 +38,56 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { ParamState } from '../redux/param/param-slice';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 
 /**
  * The save format of the project.
- * For fields other than `version`, see ParamState.
+ * For project fields, see ProjectSnapshot.
  */
-export interface RMPSave {
+export interface RMPSave extends ProjectSnapshot {
     /**
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
-    graph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-    svgViewBoxZoom: number;
-    svgViewBoxMin: { x: number; y: number };
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 69;
+export const CURRENT_VERSION = 78;
+
+/**
+ * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
+ */
+const repairNodeXYNullCoordinates = (saveStr: string): string => {
+    const save = JSON.parse(saveStr) as RMPSave;
+    const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+    graph.import(save.graph);
+
+    let changed = false;
+
+    for (const { node, attributes } of graph.nodeEntries()) {
+        const nextAttrs: Partial<NodeAttributes> = {};
+
+        if (attributes.x === null) {
+            nextAttrs.x = 0;
+        }
+        if (attributes.y === null) {
+            nextAttrs.y = 0;
+        }
+
+        if (Object.keys(nextAttrs).length > 0) {
+            graph.mergeNodeAttributes(node, nextAttrs);
+            changed = true;
+        }
+    }
+
+    if (!changed) {
+        return saveStr;
+    }
+
+    return JSON.stringify({ ...save, graph: graph.export() });
+};
 
 /**
  * Parse the version from a save string without fully validating the save.
@@ -105,6 +135,11 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
         changed = true;
     }
 
+    // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
+    const repairedSave = repairNodeXYNullCoordinates(save);
+    changed ||= repairedSave !== save;
+    save = repairedSave;
+
     if (changed) {
         logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
         // Backup original param in case of bugs in the upgrades.
@@ -125,11 +160,12 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
 };
 
 /**
- * Return a valid save string from ParamState.
+ * Returns a save containing only the current project snapshot, never its undo
+ * and redo stacks. Images are attached only when supplied by an export flow.
  */
-export const stringifyParam = (paramState: ParamState) => {
-    const { present, past, future, ...param } = paramState;
-    const save: RMPSave = { ...param, graph: present, version: CURRENT_VERSION };
+export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
+    const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
+    if (paramState.images) save.images = paramState.images;
     return JSON.stringify(save);
 };
 
@@ -909,4 +945,99 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     68: param =>
         // Bump save version to support the ray-guided line path.
         JSON.stringify({ ...JSON.parse(param), version: 69 }),
+    69: param =>
+        // Bump save version to support generic line style.
+        JSON.stringify({ ...JSON.parse(param), version: 70 }),
+    70: param => {
+        // Add decoration and decorationAt defaults to JR East line styles.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterEdges(
+                (edge, attrs) =>
+                    attrs.style === LineStyleType.JREastSingleColor ||
+                    attrs.style === LineStyleType.JREastSingleColorPattern
+            )
+            .forEach(edge => {
+                const style = graph.getEdgeAttribute(edge, 'style');
+                const attrs = graph.getEdgeAttribute(edge, style) as any;
+                if (typeof attrs.decoration !== 'string') {
+                    attrs.decoration = 'none';
+                }
+                if (typeof attrs.decorationAt !== 'string') {
+                    attrs.decorationAt = 'to';
+                }
+                graph.mergeEdgeAttributes(edge, { [style]: attrs });
+            });
+        return JSON.stringify({ ...p, version: 71, graph: graph.export() });
+    },
+    71: param =>
+        // Bump save version to support shinkansen line style.
+        JSON.stringify({ ...JSON.parse(param), version: 72 }),
+    72: param => {
+        // Bump save version to add flipColor to csmetro interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.CsmetroInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (typeof attr.flipColor !== 'boolean') {
+                    attr.flipColor = false;
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 73, graph: graph.export() });
+    },
+    73: param => {
+        // Bump save version to add transfer to wuhanrt interchange stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.WuhanRTInt)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (!Array.isArray(attr.transfer)) {
+                    attr.transfer = [[]];
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 74, graph: graph.export() });
+    },
+    74: param =>
+        // Bump save version to support Shenzhen facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 75 }),
+    75: param =>
+        // Bump save version to support Wuhan Rail Transit line badge.
+        JSON.stringify({ ...JSON.parse(param), version: 76 }),
+    76: param => {
+        // Bump save version to add secondary names to Guangdong Intercity Railway stations.
+        const p = JSON.parse(param);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        graph.import(p?.graph);
+        graph
+            .filterNodes((node, attr) => node.startsWith('stn') && attr.type === StationType.GuangdongIntercityRailway)
+            .forEach(node => {
+                const type = graph.getNodeAttribute(node, 'type');
+                const attr = graph.getNodeAttribute(node, type) as any;
+                if (!Array.isArray(attr.secondaryNames)) {
+                    attr.secondaryNames = ['', ''];
+                    graph.mergeNodeAttributes(node, { [type]: attr });
+                }
+            });
+        return JSON.stringify({ ...p, version: 77, graph: graph.export() });
+    },
+    /** The unreleased real-map schema starts with the map hidden for existing saves. */
+    77: param =>
+        JSON.stringify({
+            ...JSON.parse(param),
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        }),
 };

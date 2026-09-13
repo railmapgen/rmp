@@ -24,7 +24,7 @@ const MTRLightRail = (props: LineStyleComponentProps<MTRLightRailAttributes>) =>
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH / 2}
@@ -68,12 +68,15 @@ const mtrLightRail: LineStyle<MTRLightRailAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.mtrLightRail.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

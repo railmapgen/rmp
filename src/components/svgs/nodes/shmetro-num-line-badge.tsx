@@ -101,7 +101,7 @@ const SHMetroNumLineBadgeAttrsComponent = (props: AttrsProps<ShmetroNumLineBadge
 const shmetroNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="10" height="16" />
-        <text x="4" y="18" fill="white">
+        <text x="4" y="18" fill="var(--chakra-colors-chakra-body-bg)">
             1
         </text>
         <text x="14" y="10" fontSize="5">

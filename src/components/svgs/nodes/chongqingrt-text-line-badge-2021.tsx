@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -160,13 +161,23 @@ const ChongqingRTNumLineBadge2021AttrsComponent = (props: AttrsProps<ChongqingRT
 const chongqingRTTextLineBadge2021Icon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
         <rect fill="currentColor" x="0" width="21" height="21" rx="3" ry="3" />
-        <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
+        <rect
+            strokeWidth="1.5"
+            stroke="var(--chakra-colors-chakra-body-bg)"
+            fill="none"
+            x="1.5"
+            y="1.5"
+            width="18"
+            height="18"
+            rx="2"
+            ry="2"
+        />
         <text
             {...getLangStyle(TextLanguage.zh)}
             textAnchor="middle"
             x="10.5"
             y="11"
-            fill="white"
+            fill="var(--chakra-colors-chakra-body-bg)"
             fontSize="5"
             letterSpacing="0"
         >
@@ -177,7 +188,7 @@ const chongqingRTTextLineBadge2021Icon = (
             textAnchor="middle"
             x="10.5"
             y="13.75"
-            fill="white"
+            fill="var(--chakra-colors-chakra-body-bg)"
             fontSize="2"
             letterSpacing="0"
         >
@@ -188,6 +199,7 @@ const chongqingRTTextLineBadge2021Icon = (
 
 const chongqingRTTextLineBadge2021: Node<ChongqingRTTextLineBadge2021Attributes> = {
     component: ChongqingRTTextLineBadge2021,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: chongqingRTTextLineBadge2021Icon,
     defaultAttrs: defaultChongqingRTTextLineBadge2021Attributes,
     attrsComponent: ChongqingRTNumLineBadge2021AttrsComponent,

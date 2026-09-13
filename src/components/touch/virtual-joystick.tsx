@@ -23,7 +23,7 @@ import { useWindowSize } from '../../util/hooks';
 export const VirtualJoystick: React.FC = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const { selected } = useRootSelector(state => state.runtime);
 
     const size = useWindowSize();
@@ -85,7 +85,7 @@ export const VirtualJoystick: React.FC = () => {
     const buttonSpacing = 40;
 
     return (
-        <g transform={`translate(${centerX}, ${bottomY})scale(${(1.5 * svgViewBoxZoom) / 100})`}>
+        <g className="removeMe" transform={`translate(${centerX}, ${bottomY})scale(${(1.5 * svgViewBoxZoom) / 100})`}>
             {/* Up button */}
             <g transform={`translate(0, -${buttonSpacing})`}>
                 <circle

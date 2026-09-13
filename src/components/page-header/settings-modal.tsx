@@ -32,22 +32,27 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdArrowBack, MdArrowDownward, MdArrowForward, MdArrowUpward, MdOpenInNew, MdReadMore } from 'react-icons/md';
 import { StationCity } from '../../constants/constants';
+import { getMapOptimizationProgress } from '../../map/map-tile-controller';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
     setSnapLines,
+    setStationNameTranslationMode,
     setTelemetryProject,
 } from '../../redux/app/app-slice';
-import type { RandomStationsNamesValue } from '../../redux/app/app-slice';
+import type { RandomStationsNamesValue, StationNameTranslationMode } from '../../redux/app/app-slice';
+import { setMapEnabled } from '../../redux/param/param-slice';
 import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import { MapStyleSection } from './map-style-section';
 import { MasterManager } from './master-manager';
 import { ChangeTypeModal } from './procedures/change-type-modal';
 import { RemoveLinesWithSingleColorModal } from './procedures/remove-lines-with-single-color-modal';
@@ -73,10 +78,12 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         preference: {
             autoParallel,
             randomStationsNames,
+            stationNameTranslationMode,
             gridLines,
             snapLines,
             predictNextNode,
             autoChangeStationType,
+            disableMapPerformanceOptimization,
             disableWarning: { changeType: disableWarningChangeType },
         },
     } = useRootSelector(state => state.app);
@@ -84,6 +91,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
         keepLastPath,
         count: { parallel: parallelLinesCount },
     } = useRootSelector(state => state.runtime);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const dispatch = useRootDispatch();
     const { t } = useTranslation();
     const linkColour = useColorModeValue('primary.500', 'primary.300');
@@ -94,6 +102,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const [isRemoveLinesWithSingleColorOpen, setIsRemoveLinesWithSingleColorOpen] = React.useState(false);
     const [isUpdateColorOpen, setIsUpdateColorOpen] = React.useState(false);
     const [isManagerOpen, setIsManagerOpen] = React.useState(false);
+    const mapOptimizationProgress = React.useMemo(
+        () =>
+            isOpen
+                ? getMapOptimizationProgress(document.querySelector<SVGGElement>('[data-map-layer]'))
+                : { optimized: 0, total: 0 },
+        [isOpen]
+    );
 
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const handleAdditionalTelemetry = (allowTelemetry: boolean) => {
@@ -106,6 +121,9 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
 
     const handleRandomStationNamesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setRandomStationsNames(normalizeRandomStationsNames(event.target.value as RandomStationsNamesValue)));
+    };
+    const handleStationNameTranslationModeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setStationNameTranslationMode(event.target.value as StationNameTranslationMode));
     };
 
     return (
@@ -193,6 +211,40 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     </Select>
                                 </HStack>
                                 <HStack mb="1">
+                                    <Text flex="1">
+                                        {t('header.settings.preference.stationNameTranslationMode.title')}
+                                    </Text>
+                                    <Tooltip label={t('header.settings.pro')}>
+                                        <Badge
+                                            color="gray.50"
+                                            ml="1"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
+                                    <Select
+                                        size="xs"
+                                        width="auto"
+                                        ml="1"
+                                        value={stationNameTranslationMode}
+                                        onChange={handleStationNameTranslationModeChange}
+                                    >
+                                        <option value="pinyin-spaced">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinSpaced')}
+                                        </option>
+                                        <option value="pinyin-compact">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinCompact')}
+                                        </option>
+                                        <option value="pinyin-uppercase">
+                                            {t('header.settings.preference.stationNameTranslationMode.pinyinUppercase')}
+                                        </option>
+                                        <option value="semantic">
+                                            {t('header.settings.preference.stationNameTranslationMode.semantic')}
+                                        </option>
+                                    </Select>
+                                </HStack>
+                                <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.gridline')}</Text>
                                     <Switch
                                         isChecked={gridLines}
@@ -231,8 +283,38 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                         }
                                     />
                                 </HStack>
+                                <HStack mb="1">
+                                    <Text flex="1">{t('header.settings.preference.mapEnabled')}</Text>
+                                    <Switch
+                                        isChecked={mapEnabled}
+                                        onChange={({ target: { checked } }) => dispatch(setMapEnabled(checked))}
+                                    />
+                                </HStack>
+                                {mapEnabled && (
+                                    <Box mb="1">
+                                        <HStack>
+                                            <Text flex="1">
+                                                {t('header.settings.preference.disableMapPerformanceOptimization')}
+                                            </Text>
+                                            <Switch
+                                                isChecked={disableMapPerformanceOptimization}
+                                                onChange={({ target: { checked } }) =>
+                                                    dispatch(setDisableMapPerformanceOptimization(checked))
+                                                }
+                                            />
+                                        </HStack>
+                                        <Text color="gray.500" fontSize="sm">
+                                            {t('header.settings.preference.mapPerformanceOptimizationProgress', {
+                                                optimized: mapOptimizationProgress.optimized,
+                                                total: mapOptimizationProgress.total,
+                                            })}
+                                        </Text>
+                                    </Box>
+                                )}
                             </VStack>
                         </Box>
+
+                        {mapEnabled && <MapStyleSection />}
 
                         <Box width="100%" mb="3">
                             <Text as="b" fontSize="xl">

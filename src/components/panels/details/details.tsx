@@ -15,6 +15,7 @@ import {
     refreshNodesThunk,
 } from '../../../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../../../util/change-types';
+import { reconcileSelectedEdges } from '../../../util/reconcile-ui';
 import {
     EdgeSpecificAttrsClipboardData,
     exportEdgeSpecificAttrs,
@@ -28,6 +29,7 @@ import {
 } from '../../../util/clipboard';
 import { isPortraitClient } from '../../../util/helpers';
 import { sendErrorNotification } from '../../../util/notifications';
+import { normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import InfoSection from './info-section';
 import LineExtremitiesSection from './line-extremities-section';
 import NodePositionSection from './node-position-section';
@@ -54,8 +56,13 @@ const DetailsPanel = () => {
     const [selectedFirst] = selected;
 
     const isMasterDisabled = !activeSubscriptions.RMP_CLOUD && masterNodesCount + 1 > MAX_MASTER_NODE_FREE;
+    const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const canCopyAttrs = selected.size === 1;
+    const hasMultipleEdges = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasEdge(id)).length >= 2,
+        [selected]
+    );
 
     const handleClose = () => {
         if (!isPortraitClient()) {
@@ -145,12 +152,27 @@ const DetailsPanel = () => {
             return;
         }
 
-        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+        if (
+            !importEdgeSpecificAttrs(
+                graph.current,
+                selected,
+                parsed.data as EdgeSpecificAttrsClipboardData,
+                isGenericLineStyleLayerLimited
+            )
+        ) {
             sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
-        hardRefresh();
+        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+    };
+
+    const handleReconcile = () => {
+        if (reconcileSelectedEdges(graph.current, selected)) {
+            hardRefresh();
+        }
     };
 
     return (
@@ -204,6 +226,11 @@ const DetailsPanel = () => {
                     <Button size="sm" variant="outline" onClick={handlePasteAttrs}>
                         {t('pasteAttrs')}
                     </Button>
+                    {hasMultipleEdges && (
+                        <Button size="sm" variant="outline" onClick={handleReconcile}>
+                            {t('panel.details.info.reconcile')}
+                        </Button>
+                    )}
                 </VStack>
             </RmgSidePanelFooter>
         </RmgSidePanel>

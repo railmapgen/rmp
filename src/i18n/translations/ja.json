@@ -41,8 +41,13 @@
                 "linePathType": "路線経路の種類",
                 "lineStyleType": "路線風格の種類",
                 "type": "種類",
+                "visible": "エクスポート時に表示",
                 "parallel": "並列路線",
-                "parallelIndex": "並列路線索引"
+                "parallelIndex": "並列路線索引",
+                "reconcile": "統合",
+                "reconcileId": "統合一意識別子",
+                "reconcileAssign": "割当",
+                "reconcileMembers": "統合メンバー"
             },
             "multipleSelection": {
                 "title": "複数選択",
@@ -53,7 +58,7 @@
                 "miscNode": "その他のノード",
                 "edge": "路線",
                 "showingFirst500": "最初の 500 項目のみ表示しています。"
-                },
+            },
             "changeStationTypeContent": "駅の種類を変更すると、駅の名前以外のすべての属性が削除されます。",
             "changeLineTypeContent": "路線の種類を変更すると、すべての属性が削除されます。",
             "changeType": "種類を変更",
@@ -158,6 +163,15 @@
                     "sandwich": "サンドイッチ",
                     "tube": "地下鉄"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "ロンドン地下鉄路線バッジ",
+                    "lineName": "路線名",
+                    "walking": "徒歩",
+                    "walkingTarget": "徒歩先",
+                    "distance": "距離",
+                    "addItem": "バッジを追加",
+                    "noItems": "バッジはありません"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "成都鉄道交通路線記号",
                     "badgeType": {
@@ -171,6 +185,9 @@
                     "displayName": "台北地下鉄路線記号",
                     "tram": "路面電車"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "武漢軌道交通路線記号"
+                },
                 "image": {
                     "displayName": "画像",
                     "label": "ラベル",
@@ -182,7 +199,8 @@
                 "master": {
                     "displayName": "大師節点",
                     "type": "大師節点種類",
-                    "undefined": "未定義"
+                    "undefined": "未定義",
+                    "attrBindingError": "大師属性バインディングエラー"
                 },
                 "facilities": {
                     "displayName": "施設",
@@ -230,7 +248,12 @@
                     "airport_chengdu": "成都空港",
                     "railway_chengdu": "成都鉄道駅",
                     "railway_taiwan": "台湾鉄道",
-                    "hsr_taiwan": "台湾高速鉄道"
+                    "hsr_taiwan": "台湾高速鉄道",
+                    "railway_shenzhen": "深圳鉄道駅",
+                    "intercity_shenzhen": "深圳都市間鉄道",
+                    "ferry_shenzhen": "深圳フェリー",
+                    "tram_shenzhen": "深圳トラム",
+                    "airport_shenzhen": "深圳空港"
                 },
                 "text": {
                     "displayName": "任意の文字",
@@ -289,7 +312,12 @@
                     "middle": "中央",
                     "right": "右",
                     "top": "上",
-                    "bottom": "下"
+                    "bottom": "下",
+                    "custom": "カスタム",
+                    "translateName": "駅名を英語に翻訳",
+                    "translateNameEmpty": "中国語名を入力してください。",
+                    "translateNameNotSubscribed": "意味翻訳には RMP Cloud が必要です。",
+                    "translateNameFailed": "駅名を翻訳できませんでした。"
                 },
                 "interchange": {
                     "title": "乗り換え",
@@ -447,6 +475,7 @@
                     "terminal": "終着駅",
                     "terminalNameRotate": "終着駅名回転",
                     "shareTracks": "線路共有",
+                    "noTrackShare": "線路共有なし",
                     "shareTracksIndex": "線路共有索引"
                 },
                 "londonTubeInt": {
@@ -456,7 +485,9 @@
                     "displayName": "ロンドン川サービス乗換駅"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道駅"
+                    "displayName": "広東省都市間鉄道駅",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重慶鉄道交通基本駅",
@@ -526,7 +557,8 @@
                     "displayName": "長沙メトロ基本駅"
                 },
                 "csmetroInt": {
-                    "displayName": "長沙メトロ乗り換え駅"
+                    "displayName": "長沙メトロ乗り換え駅",
+                    "flipColor": "色を反転"
                 },
                 "hzmetroBasic": {
                     "displayName": "杭州メトロ基本駅",
@@ -550,7 +582,9 @@
                     "from": "から",
                     "to": "まで",
                     "parallelDisabled": "この路線が並列であるため、一部の属性が無効になっています。",
-                    "changeInBaseLine": "基準線で変更してください："
+                    "changeInBaseLine": "基準線で変更してください：",
+                    "reconcileDisabled": "この路線は統合チェーンに含まれるため、オフセットは無効です。チェーン全体が結合された一本のパスとして描画されます。",
+                    "reconcileStyleDisabled": "この路線は統合チェーンに含まれるため、スタイル属性は無効です。描画されるスタイルは基準線によって制御されます。"
                 },
                 "simple": {
                     "displayName": "簡単な経路",
@@ -567,6 +601,36 @@
                 },
                 "rayGuided": {
                     "displayName": "任意角度経路"
+                },
+                "bezier": {
+                    "displayName": "ベジェ曲線",
+                    "along": "線方向の位置",
+                    "normal": "法線オフセット",
+                    "sourceOffset": "始点オフセット",
+                    "targetOffset": "終点オフセット",
+                    "linkedOffset": "連動する端点オフセット",
+                    "sourceOffsetX": "始点 X オフセット",
+                    "sourceOffsetY": "始点 Y オフセット",
+                    "targetOffsetX": "終点 X オフセット",
+                    "targetOffsetY": "終点 Y オフセット"
+                },
+                "freeform": {
+                    "displayName": "フリーフォーム経路",
+                    "outlineSettingsUnavailable": "可変幅および両端のキャップ設定は、現在まだ利用できません。",
+                    "controlPointHint": "青いコントロールポイントをドラッグして経路を調整できます。経路をダブルクリックするとその位置にポイントを追加でき、青いポイントを右クリックすると削除できます。",
+                    "widthStops": "幅ポイント",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "位置 (%)",
+                    "widthStopWidth": "幅 (px)",
+                    "baseWidthHint": "5px は線分の基準幅です。",
+                    "smoothing": "スムージング",
+                    "startCap": "始点キャップ",
+                    "endCap": "終点キャップ",
+                    "round": "丸",
+                    "flat": "平面",
+                    "arrow": "矢印",
+                    "arrowLength": "矢印の長さ",
+                    "arrowWidth": "矢印の幅"
                 },
                 "singleColor": {
                     "displayName": "単色風格"
@@ -628,7 +692,18 @@
                     "displayName": "シンガポールMRT改札外乗り換え風格"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR東日本単色風格"
+                    "displayName": "JR東日本単色風格",
+                    "decoration": {
+                        "displayName": "終端表示",
+                        "none": "なし",
+                        "thinTail": "他線区",
+                        "blackBlock": "終端"
+                    },
+                    "decorationAt": {
+                        "displayName": "表示位置",
+                        "from": "始点",
+                        "to": "終点"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR東日本単色網目模様風格"
@@ -661,7 +736,10 @@
                     "displayName": "ロンドンIF雲索道風格"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "広東省都市間鉄道風格"
+                    "displayName": "広東省都市間鉄道風格",
+                    "color": "色",
+                    "blue": "青色",
+                    "gray": "灰色"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "重慶鉄道交通路線標識接続線風格"
@@ -671,6 +749,28 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "成都鉄道交通改札乗換風格"
+                },
+                "shinkansen": {
+                    "displayName": "新幹線風格"
+                },
+                "generic": {
+                    "displayName": "汎用スタイル",
+                    "layers": "線レイヤー",
+                    "layer": "レイヤー {{index}}",
+                    "width": "幅",
+                    "opacity": "不透明度",
+                    "linecap": "ラインキャップ",
+                    "linecapButt": "バット",
+                    "linecapRound": "ラウンド",
+                    "linecapSquare": "スクエア",
+                    "dash": "ダッシュ長",
+                    "gap": "間隔長",
+                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
+                    "addLayer": "レイヤーを追加",
+                    "copyLayer": "レイヤーを複製",
+                    "moveLayerUp": "レイヤーを上へ移動",
+                    "moveLayerDown": "レイヤーを下へ移動",
+                    "removeLayer": "レイヤーを削除"
                 }
             },
             "edges": {},
@@ -693,6 +793,10 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "mapToggle": {
+            "show": "地理地図を表示",
+            "hide": "地理地図を非表示"
+        },
         "open": {
             "new": "新しい作品",
             "config": "作品をインポート",
@@ -810,6 +914,7 @@
             },
             "preference": {
                 "title": "設定",
+                "mapEnabled": "地理地図レイヤーを表示",
                 "keepLastPath": "次の移動で背景をクリックするまで、線を描き続ける",
                 "autoParallel": "新しい路線を既存の路線と並列に自動的に設定",
                 "randomStationNames": {
@@ -819,10 +924,19 @@
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
+                "stationNameTranslationMode": {
+                    "title": "駅名翻訳方式",
+                    "pinyinSpaced": "ピンイン-1字ずつ大文字・空白あり",
+                    "pinyinCompact": "ピンイン-先頭大文字・空白なし",
+                    "pinyinUppercase": "ピンイン-すべて大文字",
+                    "semantic": "意味翻訳"
+                },
                 "gridline": "グリッドガイドラインを表示",
                 "snapline": "ガイドラインおよびポイントに自動的にスナップする",
                 "predictNextNode": "節点を選択したときに次の節点を予測する",
                 "autoChangeStationType": "基本駅と乗換駅を自動的に切り替える",
+                "disableMapPerformanceOptimization": "地図のパフォーマンス最適化を無効にする",
+                "mapPerformanceOptimizationProgress": "最適化済み：{{optimized}}/{{total}}",
                 "disableWarningChangeType": "駅または路線タイプを変更する際の警告を無効にする"
             },
             "shortcuts": {
@@ -937,14 +1051,14 @@
             "contactUs": "お問い合わせ",
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
-            "slack": "Slackグループ",
-            "slackContent": "Slackのチャンネルでチャットしましょう！"
+            "zulip": "Zulip コミュニティ",
+            "zulipContent": "Zulip でコミュニティに参加しましょう！"
         }
     },
 
     "contextMenu": {
         "refresh": "更新",
-        "cut": "切り取り", 
+        "cut": "切り取り",
         "paste": "貼り付け",
         "delete": "削除",
         "placeTop": "最前面へ",
@@ -957,7 +1071,8 @@
         "flipVertical": "垂直に反転",
         "flipHorizontal": "水平に反転",
         "flipDiagonal45": "45° 線で反転",
-        "flipDiagonal135": "135° 線で反転"
+        "flipDiagonal135": "135° 線で反転",
+        "reconcile": "統合"
     },
 
     "clipboard": {
@@ -968,5 +1083,69 @@
         }
     },
 
-    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。"
+    "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
+    "map": {
+        "loading": "地図を読み込み中",
+        "loadError": "地図の背景を読み込めません。",
+        "zoomInToEdit": "地図を編集するには拡大してください。",
+        "style": {
+            "title": "地図スタイル",
+            "reset": "初期設定に戻す",
+            "type": "種類",
+            "enabled": "表示",
+            "widthScale": "幅の倍率",
+            "roads": {
+                "title": "道路",
+                "casingColor": "縁取り",
+                "color": "路面",
+                "path": "小道",
+                "local": "一般道",
+                "collector": "補助幹線道路",
+                "arterial": "幹線道路"
+            },
+            "rails": {
+                "title": "鉄道",
+                "metro": "地下鉄",
+                "national": "一般鉄道"
+            },
+            "labels": {
+                "title": "ラベル",
+                "enabled": "すべてのラベルを表示",
+                "sizeScale": "文字サイズ倍率",
+                "color": "文字",
+                "strokeColor": "縁取り",
+                "groups": {
+                    "places": "地名",
+                    "roads": "道路",
+                    "buildings": "建物",
+                    "areas": "エリア",
+                    "transport": "交通"
+                },
+                "categories": {
+                    "place-major": "主要地名",
+                    "place-medium": "中規模地名",
+                    "place-minor": "小規模地名",
+                    "road-arterial": "幹線道路",
+                    "road-collector": "補助幹線道路",
+                    "building": "建物",
+                    "area-water": "水域",
+                    "area-park": "公園",
+                    "area-grass": "草地",
+                    "area-forest": "森林",
+                    "area-farmland": "農地",
+                    "area-cemetery": "墓地",
+                    "area-residential": "住宅地",
+                    "area-commercial": "商業地",
+                    "area-industrial": "工業地",
+                    "area-education": "教育施設",
+                    "area-healthcare": "医療施設",
+                    "transport-airport": "空港",
+                    "transport-rail": "一般鉄道駅",
+                    "transport-metro": "地下鉄駅",
+                    "transport-platform": "プラットホーム",
+                    "transport-entrance": "出入口"
+                }
+            }
+        }
+    }
 }

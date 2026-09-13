@@ -24,7 +24,7 @@ const LondonTubeTerminal = (props: LineStyleComponentProps<LondonTubeTerminalAtt
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth={LINE_WIDTH}
@@ -70,12 +70,15 @@ const londonTubeTerminal: LineStyle<LondonTubeTerminalAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonTubeTerminal.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

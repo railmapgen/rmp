@@ -11,7 +11,7 @@ const MTRPaidArea = (props: LineStyleComponentProps<MTRPaidAreaAttributes>) => {
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke="black"
             strokeWidth="1.5"
@@ -39,12 +39,15 @@ const mtrPaidArea: LineStyle<MTRPaidAreaAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.mtrPaidArea.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

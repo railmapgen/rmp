@@ -1,16 +1,39 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 
+export type MasterCondition =
+    | boolean
+    | string
+    | MasterAttrBinding
+    | { expression: string }
+    | {
+          left: MasterAttrBinding;
+          operator: '===' | '==' | '!==' | '!=' | '>' | '>=' | '<' | '<=';
+          right: MasterAttrBinding;
+      }
+    | { operator: 'and' | 'or'; conditions: MasterCondition[] }
+    | { operator: 'not'; condition: MasterCondition };
+
+export type MasterAttrBinding =
+    | { kind: 'literal'; value: string | number | boolean | object | unknown[] }
+    | { kind: 'variable'; componentId: string; path?: string }
+    | { kind: 'formula'; expression: string }
+    | { kind: 'conditional'; if: MasterCondition; then: MasterAttrBinding; else: MasterAttrBinding }
+    | { kind: 'legacy'; expression: string };
+
 export interface MasterSvgsElem {
     id: string;
     type: string;
-    attrs: Record<string, string>;
+    attrs?: Record<string, string>;
+    attrBindings?: Record<string, MasterAttrBinding>;
     children?: MasterSvgsElem[];
 }
 
 export interface MasterComponent {
     id: string;
     label: string;
-    type: string;
+    name?: string;
+    type: 'text' | 'textarea' | 'number' | 'switch' | 'color' | (string & {});
+    constraints?: { min?: number; max?: number; step?: number; options?: string[] };
     defaultValue: any;
     value?: any;
 }

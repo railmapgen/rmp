@@ -1,11 +1,12 @@
 import { combineReducers, configureStore, createListenerMiddleware, TypedStartListening } from '@reduxjs/toolkit';
 import { enableMapSet } from 'immer';
-import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import { TypedUseSelectorHook, useDispatch, useSelector, useStore } from 'react-redux';
 import accountReducer from './account/account-slice';
 import appReducer from './app/app-slice';
 import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
+import viewportReducer from './viewport/viewport-slice';
 
 enableMapSet();
 
@@ -15,6 +16,7 @@ const rootReducer = combineReducers({
     param: paramReducer,
     runtime: runtimeReducer,
     fonts: fontsReducer,
+    viewport: viewportReducer,
 });
 export type RootState = ReturnType<typeof rootReducer>;
 
@@ -24,7 +26,9 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
     configureStore({
         reducer: rootReducer,
         middleware: getDefaultMiddleware =>
-            // undo slice contains MultiDirectedGraph instance, it is not meant to be serialized nor persisted
+            // Runtime state deliberately contains transient Sets, so it is excluded
+            // from persistence and the serializable state check is disabled.
+            // https://stackoverflow.com/questions/61704805/getting-an-error-a-non-serializable-value-was-detected-in-the-state-when-using
             getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
         preloadedState,
     });
@@ -34,6 +38,7 @@ export type RootStore = typeof store;
 export type RootDispatch = typeof store.dispatch;
 export const useRootDispatch = () => useDispatch<RootDispatch>();
 export const useRootSelector: TypedUseSelectorHook<RootState> = useSelector;
+export const useRootStore = () => useStore() as RootStore;
 
 type RootStartListening = TypedStartListening<RootState, RootDispatch>;
 export const startRootListening = listenerMiddleware.startListening as RootStartListening;

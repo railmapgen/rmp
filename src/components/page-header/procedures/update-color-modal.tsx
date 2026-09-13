@@ -10,7 +10,7 @@ import {
     Text,
     useToast,
 } from '@chakra-ui/react';
-import { MonoColour, updateTheme } from '@railmapgen/rmg-palette-resources';
+import { updateTheme } from '@railmapgen/rmg-palette-resources';
 import { logger } from '@railmapgen/rmg-runtime';
 import { SerializedGraph } from 'graphology-types';
 import React from 'react';
@@ -19,6 +19,7 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../..
 import { useRootDispatch } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
+import { isTheme } from '../../../util/color';
 
 export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
@@ -36,9 +37,8 @@ export const UpdateColorModal = (props: { isOpen: boolean; onClose: () => void }
             const updatedParam = await updateColors(param);
             graph.current.clear();
             graph.current.import(updatedParam);
-            dispatch(saveGraph(graph.current.export()));
-            dispatch(refreshNodesThunk());
-            dispatch(refreshEdgesThunk());
+            dispatch(saveGraph(updatedParam));
+            await Promise.all([dispatch(refreshEdgesThunk()).unwrap(), dispatch(refreshNodesThunk()).unwrap()]);
             toast({
                 title: t('header.settings.procedures.updateColor.success'),
                 status: 'success' as const,
@@ -86,15 +86,6 @@ interface MatchedThemeWithPaths {
     path: string;
     value: Theme;
 }
-
-const isTheme = (arr: any[]): boolean => {
-    return (
-        arr.length >= 4 && // InterchangeInfo will append strings after Theme
-        arr.every(elem => typeof elem === 'string') && // type ok
-        !!arr[2].match(/^#[0-9a-fA-F]{6}$/) && // hex ok
-        Object.values(MonoColour).includes(arr[3] as any) // bg ok
-    );
-};
 
 const getMatchedThemesWithPaths = (obj: any): MatchedThemeWithPaths[] => {
     const results: MatchedThemeWithPaths[] = [];

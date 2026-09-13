@@ -1,89 +1,21 @@
 import { Button, Checkbox, Text, VStack } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-    AttrsProps,
-    CityCode,
-    EdgeAttributes,
-    GraphAttributes,
-    LineId,
-    MiscNodeId,
-    NodeAttributes,
-    NodeId,
-} from '../../../constants/constants';
-import { LinePathType, LineStyleType, Path } from '../../../constants/lines';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
+import { AttrsProps, CityCode, LineId, MiscNodeId, NodeAttributes } from '../../../constants/constants';
+import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import { getDynamicContrastColor } from '../../../util/color';
+import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
-import { RayGuidedPathAttributes } from '../lines/paths/ray-guided';
-
-/**
- * Generate the combined SVG path string for the closed loop.
- */
-const generateClosedPath = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodes: NodeId[],
-    edges: LineId[]
-): Path | undefined => {
-    if (nodes.length !== edges.length + 1 || nodes.length < 3) return undefined;
-
-    let pathString = '';
-
-    for (let i = 0; i < edges.length; i++) {
-        const sourceNodeId = nodes[i];
-        const targetNodeId = nodes[i + 1];
-        const edgeId = edges[i];
-
-        const sourceAttrs = graph.getNodeAttributes(sourceNodeId);
-        const targetAttrs = graph.getNodeAttributes(targetNodeId);
-        const edgeAttrs = graph.getEdgeAttributes(edgeId);
-        const pathType = edgeAttrs.type;
-        const initialPathAttr = edgeAttrs[pathType]!;
-
-        const x1 = sourceAttrs.x,
-            y1 = sourceAttrs.y,
-            x2 = targetAttrs.x,
-            y2 = targetAttrs.y;
-        const finalPathAttr = structuredClone(initialPathAttr);
-
-        const isReversed = graph.source(edgeId) !== sourceNodeId;
-
-        if (isReversed) {
-            if ('startFrom' in finalPathAttr) {
-                finalPathAttr.startFrom = finalPathAttr.startFrom === 'from' ? 'to' : 'from';
-            }
-            if (pathType === LinePathType.RayGuided) {
-                const rayGuidedAttr = finalPathAttr as RayGuidedPathAttributes;
-                [rayGuidedAttr.startAngle, rayGuidedAttr.endAngle] = [rayGuidedAttr.endAngle, rayGuidedAttr.startAngle];
-                [rayGuidedAttr.offsetFrom, rayGuidedAttr.offsetTo] = [rayGuidedAttr.offsetTo, rayGuidedAttr.offsetFrom];
-            }
-            // no need to handle simple path as it is symmetrical
-        }
-
-        let segment: string =
-            linePaths[pathType]?.generatePath(x1, x2, y1, y2, finalPathAttr as any) || `M ${x1} ${y1} L ${x2} ${y2}`;
-
-        if (i > 0) {
-            const parts = segment.split(' ');
-            // we slice from the 4th element (index 3) to remove the initial move command and its coordinates.
-            segment = parts.slice(3).join(' ');
-        }
-
-        pathString += (i > 0 ? ' ' : '') + segment;
-    }
-
-    const finalFullPath = pathString + ' Z';
-    return finalFullPath as Path;
-};
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -152,11 +84,11 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
                             <path transform="translate(20,0)" d="M2 16 Q7 10 12 16 T18 16" fill="none" />
                         </pattern>
                     </defs>
-                    <path d={fillPath} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
+                    <path d={fillPath.d} fill={color[2]} fillOpacity={opacity} stroke="none" pointerEvents="none" />
                     {selectedPatterns.map(patternId => (
                         <path
                             key={patternId}
-                            d={fillPath}
+                            d={fillPath.d}
                             fill={`url(#${patternId}_${id})`}
                             fillOpacity={opacity}
                             stroke="none"
@@ -195,12 +127,38 @@ export const defaultFillAttributes: FillAttributes = {
     selectedPatterns: ['logo'],
 };
 
+type FillShape = 'square' | 'triangle' | 'circle';
+type FillShapeLinePathType = LinePathType.Diagonal | LinePathType.Perpendicular | LinePathType.Bezier;
+
+const getFillShapeLinePathType = (shape: FillShape, mapEnabled: boolean): FillShapeLinePathType =>
+    mapEnabled ? LinePathType.Bezier : shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
+
+const makeFillShapeLinePathAttrs = (shape: FillShape, type: FillShapeLinePathType, edgeIndex: number, size: number) => {
+    if (type === LinePathType.Bezier) {
+        return {
+            ...structuredClone(linePaths[LinePathType.Bezier].defaultAttrs),
+            along: 0.5,
+            // Straight Beziers preserve polygon edges. Four outward quadratic
+            // segments reproduce the existing rounded circle construction.
+            normal: shape === 'circle' ? -0.5 : 0,
+        };
+    }
+
+    const attrs = structuredClone(linePaths[type].defaultAttrs);
+    if (shape === 'circle') {
+        if (edgeIndex % 2 === 0) attrs.startFrom = 'to';
+        attrs.roundCornerFactor = size;
+    }
+    return attrs;
+};
+
 const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const dispatch = useRootDispatch();
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const { refresh, theme } = useRootSelector(state => state.runtime);
     const { t } = useTranslation();
 
@@ -213,7 +171,9 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
 
     const hasClosedPath = React.useMemo(() => !!findShortestClosedPath(graph, id as MiscNodeId), [graph, id, refresh]);
 
-    const handleCreateShape = (shape: 'square' | 'triangle' | 'circle') => {
+    const handleCreateShape = (shape: FillShape) => {
+        const type = getFillShapeLinePathType(shape, mapEnabled);
+
         const currentNodeAttrs = graph.getNodeAttributes(id);
         const { x, y } = currentNodeAttrs;
         const size = 200; // The size of the shape to create
@@ -280,17 +240,12 @@ const fillAttrsComponent = (props: AttrsProps<FillAttributes>) => {
             const source = nodeIds[i];
             const target = nodeIds[(i + 1) % nodeIds.length]; // Wrap around to close the loop
             const newLineId: LineId = `line_${nanoid(10)}`;
-            const type = shape === 'triangle' ? LinePathType.Diagonal : LinePathType.Perpendicular;
-            const attrs = structuredClone(linePaths[type].defaultAttrs); // deep copy to prevent mutual reference
-            if (shape === 'circle') {
-                if (i % 2 === 0) attrs.startFrom = 'to';
-                attrs.roundCornerFactor = size;
-            }
+            const pathAttrs = makeFillShapeLinePathAttrs(shape, type, i, size);
             graph.addDirectedEdgeWithKey(newLineId, source, target, {
                 visible: true,
                 zIndex: 0,
                 type,
-                [type]: attrs,
+                [type]: pathAttrs,
                 style: LineStyleType.SingleColor,
                 [LineStyleType.SingleColor]: { color: theme },
                 reconcileId: '',
@@ -381,6 +336,7 @@ const fillIcon = (
 
 const fill: Node<FillAttributes> = {
     component: Fill,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: fillIcon,
     defaultAttrs: defaultFillAttributes,
     attrsComponent: fillAttrsComponent,

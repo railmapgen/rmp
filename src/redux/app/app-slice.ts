@@ -5,6 +5,7 @@ import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
 
 export type RandomStationsNamesValue = 'default' | 'empty' | StationCity;
+export type StationNameTranslationMode = 'pinyin-spaced' | 'pinyin-compact' | 'pinyin-uppercase' | 'semantic';
 
 /**
  * AppState contains all the settings users want to preserve after restart.
@@ -43,10 +44,13 @@ export interface AppState {
          */
         autoParallel: boolean;
         randomStationsNames: RandomStationsNamesValue;
+        stationNameTranslationMode: StationNameTranslationMode;
         gridLines: boolean;
         snapLines: boolean;
         predictNextNode: boolean;
         autoChangeStationType: boolean;
+        /** Whether map tiles should remain as SVG instead of being rasterized while the editor is idle. */
+        disableMapPerformanceOptimization: boolean;
         /**
          * Whether to disable warnings.
          */
@@ -80,10 +84,12 @@ export const initialState: AppState = {
         },
         autoParallel: true,
         randomStationsNames: 'default',
+        stationNameTranslationMode: 'pinyin-spaced',
         gridLines: false,
         snapLines: true,
         predictNextNode: true,
         autoChangeStationType: true,
+        disableMapPerformanceOptimization: false,
         disableWarning: {
             changeType: false,
         },
@@ -115,6 +121,9 @@ const appSlice = createSlice({
         setRandomStationsNames: (state, action: PayloadAction<RandomStationsNamesValue>) => {
             state.preference.randomStationsNames = action.payload;
         },
+        setStationNameTranslationMode: (state, action: PayloadAction<StationNameTranslationMode>) => {
+            state.preference.stationNameTranslationMode = action.payload;
+        },
         setGridLines: (state, action: PayloadAction<boolean>) => {
             state.preference.gridLines = action.payload;
         },
@@ -126,6 +135,9 @@ const appSlice = createSlice({
         },
         setAutoChangeStationType: (state, action: PayloadAction<boolean>) => {
             state.preference.autoChangeStationType = action.payload;
+        },
+        setDisableMapPerformanceOptimization: (state, action: PayloadAction<boolean>) => {
+            state.preference.disableMapPerformanceOptimization = action.payload;
         },
         setDisableWarningChangeType: (state, action: PayloadAction<boolean>) => {
             state.preference.disableWarning.changeType = action.payload;
@@ -174,10 +186,12 @@ export const {
     setToolsPanelExpansion,
     setAutoParallel,
     setRandomStationsNames,
+    setStationNameTranslationMode,
     setGridLines,
     setSnapLines,
     setPredictNextNode,
     setAutoChangeStationType,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setShowOnlyFavorites,
     toggleFavoriteLinePath,

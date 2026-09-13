@@ -132,13 +132,13 @@ const shenzhenMetroNumLineBadgeAttrsComponent = (props: AttrsProps<ShenzhenMetro
 const shenzhenMetroNumLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="4" width="20" height="16" rx="2" />
-        <text x="4" y="17" fill="white" fontSize="14">
+        <text x="4" y="17" fill="var(--chakra-colors-chakra-body-bg)" fontSize="14">
             1
         </text>
-        <text x="11" y="14" fill="white" fontSize="5">
+        <text x="11" y="14" fill="var(--chakra-colors-chakra-body-bg)" fontSize="5">
             号线
         </text>
-        <text x="12" y="17" fill="white" fontSize="3">
+        <text x="12" y="17" fill="var(--chakra-colors-chakra-body-bg)" fontSize="3">
             Line 1
         </text>
     </svg>

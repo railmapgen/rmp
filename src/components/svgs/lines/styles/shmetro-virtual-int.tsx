@@ -15,8 +15,8 @@ const ShmetroVirtualInt = (props: LineStyleComponentProps<ShmetroVirtualIntAttri
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
-            <path d={path} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="black" strokeWidth="7" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="white" strokeWidth="4.33" strokeLinecap="round" />
         </g>
     );
 };
@@ -37,12 +37,15 @@ const shmetroVirtualInt: LineStyle<ShmetroVirtualIntAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.shmetroVirtualInt.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
             LinePathType.Simple,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

@@ -4,6 +4,7 @@ import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Events } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { RMGParam } from '../../constants/rmg';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
@@ -36,7 +37,7 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const dispatch = useRootDispatch();
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
 
@@ -67,7 +68,13 @@ export default function RmgParamAppClip(props: RmgAppClipProps) {
             parseRmgParam(graph.current, param, x, y, autoParallel);
             refreshAndSave();
         } catch (err) {
-            dispatch(setGlobalAlert({ status: 'error', message: t('header.open.unknownError') }));
+            dispatch(
+                setGlobalAlert({
+                    id: GlobalAlertId.ImportRmgProjectFailed,
+                    status: 'error',
+                    message: t('header.open.unknownError'),
+                })
+            );
             logger.error('OpenActions.handleUploadRMG():: Unknown error occurred while parsing the RMG project', err);
         } finally {
             onClose();

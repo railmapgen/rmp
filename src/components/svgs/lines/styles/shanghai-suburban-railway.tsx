@@ -27,7 +27,7 @@ const ShanghaiSuburbanRailwayPre = (props: LineStyleComponentProps<ShanghaiSubur
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"
         >
-            <path d={path} fill="none" stroke="#898989" strokeWidth={LINE_WIDTH} strokeLinecap={outStrokeLinecap} />
+            <path d={path.d} fill="none" stroke="#898989" strokeWidth={LINE_WIDTH} strokeLinecap={outStrokeLinecap} />
         </g>
     );
 };
@@ -46,7 +46,7 @@ const ShanghaiSuburbanRailway = (props: LineStyleComponentProps<ShanghaiSuburban
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" />
         </g>
     );
 };
@@ -91,12 +91,15 @@ const shanghaiSuburbanRailway: LineStyle<ShanghaiSuburbanRailwayAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.shanghaiSuburbanRailway.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

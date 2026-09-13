@@ -22,7 +22,7 @@ const LRTSingleColor = (props: LineStyleComponentProps<LRTSingleColorAttributes>
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth="2.157"
@@ -64,12 +64,15 @@ const lrtSingleColor: LineStyle<LRTSingleColorAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.lrtSingleColor.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

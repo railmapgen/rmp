@@ -22,7 +22,9 @@ import {
 import { pointerPosToSVGCoord, roundToMultiple } from '../util/helpers';
 import { sendErrorNotification } from '../util/notifications';
 import { MAX_PARALLEL_LINES_FREE } from '../util/parallel';
+import { reconcileSelectedEdges } from '../util/reconcile-ui';
 import { flipSelectedNodes, rotateSelectedNodes } from '../util/transform';
+import { normalizeEdgeAttributes } from './svgs/lines/lines';
 
 interface ContextMenuProps {
     isOpen: boolean;
@@ -38,7 +40,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
     const {
         preference: { autoParallel },
     } = useRootSelector(state => state.app);
-    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param);
+    const { svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const {
         selected,
         count: { masters: masterNodesCount, lines: parallelLinesCount },
@@ -49,10 +51,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
         !autoParallel || // Disabled if autoParallel is off
         // Or disabled only if autoParallel is on and user has no cloud subscription and exceeds free limit
         (autoParallel && !activeSubscriptions.RMP_CLOUD && parallelLinesCount + 1 > MAX_PARALLEL_LINES_FREE);
+    const isGenericLineStyleLayerLimited = !activeSubscriptions.RMP_CLOUD;
 
     const hasSelection = selected.size > 0;
     const hasMoreThanOneNodeSelection = React.useMemo(
         () => [...selected].filter(id => graph.current.hasNode(id)).length > 1,
+        [selected]
+    );
+    const hasMultipleEdgeSelection = React.useMemo(
+        () => [...selected].filter(id => graph.current.hasEdge(id)).length >= 2,
         [selected]
     );
     const menuRef = React.useRef<HTMLDivElement>(null);
@@ -114,6 +121,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                 graph.current,
                 isMasterDisabled,
                 isParallelDisabled,
+                isGenericLineStyleLayerLimited,
                 roundToMultiple(x, 5),
                 roundToMultiple(y, 5)
             );
@@ -234,12 +242,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
             return;
         }
 
-        if (!importEdgeSpecificAttrs(graph.current, selected, parsed.data as EdgeSpecificAttrsClipboardData)) {
+        if (
+            !importEdgeSpecificAttrs(
+                graph.current,
+                selected,
+                parsed.data as EdgeSpecificAttrsClipboardData,
+                isGenericLineStyleLayerLimited
+            )
+        ) {
             sendErrorNotification(t('error'), t('clipboard.errors.cannotPasteSpecificAttrs'));
             return;
         }
 
-        refreshAndSave();
+        normalizeEdgeAttributes(graph.current, [...selected] as LineId[]);
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
     });
 
     const handleRotate = useEvent((angle: number) => {
@@ -250,6 +267,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
 
     const handleFlip = useEvent((direction: 'vertical' | 'horizontal' | 'diagonal45' | 'diagonal135') => {
         if (flipSelectedNodes(graph.current, selected, direction)) {
+            refreshAndSave();
+        }
+    });
+
+    const handleReconcile = useEvent(() => {
+        if (reconcileSelectedEdges(graph.current, selected)) {
             refreshAndSave();
         }
     });
@@ -442,6 +465,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ isOpen, position, onClose }) 
                         isDisabled={!hasMoreThanOneNodeSelection}
                     >
                         {t('contextMenu.flipDiagonal135')}
+                    </MenuItem>
+                    <Divider />
+                    <MenuItem
+                        onClick={() => {
+                            handleReconcile();
+                            onClose();
+                        }}
+                        isDisabled={!hasMultipleEdgeSelection}
+                    >
+                        {t('contextMenu.reconcile')}
                     </MenuItem>
                 </Box>
             </Box>

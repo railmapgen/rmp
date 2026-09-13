@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -127,8 +128,25 @@ const ChongqingRTNumLineBadge2021AttrsComponent = (props: AttrsProps<ChongqingRT
 const chongqingRTNumLineBadge2021Icon = (
     <svg viewBox="0 0 21 21" height={40} width={40} focusable={false} style={{ padding: 3 }}>
         <rect fill="currentColor" x="0" width="21" height="21" rx="3" ry="3" />
-        <rect strokeWidth="1.5" stroke="white" fill="none" x="1.5" y="1.5" width="18" height="18" rx="2" ry="2" />
-        <text textAnchor="start" x="7.5" y="9.5" fill="white" fontSize="15" dominantBaseline="central">
+        <rect
+            strokeWidth="1.5"
+            stroke="var(--chakra-colors-chakra-body-bg)"
+            fill="none"
+            x="1.5"
+            y="1.5"
+            width="18"
+            height="18"
+            rx="2"
+            ry="2"
+        />
+        <text
+            textAnchor="start"
+            x="7.5"
+            y="9.5"
+            fill="var(--chakra-colors-chakra-body-bg)"
+            fontSize="15"
+            dominantBaseline="central"
+        >
             1
         </text>
     </svg>
@@ -136,6 +154,7 @@ const chongqingRTNumLineBadge2021Icon = (
 
 const chongqingRTNumLineBadge2021: Node<ChongqingRTNumLineBadge2021Attributes> = {
     component: ChongqingRTNumLineBadge2021,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: chongqingRTNumLineBadge2021Icon,
     defaultAttrs: defaultChongqingRTNumLineBadge2021Attributes,
     attrsComponent: ChongqingRTNumLineBadge2021AttrsComponent,

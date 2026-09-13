@@ -6,6 +6,7 @@ import type { Draft } from 'immer';
 import { RootState } from '..';
 import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
 import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
+import { GlobalAlertId } from '../../constants/global-alerts';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
@@ -15,7 +16,7 @@ import { isPortraitClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
-import { redoAction, undoAction } from '../param/param-slice';
+import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -90,7 +91,14 @@ interface RuntimeState {
      */
     existsNodeTypes: Set<NodeType>;
     radialTouchMenu: RadialTouchMenuState;
-    globalAlerts: Partial<Record<AlertStatus, { message: string; url?: string; linkedApp?: string }>>;
+    /**
+     * Whether the map is showing geographic overview tiles instead of the
+     * editable zoom level. Tools and hints will change in overview and zoomed.
+     */
+    isMapOverview: boolean;
+    globalAlerts: Partial<
+        Record<GlobalAlertId, { status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+    >;
 }
 
 const initialState: RuntimeState = {
@@ -121,11 +129,14 @@ const initialState: RuntimeState = {
     stationNames: {},
     radialTouchMenu: defaultRadialTouchMenuState,
     existsNodeTypes: new Set<NodeType>(),
+    isMapOverview: false,
     globalAlerts: {},
 };
 
 /**
  * Thunk middleware to sum the master nodes count.
+ * The graph refresh thunks dispatch their derived updates as separate actions.
+ * https://stackoverflow.com/questions/63516716/redux-toolkit-is-it-possible-to-dispatch-other-actions-from-the-same-slice-in-o
  */
 export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async (_, { getState, dispatch }) => {
     const state = getState() as RootState;
@@ -155,10 +166,14 @@ export const refreshNodesThunk = createAsyncThunk('runtime/refreshNodes', async 
     if (masters > maximumMasterNodes) {
         dispatch(
             setGlobalAlert({
+                id: GlobalAlertId.MasterNodeLimitExceeded,
                 status: 'warning',
                 message: `${i18n.t('header.settings.proLimitExceed.master')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // The warning describes current graph validity, so it must not outlive the condition that created it.
+        dispatch(closeGlobalAlert(GlobalAlertId.MasterNodeLimitExceeded));
     }
 
     const existsNodeTypes = Object.keys(existsNodeTypesCount) as NodeType[];
@@ -188,10 +203,14 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
     if (parallelLinesCount > maximumParallelLines) {
         dispatch(
             setGlobalAlert({
+                id: GlobalAlertId.ParallelLineLimitExceeded,
                 status: 'warning',
                 message: `${i18n.t('header.settings.proLimitExceed.parallel')} ${i18n.t('header.settings.proLimitExceed.solution')}`,
             })
         );
+    } else {
+        // A stable ID lets this refresh clear only its own recovered limit without touching other warnings.
+        dispatch(closeGlobalAlert(GlobalAlertId.ParallelLineLimitExceeded));
     }
 });
 
@@ -213,6 +232,21 @@ const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOp
         return 'show';
     }
     return 'close';
+};
+
+/**
+ * Clears transient UI state that may refer to entities from another project
+ * after a whole-project replacement or restore. Graph-scoped history keeps this
+ * state as part of the current editing session rather than recording it in history.
+ */
+const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
+    state.selected = new Set<Id>();
+    state.pointerPosition = undefined;
+    state.active = undefined;
+    state.mode = 'free';
+    state.lastTool = undefined;
+    state.isDetailsOpen = 'close';
+    state.radialTouchMenu = defaultRadialTouchMenuState;
 };
 
 const runtimeSlice = createSlice({
@@ -258,7 +292,7 @@ const runtimeSlice = createSlice({
             state.refresh.images = Date.now();
         },
         setMode: (state, action: PayloadAction<RuntimeMode>) => {
-            if (state.mode !== 'free') state.lastTool = state.mode;
+            if (state.mode !== 'free' && !state.mode.startsWith('reconcile-')) state.lastTool = state.mode;
             state.mode = action.payload;
             state.isDetailsOpen = getIsDetailsOpen(state);
         },
@@ -314,6 +348,9 @@ const runtimeSlice = createSlice({
         closeRadialTouchMenu: state => {
             state.radialTouchMenu = defaultRadialTouchMenuState;
         },
+        setMapOverview: (state, action: PayloadAction<boolean>) => {
+            state.isMapOverview = action.payload;
+        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -321,24 +358,37 @@ const runtimeSlice = createSlice({
          */
         setGlobalAlert: (
             state,
-            action: PayloadAction<{ status: AlertStatus; message: string; url?: string; linkedApp?: string }>
+            action: PayloadAction<{
+                id: GlobalAlertId;
+                status: AlertStatus;
+                message: string;
+                url?: string;
+                linkedApp?: string;
+            }>
         ) => {
-            const { status, message, url, linkedApp } = action.payload;
-            state.globalAlerts[status] = { message, url, linkedApp };
+            const { id, status, message, url, linkedApp } = action.payload;
+            state.globalAlerts[id] = { status, message, url, linkedApp };
         },
-        closeGlobalAlert: (state, action: PayloadAction<AlertStatus>) => {
+        closeGlobalAlert: (state, action: PayloadAction<GlobalAlertId>) => {
             delete state.globalAlerts[action.payload];
         },
     },
     extraReducers: builder => {
+        // All history restores invalidate graph consumers. Only project-scoped
+        // restores clear transient interaction state that can reference the old project.
         builder
-            .addCase(undoAction, state => {
+            .addCase(applyUndoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
             })
-            .addCase(redoAction, state => {
+            .addCase(applyRedoAction, (state, action) => {
                 state.refresh.nodes = Date.now();
                 state.refresh.edges = Date.now();
+                if (action.payload === 'project') resetProjectInteractionState(state);
+            })
+            .addCase(replaceProjectState, state => {
+                resetProjectInteractionState(state);
             });
     },
 });
@@ -367,6 +417,7 @@ export const {
     setExistsNodeTypes,
     setRadialTouchMenu,
     closeRadialTouchMenu,
+    setMapOverview,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

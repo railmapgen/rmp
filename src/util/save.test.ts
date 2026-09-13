@@ -1,9 +1,26 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
-import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { createStore } from '../redux';
+import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
+    it('serializes mapEnabled without a top-level project type', () => {
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.arterial.color = '#123456';
+        const initialParam = createStore().getState().param;
+        const param = {
+            ...initialParam,
+            present: { ...initialParam.present, mapEnabled: true, mapStyle },
+        };
+        const save = JSON.parse(stringifyParam(param));
+
+        expect(save.mapEnabled).toBe(true);
+        expect(save.mapStyle).toEqual(mapStyle);
+        expect(Object.hasOwn(save, 'type')).toBe(false);
+    });
+
     it('upgrade will return the default tutorial if originalParam is null', async () => {
         const save = await upgrade(null);
         expect(save).toContain('人民广场');
@@ -34,6 +51,84 @@ describe('Unit tests for param upgrade function', () => {
         const save =
             '{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]}';
         await upgrade(save);
+        expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
+    });
+
+    it('upgrade repairs invalid node coordinates in current-version saves', async () => {
+        localStorage.clear();
+        const save = JSON.stringify({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [
+                    {
+                        key: 'stn_invalid_x',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: null,
+                            y: 100,
+                            type: 'shmetro-basic',
+                            'shmetro-basic': {
+                                names: ['A'],
+                                nameOffsetX: 'right',
+                                nameOffsetY: 'top',
+                                color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                            },
+                        },
+                    },
+                    {
+                        key: 'misc_node_invalid_y',
+                        attributes: {
+                            visible: true,
+                            zIndex: 0,
+                            x: 200,
+                            y: null,
+                            type: 'virtual',
+                            virtual: {},
+                        },
+                    },
+                ],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: CURRENT_VERSION,
+        });
+
+        const upgraded = await upgrade(save);
+        const repaired = JSON.parse(upgraded);
+
+        expect(repaired.version).toBe(CURRENT_VERSION);
+        expect(repaired.graph.nodes).toEqual([
+            {
+                key: 'stn_invalid_x',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 0,
+                    y: 100,
+                    type: 'shmetro-basic',
+                    'shmetro-basic': {
+                        names: ['A'],
+                        nameOffsetX: 'right',
+                        nameOffsetY: 'top',
+                        color: ['shanghai', 'sh1', '#E4002B', '#fff'],
+                    },
+                },
+            },
+            {
+                key: 'misc_node_invalid_y',
+                attributes: {
+                    visible: true,
+                    zIndex: 0,
+                    x: 200,
+                    y: 0,
+                    type: 'virtual',
+                    virtual: {},
+                },
+            },
+        ]);
         expect(localStorage.getItem(LocalStorageKey.PARAM_BACKUP)).toEqual(save);
     });
 
@@ -896,5 +991,119 @@ describe('Unit tests for param upgrade function', () => {
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
         expect(newParam).toEqual(expectParam);
+    });
+
+    it('69 -> 70', () => {
+        // Bump save version to support generic line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":69}';
+        const newParam = UPGRADE_COLLECTION[69](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":70}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('70 -> 71', () => {
+        // Add decoration and decorationAt defaults to JR East line styles.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_a","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["A"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}},{"key":"stn_b","attributes":{"visible":true,"zIndex":0,"x":100,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["B"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}}],"edges":[{"key":"line_1","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color","jr-east-single-color":{"color":["tokyo","jy","#9ACD32","#000"]},"reconcileId":"","parallelIndex":-1}},{"key":"line_2","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color-pattern","jr-east-single-color-pattern":{"color":["tokyo","jy","#9ACD32","#000"]},"reconcileId":"","parallelIndex":-1}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":70}';
+        const newParam = UPGRADE_COLLECTION[70](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_a","attributes":{"visible":true,"zIndex":0,"x":0,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["A"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}},{"key":"stn_b","attributes":{"visible":true,"zIndex":0,"x":100,"y":0,"type":"shmetro-basic","shmetro-basic":{"names":["B"],"nameOffsetX":"right","nameOffsetY":"top","color":["tokyo","jy","#9ACD32","#000"]}}}],"edges":[{"key":"line_1","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color","jr-east-single-color":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}},{"key":"line_2","source":"stn_a","target":"stn_b","attributes":{"visible":true,"zIndex":0,"type":"simple","simple":{},"style":"jr-east-single-color-pattern","jr-east-single-color-pattern":{"color":["tokyo","jy","#9ACD32","#000"],"decoration":"none","decorationAt":"to"},"reconcileId":"","parallelIndex":-1}}]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('71 -> 72', () => {
+        // Bump save version to support shinkansen line style.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":71}';
+        const newParam = UPGRADE_COLLECTION[71](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        expect(newParam).toEqual(expectParam);
+    });
+    it('72 -> 73', () => {
+        // Add flipColor default to csmetro interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":72}';
+        const newParam = UPGRADE_COLLECTION[72](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_int","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"csmetro-int","csmetro-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]],"flipColor":false}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":73}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('73 -> 74', () => {
+        // Add transfer default to wuhanrt interchange stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_wuhan_old","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top"}}},{"key":"stn_wuhan_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["三线换乘"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[["wuhan","wuhan1","#28628E","#fff","",""],["wuhan","wuhan2","#9A1F40","#fff","",""],["wuhan","wuhan3","#CA9A8E","#000","",""]]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":73}';
+        const newParam = UPGRADE_COLLECTION[73](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_wuhan_old","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["换乘站"],"nameOffsetX":"right","nameOffsetY":"top","transfer":[[]]}}},{"key":"stn_wuhan_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"wuhanrt-int","wuhanrt-int":{"names":["三线换乘"],"nameOffsetX":"left","nameOffsetY":"bottom","transfer":[[["wuhan","wuhan1","#28628E","#fff","",""],["wuhan","wuhan2","#9A1F40","#fff","",""],["wuhan","wuhan3","#CA9A8E","#000","",""]]]}}},{"key":"stn_basic","attributes":{"visible":true,"zIndex":0,"x":300,"y":100,"type":"shmetro-basic","shmetro-basic":{"names":["普通站"],"nameOffsetX":"right","nameOffsetY":"top","color":["shanghai","sh1","#E4002B","#fff"]}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('74 -> 75', () => {
+        // Bump save version to support Shenzhen facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":74}';
+        const newParam = UPGRADE_COLLECTION[74](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_shenzhen_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"airport_shenzhen"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":75}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('75 -> 76', () => {
+        // Bump save version to support Wuhan Rail Transit line badge.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":75}';
+        const newParam = UPGRADE_COLLECTION[75](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":76}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('76 -> 77', () => {
+        // Bump save version to add secondary names to Guangdong Intercity Railway stations.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_gd_ir","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["番禺","Panyu"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false}}},{"key":"stn_gd_ir_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["花都","Huadu"],"nameOffsetX":"left","nameOffsetY":"bottom","secondaryNames":["广州北站","Guangzhoubei Railway Station"],"interchange":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":76}';
+        const newParam = UPGRADE_COLLECTION[76](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"stn_gd_ir","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["番禺","Panyu"],"nameOffsetX":"right","nameOffsetY":"top","interchange":false,"secondaryNames":["",""]}}},{"key":"stn_gd_ir_existing","attributes":{"visible":true,"zIndex":0,"x":200,"y":100,"type":"guangdong-intercity-rwy","guangdong-intercity-rwy":{"names":["花都","Huadu"],"nameOffsetX":"left","nameOffsetY":"bottom","secondaryNames":["广州北站","Guangzhoubei Railway Station"],"interchange":true}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":77}';
+        expect(newParam).toEqual(expectParam);
+    });
+
+    it('77 -> 78', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":77}';
+        const newParam = UPGRADE_COLLECTION[77](oldParam);
+        expect(JSON.parse(newParam)).toEqual({
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        });
     });
 });

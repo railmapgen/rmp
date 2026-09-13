@@ -39,8 +39,13 @@
                 "linePathType": "Line Path Type",
                 "lineStyleType": "Line Style Type",
                 "type": "Type",
+                "visible": "Visible in export",
                 "parallel": "Parallel line",
-                "parallelIndex": "Parallel index"
+                "parallelIndex": "Parallel index",
+                "reconcile": "Reconcile",
+                "reconcileId": "Reconcile unique identifier",
+                "reconcileAssign": "Assign",
+                "reconcileMembers": "Reconcile members"
             },
             "multipleSelection": {
                 "title": "Multiple Selection",
@@ -156,6 +161,15 @@
                     "sandwich": "Sandwich",
                     "tube": "Tube"
                 },
+                "londonTubeLineBadge": {
+                    "displayName": "London Tube line badge",
+                    "lineName": "Line name",
+                    "walking": "Walking",
+                    "walkingTarget": "Walking target",
+                    "distance": "Distance",
+                    "addItem": "Add badge",
+                    "noItems": "No badges"
+                },
                 "chengduRTLineBadge": {
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
@@ -169,6 +183,9 @@
                     "displayName": "Taipei Metro line badge",
                     "tram": "Tram"
                 },
+                "wuhanRTLineBadge": {
+                    "displayName": "Wuhan Rail Transit line badge"
+                },
                 "image": {
                     "displayName": "Image",
                     "label": "Label",
@@ -180,7 +197,8 @@
                 "master": {
                     "displayName": "Master node",
                     "type": "Master node type",
-                    "undefined": "Undefined"
+                    "undefined": "Undefined",
+                    "attrBindingError": "Master attribute binding error"
                 },
                 "facilities": {
                     "displayName": "Facilities",
@@ -228,7 +246,12 @@
                     "airport_chengdu": "Airport Chengdu",
                     "railway_chengdu": "Railway Chengdu",
                     "railway_taiwan": "Railway Taiwan",
-                    "hsr_taiwan": "High Speed Railway Taiwan"
+                    "hsr_taiwan": "High Speed Railway Taiwan",
+                    "railway_shenzhen": "Railway Shenzhen",
+                    "intercity_shenzhen": "Intercity Shenzhen",
+                    "ferry_shenzhen": "Ferry Shenzhen",
+                    "tram_shenzhen": "Tram Shenzhen",
+                    "airport_shenzhen": "Airport Shenzhen"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -287,7 +310,12 @@
                     "middle": "Middle",
                     "right": "Right",
                     "top": "Top",
-                    "bottom": "Bottom"
+                    "bottom": "Bottom",
+                    "custom": "Custom",
+                    "translateName": "Translate station name to English",
+                    "translateNameEmpty": "Enter a Chinese name first.",
+                    "translateNameNotSubscribed": "Semantic translation requires RMP Cloud.",
+                    "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
                     "title": "Interchanges",
@@ -445,6 +473,7 @@
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
                     "shareTracks": "Track shares",
+                    "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
                 "londonTubeInt": {
@@ -454,7 +483,9 @@
                     "displayName": "London river services interchange station"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway station"
+                    "displayName": "Guangdong Intercity Railway station",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English"
                 },
                 "chongqingRTBasic": {
                     "displayName": "Chongqing Rail Transit basic station",
@@ -524,7 +555,8 @@
                     "displayName": "Changsha Metro basic station"
                 },
                 "csmetroInt": {
-                    "displayName": "Changsha Metro interchange station"
+                    "displayName": "Changsha Metro interchange station",
+                    "flipColor": "Flip color"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",
@@ -548,7 +580,9 @@
                     "to": "To",
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
-                    "changeInBaseLine": "Change them in the base line:"
+                    "changeInBaseLine": "Change them in the base line:",
+                    "reconcileDisabled": "Offsets are disabled because this line is part of a reconcile chain. The chain renders as a single combined path.",
+                    "reconcileStyleDisabled": "Style attributes are disabled because this line is part of a reconcile chain. The rendered style is controlled by the base line."
                 },
                 "simple": {
                     "displayName": "Simple path",
@@ -565,6 +599,36 @@
                 },
                 "rayGuided": {
                     "displayName": "Arbitrary angle path"
+                },
+                "bezier": {
+                    "displayName": "Bezier curve",
+                    "along": "Along position",
+                    "normal": "Normal offset",
+                    "sourceOffset": "Source offset",
+                    "targetOffset": "Target offset",
+                    "linkedOffset": "Linked endpoint offset",
+                    "sourceOffsetX": "Source X offset",
+                    "sourceOffsetY": "Source Y offset",
+                    "targetOffsetX": "Target X offset",
+                    "targetOffsetY": "Target Y offset"
+                },
+                "freeform": {
+                    "displayName": "Freeform path",
+                    "outlineSettingsUnavailable": "Variable width and start/end cap settings are not available yet.",
+                    "controlPointHint": "Drag a blue control point to adjust the path. Double-click the path to add a control point there, or right-click a blue control point to remove it.",
+                    "widthStops": "Width stops",
+                    "widthStopIndex": "#",
+                    "widthStopPosition": "Position (%)",
+                    "widthStopWidth": "Width (px)",
+                    "baseWidthHint": "5px is the baseline line width.",
+                    "smoothing": "Smoothing",
+                    "startCap": "Start cap",
+                    "endCap": "End cap",
+                    "round": "Round",
+                    "flat": "Flat",
+                    "arrow": "Arrow",
+                    "arrowLength": "Arrow length",
+                    "arrowWidth": "Arrow width"
                 },
                 "singleColor": {
                     "displayName": "Single color style"
@@ -626,7 +690,18 @@
                     "displayName": "Singapore MRT Tap Out to Transfer style"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR East single color style"
+                    "displayName": "JR East single color style",
+                    "decoration": {
+                        "displayName": "Terminal display",
+                        "none": "None",
+                        "thinTail": "Other line section",
+                        "blackBlock": "Terminal"
+                    },
+                    "decorationAt": {
+                        "displayName": "Display position",
+                        "from": "From",
+                        "to": "To"
+                    }
                 },
                 "jrEastSingleColorPattern": {
                     "displayName": "JR East single color filled with crosshatch pattern style"
@@ -659,7 +734,10 @@
                     "displayName": "London IFS Cloud Cable Car style"
                 },
                 "guangdongIntercityRailway": {
-                    "displayName": "Guangdong Intercity Railway style"
+                    "displayName": "Guangdong Intercity Railway style",
+                    "color": "Color",
+                    "blue": "Blue",
+                    "gray": "Gray"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "Chongqing Rail Transit line badge style"
@@ -669,6 +747,28 @@
                 },
                 "chengduRTOutsideFareGates": {
                     "displayName": "Chengdu Rail Transit outside fare gates transfer style"
+                },
+                "shinkansen": {
+                    "displayName": "Shinkansen style"
+                },
+                "generic": {
+                    "displayName": "Generic style",
+                    "layers": "Line layers",
+                    "layer": "Layer {{index}}",
+                    "width": "Width",
+                    "opacity": "Opacity",
+                    "linecap": "Line cap",
+                    "linecapButt": "Butt",
+                    "linecapRound": "Round",
+                    "linecapSquare": "Square",
+                    "dash": "Dash",
+                    "gap": "Gap",
+                    "layerLimitWarning": "Subscribe to unlock additional line layers.",
+                    "addLayer": "Add layer",
+                    "copyLayer": "Copy layer",
+                    "moveLayerUp": "Move layer up",
+                    "moveLayerDown": "Move layer down",
+                    "removeLayer": "Remove layer"
                 }
             },
             "edge": {},
@@ -691,6 +791,10 @@
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
         "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
+        "mapToggle": {
+            "show": "Show geographic map",
+            "hide": "Hide geographic map"
+        },
         "open": {
             "new": "New project",
             "config": "Import project",
@@ -808,6 +912,7 @@
             },
             "preference": {
                 "title": "Preference",
+                "mapEnabled": "Show geographic map layer",
                 "keepLastPath": "Keep drawing lines until clicking on the background in the next move",
                 "autoParallel": "Automatically set new lines to be parallel to existing lines",
                 "randomStationNames": {
@@ -817,10 +922,19 @@
                     "shmetro": "Shanghai",
                     "bjsubway": "Beijing"
                 },
+                "stationNameTranslationMode": {
+                    "title": "Station name translation",
+                    "pinyinSpaced": "Pinyin - Spaced Title Case",
+                    "pinyinCompact": "Pinyin - Compact Title Case",
+                    "pinyinUppercase": "Pinyin - Uppercase",
+                    "semantic": "Semantic"
+                },
                 "gridline": "Show grid guide lines",
                 "snapline": "Auto snapping to the guide lines and points",
                 "predictNextNode": "Predict next nodes when a node is selected",
                 "autoChangeStationType": "Automatically switch between basic and interchange station",
+                "disableMapPerformanceOptimization": "Disable map performance optimization",
+                "mapPerformanceOptimizationProgress": "Optimized: {{optimized}}/{{total}}",
                 "disableWarningChangeType": "Disable warnings when changing station or line types"
             },
             "shortcuts": {
@@ -936,14 +1050,14 @@
             "contactUs": "Contact Us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
-            "slack": "Slack group",
-            "slackContent": "Chat in these Slack channels!"
+            "zulip": "Zulip community",
+            "zulipContent": "Join our community on Zulip!"
         }
     },
 
     "contextMenu": {
         "refresh": "Refresh",
-        "cut": "Cut", 
+        "cut": "Cut",
         "paste": "Paste",
         "delete": "Delete",
         "placeTop": "Place top",
@@ -956,7 +1070,8 @@
         "flipVertical": "Flip vertically",
         "flipHorizontal": "Flip horizontally",
         "flipDiagonal45": "Flip across 45° line",
-        "flipDiagonal135": "Flip across 135° line"
+        "flipDiagonal135": "Flip across 135° line",
+        "reconcile": "Reconcile"
     },
 
     "clipboard": {
@@ -967,5 +1082,69 @@
         }
     },
 
-    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes."
+    "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
+    "map": {
+        "loading": "Loading map",
+        "loadError": "Unable to load the map background.",
+        "zoomInToEdit": "Zoom in to edit the map.",
+        "style": {
+            "title": "Map style",
+            "reset": "Reset",
+            "type": "Type",
+            "enabled": "Show",
+            "widthScale": "Width scale",
+            "roads": {
+                "title": "Roads",
+                "casingColor": "Outline",
+                "color": "Surface",
+                "path": "Path",
+                "local": "Local",
+                "collector": "Collector",
+                "arterial": "Arterial"
+            },
+            "rails": {
+                "title": "Railways",
+                "metro": "Metro",
+                "national": "National railway"
+            },
+            "labels": {
+                "title": "Labels",
+                "enabled": "Show all labels",
+                "sizeScale": "Size scale",
+                "color": "Text",
+                "strokeColor": "Outline",
+                "groups": {
+                    "places": "Places",
+                    "roads": "Roads",
+                    "buildings": "Buildings",
+                    "areas": "Areas",
+                    "transport": "Transport"
+                },
+                "categories": {
+                    "place-major": "Major places",
+                    "place-medium": "Medium places",
+                    "place-minor": "Minor places",
+                    "road-arterial": "Arterial roads",
+                    "road-collector": "Collector roads",
+                    "building": "Buildings",
+                    "area-water": "Water",
+                    "area-park": "Parks",
+                    "area-grass": "Grass",
+                    "area-forest": "Forests",
+                    "area-farmland": "Farmland",
+                    "area-cemetery": "Cemeteries",
+                    "area-residential": "Residential areas",
+                    "area-commercial": "Commercial areas",
+                    "area-industrial": "Industrial areas",
+                    "area-education": "Education",
+                    "area-healthcare": "Healthcare",
+                    "transport-airport": "Airports",
+                    "transport-rail": "Railway stations",
+                    "transport-metro": "Metro stations",
+                    "transport-platform": "Platforms",
+                    "transport-entrance": "Entrances"
+                }
+            }
+        }
+    }
 }

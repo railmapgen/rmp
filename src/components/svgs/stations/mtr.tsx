@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -14,10 +15,16 @@ import {
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
+import {
     InterchangeField,
     InterchangeInfo,
     StationAttributesWithInterchange,
 } from '../../panels/details/interchange-field';
+import { RotateField } from '../../panels/details/rotate-field';
 import { MultilineText, NAME_DY } from '../common/multiline-text';
 
 export const LINE_WIDTH = 5;
@@ -51,6 +58,7 @@ const MTRStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultMTRStationAttributes.nameOffsetX,
         nameOffsetY = defaultMTRStationAttributes.nameOffsetY,
         transfer = defaultMTRStationAttributes.transfer,
@@ -84,6 +92,18 @@ const MTRStation = (props: StationComponentProps) => {
         NAME_DY[nameOffsetY].polarity;
     const textY = Math.sign(iconY) === Math.sign(textDY) ? iconY + textDY : textDY;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+
+    const defaultNameLayout: NameLayout = {
+        x: textX,
+        y: textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.MTR,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -127,10 +147,13 @@ const MTRStation = (props: StationComponentProps) => {
                 className="removeMe"
             />
             <g
-                transform={`translate(${textX}, ${textY})`}
-                textAnchor={textAnchor}
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
                 className="rmp-name-outline"
                 strokeWidth="1.25"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
             >
                 <MultilineText
                     text={names[0].split('\n')}
@@ -176,6 +199,30 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
 
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetXSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            middle: t('panel.details.stations.common.middle'),
+            right: t('panel.details.stations.common.right'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+    });
+    const nameOffsetYSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetY,
+        options: {
+            top: t('panel.details.stations.common.top'),
+            middle: t('panel.details.stations.common.middle'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+        disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+    });
+
     const fields: RmgFieldsField[] = [
         {
             type: 'textarea',
@@ -200,15 +247,12 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetX'),
-            value: attrs.nameOffsetX,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                middle: t('panel.details.stations.common.middle'),
-                right: t('panel.details.stations.common.right'),
-            },
-            disabledOptions: attrs.nameOffsetY === 'middle' ? ['middle'] : [],
+            value: nameOffsetXSelect.value,
+            options: nameOffsetXSelect.options,
+            disabledOptions: nameOffsetXSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetX = val as NameOffsetX;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -216,28 +260,20 @@ const MTRStationAttrsComponent = (props: AttrsProps<MTRStationAttributes>) => {
         {
             type: 'select',
             label: t('panel.details.stations.common.nameOffsetY'),
-            value: attrs.nameOffsetY,
-            options: {
-                top: t('panel.details.stations.common.top'),
-                middle: t('panel.details.stations.common.middle'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
-            disabledOptions: attrs.nameOffsetX === 'middle' ? ['middle'] : [],
+            value: nameOffsetYSelect.value,
+            options: nameOffsetYSelect.options,
+            disabledOptions: nameOffsetYSelect.disabledOptions,
             onChange: val => {
                 attrs.nameOffsetY = val as NameOffsetY;
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
         },
         {
-            type: 'select',
+            type: 'custom',
             label: t('panel.details.stations.common.rotate'),
-            value: attrs.rotate,
-            options: { 0: '0', 45: '45', 90: '90', 135: '135', 180: '180', 225: '225', 270: '270', 315: '315' },
-            onChange: val => {
-                attrs.rotate = Number(val) as Rotate;
-                handleAttrsUpdate(id, attrs);
-            },
+            component: <RotateField type={StationType.MTR} defaultAttributes={defaultMTRStationAttributes} />,
             minW: 'full',
         },
     ];
@@ -262,6 +298,7 @@ const mtrStationIcon = (
 
 const mtrStation: Station<MTRStationAttributes> = {
     component: MTRStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: mtrStationIcon,
     defaultAttrs: defaultMTRStationAttributes,
     attrsComponent: MTRStationAttrsComponent,

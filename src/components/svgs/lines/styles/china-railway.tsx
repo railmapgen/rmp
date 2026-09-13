@@ -28,8 +28,8 @@ const ChinaRailway = (props: LineStyleComponentProps<ChinaRailwayAttributes>) =>
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
-            <path d={path} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH - 0.33} strokeDasharray="17.5" />
+            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke={color[3]} strokeWidth={LINE_WIDTH - 0.33} strokeDasharray="17.5" />
         </g>
     );
 };
@@ -64,12 +64,15 @@ const chinaRailway: LineStyle<ChinaRailwayAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.chinaRailway.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

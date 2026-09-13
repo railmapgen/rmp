@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -143,13 +144,13 @@ const gzmtrLineBadgeAttrsComponents = (props: AttrsProps<GzmtrLineBadgeAttribute
 const gzmtrLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="5" width="20" height="14" rx="1" />
-        <text x="6" y="15" textAnchor="middle" fontSize="10" fill="white">
+        <text x="6" y="15" textAnchor="middle" fontSize="10" fill="var(--chakra-colors-chakra-body-bg)">
             1
         </text>
-        <text x="15" y="12" textAnchor="middle" fontSize="6" fill="white">
+        <text x="15" y="12" textAnchor="middle" fontSize="6" fill="var(--chakra-colors-chakra-body-bg)">
             号线
         </text>
-        <text x="14.5" y="17" textAnchor="middle" fontSize="4" fill="white">
+        <text x="14.5" y="17" textAnchor="middle" fontSize="4" fill="var(--chakra-colors-chakra-body-bg)">
             Line 1
         </text>
     </svg>
@@ -157,6 +158,7 @@ const gzmtrLineBadgeIcon = (
 
 const gzmtrLineBadge: Node<GzmtrLineBadgeAttributes> = {
     component: GzmtrLineBadge,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: gzmtrLineBadgeIcon,
     defaultAttrs: defaultGzmtrLineBadgeAttributes,
     attrsComponent: gzmtrLineBadgeAttrsComponents,

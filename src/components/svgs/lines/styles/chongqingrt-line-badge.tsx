@@ -23,7 +23,7 @@ const ChongqingRTLineBadge = (props: LineStyleComponentProps<ChongqingRTLineBadg
 
     return (
         <path
-            d={path}
+            d={path.d}
             fill="none"
             stroke={color[2]}
             strokeWidth="3"
@@ -70,12 +70,15 @@ const chongqingRTLineBadge: LineStyle<ChongqingRTLineBadgeAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.chongqingRTLineBadge.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

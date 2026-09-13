@@ -21,7 +21,7 @@ const LondonTubeInternalInt = (props: LineStyleComponentProps<LondonTubeInternal
             pointerEvents={newLine ? 'none' : undefined}
             cursor="pointer"
         >
-            <path d={path} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="black" strokeWidth="7.5" strokeLinecap="round" />
         </g>
     );
 };
@@ -40,7 +40,7 @@ const LondonTubeInternalIntPost = (props: LineStyleComponentProps<LondonTubeInte
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path} fill="none" stroke="white" strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
+            <path d={path.d} fill="none" stroke="white" strokeWidth={LINE_WIDTH / 2} strokeLinecap="round" />
         </g>
     );
 };
@@ -62,12 +62,15 @@ const londonTubeInternalInt: LineStyle<LondonTubeInternalIntAttributes> = {
     metadata: {
         displayName: 'panel.details.lines.londonTubeInternalInt.displayName',
         supportLinePathType: [
+            LinePathType.Freeform,
             LinePathType.Simple,
             LinePathType.Diagonal,
             LinePathType.Perpendicular,
             LinePathType.RotatePerpendicular,
             LinePathType.RayGuided,
+            LinePathType.Bezier,
         ],
+        supportsReconcile: true,
     },
 };
 

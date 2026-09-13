@@ -1,6 +1,6 @@
 /* eslint-disable import/order */
 import React from 'react';
-import { AttrsProps, MiscNodeId } from './constants';
+import { AttrsProps, MiscNodeId, OverlayProps } from './constants';
 import type { VirtualAttributes } from '../components/svgs/nodes/virtual';
 import type { FacilitiesAttributes } from '../components/svgs/nodes/facilities';
 import type { TextAttributes } from '../components/svgs/nodes/text';
@@ -26,8 +26,10 @@ import type { JREastLineBadgeAttributes } from '../components/svgs/nodes/jr-east
 import type { QingdaoMetroNumLineBadgeAttributes } from '../components/svgs/nodes/qingdao-metro-num-line-badge';
 import type { GuangdongIntercityRailwayLineBadgeAttributes } from '../components/svgs/nodes/guangdong-intercity-railway-line-badge';
 import type { LondonArrowAttributes } from '../components/svgs/nodes/london-arrow';
+import type { LondonTubeLineBadgeAttributes } from '../components/svgs/nodes/london-tube-line-badge/london-tube-line-badge';
 import type { ChengduRTLineBadgeAttributes } from '../components/svgs/nodes/chengdurt-line-badge';
 import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
+import type { WuhanRTLineBadgeAttributes } from '../components/svgs/nodes/wuhanrt-line-badge';
 import type { FillAttributes } from '../components/svgs/nodes/fill';
 
 export enum MiscNodeType {
@@ -57,8 +59,10 @@ export enum MiscNodeType {
     QingdaoMetroNumLineBadge = 'qingdao-metro-num-line-badge',
     GuangdongIntercityRailwayLineBadge = 'gd-intercity-rwy-line-badge',
     LondonArrow = 'london-arrow',
+    LondonTubeLineBadge = 'london-tube-line-badge',
     ChengduRTLineBadge = 'chengdurt-line-badge',
     TaiPeiMetroLineBadege = 'taipei-metro-line-badge',
+    WuhanRTLineBadge = 'wuhanrt-line-badge',
 }
 
 export interface MiscNodeAttributes {
@@ -88,8 +92,10 @@ export interface MiscNodeAttributes {
     [MiscNodeType.QingdaoMetroNumLineBadge]?: QingdaoMetroNumLineBadgeAttributes;
     [MiscNodeType.GuangdongIntercityRailwayLineBadge]?: GuangdongIntercityRailwayLineBadgeAttributes;
     [MiscNodeType.LondonArrow]?: LondonArrowAttributes;
+    [MiscNodeType.LondonTubeLineBadge]?: LondonTubeLineBadgeAttributes;
     [MiscNodeType.ChengduRTLineBadge]?: ChengduRTLineBadgeAttributes;
     [MiscNodeType.TaiPeiMetroLineBadege]?: TaipeiMetroLineBadgeAttributes;
+    [MiscNodeType.WuhanRTLineBadge]?: WuhanRTLineBadgeAttributes;
 }
 
 /* ----- Below are core types for all miscellaneous nodes, DO NOT TOUCH. ----- */
@@ -125,6 +131,13 @@ export interface Node<T> {
      * Note it will be under other elements that have a bigger zIndex.
      */
     postComponent?: React.FC<NodeComponentProps<T>>;
+    /**
+     * Optional direct-manipulation UI shown above the normal graph layers while this node is singly selected.
+     *
+     * Node implementations may register a shared overlay or provide node-specific controls. Overlays are editor UI
+     * only and must explicitly save and refresh graph mutations.
+     */
+    overlayComponent?: React.FC<OverlayProps<MiscNodeId>>;
     /**
      * The icon displayed in the tools panel.
      */

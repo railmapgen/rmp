@@ -1,6 +1,7 @@
 import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { GlobalAlertId } from '../constants/global-alerts';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
@@ -9,12 +10,14 @@ import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
     setAutoChangeStationType,
     setAutoParallel,
+    setDisableMapPerformanceOptimization,
     setDisableWarningChangeType,
     setGridLines,
     setPredictNextNode,
     setRandomStationsNames,
     setShowOnlyFavorites,
     setSnapLines,
+    setStationNameTranslationMode,
     setTelemetryApp,
     setTelemetryProject,
     setToolsPanelExpansion,
@@ -22,9 +25,9 @@ import {
     toggleFavoriteMiscNode,
     toggleFavoriteStation,
 } from './app/app-slice';
-import { ParamState, setFullState } from './param/param-slice';
+import { initializeProject } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
-import { normalizeRandomStationsNames } from './state-migration';
+import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -50,12 +53,20 @@ export const initStore = async (store: RootStore) => {
             store.dispatch(
                 setRandomStationsNames(normalizeRandomStationsNames(appState.preference.randomStationsNames))
             );
+        if ('stationNameTranslationMode' in appState.preference)
+            store.dispatch(
+                setStationNameTranslationMode(
+                    normalizeStationNameTranslationMode(appState.preference.stationNameTranslationMode)
+                )
+            );
         if ('gridLines' in appState.preference) store.dispatch(setGridLines(appState.preference.gridLines));
         if ('snapLines' in appState.preference) store.dispatch(setSnapLines(appState.preference.snapLines));
         if ('predictNextNode' in appState.preference)
             store.dispatch(setPredictNextNode(appState.preference.predictNextNode));
         if ('autoChangeStationType' in appState.preference)
             store.dispatch(setAutoChangeStationType(appState.preference.autoChangeStationType));
+        if ('disableMapPerformanceOptimization' in appState.preference)
+            store.dispatch(setDisableMapPerformanceOptimization(appState.preference.disableMapPerformanceOptimization));
         if ('disableWarning' in appState.preference) {
             if ('changeType' in appState.preference.disableWarning)
                 store.dispatch(setDisableWarningChangeType(appState.preference.disableWarning.changeType));
@@ -92,39 +103,33 @@ export const initStore = async (store: RootStore) => {
         store.dispatch(setActiveSubscriptions(loginState.activeSubscriptions));
     }
 
-    // Upgrade param and inject to ParamState.
+    // Upgrade the serialized save, then initialize the current project without
+    // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, graph, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(graph);
-    const state: ParamState = { ...save, present: graph, past: [], future: [] };
-    store.dispatch(setFullState(state));
+    const { version, ...project } = JSON.parse(param) as RMPSave;
+    window.graph = MultiDirectedGraph.from(project.graph);
+    store.dispatch(initializeProject(project));
+    // TODO(graph-mutation-pipeline): Route initialization through one explicit
+    // refresh request; see docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     store.dispatch(refreshNodesThunk());
     store.dispatch(refreshEdgesThunk());
 
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
 
     startRootListening({
-        predicate: (_action, currentState, previousState) => {
-            // TODO: check if the refresh nodes and edges will be dispatched in batch, otherwise
-            // there might be a performance issue.
-            // TODO: Dragging a node will trigger the refreshNodesThunk, however, the actual
-            // graph is not preserved as we want to reduce the number of refreshes. But this
-            // comparison will always return true on dragging a node.
-            return (
-                currentState.runtime.refresh.nodes !== previousState.runtime.refresh.nodes ||
-                currentState.runtime.refresh.edges !== previousState.runtime.refresh.edges
-            );
-        },
+        predicate: (_action, currentState, previousState) => currentState.param.present !== previousState.param.present,
         effect: (_action, listenerApi) => {
             try {
-                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(store.getState().param));
+                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(listenerApi.getState().param));
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -141,7 +146,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },
@@ -158,7 +165,9 @@ export const initStore = async (store: RootStore) => {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {
                     logger.error('Local storage quota exceeded, unable to save state.');
                     const message = i18n.t('localStorageQuotaExceeded');
-                    listenerApi.dispatch(setGlobalAlert({ status: 'error', message }));
+                    listenerApi.dispatch(
+                        setGlobalAlert({ id: GlobalAlertId.LocalStorageQuotaExceeded, status: 'error', message })
+                    );
                 }
             }
         },

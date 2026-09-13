@@ -1,5 +1,5 @@
 import { StationCity } from '../constants/constants';
-import type { RandomStationsNamesValue } from './app/app-slice';
+import type { RandomStationsNamesValue, StationNameTranslationMode } from './app/app-slice';
 
 export const normalizeRandomStationsNames = (value: unknown): RandomStationsNamesValue => {
     switch (value) {
@@ -13,5 +13,19 @@ export const normalizeRandomStationsNames = (value: unknown): RandomStationsName
             return value;
         default:
             return 'default';
+    }
+};
+
+export const normalizeStationNameTranslationMode = (value: unknown): StationNameTranslationMode => {
+    switch (value) {
+        case 'pinyin':
+        case 'pinyin-spaced':
+            return 'pinyin-spaced';
+        case 'pinyin-compact':
+        case 'pinyin-uppercase':
+        case 'semantic':
+            return value;
+        default:
+            return 'pinyin-spaced';
     }
 };

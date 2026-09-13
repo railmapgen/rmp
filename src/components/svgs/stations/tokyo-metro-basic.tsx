@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode, Theme } from '../../../constants/constants';
 import {
     defaultStationAttributes,
@@ -13,6 +14,11 @@ import {
     StationType,
 } from '../../../constants/stations';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
+import {
+    NameLayout,
+    getPreciseNameOffsetsSelectState,
+    useDraggableStationName,
+} from '../../../util/use-draggable-station-name';
 import { ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
 import { MultilineTextVertical } from '../common/multiline-text-vertical';
@@ -83,6 +89,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
+        preciseNameOffsets = defaultStationAttributes.preciseNameOffsets,
         nameOffsetX = defaultTokyoMetroBasicStationAttributes.nameOffsetX,
         nameOffsetY = defaultTokyoMetroBasicStationAttributes.nameOffsetY,
         textVertical = defaultTokyoMetroBasicStationAttributes.textVertical,
@@ -117,6 +124,17 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
     const textY = nameOffsetY === 'bottom' ? 7 : nameOffsetY === 'top' ? -9 : 5.5;
     const textYVer = nameOffsetY === 'bottom' ? 9 + textLength * 5 : nameOffsetY === 'top' ? -9 - textLength * 5 : -5;
     const textAnchor = nameOffsetX === 'left' ? 'end' : nameOffsetX === 'right' ? 'start' : 'middle';
+    const defaultNameLayout: NameLayout = {
+        x: textVertical ? textXVer : textX,
+        y: textVertical ? textYVer : textY,
+        anchor: textAnchor,
+    };
+    const { canDrag, dragHandlers, previewPreciseNameOffsets } = useDraggableStationName<StationAttributes>(
+        id,
+        StationType.TokyoMetroBasic,
+        defaultNameLayout
+    );
+    const nameLayout = previewPreciseNameOffsets ?? preciseNameOffsets ?? defaultNameLayout;
 
     return (
         <g>
@@ -134,9 +152,17 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                 onPointerUp={onPointerUp}
                 style={{ cursor: 'move' }}
             />
-            <g textAnchor={textAnchor} className="rmp-name-outline" strokeWidth="1">
+            <g
+                id={`stn_name_${id}`}
+                transform={`translate(${nameLayout.x}, ${nameLayout.y})`}
+                textAnchor={nameLayout.anchor}
+                className="rmp-name-outline"
+                strokeWidth="1"
+                style={{ cursor: canDrag ? 'grab' : undefined }}
+                {...dragHandlers}
+            >
                 {!textVertical ? (
-                    <g transform={`translate(${textX}, ${textY})`} textAnchor={textAnchor}>
+                    <g>
                         <MultilineText
                             text={names[0].split('\n')}
                             fontSize={10}
@@ -147,7 +173,7 @@ const TokyoMetroBasicStation = (props: StationComponentProps) => {
                         />
                     </g>
                 ) : (
-                    <g transform={`translate(${textXVer}, ${textYVer})`} textAnchor={textAnchor}>
+                    <g>
                         <MultilineTextVertical
                             text={names[0].split('\n')}
                             fontSize={10}
@@ -187,6 +213,18 @@ const defaultTokyoMetroBasicStationAttributes: TokyoMetroBasicStationAttributes 
 const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationAttributes>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
+    const customLabel = t('panel.details.stations.common.custom');
+    const nameOffsetSelect = getPreciseNameOffsetsSelectState({
+        attrs,
+        value: attrs.nameOffsetX === 'middle' ? attrs.nameOffsetY : attrs.nameOffsetX,
+        options: {
+            left: t('panel.details.stations.common.left'),
+            right: t('panel.details.stations.common.right'),
+            top: t('panel.details.stations.common.top'),
+            bottom: t('panel.details.stations.common.bottom'),
+        },
+        customLabel,
+    });
 
     const fields: RmgFieldsField[] = [
         {
@@ -202,13 +240,9 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
         {
             type: 'select',
             label: t('panel.details.stations.tokyoMetroBasic.nameOffset'),
-            value: attrs.nameOffsetX !== 'middle' ? attrs.nameOffsetX : attrs.nameOffsetY,
-            options: {
-                left: t('panel.details.stations.common.left'),
-                right: t('panel.details.stations.common.right'),
-                top: t('panel.details.stations.common.top'),
-                bottom: t('panel.details.stations.common.bottom'),
-            },
+            value: nameOffsetSelect.value,
+            options: nameOffsetSelect.options,
+            disabledOptions: nameOffsetSelect.disabledOptions,
             onChange: val => {
                 if (val === 'left' || val === 'right') {
                     attrs.nameOffsetX = val as NameOffsetX;
@@ -218,6 +252,7 @@ const tokyoMetroBasicAttrsComponent = (props: AttrsProps<TokyoMetroBasicStationA
                     attrs.nameOffsetX = 'middle';
                     attrs.nameOffsetY = val as NameOffsetY;
                 }
+                delete attrs.preciseNameOffsets;
                 handleAttrsUpdate(id, attrs);
             },
             minW: 'full',
@@ -284,6 +319,7 @@ const tokyoMetroBasicStationIcon = (
 
 const tokyoMetroBasicStation: Station<TokyoMetroBasicStationAttributes> = {
     component: TokyoMetroBasicStation,
+    overlayComponent: SameStyleLineEndpointOverlay,
     icon: tokyoMetroBasicStationIcon,
     defaultAttrs: defaultTokyoMetroBasicStationAttributes,
     attrsComponent: tokyoMetroBasicAttrsComponent,

@@ -126,10 +126,10 @@ const BJSubwayTextLineBadgeAttrsComponent = (props: AttrsProps<BjsubwayTextLineB
 const bjSubwayTextLineBadgeIcon = (
     <svg viewBox="0 0 24 24" height={40} width={40} focusable={false}>
         <rect fill="currentColor" x="2" y="6" width="20" height="12" rx="2" />
-        <text x="3" y="12" fontSize="6" fill="white">
+        <text x="3" y="12" fontSize="6" fill="var(--chakra-colors-chakra-body-bg)">
             八通线
         </text>
-        <text x="3" y="16" fontSize="3.2" fill="white">
+        <text x="3" y="16" fontSize="3.2" fill="var(--chakra-colors-chakra-body-bg)">
             Batong Line
         </text>
     </svg>
