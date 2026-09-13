@@ -3,12 +3,12 @@ import { NodeId } from './constants';
 // Number of distance to move when moving nodes.
 export const NODES_MOVE_DISTANCE = 5;
 
-// SVG-unit radius within which the line tool snaps to a connectable node.
-export const LINE_SNAP_RADIUS = 20;
+// SVG-unit radius within which the line tool snaps the endpoint to a connectable node.
+export const TARGET_SNAP_RADIUS = 20;
 
-// SVG-unit grid size for amortizing line-snap candidate queries across pointer moves.
-// Larger than LINE_SNAP_RADIUS so most strokes stay in one cell; keep ~5–10× radius.
-export const LINE_SNAP_CELL_SIZE = LINE_SNAP_RADIUS * 8;
+// SVG-unit grid size for the target-snap cell map.
+// Larger than TARGET_SNAP_RADIUS so most strokes stay in one cell; keep ~5–10× radius.
+export const TARGET_SNAP_CELL_SIZE = TARGET_SNAP_RADIUS * 8;
 
 /**
  * Structure for guide lines when dragging / moving the nodes.

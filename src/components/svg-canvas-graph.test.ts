@@ -1,13 +1,13 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { LINE_SNAP_CELL_SIZE, LINE_SNAP_RADIUS } from '../constants/canvas';
+import { TARGET_SNAP_CELL_SIZE, TARGET_SNAP_RADIUS } from '../constants/canvas';
 import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import {
-    collectLineSnapCandidatesForCell,
+    buildTargetSnapCellMap,
     findConnectableTarget,
     findNearestConnectableWithinRadius,
-    getLineSnapCellKey,
+    getTargetSnapCellKey,
 } from './svg-canvas-graph';
 
 type TestGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -50,37 +50,38 @@ describe('findConnectableTarget', () => {
     });
 });
 
-describe('getLineSnapCellKey', () => {
-    it('bins coordinates by LINE_SNAP_CELL_SIZE', () => {
-        expect(getLineSnapCellKey(0, 0)).toBe('0,0');
-        expect(getLineSnapCellKey(LINE_SNAP_CELL_SIZE - 0.01, 0)).toBe('0,0');
-        expect(getLineSnapCellKey(LINE_SNAP_CELL_SIZE, 0)).toBe('1,0');
-        expect(getLineSnapCellKey(-0.01, -LINE_SNAP_CELL_SIZE)).toBe('-1,-1');
+describe('getTargetSnapCellKey', () => {
+    it('bins coordinates by TARGET_SNAP_CELL_SIZE', () => {
+        expect(getTargetSnapCellKey(0, 0)).toBe('0,0');
+        expect(getTargetSnapCellKey(TARGET_SNAP_CELL_SIZE - 0.01, 0)).toBe('0,0');
+        expect(getTargetSnapCellKey(TARGET_SNAP_CELL_SIZE, 0)).toBe('1,0');
+        expect(getTargetSnapCellKey(-0.01, -TARGET_SNAP_CELL_SIZE)).toBe('-1,-1');
     });
 });
 
-describe('collectLineSnapCandidatesForCell', () => {
-    it('includes nodes in the cell AABB expanded by LINE_SNAP_RADIUS and excludes the source', () => {
+describe('buildTargetSnapCellMap', () => {
+    it('fans a node into every cell within ±TARGET_SNAP_RADIUS so a single cell lookup finds it', () => {
         const graph = makeGraph();
-        addStation(graph, 'stn_source', 0, 0);
         addStation(graph, 'stn_near', 15, 0);
-        addStation(graph, 'stn_far', 200, 0);
+        addStation(graph, 'stn_far', 2000, 0);
 
-        const cellKey = getLineSnapCellKey(5, 5);
-        const candidates = collectLineSnapCandidatesForCell(graph, cellKey, 'stn_source');
+        const map = buildTargetSnapCellMap(graph, ['stn_near', 'stn_far']);
+        const nearKey = getTargetSnapCellKey(5, 5);
 
-        expect(candidates).toContain('stn_near');
-        expect(candidates).not.toContain('stn_source');
-        expect(candidates).not.toContain('stn_far');
+        expect(map.get(nearKey)).toContain('stn_near');
+        expect(map.get(nearKey)).not.toContain('stn_far');
     });
 
-    it('keeps nodes that are only reachable from a cell corner after radius expansion', () => {
+    it('places a node into a neighboring cell when the cursor cell is within radius of the node', () => {
         const graph = makeGraph();
-        // Cell (0,0) covers [0, S). A node just outside the cell but within R of the far corner must be included.
-        addStation(graph, 'stn_corner', LINE_SNAP_CELL_SIZE + LINE_SNAP_RADIUS - 1, LINE_SNAP_CELL_SIZE + LINE_SNAP_RADIUS - 1);
+        // Just outside cell (0,0) but within R of the far corner of that cell.
+        const x = TARGET_SNAP_CELL_SIZE + TARGET_SNAP_RADIUS - 1;
+        const y = TARGET_SNAP_CELL_SIZE + TARGET_SNAP_RADIUS - 1;
+        addStation(graph, 'stn_corner', x, y);
 
-        const candidates = collectLineSnapCandidatesForCell(graph, '0,0', undefined);
-        expect(candidates).toContain('stn_corner');
+        const map = buildTargetSnapCellMap(graph, ['stn_corner']);
+        expect(map.get('0,0')).toContain('stn_corner');
+        expect(map.get(getTargetSnapCellKey(x, y))).toContain('stn_corner');
     });
 });
 
@@ -90,17 +91,20 @@ describe('findNearestConnectableWithinRadius', () => {
         addStation(graph, 'stn_a', 10, 0);
         addStation(graph, 'stn_b', 5, 0);
 
-        expect(
-            findNearestConnectableWithinRadius(graph, { x: 0, y: 0 }, undefined, ['stn_a', 'stn_b'])
-        ).toBe('stn_b');
+        expect(findNearestConnectableWithinRadius(graph, { x: 0, y: 0 }, undefined, ['stn_a', 'stn_b'])).toBe('stn_b');
     });
 
     it('returns undefined when every candidate is outside the radius', () => {
         const graph = makeGraph();
-        addStation(graph, 'stn_a', LINE_SNAP_RADIUS + 1, 0);
+        addStation(graph, 'stn_a', TARGET_SNAP_RADIUS + 1, 0);
 
-        expect(
-            findNearestConnectableWithinRadius(graph, { x: 0, y: 0 }, undefined, ['stn_a'])
-        ).toBeUndefined();
+        expect(findNearestConnectableWithinRadius(graph, { x: 0, y: 0 }, undefined, ['stn_a'])).toBeUndefined();
+    });
+
+    it('returns undefined for an empty candidate list (DOM-only fallback window)', () => {
+        const graph = makeGraph();
+        addStation(graph, 'stn_a', 5, 0);
+
+        expect(findNearestConnectableWithinRadius(graph, { x: 0, y: 0 }, undefined, [])).toBeUndefined();
     });
 });

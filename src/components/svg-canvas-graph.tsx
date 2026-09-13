@@ -2,7 +2,13 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { LINE_SNAP_CELL_SIZE, LINE_SNAP_RADIUS, NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import {
+    NODES_MOVE_DISTANCE,
+    SnapLine,
+    SnapPoint,
+    TARGET_SNAP_CELL_SIZE,
+    TARGET_SNAP_RADIUS,
+} from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
@@ -84,25 +90,38 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
-export const getLineSnapCellKey = (x: number, y: number, cellSize = LINE_SNAP_CELL_SIZE) =>
+export const getTargetSnapCellKey = (x: number, y: number, cellSize = TARGET_SNAP_CELL_SIZE) =>
     `${Math.floor(x / cellSize)},${Math.floor(y / cellSize)}`;
 
-/** Nodes whose centers lie in the cell AABB expanded by LINE_SNAP_RADIUS (covers every point inside the cell). */
-export const collectLineSnapCandidatesForCell = (
+/**
+ * Bucket viewport nodes into cells. Each node is written into every cell whose points could be within
+ * TARGET_SNAP_RADIUS of the node center, so move-time lookup is a single map.get(cellKey).
+ */
+export const buildTargetSnapCellMap = (
     graph: typeof window.graph,
-    cellKey: string,
-    source: NodeId | undefined,
-    cellSize = LINE_SNAP_CELL_SIZE,
-    radius = LINE_SNAP_RADIUS
-): NodeId[] => {
-    const [ix, iy] = cellKey.split(',').map(Number);
-    const minX = ix * cellSize - radius;
-    const minY = iy * cellSize - radius;
-    const maxX = (ix + 1) * cellSize + radius;
-    const maxY = (iy + 1) * cellSize + radius;
-    return findNodesInRectangle(graph, minX, minY, maxX, maxY).filter(
-        id => id !== source && connectableNodesType.includes(graph.getNodeAttribute(id, 'type'))
-    );
+    nodes: readonly NodeId[],
+    cellSize = TARGET_SNAP_CELL_SIZE,
+    radius = TARGET_SNAP_RADIUS
+): Map<string, NodeId[]> => {
+    const map = new Map<string, NodeId[]>();
+    for (const id of nodes) {
+        if (!connectableNodesType.includes(graph.getNodeAttribute(id, 'type'))) continue;
+        const x = graph.getNodeAttribute(id, 'x');
+        const y = graph.getNodeAttribute(id, 'y');
+        const ix0 = Math.floor((x - radius) / cellSize);
+        const ix1 = Math.floor((x + radius) / cellSize);
+        const iy0 = Math.floor((y - radius) / cellSize);
+        const iy1 = Math.floor((y + radius) / cellSize);
+        for (let ix = ix0; ix <= ix1; ix++) {
+            for (let iy = iy0; iy <= iy1; iy++) {
+                const key = `${ix},${iy}`;
+                const bucket = map.get(key);
+                if (bucket) bucket.push(id);
+                else map.set(key, [id]);
+            }
+        }
+    }
+    return map;
 };
 
 export const findNearestConnectableWithinRadius = (
@@ -110,7 +129,7 @@ export const findNearestConnectableWithinRadius = (
     cursor: PathPoint,
     source: NodeId | undefined,
     candidates: readonly NodeId[],
-    radius = LINE_SNAP_RADIUS
+    radius = TARGET_SNAP_RADIUS
 ): NodeId | undefined => {
     let bestNode: NodeId | undefined;
     let bestDist = radius;
@@ -168,8 +187,8 @@ const SvgCanvas = () => {
     // existing preview when they do not provide custom drawing behaviour.
     const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
     const svgCanvasRef = React.useRef<SVGSVGElement | null>(null);
-    // Amortize findNodesInRectangle: refresh connectable candidates only when the pointer crosses a snap cell.
-    const lineSnapCellCache = React.useRef<{ cellKey: string; candidates: NodeId[] } | undefined>(undefined);
+    // Viewport connectables bucketed by target-snap cell (±R fan-out); rebuilt with nodesInViewRange.
+    const targetSnapCellMapRef = React.useRef<Map<string, NodeId[]>>(new Map());
 
     const getNodePoint = (node: NodeId): PathPoint => ({
         x: graph.current.getNodeAttribute(node, 'x'),
@@ -189,15 +208,18 @@ const SvgCanvas = () => {
         const node = target?.id.slice(target.matchedPrefix.length);
         return isConnectableNode(node) ? node : undefined;
     };
-    const getCachedLineSnapCandidates = (pointer: PathPoint, source: NodeId) => {
-        const cellKey = getLineSnapCellKey(pointer.x, pointer.y);
-        if (lineSnapCellCache.current?.cellKey !== cellKey) {
-            lineSnapCellCache.current = {
-                cellKey,
-                candidates: collectLineSnapCandidatesForCell(graph.current, cellKey, source),
-            };
+    const refreshViewportNodeCaches = (buildSnapLines: boolean) => {
+        const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
+        const nodes = findNodesInRectangle(
+            graph.current,
+            ...(Object.values(svgViewRange) as [number, number, number, number])
+        );
+        setNodesInViewRange(nodes);
+        targetSnapCellMapRef.current = buildTargetSnapCellMap(graph.current, nodes);
+        if (buildSnapLines) {
+            setSnapLines(getSnapLines(graph.current, nodes));
         }
-        return lineSnapCellCache.current.candidates;
+        return nodes;
     };
 
     // all possible snap lines in the current view, pre-calculated for performance
@@ -207,23 +229,18 @@ const SvgCanvas = () => {
     // the active (drawn) snap lines for the current dragging node (length <= 2)
     // it is only valid in one dragging operation and will be reset in pointer up
     const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
-    // calculate all possible snap lines in the current view
-    // note only the nearest 2 of them will be drawn
+    // Refresh viewport node list, target-snap cell map, and (when enabled) snap lines together.
+    // Runs on pointer down (via pointerPosition) and whenever the view changes during a gesture.
     React.useEffect(
         () => {
-            if (!pointerPosition || !useSnapLines) return;
-            const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
-            const nodesInViewRange = findNodesInRectangle(
-                graph.current,
-                ...(Object.values(svgViewRange) as [number, number, number, number])
-            );
-            setNodesInViewRange(nodesInViewRange);
-            setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+            if (!pointerPosition) return;
+            refreshViewportNodeCaches(useSnapLines);
+            if (!useSnapLines) setSnapLines([]);
         },
         // the dependency array is carefully selected to prevent unnecessary recalculation
         // it will only be calculated on the pointer down event, or every times the view box
         // changes when the pointer is down
-        [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition]
+        [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition, useSnapLines]
     );
 
     // the active snap points, only used when there is only one active snap line
@@ -235,7 +252,6 @@ const SvgCanvas = () => {
         const { x, y } = getMousePosition(e);
 
         drawingGesture.current = undefined;
-        lineSnapCellCache.current = undefined;
         const { path, style } = getLinePathAndStyle(mode);
         if (path && style && canUseLine(path, style, mapEnabled, isSubscriber)) {
             const sourcePoint = getNodePoint(node);
@@ -450,15 +466,17 @@ const SvgCanvas = () => {
                 const pointer = getSvgPointerPosition(e);
                 gesture.pointer = pointer;
                 const domTarget = getConnectableNodeFromPointer(e);
-                gesture.target =
-                    domTarget && domTarget !== gesture.source
-                        ? domTarget
-                        : findNearestConnectableWithinRadius(
-                              graph.current,
-                              pointer,
-                              gesture.source,
-                              getCachedLineSnapCandidates(pointer, gesture.source)
-                          );
+                if (domTarget && domTarget !== gesture.source) {
+                    // Same as upstream: pointer over a connectable hit target wins.
+                    gesture.target = domTarget;
+                } else {
+                    // Empty map / empty cell → no radius snap (DOM-only until the viewport effect builds the map).
+                    const candidates =
+                        targetSnapCellMapRef.current.get(getTargetSnapCellKey(pointer.x, pointer.y)) ?? [];
+                    gesture.target = candidates.length
+                        ? findNearestConnectableWithinRadius(graph.current, pointer, gesture.source, candidates)
+                        : undefined;
+                }
                 gesture.session?.pointerMove(pointer);
             }
         }
@@ -467,7 +485,6 @@ const SvgCanvas = () => {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const gesture = drawingGesture.current;
         drawingGesture.current = undefined;
-        lineSnapCellCache.current = undefined;
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
