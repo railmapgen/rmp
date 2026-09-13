@@ -193,8 +193,6 @@ const SvgCanvas = () => {
 
     // the offset between the pointer down and the current pointer position
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
-    // Node currently highlighted as the line-creation snap target (drives SvgLayer glow).
-    const [lineTarget, setLineTarget] = React.useState<NodeId | null>(null);
     // Path-specific sessions keep high-frequency drawing data out of React while endpoint-derived paths retain the
     // existing preview when they do not provide custom drawing behaviour.
     const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
@@ -217,21 +215,6 @@ const SvgCanvas = () => {
         const target = findConnectableTarget(document.elementsFromPoint(event.clientX, event.clientY));
         const node = target?.id.slice(target.matchedPrefix.length);
         return isConnectableNode(node) ? node : undefined;
-    };
-    const resolveLineTarget = (event: React.PointerEvent<SVGElement>, source: NodeId | undefined): NodeId | undefined => {
-        const domTarget = getConnectableNodeFromPointer(event);
-        if (domTarget && domTarget !== source) return domTarget;
-
-        svgCanvasRef.current ??= document.getElementById('canvas') as SVGSVGElement | null;
-        const pointer = getSvgPointerPosition(event);
-        return findNearestConnectableWithinRadius(
-            graph.current,
-            pointer,
-            source,
-            svgViewBoxZoom,
-            svgViewBoxMin,
-            svgCanvasRef.current
-        );
     };
 
     // all possible snap lines in the current view, pre-calculated for performance
@@ -282,7 +265,6 @@ const SvgCanvas = () => {
                 session: isConnectableNode(node) ? behavior?.createSession(sourcePoint, pointer) : undefined,
             };
             setPointerOffset({ dx: 0, dy: 0 });
-            setLineTarget(null);
         }
 
         if (mode === 'select') dispatch(setMode('free'));
@@ -483,9 +465,18 @@ const SvgCanvas = () => {
             if (gesture && gesture.type === getLinePathAndStyle(mode).path) {
                 const pointer = getSvgPointerPosition(e);
                 gesture.pointer = pointer;
-                const target = resolveLineTarget(e, gesture.source);
-                gesture.target = target;
-                setLineTarget(target ?? null);
+                const domTarget = getConnectableNodeFromPointer(e);
+                gesture.target =
+                    domTarget && domTarget !== gesture.source
+                        ? domTarget
+                        : findNearestConnectableWithinRadius(
+                              graph.current,
+                              pointer,
+                              gesture.source,
+                              svgViewBoxZoom,
+                              svgViewBoxMin,
+                              svgCanvasRef.current
+                          );
                 gesture.session?.pointerMove(pointer);
             }
         }
@@ -494,7 +485,6 @@ const SvgCanvas = () => {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const gesture = drawingGesture.current;
         drawingGesture.current = undefined;
-        setLineTarget(null);
 
         if (mode.startsWith('line')) {
             if (!keepLastPath) dispatch(setMode('free'));
@@ -502,8 +492,7 @@ const SvgCanvas = () => {
             const { path, style: style_ } = getLinePathAndStyle(mode);
             const [type, style] = [path!, style_!]; // assured by startsWith('line') check
             const source = isConnectableNode(active) ? active : undefined;
-            // Prefer live hit-test / radius snap; fall back to the last previewed target so a visual snap still connects.
-            const target = resolveLineTarget(e, source) ?? gesture?.target;
+            const target = gesture?.target;
             const gestureMatches = !gesture || (gesture.type === type && gesture.source === source);
 
             if (
@@ -696,7 +685,7 @@ const SvgCanvas = () => {
             <SvgLayer
                 elements={elements}
                 selected={selected}
-                lineTarget={lineTarget}
+                lineTarget={drawingGesture.current?.target ?? null}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}
