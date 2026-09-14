@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react';
+import { createEvent, fireEvent } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -194,8 +194,10 @@ describe('TimelinePreview', () => {
         fireEvent.pointerDown(svg, { clientX: 10, clientY: 20, pointerId: 1 });
         fireEvent.pointerMove(svg, { clientX: 30, clientY: 50, pointerId: 1 });
         fireEvent.pointerUp(svg, { clientX: 30, clientY: 50, pointerId: 1 });
-        fireEvent.wheel(svg, { clientX: 100, clientY: 100, deltaY: -100 });
+        const wheel = createEvent.wheel(svg, { clientX: 100, clientY: 100, deltaY: -100, cancelable: true });
+        fireEvent(svg, wheel);
 
+        expect(wheel.defaultPrevented).toBe(true);
         expect(onViewportChange).toHaveBeenCalledWith({ x: -20, y: -30, zoom: 100 });
         expect(onViewportChange).toHaveBeenCalledTimes(2);
     });

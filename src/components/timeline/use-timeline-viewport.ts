@@ -20,6 +20,7 @@ export const useTimelineViewport = (
     onBackgroundClick?: () => void
 ) => {
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const svgRef = React.useRef<SVGSVGElement>(null);
     const viewportRef = React.useRef(viewport);
     const [size, setSize] = React.useState({ width: 1, height: 1 });
     const [isPanning, setIsPanning] = React.useState(false);
@@ -92,15 +93,19 @@ export const useTimelineViewport = (
         panRef.current = undefined;
         setIsPanning(false);
     });
-    const onWheel = useEvent((e: React.WheelEvent<SVGSVGElement>) => {
-        e.preventDefault();
+    const onWheel = useEvent((e: WheelEvent) => {
+        const svg = svgRef.current;
+        if (!svg) return;
+        if (e.cancelable) e.preventDefault();
         const current = viewportRef.current;
         const zoom = Math.max(
             10,
             Math.min(400, current.zoom * Math.exp(e.deltaY * (e.ctrlKey || e.metaKey ? 0.0009 : 0.0015)))
         );
         if (zoom === current.zoom) return;
-        const { x, y } = getMousePosition(e);
+        const bounds = svg.getBoundingClientRect();
+        const x = e.clientX - bounds.left;
+        const y = e.clientY - bounds.top;
         applyViewport({
             x: current.x + (x * (current.zoom - zoom)) / 100,
             y: current.y + (y * (current.zoom - zoom)) / 100,
@@ -108,12 +113,21 @@ export const useTimelineViewport = (
         });
     });
 
+    React.useEffect(() => {
+        const svg = svgRef.current;
+        if (!svg) return;
+        // React's delegated wheel listeners are passive and cannot prevent page scrolling or zooming.
+        svg.addEventListener('wheel', onWheel, { passive: false });
+        return () => svg.removeEventListener('wheel', onWheel);
+    }, [onWheel]);
+
     return {
         containerRef,
+        svgRef,
         size,
         viewportRef,
         applyViewport,
         isPanning,
-        backgroundHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel, onWheel },
+        backgroundHandlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel },
     };
 };

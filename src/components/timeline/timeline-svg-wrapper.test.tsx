@@ -1,4 +1,4 @@
-import { fireEvent } from '@testing-library/react';
+import { createEvent, fireEvent } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -88,30 +88,51 @@ describe('TimelineSvgWrapper', () => {
         expect(viewportGroup.getAttribute('transform')).toBe('translate(50, 40) scale(1)');
     });
 
-    it('should zoom the viewport on wheel', () => {
-        const store = createStore();
-        const { container } = render(<ControlledCanvas />, { store });
+    it.each([
+        { ctrlKey: false, metaKey: false, expectedScale: 1.16183424 },
+        { ctrlKey: true, metaKey: false, expectedScale: 1.09417428 },
+        { ctrlKey: false, metaKey: true, expectedScale: 1.09417428 },
+    ])(
+        'should zoom around the pointer and prevent browser scrolling or zooming on wheel (%o)',
+        ({ expectedScale, ...modifiers }) => {
+            const store = createStore();
+            const { container } = render(<ControlledCanvas />, { store });
 
-        const svg = container.querySelector('svg') as SVGSVGElement;
-        const viewportGroup = container.querySelector('svg g[transform]') as SVGGElement;
+            const svg = container.querySelector('svg') as SVGSVGElement;
+            const viewportGroup = container.querySelector('svg g[transform]') as SVGGElement;
 
-        svg.getBoundingClientRect = () =>
-            ({
-                x: 0,
-                y: 0,
-                top: 0,
-                left: 0,
-                bottom: 300,
-                right: 400,
-                width: 400,
-                height: 300,
-                toJSON: () => ({}),
-            }) as DOMRect;
+            svg.getBoundingClientRect = () =>
+                ({
+                    x: 40,
+                    y: 30,
+                    top: 30,
+                    left: 40,
+                    bottom: 330,
+                    right: 440,
+                    width: 400,
+                    height: 300,
+                    toJSON: () => ({}),
+                }) as DOMRect;
 
-        fireEvent.wheel(svg, { clientX: 200, clientY: 150, deltaY: -100 });
+            const background = svg.querySelector('[data-timeline-background]') as SVGRectElement;
+            const wheel = createEvent.wheel(background, {
+                clientX: 240,
+                clientY: 180,
+                deltaY: -100,
+                cancelable: true,
+                ...modifiers,
+            });
+            fireEvent(background, wheel);
 
-        const transform = viewportGroup.getAttribute('transform');
-        expect(transform).not.toBe('translate(0, 0) scale(1)');
-        expect(transform).toContain('scale(');
-    });
+            expect(wheel.defaultPrevented).toBe(true);
+            const transform = viewportGroup.getAttribute('transform')!;
+            const [, translateX, translateY, scale] = transform
+                .match(/^translate\(([^,]+), ([^)]+)\) scale\(([^)]+)\)$/)!
+                .map(Number);
+            expect(scale).toBeCloseTo(expectedScale);
+            // The canvas point under the pointer must stay at the same screen position.
+            expect(translateX + 200 * scale).toBeCloseTo(200);
+            expect(translateY + 150 * scale).toBeCloseTo(150);
+        }
+    );
 });

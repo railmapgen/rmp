@@ -23,11 +23,8 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
     ref
 ) {
     const graph = React.useRef(window.graph);
-    const { containerRef, size, viewportRef, applyViewport, isPanning, backgroundHandlers } = useTimelineViewport(
-        viewport,
-        onViewportChange,
-        () => onSelect(undefined)
-    );
+    const { containerRef, svgRef, size, viewportRef, applyViewport, isPanning, backgroundHandlers } =
+        useTimelineViewport(viewport, onViewportChange, () => onSelect(undefined));
 
     React.useImperativeHandle(
         ref,
@@ -49,6 +46,7 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
     return (
         <Box ref={containerRef} position="relative" width="100%" height="100%">
             <svg
+                ref={svgRef}
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                     width: '100%',

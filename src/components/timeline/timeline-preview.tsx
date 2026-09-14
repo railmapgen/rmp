@@ -42,7 +42,10 @@ export default function TimelinePreview({
     onKeyframeMove,
     onViewportChange,
 }: TimelinePreviewProps) {
-    const { containerRef, size, isPanning, backgroundHandlers } = useTimelineViewport(viewport, onViewportChange);
+    const { containerRef, svgRef, size, isPanning, backgroundHandlers } = useTimelineViewport(
+        viewport,
+        onViewportChange
+    );
     const graph = React.useRef(window.graph);
     const [dragPosition, setDragPosition] = React.useState<{ x: number; y: number } | undefined>(undefined);
     const dragStateRef = React.useRef<
@@ -142,6 +145,7 @@ export default function TimelinePreview({
     return (
         <Box ref={containerRef} position="relative" width="100%" height="100%" overflow="hidden">
             <svg
+                ref={svgRef}
                 xmlns="http://www.w3.org/2000/svg"
                 style={{
                     width: '100%',
