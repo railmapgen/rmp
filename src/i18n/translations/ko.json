@@ -797,6 +797,7 @@
             "open": "타임라인 열기",
             "backToEditor": "편집기로 돌아가기",
             "trackTitle": "타임라인 트랙",
+            "resizeTrack": "타임라인 트랙 높이 조절",
             "selectHint": "위에서 노드 또는 선분 하나를 선택한 뒤 트랙에 추가하세요.",
             "alreadyAdded": "이미 추가됨",
             "addSelected": "선택 항목 추가",

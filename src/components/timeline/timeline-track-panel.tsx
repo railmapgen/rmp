@@ -18,6 +18,8 @@ import {
 } from '../../util/timeline';
 import TimelineTrack from './timeline-track';
 
+const NARROW_SCREEN_QUERY = '@media (width < 600px)';
+
 interface TimelineTrackPanelProps {
     document: TimelineDocument;
     selectedId?: Id;
@@ -246,8 +248,14 @@ export default function TimelineTrackPanel({
                     </Flex>
                 </Box>
             ) : (
-                <Flex justify="space-between" align="center" wrap="wrap" gap={3} position="relative">
-                    <VStack align="start" spacing={1} flex={1} minW={0}>
+                <Flex justify="space-between" align="center" wrap="wrap" gap={3} position="relative" flexShrink={0}>
+                    <VStack
+                        align="start"
+                        spacing={1}
+                        flex={1}
+                        minW={0}
+                        sx={isPro ? { [NARROW_SCREEN_QUERY]: { flexBasis: '100%' } } : undefined}
+                    >
                         <HStack spacing={2}>
                             <Text fontWeight="bold">{t('header.timelinePage.trackTitle')}</Text>
                             <Badge>{draftDocument.track.length}</Badge>
@@ -329,6 +337,14 @@ export default function TimelineTrackPanel({
                             position="absolute"
                             left="50%"
                             transform="translateX(-50%)"
+                            sx={{
+                                [NARROW_SCREEN_QUERY]: {
+                                    position: 'static',
+                                    transform: 'none',
+                                    flex: 1,
+                                    justifyContent: 'center',
+                                },
+                            }}
                             aria-label={t('header.timelinePage.playbackControls')}
                         >
                             <IconButton

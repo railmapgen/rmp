@@ -797,6 +797,7 @@
             "open": "打开时间线",
             "backToEditor": "返回编辑器",
             "trackTitle": "时间线轨道",
+            "resizeTrack": "调整时间线轨道高度",
             "selectHint": "先在上方选择一个节点或线段，再将其添加到轨道中。",
             "alreadyAdded": "已添加",
             "addSelected": "添加已选项",

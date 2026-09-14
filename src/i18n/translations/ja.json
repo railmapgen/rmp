@@ -800,6 +800,7 @@
             "open": "タイムラインを開く",
             "backToEditor": "エディターに戻る",
             "trackTitle": "タイムライントラック",
+            "resizeTrack": "タイムライントラックの高さを変更",
             "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
             "alreadyAdded": "追加済み",
             "addSelected": "選択項目を追加",
