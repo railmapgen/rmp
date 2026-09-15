@@ -56,7 +56,7 @@ describe('TimelinePreview', () => {
             { store: createStore() }
         );
 
-        expect(container.querySelector('#stn_core_stn_a')).not.toBeNull();
+        expect(container.querySelector('#stn_core_stn_a')).toBeNull();
 
         rerender(
             <TimelinePreview
@@ -117,10 +117,10 @@ describe('TimelinePreview', () => {
         };
         const { container, rerender } = render(<TimelinePreview {...props} cursor={0} />, { store: createStore() });
 
-        expect(container.querySelector('#line_a path')?.getAttribute('d')).toBe('M 0 0 L 100 0');
+        expect(container.querySelector('#line_a')).toBeNull();
         expect(container.querySelector('#line_b')).toBeNull();
         rerender(<TimelinePreview {...props} cursor={1} />);
-        expect(container.querySelector('#line_a path')?.getAttribute('d')).toContain('200');
+        expect(container.querySelector('#line_a path')?.getAttribute('d')).toBe('M 0 0 L 100 0');
         rerender(<TimelinePreview {...props} cursor={2} />);
         expect(container.querySelector('#line_a path')?.getAttribute('d')).toContain('200');
         rerender(<TimelinePreview {...props} cursor={3} />);

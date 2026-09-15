@@ -478,7 +478,8 @@ const interpolateKeyframes = (
 
 /**
  * Compute the canvas state at the timeline cursor.
- * Elements are visible from their enter card through their exit card, inclusive.
+ * The cursor represents the insertion position before the next track entry.
+ * Elements are visible after their enter card and through their exit card, inclusive.
  * They disappear only when the cursor moves past the exit card.
  * Keyframed nodes get their position interpolated between the surrounding keyframes.
  */
@@ -498,9 +499,9 @@ export const getTimelinePreviewState = (
             return;
         }
 
-        if (index <= cursor && isElementEntry(entry)) {
+        if (index < cursor && isElementEntry(entry)) {
             if (entry.phase === 'enter') visibleIds.add(entry.refId);
-            else if (index < cursor) visibleIds.delete(entry.refId);
+            else visibleIds.delete(entry.refId);
         }
     });
 
@@ -508,7 +509,7 @@ export const getTimelinePreviewState = (
     keyframesByRef.forEach((frames, refId) => {
         if (!graph.hasNode(refId)) return;
         const origin = { x: graph.getNodeAttribute(refId, 'x'), y: graph.getNodeAttribute(refId, 'y') };
-        positions.set(refId, interpolateKeyframes(frames, cursor, origin));
+        positions.set(refId, interpolateKeyframes(frames, cursor - 1, origin));
     });
 
     return { visibleIds, positions };

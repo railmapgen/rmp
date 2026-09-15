@@ -3,6 +3,7 @@ import { utils } from '@railmapgen/svg-assets';
 import React from 'react';
 import { Id } from '../../constants/constants';
 import { getTimelineElementCenter } from '../../util/timeline';
+import MapCanvas, { type MapCanvasHandle } from '../map-canvas';
 import TimelineSvgCanvas from './timeline-svg-canvas';
 import { useTimelineViewport, viewportToTransform, Viewport } from './use-timeline-viewport';
 
@@ -23,8 +24,13 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
     ref
 ) {
     const graph = React.useRef(window.graph);
+    const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
     const { containerRef, svgRef, size, viewportRef, applyViewport, isPanning, backgroundHandlers } =
         useTimelineViewport(viewport, onViewportChange, () => onSelect(undefined));
+
+    React.useEffect(() => {
+        mapCanvasRef.current?.updateViewport(viewport);
+    }, [viewport]);
 
     React.useImperativeHandle(
         ref,
@@ -59,6 +65,16 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
                 viewBox={`0 0 ${size.width} ${size.height}`}
                 {...backgroundHandlers}
             >
+                <defs>
+                    <filter id="invisible" colorInterpolationFilters="sRGB">
+                        <feColorMatrix type="saturate" values="0" />
+                        <feComponentTransfer>
+                            <feFuncR type="table" tableValues="0.42 0.84" />
+                            <feFuncG type="table" tableValues="0.45 0.86" />
+                            <feFuncB type="table" tableValues="0.54 0.92" />
+                        </feComponentTransfer>
+                    </filter>
+                </defs>
                 <rect
                     data-timeline-background
                     x="0"
@@ -69,6 +85,7 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
                     pointerEvents="all"
                 />
                 <g transform={viewportToTransform(viewport)}>
+                    <MapCanvas ref={mapCanvasRef} />
                     <utils.SvgAssetsContextProvider>
                         <TimelineSvgCanvas
                             selectedId={selectedId}

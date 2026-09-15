@@ -308,11 +308,16 @@ describe('timeline utilities', () => {
         };
 
         const atStart = getTimelinePreviewState(graph, document, 0);
-        expect(atStart.visibleIds.has('stn_a')).toBe(true);
+        expect(atStart.visibleIds.has('stn_a')).toBe(false);
         expect(atStart.visibleIds.has('stn_b')).toBe(false);
         expect(atStart.positions.get('stn_a')).toEqual({ x: 10, y: 20 });
 
-        const atMiddle = getTimelinePreviewState(graph, document, 2);
+        const afterFirstKeyframe = getTimelinePreviewState(graph, document, 2);
+        expect(afterFirstKeyframe.visibleIds.has('stn_a')).toBe(true);
+        expect(afterFirstKeyframe.visibleIds.has('stn_b')).toBe(false);
+        expect(afterFirstKeyframe.positions.get('stn_a')).toEqual({ x: 30, y: 40 });
+
+        const atMiddle = getTimelinePreviewState(graph, document, 3);
         expect(atMiddle.visibleIds.has('stn_a')).toBe(true);
         expect(atMiddle.visibleIds.has('stn_b')).toBe(true);
         expect(atMiddle.positions.get('stn_a')).toEqual({ x: 40, y: 50 });
@@ -330,7 +335,7 @@ describe('timeline utilities', () => {
         const entered = appendTimelineEntry(emptyDocument(), refId);
         const document = insertTimelineExitEntry(entered, refId, 1).document;
 
-        expect(getTimelinePreviewState(graph, document, 0).visibleIds.has(refId)).toBe(true);
+        expect(getTimelinePreviewState(graph, document, 0).visibleIds.has(refId)).toBe(false);
         expect(getTimelinePreviewState(graph, document, 1).visibleIds.has(refId)).toBe(true);
         expect(getTimelinePreviewState(graph, document, 2).visibleIds.has(refId)).toBe(false);
     });
@@ -343,7 +348,7 @@ describe('timeline utilities', () => {
             track: [{ id: 'line_ab', kind: 'edge', refId: 'line_ab', phase: 'enter', showAnimation: true }],
         };
 
-        const preview = getTimelinePreviewState(graph, document, 0);
+        const preview = getTimelinePreviewState(graph, document, 1);
 
         expect(preview.visibleIds.has('line_ab')).toBe(true);
         expect(preview.visibleIds.has('stn_a')).toBe(false);

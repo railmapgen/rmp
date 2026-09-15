@@ -20,6 +20,7 @@ import {
     Progress,
     Stack,
     Text,
+    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
@@ -42,6 +43,7 @@ import {
     VideoExportResolution,
     videoExportSpeedRange,
 } from '../../util/video-export';
+import { getUnavailableLineIds } from '../../util/line-path-availability';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 interface VideoExportModalProps {
@@ -63,6 +65,15 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const navigate = useNavigate();
 
     const graph = React.useRef(window.graph);
+    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    const {
+        refresh: { edges: refreshEdges },
+    } = useRootSelector(state => state.runtime);
+    const unavailableLineCount = React.useMemo(
+        () => getUnavailableLineIds(graph.current, mapEnabled, isSubscriber).size,
+        [mapEnabled, isSubscriber, refreshEdges]
+    );
     const supportedInterchangeStations = new Intl.ListFormat(i18n.language, {
         style: 'long',
         type: 'conjunction',
@@ -108,6 +119,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     };
 
     const handleVideoExport = async () => {
+        if (unavailableLineCount > 0) return;
         setIsVideoGenerating(true);
         setVideoProgress(0);
 
@@ -270,6 +282,12 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 <ModalCloseButton isDisabled={isVideoGenerating} />
 
                 <ModalBody>
+                    {unavailableLineCount > 0 && (
+                        <Alert status="warning" mb={4}>
+                            <AlertIcon />
+                            <AlertDescription>{t('header.download.videoExport.unavailableLines')}</AlertDescription>
+                        </Alert>
+                    )}
                     <Text mb={4}>{t('header.download.videoExport.description')}</Text>
                     <Alert status="info" variant="subtle" mb={4} alignItems="center" hidden={isVideoGenerating}>
                         <AlertIcon />
@@ -412,17 +430,23 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
                 <ModalFooter>
                     <HStack>
-                        <Button
-                            id="video_export_button"
-                            colorScheme="teal"
-                            variant="outline"
-                            size="sm"
-                            isDisabled={!isTermsAndConditionsSelected}
-                            isLoading={isVideoGenerating}
-                            onClick={handleVideoExport}
-                        >
-                            {t('header.download.confirm')}
-                        </Button>
+                        <Box>
+                            <Tooltip label={t('header.download.videoExport.unavailableLines')} hasArrow>
+                                <span>
+                                    <Button
+                                        id="video_export_button"
+                                        colorScheme="teal"
+                                        variant="outline"
+                                        size="sm"
+                                        isDisabled={!isTermsAndConditionsSelected || unavailableLineCount > 0}
+                                        isLoading={isVideoGenerating}
+                                        onClick={handleVideoExport}
+                                    >
+                                        {t('header.download.confirm')}
+                                    </Button>
+                                </span>
+                            </Tooltip>
+                        </Box>
                     </HStack>
                 </ModalFooter>
 

@@ -932,7 +932,8 @@
                 },
                 "mp4Transparency": "MP4 does not support transparent backgrounds. The current interface background will be used.",
                 "error": "Video export failed. Please try again, or lower the resolution or frame rate.",
-                "noNodes": "Cannot export video: No nodes in the graph."
+                "noNodes": "Cannot export video: No nodes in the graph.",
+                "unavailableLines": "Some lines cannot be displayed in the current map or normal mode. Video export is unavailable until they are fixed."
             },
             "2rmg": {
                 "title": "Export to RMG project",
