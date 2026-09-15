@@ -27,6 +27,7 @@ import { getLines, getNodes } from './process-elements';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions } from './video-encoder';
+import { audioStoreIndexedDB } from './audio-store-indexed-db';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -198,6 +199,52 @@ export const getPlaybackSegmentDurations = (
         ),
         pauseDuration: pauseCount > 0 ? CameraRepositionPauseSeconds : 0,
     };
+};
+
+/**
+ * Seconds at each insertion cursor for the non-authored (quick) schedule.
+ * `validTrackIndices` maps each step of the generated animation sequence back to
+ * its index in the visual track so audio clips can be resolved to real times.
+ */
+const getPlaybackCursorTimes = (
+    trackLength: number,
+    validTrackIndices: number[],
+    playbackSegments: PlaybackSegment[],
+    animationDuration: number
+): number[] => {
+    const cursorTimes = new Array<number>(trackLength + 1).fill(0);
+    if (validTrackIndices.length === 0) {
+        for (let index = 0; index <= trackLength; index++) {
+            cursorTimes[index] = trackLength > 0 ? (index / trackLength) * animationDuration : 0;
+        }
+        return cursorTimes;
+    }
+
+    let cursor = 0;
+    let duration = 0;
+    let stepIndex = 0;
+    for (const segment of playbackSegments) {
+        if (segment.kind === 'pause') {
+            duration += segment.duration;
+            continue;
+        }
+        const trackIndex = validTrackIndices[stepIndex];
+        stepIndex++;
+        if (trackIndex === undefined) {
+            duration += segment.duration;
+            continue;
+        }
+        while (cursor <= trackIndex) {
+            cursorTimes[cursor] = duration;
+            cursor++;
+        }
+        duration += segment.duration;
+    }
+    while (cursor <= trackLength) {
+        cursorTimes[cursor] = duration;
+        cursor++;
+    }
+    return cursorTimes;
 };
 
 export const getRenderedEdgeLength = (
@@ -1025,13 +1072,39 @@ export const exportVideo = async (
         getVideoExportDimensions(options.resolution)
     );
     try {
+        const audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = [];
+        for (const entry of timeline.audioTrack ?? []) {
+            const blob = await audioStoreIndexedDB.get(entry.blobId);
+            if (!blob) throw new Error(`Audio asset is missing: ${entry.blobId}`);
+            audioClips.push({ blob, startSlot: entry.startSlot, endSlot: entry.endSlot });
+        }
         try {
-            return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress);
+            return await renderVideo(
+                graph,
+                timeline,
+                languages,
+                options,
+                bgColor,
+                source,
+                onProgress,
+                false,
+                audioClips
+            );
         } catch (error) {
             if (!(error instanceof NativeVideoEncodingError)) throw error;
             console.warn('Browser video encoding failed; retrying with software encoding.', error);
             onProgress?.(0);
-            return await renderVideo(graph, timeline, languages, options, bgColor, source, onProgress, true);
+            return await renderVideo(
+                graph,
+                timeline,
+                languages,
+                options,
+                bgColor,
+                source,
+                onProgress,
+                true,
+                audioClips
+            );
         }
     } finally {
         source.dispose();
@@ -1046,7 +1119,8 @@ const renderVideo = async (
     bgColor: string,
     source: ReturnType<typeof createVideoExportCanvas>,
     onProgress?: (progress: number) => void,
-    forceSoftware = false
+    forceSoftware = false,
+    audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = []
 ): Promise<Blob> => {
     const {
         fps,
@@ -1154,6 +1228,28 @@ const renderVideo = async (
     const animationFrames = Math.ceil(animationDuration * fps) + 1;
     const overviewFrames = Math.max(1, Math.round(OverviewSeconds * fps));
     const totalFrames = animationFrames + overviewFrames;
+    // Resolve each audio clip's cursor slots into real video seconds. The last cursor is
+    // stretched to the end of the overview so music aimed at the timeline end covers it.
+    const validTrackIndices: number[] = [];
+    timeline.track.forEach((entry, index) => {
+        if (!isElementEntry(entry) || entry.phase !== 'enter') return;
+        const isValid = entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId);
+        if (isValid) validTrackIndices.push(index);
+    });
+    const cursorTimes = authoredPlayback
+        ? [...authoredPlayback.cursorTimes]
+        : getPlaybackCursorTimes(timeline.track.length, validTrackIndices, playbackSegments, animationDuration);
+    if (cursorTimes.length > 0) cursorTimes[cursorTimes.length - 1] = totalFrames / fps;
+    const lastSlot = timeline.track.length;
+    const resolvedAudioTracks = audioClips
+        .map(clip => {
+            const startSlot = Math.max(0, Math.min(lastSlot, Math.round(clip.startSlot)));
+            const endSlot = Math.max(0, Math.min(lastSlot, Math.round(clip.endSlot)));
+            const start = cursorTimes[startSlot] ?? 0;
+            const end = cursorTimes[endSlot] ?? animationDuration;
+            return { blob: clip.blob, start, end: Math.max(end, start) };
+        })
+        .filter(clip => clip.end > clip.start);
     const cumulativeWeights: number[] = [];
     let runningWeight = 0;
     for (const segment of playbackSegments) {
@@ -1167,7 +1263,8 @@ const renderVideo = async (
     canvas.height = outputHeight;
     let videoWriter: Awaited<ReturnType<typeof createVideoFrameWriter>> | undefined;
     try {
-        videoWriter = await createVideoFrameWriter(canvas, options, forceSoftware);
+        const encodingOptions: VideoEncodingOptions = { ...options, audioTracks: resolvedAudioTracks };
+        videoWriter = await createVideoFrameWriter(canvas, encodingOptions, forceSoftware);
         const allNodes = new Set<NodeId>();
         const allEdges = new Set<LineId>();
         graph.forEachNode(node => {

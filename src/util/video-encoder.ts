@@ -3,6 +3,7 @@ export interface VideoEncodingOptions {
     fps: number;
     quality: number;
     isTransparent: boolean;
+    audioTracks?: { blob: Blob; start: number; end: number }[];
 }
 
 export interface VideoFrameWriter {
@@ -23,7 +24,12 @@ export const createVideoFrameWriter = async (
     options: VideoEncodingOptions,
     forceSoftware = false
 ): Promise<VideoFrameWriter> => {
-    if (!forceSoftware && typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
+    if (
+        !forceSoftware &&
+        !options.audioTracks?.length &&
+        typeof VideoEncoder !== 'undefined' &&
+        typeof VideoFrame !== 'undefined'
+    ) {
         const { BufferTarget, CanvasSource, Mp4OutputFormat, Output, WebMOutputFormat, canEncodeVideo, Quality } =
             await import('mediabunny');
         const codecs = options.format === 'mp4' ? (['avc'] as const) : (['vp9', 'vp8'] as const);

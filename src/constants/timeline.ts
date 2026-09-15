@@ -43,10 +43,25 @@ export interface TimelinePauseEntry {
 
 export type TimelineEntry = TimelineElementEntry | TimelineKeyframeEntry | TimelinePauseEntry;
 
+/**
+ * Audio is deliberately kept out of the visual track so clips may overlap.
+ * `startSlot`/`endSlot` are discrete cursor indices (0 = before the first entry,
+ * track.length = after the last one), snapped to the centre of each insertion cursor.
+ */
+export interface TimelineAudioEntry {
+    id: string;
+    kind: 'audio';
+    blobId: string;
+    name: string;
+    startSlot: number;
+    endSlot: number;
+}
+
 export interface TimelineDocument {
     version: typeof TIMELINE_DOCUMENT_VERSION;
     mode: TimelineMode;
     track: TimelineEntry[];
+    audioTrack?: TimelineAudioEntry[];
 }
 
 export const createEmptyTimelineDocument = (): TimelineDocument => ({
@@ -63,3 +78,4 @@ export const isElementEntry = (entry: TimelineEntry): entry is TimelineElementEn
 export const isKeyframeEntry = (entry: TimelineEntry): entry is TimelineKeyframeEntry => entry.kind === 'keyframe';
 
 export const isPauseEntry = (entry: TimelineEntry): entry is TimelinePauseEntry => entry.kind === 'pause';
+export const isAudioEntry = (entry: TimelineAudioEntry): entry is TimelineAudioEntry => entry.kind === 'audio';

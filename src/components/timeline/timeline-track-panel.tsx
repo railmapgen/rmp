@@ -523,7 +523,7 @@ export default function TimelineTrackPanel({
                 overflow="hidden"
                 bg="blackAlpha.50"
             >
-                {draftDocument.track.length > 0 ? (
+                {draftDocument.track.length > 0 || (draftDocument.audioTrack?.length ?? 0) > 0 ? (
                     <TimelineTrack
                         key={`${refreshNodes}-${refreshEdges}`}
                         document={draftDocument}
@@ -545,6 +545,10 @@ export default function TimelineTrackPanel({
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}
                         onDragEnd={handleDragEnd}
+                        onDocumentChange={next => {
+                            setDraftDocument(next);
+                            onDocumentChange(next);
+                        }}
                     />
                 ) : (
                     <Flex height="100%" align="center" justify="center" color="gray.500">

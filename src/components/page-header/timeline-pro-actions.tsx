@@ -1,13 +1,15 @@
 import { Button, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdRedo, MdUndo } from 'react-icons/md';
+import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdRedo, MdUndo, MdAudiotrack } from 'react-icons/md';
+import { nanoid } from 'nanoid';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import { redoTimeline, setTimelineDocument, undoTimeline } from '../../redux/timeline/timeline-slice';
 import { insertKeyframeEntry, insertTimelineExitEntry, insertTimelinePause } from '../../util/timeline';
+import { audioStoreIndexedDB } from '../../util/audio-store-indexed-db';
 
 export default function TimelineProActions() {
     const { t } = useTranslation();
@@ -17,6 +19,7 @@ export default function TimelineProActions() {
     const selected = useRootSelector(state => state.runtime.selected);
     const timelineCursor = useRootSelector(state => state.runtime.timelineCursor);
     const graph = React.useRef(window.graph);
+    const audioInputRef = React.useRef<HTMLInputElement>(null);
 
     const selectedElementId = React.useMemo(() => {
         if (selected.size !== 1) return undefined;
@@ -85,6 +88,29 @@ export default function TimelineProActions() {
         };
         dispatch(setTimelineDocument(document));
     };
+    const handleAudio = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+        const id = `audio_${nanoid(12)}`;
+        await audioStoreIndexedDB.save(id, file);
+        dispatch(
+            setTimelineDocument({
+                ...timeline,
+                audioTrack: [
+                    ...(timeline.audioTrack ?? []),
+                    {
+                        id: `timeline_${nanoid(10)}`,
+                        kind: 'audio',
+                        blobId: id,
+                        name: file.name,
+                        startSlot: 0,
+                        endSlot: Math.max(1, timeline.track.length),
+                    },
+                ],
+            })
+        );
+    };
 
     return (
         <>
@@ -93,6 +119,9 @@ export default function TimelineProActions() {
                     {t('header.timelinePage.insert')}
                 </MenuButton>
                 <MenuList>
+                    <MenuItem icon={<MdAudiotrack />} onClick={() => audioInputRef.current?.click()}>
+                        {t('header.timelinePage.insertAudio')}
+                    </MenuItem>
                     <MenuItem icon={<MdKey />} isDisabled={!selectedNodeId} onClick={handleInsertKeyframe}>
                         {t('header.timelinePage.insertKeyframe')}
                     </MenuItem>
@@ -107,6 +136,7 @@ export default function TimelineProActions() {
                     </MenuItem>
                 </MenuList>
             </Menu>
+            <input ref={audioInputRef} type="file" accept="audio/*" hidden onChange={handleAudio} />
             <Menu>
                 <MenuButton as={Button} size="sm" variant="ghost" leftIcon={<MdEdit />}>
                     {t('header.edit')}

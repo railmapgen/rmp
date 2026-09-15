@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { isElementEntry, TimelineDocument, TimelineElementEntry } from '../constants/timeline';
+import { isElementEntry, TimelineDocument, TimelineElementEntry, TimelineEntry } from '../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 type Position = { x: number; y: number };
@@ -41,15 +41,20 @@ export const createVideoTimelinePlayback = (
 ) => {
     const clips: PlaybackClip[] = [];
     const positions = new Map<NodeId, PositionKeyframe[]>();
-    const entries = timeline.track.filter(entry => {
-        if (entry.kind === 'pause') return true;
-        if (!isElementEntry(entry) && entry.kind !== 'keyframe') return false;
-        return entry.kind === 'edge' ? graph.hasEdge(entry.refId) : graph.hasNode(entry.refId);
+    const entries: { entry: TimelineEntry; trackIndex: number }[] = [];
+    timeline.track.forEach((entry, trackIndex) => {
+        if (entry.kind === 'pause') {
+            entries.push({ entry, trackIndex });
+            return;
+        }
+        if (!isElementEntry(entry) && entry.kind !== 'keyframe') return;
+        const isValid = entry.kind === 'edge' ? graph.hasEdge(entry.refId) : graph.hasNode(entry.refId);
+        if (isValid) entries.push({ entry, trackIndex });
     });
     const overlappingEntrances = new Set<string>();
     let nextElement: TimelineElementEntry | undefined;
     for (let index = entries.length - 1; index >= 0; index--) {
-        const entry = entries[index];
+        const entry = entries[index].entry;
         if (entry.kind === 'pause') continue;
         if (entry.kind === 'keyframe') continue;
         if (entry.kind === 'node' && entry.phase === 'enter') {
@@ -59,8 +64,15 @@ export const createVideoTimelinePlayback = (
         }
     }
     let duration = 0;
+    // Seconds at each insertion cursor (index i = time just before track entry i).
+    const cursorTimes = new Array<number>(timeline.track.length + 1).fill(0);
+    let cursor = 0;
 
-    for (const entry of entries) {
+    for (const { entry, trackIndex } of entries) {
+        while (cursor <= trackIndex) {
+            cursorTimes[cursor] = duration;
+            cursor++;
+        }
         if (entry.kind === 'pause') {
             duration += entry.duration;
             positions.forEach(anchors => {
@@ -98,6 +110,10 @@ export const createVideoTimelinePlayback = (
     }
     // A short final line must not truncate an overlapping station fade.
     for (const clip of clips) duration = Math.max(duration, clip.end);
+    while (cursor <= timeline.track.length) {
+        cursorTimes[cursor] = duration;
+        cursor++;
+    }
 
     const frameAt = (time: number): VideoTimelineFrame => {
         const state: VideoTimelineFrame = {
@@ -159,5 +175,5 @@ export const createVideoTimelinePlayback = (
         return state;
     };
 
-    return { duration, frameAt };
+    return { duration, frameAt, cursorTimes };
 };

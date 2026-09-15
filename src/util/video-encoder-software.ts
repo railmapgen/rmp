@@ -5,6 +5,8 @@ import type { VideoEncodingOptions, VideoFrameWriter } from './video-encoder';
 
 const MaxBatchBytes = 32 * 1024 * 1024;
 const MaxBatchFrames = 30;
+// Every placed clip fades out as it reaches its end cursor.
+const AudioFadeOutSeconds = 0.5;
 
 export const createSoftwareVideoFrameWriter = async (
     canvas: HTMLCanvasElement,
@@ -36,6 +38,7 @@ export const createSoftwareVideoFrameWriter = async (
         250_000,
         Math.round(canvas.width * canvas.height * options.fps * (0.04 + quality * 0.0016))
     );
+    const audioNames: string[] = [];
 
     const exec = async (args: string[]) => {
         const code = await ffmpeg.exec(args);
@@ -128,11 +131,66 @@ export const createSoftwareVideoFrameWriter = async (
                 ...(options.format === 'mp4' ? ['-movflags', '+faststart'] : []),
                 outputName,
             ]);
+            if (options.audioTracks?.length) {
+                for (const [index, track] of options.audioTracks.entries()) {
+                    const extension = track.blob.type.includes('wav')
+                        ? 'wav'
+                        : track.blob.type.includes('mpeg') || track.blob.type.includes('mp3')
+                          ? 'mp3'
+                          : track.blob.type.includes('ogg')
+                            ? 'ogg'
+                            : track.blob.type.includes('mp4') || track.blob.type.includes('m4a')
+                              ? 'm4a'
+                              : 'webm';
+                    const name = `audio-${index}.${extension}`;
+                    await ffmpeg.writeFile(name, new Uint8Array(await track.blob.arrayBuffer()));
+                    audioNames.push(name);
+                }
+                // Loop each source so clips shorter than their selected span keep playing.
+                const audioInputs = options.audioTracks
+                    .map((_, index) => ['-stream_loop', '-1', '-i', audioNames[index]])
+                    .flat();
+                const filters = options.audioTracks.map((track, index) => {
+                    const length = Math.max(0, track.end - track.start);
+                    const fadeDuration = Math.min(AudioFadeOutSeconds, length);
+                    const fadeStart = Math.max(0, length - fadeDuration);
+                    return `[${index + 1}:a]atrim=0:${length},asetpts=PTS-STARTPTS,afade=t=out:st=${fadeStart}:d=${fadeDuration},adelay=${Math.round(track.start * 1000)}:all=1[a${index}]`;
+                });
+                const mixInputs = options.audioTracks.map((_, index) => `[a${index}]`).join('');
+                filters.push(
+                    `${mixInputs}amix=inputs=${options.audioTracks.length}:duration=longest:dropout_transition=0,apad[aout]`
+                );
+                const muxedOutput = `muxed.${options.format}`;
+                await exec([
+                    '-i',
+                    outputName,
+                    ...audioInputs,
+                    '-filter_complex',
+                    filters.join(';'),
+                    '-map',
+                    '0:v:0',
+                    '-map',
+                    '[aout]',
+                    '-c:v',
+                    'copy',
+                    '-c:a',
+                    options.format === 'mp4' ? 'aac' : 'libopus',
+                    '-shortest',
+                    ...(options.format === 'mp4' ? ['-movflags', '+faststart'] : []),
+                    muxedOutput,
+                ]);
+                await ffmpeg.deleteFile(outputName);
+                const muxed = await ffmpeg.readFile(muxedOutput);
+                if (typeof muxed === 'string' || !muxed.byteLength) throw new Error('Audio muxing returned no output');
+                await ffmpeg.deleteFile(muxedOutput);
+                return new Blob([Uint8Array.from(muxed).buffer], { type: `video/${options.format}` });
+            }
             const data = await ffmpeg.readFile(outputName);
             if (typeof data === 'string' || !data.byteLength) throw new Error('Video encoder returned no output');
             return new Blob([Uint8Array.from(data).buffer], { type: `video/${options.format}` });
         },
         async dispose() {
+            await Promise.allSettled(audioNames.map(name => ffmpeg.deleteFile(name)));
             ffmpeg.terminate();
         },
     };

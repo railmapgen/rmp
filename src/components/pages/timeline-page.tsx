@@ -13,6 +13,7 @@ import TimelineTrackPanel from '../timeline/timeline-track-panel';
 import { KEYFRAME_ROW_HEIGHT } from '../timeline/timeline-track';
 import TimelineSvgWrapper, { TimelineSvgHandle } from '../timeline/timeline-svg-wrapper';
 import { Viewport } from '../timeline/use-timeline-viewport';
+import { audioStoreIndexedDB } from '../../util/audio-store-indexed-db';
 
 const TRACK_PANEL_BASE_HEIGHT = 300;
 const TRACK_PANEL_MIN_HEIGHT_RATIO = 0.3;
@@ -49,6 +50,11 @@ export default function TimelinePage() {
     React.useEffect(() => {
         setViewport({ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom });
     }, [svgViewBoxMin.x, svgViewBoxMin.y, svgViewBoxZoom]);
+    React.useEffect(() => {
+        audioStoreIndexedDB
+            .deleteExcept((timeline.audioTrack ?? []).map(entry => entry.blobId))
+            .catch(error => console.error('Failed to clean up orphaned timeline audio', error));
+    }, [timeline.audioTrack]);
 
     const coverage = React.useMemo(
         () => getTimelineCoverage(graph.current, timeline),

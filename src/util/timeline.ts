@@ -16,6 +16,7 @@ import {
     isNodeTimelineEntry,
     isPauseEntry,
     TimelineDocument,
+    TimelineAudioEntry,
     TimelineElementEntry,
     TimelineEntry,
     TimelineKeyframeEntry,
@@ -260,13 +261,39 @@ export type TimelineDocumentLike = Partial<Omit<TimelineDocument, 'track'>> & { 
 export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): TimelineDocument => {
     if (!doc || !Array.isArray(doc.track)) return createEmptyTimelineDocument();
 
-    return {
+    const normalized: TimelineDocument = {
         version: 1,
         mode: doc.mode === 'pro' ? 'pro' : 'quick',
         track: (doc.track as RawTimelineEntry[])
             .map(entry => normalizeTimelineEntry(entry))
             .filter((entry): entry is TimelineEntry => !!entry),
     };
+    const audioTrack = (doc as { audioTrack?: unknown }).audioTrack;
+    if (Array.isArray(audioTrack)) {
+        normalized.audioTrack = audioTrack
+            .filter((entry): entry is TimelineAudioEntry => {
+                if (!entry || typeof entry !== 'object') return false;
+                const candidate = entry as Partial<TimelineAudioEntry>;
+                return (
+                    candidate.kind === 'audio' &&
+                    typeof candidate.id === 'string' &&
+                    typeof candidate.blobId === 'string' &&
+                    typeof candidate.name === 'string' &&
+                    typeof candidate.startSlot === 'number' &&
+                    Number.isFinite(candidate.startSlot) &&
+                    typeof candidate.endSlot === 'number' &&
+                    Number.isFinite(candidate.endSlot) &&
+                    candidate.startSlot >= 0 &&
+                    candidate.endSlot >= candidate.startSlot
+                );
+            })
+            .map(entry => ({
+                ...entry,
+                startSlot: Math.round(entry.startSlot),
+                endSlot: Math.round(entry.endSlot),
+            }));
+    }
+    return normalized;
 };
 
 export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument): TimelineCoverage => {

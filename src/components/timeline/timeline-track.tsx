@@ -13,6 +13,7 @@ import {
 import { getTimelineEntryTitle } from '../../util/timeline';
 import TimelineClip from './timeline-clip';
 import TimelinePauseClip from './timeline-pause-clip';
+import TimelineAudioTrack from './timeline-audio-track';
 
 interface TimelineTrackProps {
     document: TimelineDocument;
@@ -31,6 +32,7 @@ interface TimelineTrackProps {
     onToggleSelectedAnimation: (entryId: string) => void;
     onRemoveSelectedEntries: (entryId: string) => void;
     onReverseSelectedEntries: () => void;
+    onDocumentChange: (document: TimelineDocument) => void;
 }
 
 // Keep the insertion target compact so the remaining track gaps can start a range selection.
@@ -84,6 +86,7 @@ export default function TimelineTrack({
     onToggleSelectedAnimation,
     onRemoveSelectedEntries,
     onReverseSelectedEntries,
+    onDocumentChange,
 }: TimelineTrackProps) {
     const { t } = useTranslation();
     const trackRef = React.useRef<HTMLDivElement>(null);
@@ -416,6 +419,7 @@ export default function TimelineTrack({
                         )}
                     </Box>
                 )}
+                <TimelineAudioTrack document={document} totalWidth={totalWidth} onChange={onDocumentChange} />
             </Flex>
             {contextMenu && (
                 <Portal>

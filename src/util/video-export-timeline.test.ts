@@ -49,6 +49,27 @@ const playback = (track: TimelineEntry[], speed = 1) =>
     );
 
 describe('authored video timeline playback', () => {
+    it('reports the video time at every insertion cursor for audio placement', () => {
+        const animation = playback([
+            node,
+            { ...node, id: 'node_b', refId: 'stn_b' },
+            { id: 'pause', kind: 'pause', position: 'after', duration: 1 },
+            { ...node, id: 'node_c', refId: 'stn_c' },
+        ]);
+        // 0.2s per node entrance, plus a 1s pause, marks each cursor before its entry.
+        expect(animation.cursorTimes.map(value => Math.round(value * 10) / 10)).toEqual([0, 0.2, 0.4, 1.4, 1.6]);
+    });
+
+    it('keeps cursor times aligned when earlier entries are missing', () => {
+        const animation = playback([
+            { ...node, refId: 'stn_missing' },
+            node,
+            { ...node, id: 'node_b', refId: 'stn_b' },
+        ]);
+        // The missing entry consumes a cursor but no time.
+        expect(animation.cursorTimes.map(value => Math.round(value * 10) / 10)).toEqual([0, 0, 0.2, 0.4]);
+    });
+
     it('does not add duration or change focus when keyframes are inserted', () => {
         const without = playback([node, edge]);
         const withKeyframes = playback([
