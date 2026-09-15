@@ -1106,4 +1106,16 @@ describe('Unit tests for param upgrade function', () => {
             mapStyle: DEFAULT_MAP_STYLE,
         });
     });
+
+    it('78 -> 79', () => {
+        // Bump save version to support Wuhan facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":78}';
+        const newParam = UPGRADE_COLLECTION[78](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":79}';
+        expect(newParam).toEqual(expectParam);
+    });
 });

@@ -253,7 +253,9 @@
                     "intercity_shenzhen": "深圳都市間鉄道",
                     "ferry_shenzhen": "深圳フェリー",
                     "tram_shenzhen": "深圳トラム",
-                    "airport_shenzhen": "深圳空港"
+                    "airport_shenzhen": "深圳空港",
+                    "railway_wuhan": "武漢鉄道駅",
+                    "airport_wuhan": "武漢空港"
                 },
                 "text": {
                     "displayName": "任意の文字",

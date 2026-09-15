@@ -251,7 +251,9 @@
                     "intercity_shenzhen": "深圳城際鐵路",
                     "ferry_shenzhen": "深圳渡輪",
                     "tram_shenzhen": "深圳有軌電車",
-                    "airport_shenzhen": "深圳機場"
+                    "airport_shenzhen": "深圳機場",
+                    "railway_wuhan": "武漢火車站",
+                    "airport_wuhan": "武漢機場"
                 },
                 "text": {
                     "displayName": "任意文字",

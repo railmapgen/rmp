@@ -54,7 +54,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 78;
+export const CURRENT_VERSION = 79;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1040,4 +1040,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
+    78: param =>
+        // Bump save version to support Wuhan facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 79 }),
 };

@@ -251,7 +251,9 @@
                     "intercity_shenzhen": "선전 시외 철도",
                     "ferry_shenzhen": "선전 페리",
                     "tram_shenzhen": "선전 트램",
-                    "airport_shenzhen": "선전 공항"
+                    "airport_shenzhen": "선전 공항",
+                    "railway_wuhan": "우한 기차역",
+                    "airport_wuhan": "우한 공항"
                 },
                 "text": {
                     "displayName": "임의 글자",
