@@ -18,6 +18,7 @@ interface TimelineClipProps {
     onDragStart: () => void;
     onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
     onDragEnd: () => void;
+    onContextMenu: (e: React.MouseEvent) => void;
 }
 
 export default function TimelineClip({
@@ -31,6 +32,7 @@ export default function TimelineClip({
     onDragStart,
     onDragOver,
     onDragEnd,
+    onContextMenu,
 }: TimelineClipProps) {
     const { t } = useTranslation();
     const accent = getTimelineEntryAccent(graph, entry);
@@ -41,11 +43,13 @@ export default function TimelineClip({
 
     return (
         <Box
+            data-timeline-card="true"
             draggable
             onDragStart={onDragStart}
             onDragOver={onDragOver}
             onDragEnd={onDragEnd}
             onClick={onSelect}
+            onContextMenu={onContextMenu}
             minW="220px"
             maxW="220px"
             px={4}

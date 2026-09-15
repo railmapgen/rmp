@@ -29,7 +29,19 @@ export interface TimelineKeyframeEntry {
     y: number;
 }
 
-export type TimelineEntry = TimelineElementEntry | TimelineKeyframeEntry;
+export type TimelinePausePosition = 'before' | 'after';
+
+export interface TimelinePauseEntry {
+    id: string;
+    kind: 'pause';
+    position: TimelinePausePosition;
+    duration: number;
+    refId?: never;
+    phase?: never;
+    showAnimation?: never;
+}
+
+export type TimelineEntry = TimelineElementEntry | TimelineKeyframeEntry | TimelinePauseEntry;
 
 export interface TimelineDocument {
     version: typeof TIMELINE_DOCUMENT_VERSION;
@@ -49,3 +61,5 @@ export const isElementEntry = (entry: TimelineEntry): entry is TimelineElementEn
     entry.kind === 'node' || entry.kind === 'edge';
 
 export const isKeyframeEntry = (entry: TimelineEntry): entry is TimelineKeyframeEntry => entry.kind === 'keyframe';
+
+export const isPauseEntry = (entry: TimelineEntry): entry is TimelinePauseEntry => entry.kind === 'pause';

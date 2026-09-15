@@ -1060,7 +1060,11 @@ const renderVideo = async (
         hideWatermark,
     } = options;
     const usesAuthoredPlayback = timeline.track.some(
-        entry => entry.kind === 'keyframe' || entry.phase === 'exit' || entry.showAnimation === false
+        entry =>
+            entry.kind === 'keyframe' ||
+            entry.kind === 'pause' ||
+            (isElementEntry(entry) && entry.phase === 'exit') ||
+            (isElementEntry(entry) && entry.showAnimation === false)
     );
     const renderGeometry = usesAuthoredPlayback || source.renderGeometry;
     if (renderGeometry) {

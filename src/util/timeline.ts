@@ -14,10 +14,13 @@ import {
     createEmptyTimelineDocument,
     isElementEntry,
     isNodeTimelineEntry,
+    isPauseEntry,
     TimelineDocument,
     TimelineElementEntry,
     TimelineEntry,
     TimelineKeyframeEntry,
+    TimelinePauseEntry,
+    TimelinePausePosition,
     TimelinePhase,
 } from '../constants/timeline';
 
@@ -91,6 +94,24 @@ export const createKeyframeEntry = (
     return { id: `timeline_${nanoid(10)}`, kind: 'keyframe', refId, x, y };
 };
 
+export const createPauseEntry = (position: TimelinePausePosition, duration = 1): TimelinePauseEntry => ({
+    id: `timeline_${nanoid(10)}`,
+    kind: 'pause',
+    position,
+    duration,
+});
+
+export const insertTimelinePause = (
+    doc: TimelineDocument,
+    position: TimelinePausePosition,
+    index: number
+): { document: TimelineDocument; cursor: number } => {
+    const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
+    const track = [...doc.track];
+    track.splice(insertionIndex, 0, createPauseEntry(position));
+    return { document: { ...doc, track }, cursor: insertionIndex + 1 };
+};
+
 export const updateKeyframePosition = (
     doc: TimelineDocument,
     entryId: string,
@@ -160,7 +181,7 @@ export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): Tim
     return {
         ...doc,
         track: doc.track.filter(entry =>
-            removeDependents ? entry.refId !== removedEntry.refId : entry.id !== entryId
+            removeDependents ? isPauseEntry(entry) || entry.refId !== removedEntry.refId : entry.id !== entryId
         ),
     };
 };
@@ -172,9 +193,11 @@ export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIn
     const track = [...doc.track];
     const [entry] = track.splice(fromIndex, 1);
     track.splice(toIndex, 0, entry);
+    if (isPauseEntry(entry)) return { ...doc, track };
 
     let visible = false;
     for (const candidate of track) {
+        if (isPauseEntry(candidate)) continue;
         if (candidate.refId !== entry.refId) continue;
         if (isElementEntry(candidate) && candidate.phase === 'enter') visible = true;
         else {
@@ -197,6 +220,8 @@ interface RawTimelineEntry {
     showAnimation?: unknown;
     x?: unknown;
     y?: unknown;
+    position?: unknown;
+    duration?: unknown;
 }
 
 const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undefined => {
@@ -206,6 +231,17 @@ const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undef
         if (typeof entry.x !== 'number' || !Number.isFinite(entry.x)) return undefined;
         if (typeof entry.y !== 'number' || !Number.isFinite(entry.y)) return undefined;
         return { id: entry.id, kind: 'keyframe', refId: entry.refId as NodeId, x: entry.x, y: entry.y };
+    }
+
+    if (entry.kind === 'pause') {
+        const position = entry.position === 'after' ? 'after' : entry.position === 'before' ? 'before' : undefined;
+        if (!position || typeof entry.duration !== 'number' || !Number.isFinite(entry.duration)) return undefined;
+        return {
+            id: entry.id,
+            kind: 'pause',
+            position,
+            duration: Math.max(0, entry.duration),
+        };
     }
 
     if (entry.kind === 'node' || entry.kind === 'edge') {
@@ -250,6 +286,7 @@ export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument)
 };
 
 export const getTimelineEntryTitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'pause') return entry.position === 'before' ? 'Frame pause before' : 'Frame pause after';
     if (entry.kind === 'keyframe') {
         return graph.hasNode(entry.refId) ? getNodePrimaryName(graph, entry.refId) : entry.refId;
     }
@@ -265,6 +302,7 @@ export const getTimelineEntryTitle = (graph: TimelineGraph, entry: TimelineEntry
 };
 
 export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEntry): string => {
+    if (entry.kind === 'pause') return `${entry.duration}s`;
     if (entry.kind === 'keyframe') {
         return `${Math.round(entry.x * 100) / 100}, ${Math.round(entry.y * 100) / 100}`;
     }
@@ -280,6 +318,7 @@ export const getTimelineEntrySubtitle = (graph: TimelineGraph, entry: TimelineEn
 };
 
 export const getTimelineEntryAccent = (graph: TimelineGraph, entry: TimelineEntry): string[] => {
+    if (entry.kind === 'pause') return ['#805AD5'];
     if (entry.kind === 'keyframe') return ['#805AD5'];
     if (entry.kind === 'node' && entry.refId.startsWith('stn_')) return ['#c3e1f3'];
     if (entry.kind === 'node' && entry.refId.startsWith('misc_')) return ['#f3c3e1'];
@@ -459,7 +498,7 @@ export const getTimelinePreviewState = (
             return;
         }
 
-        if (index <= cursor) {
+        if (index <= cursor && isElementEntry(entry)) {
             if (entry.phase === 'enter') visibleIds.add(entry.refId);
             else if (index < cursor) visibleIds.delete(entry.refId);
         }

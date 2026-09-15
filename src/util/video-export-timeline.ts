@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { TimelineDocument, TimelineElementEntry } from '../constants/timeline';
+import { isElementEntry, TimelineDocument, TimelineElementEntry } from '../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 type Position = { x: number; y: number };
@@ -41,13 +41,16 @@ export const createVideoTimelinePlayback = (
 ) => {
     const clips: PlaybackClip[] = [];
     const positions = new Map<NodeId, PositionKeyframe[]>();
-    const entries = timeline.track.filter(entry =>
-        entry.kind === 'edge' ? graph.hasEdge(entry.refId) : graph.hasNode(entry.refId)
-    );
+    const entries = timeline.track.filter(entry => {
+        if (entry.kind === 'pause') return true;
+        if (!isElementEntry(entry) && entry.kind !== 'keyframe') return false;
+        return entry.kind === 'edge' ? graph.hasEdge(entry.refId) : graph.hasNode(entry.refId);
+    });
     const overlappingEntrances = new Set<string>();
     let nextElement: TimelineElementEntry | undefined;
     for (let index = entries.length - 1; index >= 0; index--) {
         const entry = entries[index];
+        if (entry.kind === 'pause') continue;
         if (entry.kind === 'keyframe') continue;
         if (entry.kind === 'node' && entry.phase === 'enter') {
             if (nextElement?.kind === 'edge' && nextElement.phase === 'enter') overlappingEntrances.add(entry.id);
@@ -58,6 +61,14 @@ export const createVideoTimelinePlayback = (
     let duration = 0;
 
     for (const entry of entries) {
+        if (entry.kind === 'pause') {
+            duration += entry.duration;
+            positions.forEach(anchors => {
+                const last = anchors[anchors.length - 1];
+                if (last && last.time < duration) anchors.push({ ...last, time: duration });
+            });
+            continue;
+        }
         if (entry.kind === 'keyframe') {
             const origin = graph.getNodeAttributes(entry.refId);
             const anchors = positions.get(entry.refId) ?? [{ x: origin.x, y: origin.y, time: 0 }];

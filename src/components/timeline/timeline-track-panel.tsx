@@ -3,7 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSkipNext, MdSkipPrevious, MdSwapHoriz } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
-import { isElementEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
+import { isElementEntry, isPauseEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import {
@@ -60,6 +60,9 @@ export default function TimelineTrackPanel({
         themeStr: string;
     } | null>(null);
     const [isPlaying, setIsPlaying] = React.useState(false);
+    const [selectedEntryIds, setSelectedEntryIds] = React.useState<Set<string>>(() =>
+        selectedEntryId ? new Set([selectedEntryId]) : new Set()
+    );
 
     const {
         timelineCursor: insertionIndex,
@@ -85,7 +88,14 @@ export default function TimelineTrackPanel({
     React.useEffect(() => {
         setDraftDocument(document);
         dragDocumentRef.current = document;
+        setSelectedEntryIds(
+            current => new Set([...current].filter(id => document.track.some(entry => entry.id === id)))
+        );
     }, [document]);
+
+    React.useEffect(() => {
+        setSelectedEntryIds(selectedEntryId ? new Set([selectedEntryId]) : new Set());
+    }, [selectedEntryId]);
 
     React.useEffect(() => {
         if (document.track.length < insertionIndex) dispatch(setTimelineCursor(document.track.length));
@@ -182,8 +192,9 @@ export default function TimelineTrackPanel({
         onDocumentChange(nextDocument);
     };
 
-    const handleRemoveEntry = (entryId: string) => {
-        const nextDocument = removeTimelineEntry(draftDocument, entryId);
+    const handleRemoveEntries = (entryId: string) => {
+        const entryIds = selectedEntryIds.has(entryId) && selectedEntryIds.size > 1 ? [...selectedEntryIds] : [entryId];
+        const nextDocument = entryIds.reduce((current, id) => removeTimelineEntry(current, id), draftDocument);
         if (nextDocument === draftDocument) return;
 
         const remainingIds = new Set(nextDocument.track.map(entry => entry.id));
@@ -193,16 +204,45 @@ export default function TimelineTrackPanel({
         onCursorChange(nextCursor);
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
+        setSelectedEntryIds(new Set());
     };
     const handleToggleAnimation = (entryId: string) => {
+        const entryIds =
+            selectedEntryIds.has(entryId) && selectedEntryIds.size > 1 ? selectedEntryIds : new Set([entryId]);
         const nextDocument: TimelineDocument = {
             ...draftDocument,
             track: draftDocument.track.map(entry =>
-                entry.id === entryId && isElementEntry(entry)
+                entryIds.has(entry.id) && isElementEntry(entry)
                     ? { ...entry, showAnimation: !entry.showAnimation }
                     : entry
             ),
         };
+        setDraftDocument(nextDocument);
+        onDocumentChange(nextDocument);
+    };
+    const handlePauseDurationChange = (entryId: string, duration: number) => {
+        const nextDocument: TimelineDocument = {
+            ...draftDocument,
+            track: draftDocument.track.map(entry =>
+                entry.id === entryId && isPauseEntry(entry) ? { ...entry, duration } : entry
+            ),
+        };
+        setDraftDocument(nextDocument);
+        onDocumentChange(nextDocument);
+    };
+    const handleReverseSelectedEntries = () => {
+        if (selectedEntryIds.size < 2) return;
+        const selectedIndexes = draftDocument.track
+            .map((entry, index) => (selectedEntryIds.has(entry.id) ? index : -1))
+            .filter(index => index >= 0);
+        if (selectedIndexes.length < 2) return;
+
+        const reversedEntries = selectedIndexes.map(index => draftDocument.track[index]).reverse();
+        const track = [...draftDocument.track];
+        selectedIndexes.forEach((index, position) => {
+            track[index] = reversedEntries[position];
+        });
+        const nextDocument = { ...draftDocument, track };
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
     };
@@ -488,13 +528,20 @@ export default function TimelineTrackPanel({
                         key={`${refreshNodes}-${refreshEdges}`}
                         document={draftDocument}
                         graph={graph.current}
-                        selectedId={selectedId}
-                        selectedEntryId={selectedEntryId}
                         insertionIndex={insertionIndex}
-                        onSelectEntry={onSelectEntry}
+                        onSelectEntry={entry => {
+                            setSelectedEntryIds(new Set([entry.id]));
+                            onSelectEntry(entry);
+                        }}
+                        selectedEntryIds={selectedEntryIds}
+                        onSelectionChange={ids => setSelectedEntryIds(new Set(ids))}
                         onToggleAnimation={handleToggleAnimation}
+                        onPauseDurationChange={handlePauseDurationChange}
                         onInsertionIndexChange={onCursorChange}
-                        onRemoveEntry={handleRemoveEntry}
+                        onRemoveEntry={handleRemoveEntries}
+                        onRemoveSelectedEntries={handleRemoveEntries}
+                        onReverseSelectedEntries={handleReverseSelectedEntries}
+                        onToggleSelectedAnimation={handleToggleAnimation}
                         onDragStart={handleDragStart}
                         onDragOver={handleDragOver}
                         onDragEnd={handleDragEnd}

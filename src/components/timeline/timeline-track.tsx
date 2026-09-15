@@ -1,27 +1,39 @@
-import { Box, CloseButton, Flex, HStack, Tooltip } from '@chakra-ui/react';
+import { Box, Button, CloseButton, Flex, HStack, Portal, Tooltip } from '@chakra-ui/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { EdgeAttributes, GraphAttributes, Id, NodeAttributes, NodeId } from '../../constants/constants';
-import { TimelineDocument, TimelineEntry, TimelineKeyframeEntry } from '../../constants/timeline';
+import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../../constants/constants';
+import {
+    isElementEntry,
+    isPauseEntry,
+    TimelineDocument,
+    TimelineEntry,
+    TimelineKeyframeEntry,
+} from '../../constants/timeline';
 import { getTimelineEntryTitle } from '../../util/timeline';
 import TimelineClip from './timeline-clip';
+import TimelinePauseClip from './timeline-pause-clip';
 
 interface TimelineTrackProps {
     document: TimelineDocument;
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-    selectedId?: Id;
-    selectedEntryId?: string;
+    selectedEntryIds: Set<string>;
     insertionIndex: number;
     onSelectEntry: (entry: TimelineEntry) => void;
     onToggleAnimation: (entryId: string) => void;
+    onPauseDurationChange: (entryId: string, duration: number) => void;
     onInsertionIndexChange: (index: number) => void;
     onRemoveEntry: (entryId: string) => void;
     onDragStart: (entryId: string) => void;
     onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
     onDragEnd: () => void;
+    onSelectionChange: (entryIds: string[]) => void;
+    onToggleSelectedAnimation: (entryId: string) => void;
+    onRemoveSelectedEntries: (entryId: string) => void;
+    onReverseSelectedEntries: () => void;
 }
 
+// Keep the insertion target compact so the remaining track gaps can start a range selection.
 const CURSOR_WIDTH = 32;
 const CLIP_WIDTH = 220;
 const KEYFRAME_SLOT_WIDTH = 24;
@@ -58,20 +70,74 @@ const getEntryLayout = (document: TimelineDocument): { entries: TrackEntryLayout
 export default function TimelineTrack({
     document,
     graph,
-    selectedId,
-    selectedEntryId,
+    selectedEntryIds = new Set<string>(),
     insertionIndex,
     onSelectEntry,
     onToggleAnimation,
+    onPauseDurationChange,
     onInsertionIndexChange,
     onRemoveEntry,
     onDragStart,
     onDragOver,
     onDragEnd,
+    onSelectionChange,
+    onToggleSelectedAnimation,
+    onRemoveSelectedEntries,
+    onReverseSelectedEntries,
 }: TimelineTrackProps) {
     const { t } = useTranslation();
+    const trackRef = React.useRef<HTMLDivElement>(null);
+    const [selection, setSelection] = React.useState<{ start: number; current: number } | null>(null);
+    const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; entry: TimelineEntry } | null>(null);
 
     const { entries: entryLayout, totalWidth } = React.useMemo(() => getEntryLayout(document), [document]);
+    const getContentX = (clientX: number) => {
+        const element = trackRef.current;
+        if (!element) return clientX;
+        return clientX - element.getBoundingClientRect().left + element.scrollLeft;
+    };
+    const handleSelectionStart = (e: React.PointerEvent<HTMLDivElement>) => {
+        const target = e.target as HTMLElement;
+        if (
+            e.button !== 0 ||
+            target.closest('[data-timeline-card="true"]') ||
+            target.closest('[data-timeline-cursor="true"]')
+        )
+            return;
+        const start = getContentX(e.clientX);
+        e.currentTarget.setPointerCapture(e.pointerId);
+        setSelection({ start, current: start });
+        e.preventDefault();
+    };
+    const handleSelectionMove = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!selection) return;
+        setSelection(current => (current ? { ...current, current: getContentX(e.clientX) } : current));
+    };
+    const handleSelectionEnd = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (!selection) return;
+        const end = getContentX(e.clientX);
+        const left = Math.min(selection.start, end);
+        const right = Math.max(selection.start, end);
+        const ids = entryLayout
+            .filter(layout => layout.start < right && layout.start + layout.width > left)
+            .map(layout => layout.entry.id);
+        if (Math.abs(end - selection.start) >= 4) {
+            onSelectionChange(ids);
+        }
+        setSelection(null);
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
+    };
+    const handleContextMenu = (e: React.MouseEvent, entry: TimelineEntry) => {
+        e.preventDefault();
+        if (!selectedEntryIds.has(entry.id)) {
+            onSelectionChange([entry.id]);
+        }
+        setContextMenu({ x: e.clientX, y: e.clientY, entry });
+    };
+    const handleReverseSelection = () => {
+        onReverseSelectedEntries();
+        setContextMenu(null);
+    };
 
     // Keyframes are grouped by their referenced station so all of them share a single row.
     const lanes = React.useMemo(() => {
@@ -110,61 +176,92 @@ export default function TimelineTrack({
 
         return (
             <Tooltip key={`cursor-${index}`} label={label} placement="top" openDelay={300}>
-                <Box
-                    as="button"
-                    type="button"
-                    aria-label={label}
-                    aria-pressed={isActive}
-                    flex={`0 0 ${CURSOR_WIDTH}px`}
-                    alignSelf="stretch"
-                    position="relative"
-                    color={isActive ? 'blue.500' : 'gray.400'}
-                    opacity={isActive ? 1 : 0.22}
-                    cursor="text"
-                    transition="opacity 0.15s ease"
-                    _hover={{ opacity: 1 }}
-                    _focusVisible={{ opacity: 1, outline: '2px solid', outlineColor: 'blue.300' }}
-                    onClick={() => onInsertionIndexChange(index)}
-                >
+                <Box flex={`0 0 ${CURSOR_WIDTH}px`} alignSelf="stretch" position="relative">
                     <Box
+                        as="button"
+                        type="button"
+                        data-timeline-cursor="true"
+                        aria-label={label}
+                        aria-pressed={isActive}
                         position="absolute"
-                        top="6px"
-                        bottom="6px"
+                        top="0"
+                        bottom="0"
                         left="50%"
-                        width={isActive ? '3px' : '2px'}
-                        bg="currentColor"
+                        width="8px"
+                        color={isActive ? 'blue.500' : 'gray.400'}
+                        opacity={isActive ? 1 : 0.22}
+                        cursor="text"
                         transform="translateX(-50%)"
-                        borderRadius="full"
-                    />
-                    <Box
-                        position="absolute"
-                        top="6px"
-                        left="50%"
-                        width="12px"
-                        height="3px"
-                        bg="currentColor"
-                        transform="translateX(-50%)"
-                        borderRadius="full"
-                    />
-                    <Box
-                        position="absolute"
-                        bottom="6px"
-                        left="50%"
-                        width="12px"
-                        height="3px"
-                        bg="currentColor"
-                        transform="translateX(-50%)"
-                        borderRadius="full"
-                    />
+                        transition="opacity 0.15s ease"
+                        _hover={{ opacity: 1 }}
+                        _focusVisible={{ opacity: 1, outline: '2px solid', outlineColor: 'blue.300' }}
+                        onClick={() => onInsertionIndexChange(index)}
+                    >
+                        <Box
+                            position="absolute"
+                            top="6px"
+                            bottom="6px"
+                            left="50%"
+                            width={isActive ? '3px' : '2px'}
+                            bg="currentColor"
+                            transform="translateX(-50%)"
+                            borderRadius="full"
+                        />
+                        <Box
+                            position="absolute"
+                            top="6px"
+                            left="50%"
+                            width="12px"
+                            height="3px"
+                            bg="currentColor"
+                            transform="translateX(-50%)"
+                            borderRadius="full"
+                        />
+                        <Box
+                            position="absolute"
+                            bottom="6px"
+                            left="50%"
+                            width="12px"
+                            height="3px"
+                            bg="currentColor"
+                            transform="translateX(-50%)"
+                            borderRadius="full"
+                        />
+                    </Box>
                 </Box>
             </Tooltip>
         );
     };
 
     return (
-        <Box height="100%" overflow="auto" pb={2}>
+        <Box
+            ref={trackRef}
+            height="100%"
+            overflow="auto"
+            pb={2}
+            onPointerDown={handleSelectionStart}
+            onPointerMove={handleSelectionMove}
+            onPointerUp={handleSelectionEnd}
+            onContextMenu={e => e.preventDefault()}
+            onClick={() => setContextMenu(null)}
+        >
             <Flex direction="column" minHeight="100%" width={`${totalWidth}px`} minW="100%">
-                <HStack align="stretch" spacing={0} flex="1" minH="140px">
+                <HStack align="stretch" spacing={0} flex="1" minH="140px" position="relative">
+                    {selection && (
+                        <Box
+                            position="absolute"
+                            top={0}
+                            bottom={0}
+                            left={`${Math.min(selection.start, selection.current)}px`}
+                            width={`${Math.abs(selection.current - selection.start)}px`}
+                            bg="blue.200"
+                            opacity={0.35}
+                            borderWidth="1px"
+                            borderColor="blue.500"
+                            pointerEvents="none"
+                            zIndex={3}
+                        />
+                    )}
                     {document.track.map((entry, index) => (
                         <React.Fragment key={entry.id}>
                             {renderInsertionCursor(index)}
@@ -174,10 +271,23 @@ export default function TimelineTrack({
                                         graph,
                                         entry
                                     )}`}
-                                    isSelected={selectedEntryId === entry.id}
+                                    isSelected={selectedEntryIds.has(entry.id)}
                                     onSelect={() => onSelectEntry(entry)}
+                                    onContextMenu={e => handleContextMenu(e, entry)}
                                     onDragStart={() => onDragStart(entry.id)}
                                     onDragOver={e => onDragOver(index, e)}
+                                    onDragEnd={onDragEnd}
+                                />
+                            ) : isPauseEntry(entry) ? (
+                                <TimelinePauseClip
+                                    entry={entry}
+                                    isSelected={selectedEntryIds.has(entry.id)}
+                                    onSelect={() => onSelectEntry(entry)}
+                                    onContextMenu={e => handleContextMenu(e, entry)}
+                                    onDurationChange={duration => onPauseDurationChange(entry.id, duration)}
+                                    onRemove={() => onRemoveEntry(entry.id)}
+                                    onDragStart={() => onDragStart(entry.id)}
+                                    onDragOver={onDragOver.bind(null, index)}
                                     onDragEnd={onDragEnd}
                                 />
                             ) : (
@@ -185,10 +295,9 @@ export default function TimelineTrack({
                                     entry={entry}
                                     graph={graph}
                                     isPro={document.mode === 'pro'}
-                                    isSelected={
-                                        selectedEntryId ? selectedEntryId === entry.id : selectedId === entry.refId
-                                    }
+                                    isSelected={selectedEntryIds.has(entry.id)}
                                     onSelect={() => onSelectEntry(entry)}
+                                    onContextMenu={e => handleContextMenu(e, entry)}
                                     onToggleAnimation={() => onToggleAnimation(entry.id)}
                                     onRemove={() => onRemoveEntry(entry.id)}
                                     onDragStart={() => onDragStart(entry.id)}
@@ -254,7 +363,7 @@ export default function TimelineTrack({
                         {lanes.map((lane, rowIndex) =>
                             lane.frames.map(({ entry, center }) => {
                                 const rowY = rowIndex * KEYFRAME_ROW_HEIGHT + KEYFRAME_ROW_HEIGHT / 2;
-                                const isSelected = selectedEntryId === entry.id;
+                                const isSelected = selectedEntryIds.has(entry.id);
                                 const label = `${t('header.timelinePage.keyframe')} · ${getTimelineEntryTitle(
                                     graph,
                                     entry
@@ -308,6 +417,70 @@ export default function TimelineTrack({
                     </Box>
                 )}
             </Flex>
+            {contextMenu && (
+                <Portal>
+                    <Box
+                        position="fixed"
+                        left={`${contextMenu.x}px`}
+                        top={`${contextMenu.y}px`}
+                        zIndex={1400}
+                        minW="180px"
+                        bg="chakra-body-bg"
+                        borderWidth="1px"
+                        borderRadius="md"
+                        boxShadow="lg"
+                        p={1}
+                        onPointerDown={e => e.stopPropagation()}
+                        onClick={e => e.stopPropagation()}
+                        onContextMenu={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                    >
+                        <Button
+                            width="100%"
+                            justifyContent="flex-start"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                                onToggleSelectedAnimation(contextMenu.entry.id);
+                                setContextMenu(null);
+                            }}
+                            isDisabled={
+                                !isElementEntry(contextMenu.entry) &&
+                                !document.track.some(entry => selectedEntryIds.has(entry.id) && isElementEntry(entry))
+                            }
+                        >
+                            {t('header.timelinePage.toggleAnimation')}
+                        </Button>
+                        <Button
+                            width="100%"
+                            justifyContent="flex-start"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                                onRemoveSelectedEntries(contextMenu.entry.id);
+                                setContextMenu(null);
+                            }}
+                        >
+                            {t('header.timelinePage.deleteEntry')}
+                        </Button>
+                        {selectedEntryIds.size > 1 && (
+                            <Button
+                                width="100%"
+                                justifyContent="flex-start"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                    handleReverseSelection();
+                                }}
+                            >
+                                {t('header.timelinePage.invertSelection')}
+                            </Button>
+                        )}
+                    </Box>
+                </Portal>
+            )}
         </Box>
     );
 }
@@ -319,18 +492,29 @@ interface KeyframeSlotProps {
     onDragStart: () => void;
     onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
     onDragEnd: () => void;
+    onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-function KeyframeSlot({ label, isSelected, onSelect, onDragStart, onDragOver, onDragEnd }: KeyframeSlotProps) {
+function KeyframeSlot({
+    label,
+    isSelected,
+    onSelect,
+    onDragStart,
+    onDragOver,
+    onDragEnd,
+    onContextMenu,
+}: KeyframeSlotProps) {
     return (
         <Tooltip label={label} placement="top" openDelay={300}>
             <Flex
+                data-timeline-card="true"
                 as="button"
                 type="button"
                 draggable
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDragEnd={onDragEnd}
+                onContextMenu={onContextMenu}
                 onClick={onSelect}
                 flex={`0 0 ${KEYFRAME_SLOT_WIDTH}px`}
                 align="center"

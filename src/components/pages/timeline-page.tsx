@@ -2,7 +2,7 @@ import { Badge, Box, Divider, Flex, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Id } from '../../constants/constants';
-import { isKeyframeEntry, TimelineEntry, TimelineKeyframeEntry } from '../../constants/timeline';
+import { isElementEntry, isKeyframeEntry, TimelineEntry, TimelineKeyframeEntry } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { clearSelected, setSelected, setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import { setTimelineDocument } from '../../redux/timeline/timeline-slice';
@@ -154,8 +154,10 @@ export default function TimelinePage() {
             if (index >= 0) handleCursorChange(index);
 
             setSelectedEntryId(entry.id);
-            dispatch(setSelected(new Set<Id>([entry.refId])));
-            svgHandleRef.current?.focusElement(entry.refId);
+            if (isElementEntry(entry)) {
+                dispatch(setSelected(new Set<Id>([entry.refId])));
+                svgHandleRef.current?.focusElement(entry.refId);
+            }
         },
         [dispatch, handleCursorChange, timeline.track]
     );
@@ -163,7 +165,7 @@ export default function TimelinePage() {
     const handleCanvasSelect = React.useCallback(
         (id: Id | undefined) => {
             if (id) {
-                const index = timeline.track.findIndex(entry => entry.refId === id);
+                const index = timeline.track.findIndex(entry => isElementEntry(entry) && entry.refId === id);
                 if (index >= 0) handleCursorChange(index);
             }
             setSelectedEntryId(undefined);

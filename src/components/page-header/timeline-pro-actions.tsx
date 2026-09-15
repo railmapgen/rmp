@@ -1,13 +1,13 @@
 import { Button, Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdRedo, MdUndo } from 'react-icons/md';
+import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdRedo, MdUndo } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry } from '../../constants/timeline';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import { redoTimeline, setTimelineDocument, undoTimeline } from '../../redux/timeline/timeline-slice';
-import { insertKeyframeEntry, insertTimelineExitEntry } from '../../util/timeline';
+import { insertKeyframeEntry, insertTimelineExitEntry, insertTimelinePause } from '../../util/timeline';
 
 export default function TimelineProActions() {
     const { t } = useTranslation();
@@ -69,6 +69,11 @@ export default function TimelineProActions() {
         dispatch(setTimelineDocument(document));
         dispatch(setTimelineCursor(cursor));
     };
+    const handleInsertPause = (position: 'before' | 'after') => {
+        const { document, cursor } = insertTimelinePause(timeline, position, timelineCursor);
+        dispatch(setTimelineDocument(document));
+        dispatch(setTimelineCursor(cursor));
+    };
     const handleToggleSelectedNodeAnimation = () => {
         if (!canAdjustAnimation) return;
         const showAnimation = !areSelectedNodeAnimationsShown;
@@ -93,6 +98,12 @@ export default function TimelineProActions() {
                     </MenuItem>
                     <MenuItem icon={<MdExitToApp />} isDisabled={!canInsertExit} onClick={handleInsertExit}>
                         {t('header.timelinePage.insertExitAnimation')}
+                    </MenuItem>
+                    <MenuItem icon={<MdPause />} onClick={() => handleInsertPause('before')}>
+                        {t('header.timelinePage.insertFramePauseBefore')}
+                    </MenuItem>
+                    <MenuItem icon={<MdPause />} onClick={() => handleInsertPause('after')}>
+                        {t('header.timelinePage.insertFramePauseAfter')}
                     </MenuItem>
                 </MenuList>
             </Menu>
