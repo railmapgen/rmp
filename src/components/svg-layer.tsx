@@ -3,8 +3,8 @@ import { Id, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { ExternalLineStyleAttributes, LineStyleComponentProps } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { Element } from '../util/process-elements';
 import { isLinePolicyVisible } from '../util/line-path-availability';
+import { Element } from '../util/process-elements';
 import { UnknownNode } from './svgs/common/unknown';
 import { lineStyles } from './svgs/lines/lines';
 import { UnknownLineStyle } from './svgs/lines/styles/unknown';
@@ -14,6 +14,7 @@ import { default as allStations } from './svgs/stations/stations';
 interface SvgLayerProps {
     elements: Element[];
     selected: Set<Id>;
+    lineTarget: NodeId | null;
     handlePointerDown: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerMove: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
     handlePointerUp: (node: NodeId, e: React.PointerEvent<SVGElement>) => void;
@@ -33,6 +34,7 @@ const SvgLayer = React.memo(
         const {
             elements,
             selected,
+            lineTarget,
             handlePointerDown,
             handlePointerMove,
             handlePointerUp,
@@ -50,6 +52,7 @@ const SvgLayer = React.memo(
         );
         for (const element of elements) {
             const isSelected = selected.has(element.id);
+            const isLineTarget = element.id === lineTarget;
 
             if (element.type === 'line') {
                 const id = element.id as LineId;
@@ -58,7 +61,13 @@ const SvgLayer = React.memo(
                 const effectiveEdgeVisible =
                     element.line!.attr.visible && isLinePolicyVisible(element.line!.attr, mapEnabled, isSubscriber);
                 const wrapperProps = {
-                    className: effectiveEdgeVisible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    className: effectiveEdgeVisible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: effectiveEdgeVisible ? undefined : 'url(#invisible)',
                 };
                 const styleAttrs = element.line!.attr[style] as NonNullable<
@@ -126,7 +135,13 @@ const SvgLayer = React.memo(
                 const type = attr.type as StationType;
                 const visible = attr.visible;
                 const wrapperProps = {
-                    className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    className: visible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
                 };
 
@@ -194,7 +209,13 @@ const SvgLayer = React.memo(
                 const type = attr.type as MiscNodeType;
                 const visible = attr.visible;
                 const wrapperProps = {
-                    className: visible ? (isSelected ? 'rmp-selected-glow' : undefined) : 'removeMe',
+                    className: visible
+                        ? isLineTarget
+                            ? 'rmp-line-target-glow'
+                            : isSelected
+                              ? 'rmp-selected-glow'
+                              : undefined
+                        : 'removeMe',
                     filter: visible ? undefined : 'url(#invisible)',
                 };
 
@@ -271,6 +292,7 @@ const SvgLayer = React.memo(
     (prevProps, nextProps) =>
         prevProps.elements === nextProps.elements &&
         prevProps.selected === nextProps.selected &&
+        prevProps.lineTarget === nextProps.lineTarget &&
         prevProps.mapEnabled === nextProps.mapEnabled &&
         prevProps.isSubscriber === nextProps.isSubscriber
 );

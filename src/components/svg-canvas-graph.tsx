@@ -2,7 +2,13 @@ import rmgRuntime from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
-import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
+import {
+    NODES_MOVE_DISTANCE,
+    SnapLine,
+    SnapPoint,
+    TARGET_SNAP_CELL_SIZE,
+    TARGET_SNAP_RADIUS,
+} from '../constants/canvas';
 import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
@@ -34,9 +40,9 @@ import { useWindowSize } from '../util/hooks';
 import { moveNodesAndRedrawLines } from '../util/imperative-dom';
 import { canUseLine } from '../util/line-path-availability';
 import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
+import { getLines, getNodes } from '../util/process-elements';
 import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
-import { getLines, getNodes } from '../util/process-elements';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
@@ -84,6 +90,29 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
+/** Viewport nodes → cell map with ±TARGET_SNAP_RADIUS fan-out (counterpart to getSnapLines for target snap). */
+const buildTargetSnapCellMap = (graph: typeof window.graph, nodes: readonly NodeId[]) => {
+    const map = new Map<string, NodeId[]>();
+    for (const id of nodes) {
+        if (!connectableNodesType.includes(graph.getNodeAttribute(id, 'type'))) continue;
+        const x = graph.getNodeAttribute(id, 'x');
+        const y = graph.getNodeAttribute(id, 'y');
+        const ix0 = Math.floor((x - TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const ix1 = Math.floor((x + TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const iy0 = Math.floor((y - TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        const iy1 = Math.floor((y + TARGET_SNAP_RADIUS) / TARGET_SNAP_CELL_SIZE);
+        for (let ix = ix0; ix <= ix1; ix++) {
+            for (let iy = iy0; iy <= iy1; iy++) {
+                const key = `${ix},${iy}`;
+                const bucket = map.get(key);
+                if (bucket) bucket.push(id);
+                else map.set(key, [id]);
+            }
+        }
+    }
+    return map;
+};
+
 const SvgCanvas = () => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
@@ -122,6 +151,9 @@ const SvgCanvas = () => {
     // Path-specific sessions keep high-frequency drawing data out of React while endpoint-derived paths retain the
     // existing preview when they do not provide custom drawing behaviour.
     const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
+    const svgCanvasRef = React.useRef<SVGSVGElement | null>(null);
+    // Viewport connectables bucketed by target-snap cell (±R fan-out); rebuilt with nodesInViewRange.
+    const targetSnapCellMapRef = React.useRef<Map<string, NodeId[]>>(new Map());
 
     const getNodePoint = (node: NodeId): PathPoint => ({
         x: graph.current.getNodeAttribute(node, 'x'),
@@ -132,7 +164,8 @@ const SvgCanvas = () => {
         graph.current.hasNode(node) &&
         connectableNodesType.includes(graph.current.getNodeAttribute(node, 'type'));
     const getSvgPointerPosition = (event: React.PointerEvent<SVGElement>): PathPoint => {
-        const bbox = document.getElementById('canvas')!.getBoundingClientRect();
+        svgCanvasRef.current ??= document.getElementById('canvas') as SVGSVGElement | null;
+        const bbox = svgCanvasRef.current!.getBoundingClientRect();
         return pointerPosToSVGCoord(event.clientX - bbox.left, event.clientY - bbox.top, svgViewBoxZoom, svgViewBoxMin);
     };
     const getConnectableNodeFromPointer = (event: React.PointerEvent<SVGElement>): NodeId | undefined => {
@@ -148,23 +181,28 @@ const SvgCanvas = () => {
     // the active (drawn) snap lines for the current dragging node (length <= 2)
     // it is only valid in one dragging operation and will be reset in pointer up
     const [activeSnapLines, setActiveSnapLines] = React.useState<SnapLine[]>([]);
-    // calculate all possible snap lines in the current view
-    // note only the nearest 2 of them will be drawn
+    // Refresh viewport node list, target-snap cell map, and (when enabled) snap lines together.
+    // Runs on pointer down (via pointerPosition) and whenever the view changes during a gesture.
     React.useEffect(
         () => {
-            if (!pointerPosition || !useSnapLines) return;
+            if (!pointerPosition) return;
             const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
             const nodesInViewRange = findNodesInRectangle(
                 graph.current,
                 ...(Object.values(svgViewRange) as [number, number, number, number])
             );
             setNodesInViewRange(nodesInViewRange);
-            setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+            targetSnapCellMapRef.current = buildTargetSnapCellMap(graph.current, nodesInViewRange);
+            if (useSnapLines) {
+                setSnapLines(getSnapLines(graph.current, nodesInViewRange));
+            } else {
+                setSnapLines([]);
+            }
         },
         // the dependency array is carefully selected to prevent unnecessary recalculation
         // it will only be calculated on the pointer down event, or every times the view box
         // changes when the pointer is down
-        [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition]
+        [svgViewBoxMin, svgViewBoxZoom, width, height, pointerPosition, useSnapLines]
     );
 
     // the active snap points, only used when there is only one active snap line
@@ -389,8 +427,28 @@ const SvgCanvas = () => {
             if (gesture && gesture.type === getLinePathAndStyle(mode).path) {
                 const pointer = getSvgPointerPosition(e);
                 gesture.pointer = pointer;
-                const target = getConnectableNodeFromPointer(e);
-                gesture.target = target === gesture.source ? undefined : target;
+                const domTarget = getConnectableNodeFromPointer(e);
+                if (domTarget && domTarget !== gesture.source) {
+                    // Same as upstream: pointer over a connectable hit target wins.
+                    gesture.target = domTarget;
+                } else {
+                    // Empty map / empty cell → no radius snap (DOM-only until the viewport effect builds the map).
+                    const cellKey = `${Math.floor(pointer.x / TARGET_SNAP_CELL_SIZE)},${Math.floor(pointer.y / TARGET_SNAP_CELL_SIZE)}`;
+                    const candidates = targetSnapCellMapRef.current.get(cellKey) ?? [];
+                    let bestNode: NodeId | undefined;
+                    let bestDist = TARGET_SNAP_RADIUS;
+                    for (const nodeId of candidates) {
+                        if (nodeId === gesture.source) continue;
+                        const x = graph.current.getNodeAttribute(nodeId, 'x');
+                        const y = graph.current.getNodeAttribute(nodeId, 'y');
+                        const dist = Math.hypot(x - pointer.x, y - pointer.y);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestNode = nodeId;
+                        }
+                    }
+                    gesture.target = bestNode;
+                }
                 gesture.session?.pointerMove(pointer);
             }
         }
@@ -406,7 +464,7 @@ const SvgCanvas = () => {
             const { path, style: style_ } = getLinePathAndStyle(mode);
             const [type, style] = [path!, style_!]; // assured by startsWith('line') check
             const source = isConnectableNode(active) ? active : undefined;
-            const target = getConnectableNodeFromPointer(e);
+            const target = gesture?.target;
             const gestureMatches = !gesture || (gesture.type === type && gesture.source === source);
 
             if (
@@ -599,6 +657,7 @@ const SvgCanvas = () => {
             <SvgLayer
                 elements={elements}
                 selected={selected}
+                lineTarget={drawingGesture.current?.target ?? null}
                 handlePointerDown={handlePointerDown}
                 handlePointerMove={handlePointerMove}
                 handlePointerUp={handlePointerUp}

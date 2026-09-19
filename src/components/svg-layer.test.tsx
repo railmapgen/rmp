@@ -71,6 +71,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={true}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
@@ -109,6 +110,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
@@ -151,6 +153,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={false}
                     {...handlers}
@@ -166,6 +169,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={true}
                     isSubscriber={false}
                     {...handlers}
@@ -194,6 +198,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
@@ -234,6 +239,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set(['line_hidden'])}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
@@ -271,6 +277,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
@@ -309,6 +316,7 @@ describe('SvgLayer', () => {
                 <SvgLayer
                     elements={elements}
                     selected={new Set()}
+                    lineTarget={null}
                     mapEnabled={false}
                     isSubscriber={true}
                     handlePointerDown={vi.fn()}
