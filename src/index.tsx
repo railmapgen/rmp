@@ -4,15 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
 import i18n from './i18n/config';
+import { isTimelineHash } from './util/routes';
 // eslint-disable-next-line import/no-unassigned-import
 import './index.css';
-
-const isTimelinePath = () => {
-    const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-    const pathname = window.location.pathname;
-    const relative = base && pathname.startsWith(base) ? pathname.slice(base.length) : pathname;
-    return relative === '/timeline' || relative.startsWith('/timeline/');
-};
 
 const renderTimelineApp = async () => {
     const [{ default: TimelineAppRoot }, { initTimelineStore, timelineStore }] = await Promise.all([
@@ -54,7 +48,7 @@ const renderRmpApp = async () => {
 // top-level await is not possible here
 // also wait for the rmgRuntime to be ready for info.json
 rmgRuntime.ready().then(async () => {
-    if (isTimelinePath()) await renderTimelineApp();
+    if (isTimelineHash(window.location.hash)) await renderTimelineApp();
     else await renderRmpApp();
     rmgRuntime.injectUITools();
 });

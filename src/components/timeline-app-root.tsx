@@ -2,7 +2,7 @@ import { Alert, AlertIcon, Box } from '@chakra-ui/react';
 import { RmgErrorBoundary, RmgThemeProvider, RmgWindow } from '@railmapgen/rmg-components';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { TimelineProjectProvider } from '../timeline/timeline-project-context';
 import { useTimelineSelector } from '../timeline/timeline-store';
 import TimelineWindowHeader from './page-header/timeline-window-header';
@@ -49,14 +49,14 @@ export default function TimelineAppRoot() {
     return (
         <RmgThemeProvider>
             <RmgWindow>
-                <BrowserRouter basename={import.meta.env.BASE_URL}>
+                <HashRouter>
                     <RmgErrorBoundary allowReset>
                         <Routes>
                             <Route path="/timeline" element={<TimelineWorkspace />} />
                             <Route path="*" element={<Navigate to="/timeline" replace />} />
                         </Routes>
                     </RmgErrorBoundary>
-                </BrowserRouter>
+                </HashRouter>
             </RmgWindow>
         </RmgThemeProvider>
     );
