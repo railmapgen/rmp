@@ -2,11 +2,9 @@ import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
 import { GlobalAlertId } from '../constants/global-alerts';
-import { createEmptyTimelineDocument } from '../constants/timeline';
 import i18n from '../i18n/config';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
-import { normalizeTimelineDocument } from '../util/timeline';
 import { RootStore, startRootListening } from '.';
 import { setActiveSubscriptions, setState } from './account/account-slice';
 import {
@@ -30,7 +28,6 @@ import {
 import { initializeProject } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from './runtime/runtime-slice';
 import { normalizeRandomStationsNames, normalizeStationNameTranslationMode } from './state-migration';
-import { setFullState as setTimelineFullState } from './timeline/timeline-slice';
 
 export const initStore = async (store: RootStore) => {
     // Load localstorage first or they will be overwritten after first store.dispatch.
@@ -110,12 +107,9 @@ export const initStore = async (store: RootStore) => {
     // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, timeline, ...project } = JSON.parse(param) as RMPSave;
+    const { version, images: _images, ...project } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(project.graph);
     store.dispatch(initializeProject(project));
-    store.dispatch(
-        setTimelineFullState({ present: normalizeTimelineDocument(timeline ?? createEmptyTimelineDocument()) })
-    );
     // TODO(graph-mutation-pipeline): Route initialization through one explicit
     // refresh request; see docs/graph-mutation-pipeline-design.md, "Initialization, undo, and redo".
     store.dispatch(refreshNodesThunk());
@@ -124,13 +118,11 @@ export const initStore = async (store: RootStore) => {
     onLocalStorageChangeRMT(store); // update the login state and token read from localStorage
 
     startRootListening({
-        predicate: (_action, currentState, previousState) =>
-            currentState.param.present !== previousState.param.present ||
-            currentState.timeline.present !== previousState.timeline.present,
+        predicate: (_action, currentState, previousState) => currentState.param.present !== previousState.param.present,
         effect: (_action, listenerApi) => {
             try {
                 const state = listenerApi.getState();
-                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(state.param, state.timeline.present));
+                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(state.param));
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {

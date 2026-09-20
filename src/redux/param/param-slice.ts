@@ -3,7 +3,6 @@ import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import { Draft } from 'immer';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
-import type { TimelineDocument } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
 
 /** Limits retained undo snapshots to prevent unbounded graph memory usage. */
@@ -34,10 +33,8 @@ export interface ProjectSnapshot {
     svgViewBoxMin: { x: number; y: number };
 }
 
-/** A whole-project replacement may also carry timeline data owned by its slice. */
-export interface ProjectReplacement extends ProjectSnapshot {
-    timeline?: TimelineDocument;
-}
+/** A whole-project replacement restores the complete RMP snapshot. */
+export type ProjectReplacement = ProjectSnapshot;
 
 /**
  * Controls how a history snapshot is restored. Every entry stores a complete
@@ -49,8 +46,6 @@ export type HistoryScope = 'graph' | 'project';
 /** A project snapshot together with the policy used to restore it. */
 export interface HistoryEntry extends ProjectSnapshot {
     scope: HistoryScope;
-    /** Present only for whole-project history; timeline edits keep their own undo stack. */
-    timeline?: TimelineDocument;
 }
 
 /**
@@ -91,10 +86,7 @@ const initialState: ParamState = {
 // The scope is read from the stack head by the history thunk. Keeping it on the
 // action lets other slices follow the same restore policy, while this reducer
 // verifies that it still matches the stack head before changing either stack.
-const prepareHistoryAction = (
-    scope: HistoryScope,
-    timelines?: { current: TimelineDocument; restored: TimelineDocument }
-) => ({ payload: scope, meta: { timelines } });
+const prepareHistoryAction = (scope: HistoryScope) => ({ payload: scope });
 
 export const applyUndoAction = createAction('undo', prepareHistoryAction);
 export const applyRedoAction = createAction('redo', prepareHistoryAction);
@@ -109,14 +101,9 @@ const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
  * Graph history replaces only the graph so undo/redo preserves the current map
  * settings and viewport; project history replaces the entire snapshot.
  */
-const restoreHistoryEntry = (
-    state: Draft<ParamState>,
-    entry: Draft<HistoryEntry>,
-    currentTimeline?: TimelineDocument
-): Draft<HistoryEntry> => {
+const restoreHistoryEntry = (state: Draft<ParamState>, entry: Draft<HistoryEntry>): Draft<HistoryEntry> => {
     const current: HistoryEntry = { scope: entry.scope, ...state.present };
-    if (entry.scope === 'project' && currentTimeline) current.timeline = structuredClone(currentTimeline);
-    const { scope, timeline: _timeline, ...snapshot } = entry;
+    const { scope, ...snapshot } = entry;
     state.present =
         scope === 'project'
             ? snapshot
@@ -154,17 +141,10 @@ const paramSlice = createSlice({
         },
         /** Records a whole-project replacement, including its persisted viewport. */
         replaceProjectState: {
-            prepare: (project: ProjectReplacement, previousTimeline?: TimelineDocument) => ({
-                payload: project,
-                meta: { previousTimeline },
-            }),
-            reducer: (
-                state,
-                action: PayloadAction<ProjectReplacement, string, { previousTimeline?: TimelineDocument }>
-            ) => {
+            prepare: (project: ProjectReplacement) => ({ payload: project }),
+            reducer: (state, action: PayloadAction<ProjectReplacement>) => {
                 state.future = [];
                 const previous: HistoryEntry = { scope: 'project', ...state.present };
-                if (action.meta.previousTimeline) previous.timeline = structuredClone(action.meta.previousTimeline);
                 pushPast(state, previous);
                 const { mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin } = action.payload;
                 state.present = structuredClone({ mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin });
@@ -194,14 +174,14 @@ const paramSlice = createSlice({
                 const previous = state.past[state.past.length - 1]!;
                 if (previous.scope !== action.payload) return;
                 state.past.pop();
-                state.future.unshift(restoreHistoryEntry(state, previous, action.meta.timelines?.current));
+                state.future.unshift(restoreHistoryEntry(state, previous));
             })
             .addCase(applyRedoAction, (state, action) => {
                 if (state.future.length === 0) return;
                 const next = state.future[0]!;
                 if (next.scope !== action.payload) return;
                 state.future.shift();
-                pushPast(state, restoreHistoryEntry(state, next, action.meta.timelines?.current));
+                pushPast(state, restoreHistoryEntry(state, next));
             });
     },
 });

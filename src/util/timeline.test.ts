@@ -52,7 +52,7 @@ const makeGraph = () => {
     return graph;
 };
 
-const emptyDocument = (): TimelineDocument => ({ version: 1, mode: 'quick', track: [] });
+const emptyDocument = (): TimelineDocument => ({ version: 1, track: [] });
 
 describe('timeline utilities', () => {
     it('appendTimelineEntry should keep unique refs', () => {
@@ -210,15 +210,14 @@ describe('timeline utilities', () => {
     });
 
     it('normalizeTimelineDocument should fallback to an empty document', () => {
-        expect(normalizeTimelineDocument(undefined)).toEqual({ version: 1, mode: 'quick', track: [] });
+        expect(normalizeTimelineDocument(undefined)).toEqual({ version: 1, track: [] });
         expect(normalizeTimelineDocument({ version: 1, track: [{} as never] })).toEqual({
             version: 1,
-            mode: 'quick',
             track: [],
         });
     });
 
-    it('normalizeTimelineDocument should fill professional defaults', () => {
+    it('normalizeTimelineDocument should fill advanced entry defaults and discard legacy mode', () => {
         const normalized = normalizeTimelineDocument({
             version: 1,
             mode: 'pro',
@@ -228,7 +227,7 @@ describe('timeline utilities', () => {
             ],
         } as never);
 
-        expect(normalized.mode).toBe('pro');
+        expect(normalized).not.toHaveProperty('mode');
         expect(normalized.track[0]).toMatchObject({ phase: 'enter', showAnimation: true });
         expect(normalized.track[1]).toMatchObject({ kind: 'keyframe', x: 1, y: 2 });
     });
@@ -260,7 +259,6 @@ describe('timeline utilities', () => {
         const graph = makeGraph();
         const coverage = getTimelineCoverage(graph, {
             version: 1,
-            mode: 'quick',
             track: [
                 { id: 'clip_1', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_deleted', kind: 'edge', refId: 'line_deleted', phase: 'enter', showAnimation: true },
@@ -278,7 +276,6 @@ describe('timeline utilities', () => {
         const graph = makeGraph();
         const coverage = getTimelineCoverage(graph, {
             version: 1,
-            mode: 'quick',
             track: [
                 { id: 'clip_1', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_2', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
@@ -297,7 +294,6 @@ describe('timeline utilities', () => {
         const graph = makeGraph();
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [
                 { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'key_a1', kind: 'keyframe', refId: 'stn_a', x: 30, y: 40 },
@@ -344,7 +340,6 @@ describe('timeline utilities', () => {
         const graph = makeGraph();
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [{ id: 'line_ab', kind: 'edge', refId: 'line_ab', phase: 'enter', showAnimation: true }],
         };
 

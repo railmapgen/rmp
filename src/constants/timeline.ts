@@ -2,13 +2,6 @@ import { Id, LineId, NodeId } from './constants';
 
 export const TIMELINE_DOCUMENT_VERSION = 1;
 
-/**
- * The timeline has two modes sharing the same track data.
- * `quick` is the simplified mode where every element only enters the frame.
- * `pro` unlocks exit phases, animation toggles and keyframes.
- */
-export type TimelineMode = 'quick' | 'pro';
-
 export type TimelinePhase = 'enter' | 'exit';
 
 export interface TimelineElementEntryBase {
@@ -59,14 +52,12 @@ export interface TimelineAudioEntry {
 
 export interface TimelineDocument {
     version: typeof TIMELINE_DOCUMENT_VERSION;
-    mode: TimelineMode;
     track: TimelineEntry[];
     audioTrack?: TimelineAudioEntry[];
 }
 
 export const createEmptyTimelineDocument = (): TimelineDocument => ({
     version: TIMELINE_DOCUMENT_VERSION,
-    mode: 'quick',
     track: [],
 });
 

@@ -27,14 +27,12 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdOpenInNew, MdTimeline } from 'react-icons/md';
-import { useNavigate } from 'react-router-dom';
+import { MdOpenInNew } from 'react-icons/md';
 import stations from '../svgs/stations/stations';
 import { Events } from '../../constants/constants';
-import { GlobalAlertId } from '../../constants/global-alerts';
 import { StationType } from '../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
+import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
+import { setError, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
 import { downloadBlobAs } from '../../util/download';
 import {
     BasicToIntStationTypeMap,
@@ -54,25 +52,17 @@ interface VideoExportModalProps {
 export default function VideoExportModal({ isOpen, onClose }: VideoExportModalProps) {
     const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
     const sectionHeadingColor = useColorModeValue('gray.600', 'gray.300');
-    const dispatch = useRootDispatch();
-    const {
-        telemetry: { project: isAllowProjectTelemetry },
-    } = useRootSelector(state => state.app);
-    const { languages } = useRootSelector(state => state.fonts);
-    const timeline = useRootSelector(state => state.timeline.present);
+    const dispatch = useTimelineDispatch();
+    const active = useTimelineSelector(state => state.project.active)!;
+    const timeline = active.revision.timeline;
+    const { graph, languages, getAudio } = useTimelineProjectContext();
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
-
-    const graph = React.useRef(window.graph);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
-    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
-    const {
-        refresh: { edges: refreshEdges },
-    } = useRootSelector(state => state.runtime);
+    const mapEnabled = active.revision.mapEnabled;
+    const isSubscriber = false;
     const unavailableLineCount = React.useMemo(
-        () => getUnavailableLineIds(graph.current, mapEnabled, isSubscriber).size,
-        [mapEnabled, isSubscriber, refreshEdges]
+        () => getUnavailableLineIds(graph, mapEnabled, isSubscriber).size,
+        [graph, mapEnabled, isSubscriber]
     );
     const supportedInterchangeStations = new Intl.ListFormat(i18n.language, {
         style: 'long',
@@ -107,11 +97,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         }
     };
 
-    const handleEditTimeline = () => {
-        onClose();
-        navigate('/timeline');
-    };
-
     const handleClose = () => {
         if (!isVideoGenerating) {
             onClose();
@@ -124,10 +109,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         setVideoProgress(0);
 
         if (isAllowAppTelemetry)
-            rmgRuntime.event(
-                Events.DOWNLOAD_IMAGES,
-                isAllowProjectTelemetry ? { numberOfNodes: graph.current.order, numberOfEdges: graph.current.size } : {}
-            );
+            rmgRuntime.event(Events.DOWNLOAD_IMAGES, { numberOfNodes: graph.order, numberOfEdges: graph.size });
 
         try {
             const options: VideoExportOptions = {
@@ -144,20 +126,27 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 hideWatermark: isAttachSelected,
             };
 
-            const blob = await exportVideo(graph.current, timeline, languages, options, bgColor, progress =>
-                setVideoProgress(progress * 100)
+            const blob = await exportVideo(
+                graph,
+                timeline,
+                languages,
+                options,
+                bgColor,
+                progress => setVideoProgress(progress * 100),
+                {
+                    mapEnabled: active.revision.mapEnabled,
+                    mapStyle: active.revision.mapStyle,
+                    svgViewBoxMin: active.revision.svgViewBoxMin,
+                    svgViewBoxZoom: active.revision.svgViewBoxZoom,
+                    isSubscriber,
+                    getAudio,
+                }
             );
 
-            downloadBlobAs(`RMP_${new Date().valueOf()}.${videoFormat}`, blob);
+            downloadBlobAs(`Timeline_${new Date().valueOf()}.${videoFormat}`, blob);
         } catch (error) {
             console.error('Video export failed:', error);
-            dispatch(
-                setGlobalAlert({
-                    id: GlobalAlertId.VideoExportFailed,
-                    status: 'error',
-                    message: t('header.download.videoExport.error'),
-                })
-            );
+            dispatch(setError(t('header.download.videoExport.error')));
         } finally {
             setIsVideoGenerating(false);
             setVideoProgress(0);
@@ -292,16 +281,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     <Alert status="info" variant="subtle" mb={4} alignItems="center" hidden={isVideoGenerating}>
                         <AlertIcon />
                         <AlertDescription flex="1">{t('header.download.videoExport.timelineGuide')}</AlertDescription>
-                        <Button
-                            ml={3}
-                            size="sm"
-                            flexShrink={0}
-                            leftIcon={<MdTimeline />}
-                            isDisabled={isVideoGenerating}
-                            onClick={handleEditTimeline}
-                        >
-                            {t('header.download.videoExport.editTimeline')}
-                        </Button>
                     </Alert>
 
                     {!isVideoGenerating ? (

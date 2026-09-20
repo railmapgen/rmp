@@ -3,20 +3,54 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { Translation } from '@railmapgen/rmg-translate';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
-import { RootState } from '..';
-import { defaultRadialTouchMenuState, RadialTouchMenuState } from '../../components/touch/radial-touch-menu';
+import type { RootState } from '..';
 import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
+import { LinePathType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
+import type { MenuLayerData } from '../../util/graph-nearby-elements';
 import { isPortraitClient } from '../../util/helpers';
-import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
 import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
+
+interface RadialTouchMenuState {
+    visible: boolean;
+    position: { x: number; y: number };
+    data: MenuLayerData;
+}
+
+const defaultRadialTouchMenuState: RadialTouchMenuState = {
+    visible: false,
+    position: { x: 0, y: 0 },
+    data: {
+        station: [],
+        'misc-node': [],
+        line: [],
+        operation: [],
+    },
+};
+
+const MAX_PARALLEL_LINES_FREE = 5;
+const MAX_PARALLEL_LINES_PRO = Infinity;
+const supportsParallelLinePath = (type: LinePathType) =>
+    type !== LinePathType.Simple &&
+    type !== LinePathType.RayGuided &&
+    type !== LinePathType.Freeform &&
+    type !== LinePathType.Bezier;
+const countParallelLines = () => {
+    let parallelLinesCount = 0;
+    for (const lineEntry of window.graph.edgeEntries()) {
+        if (supportsParallelLinePath(lineEntry.attributes.type) && lineEntry.attributes.parallelIndex >= 0) {
+            parallelLinesCount += 1;
+        }
+    }
+    return parallelLinesCount;
+};
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -99,11 +133,6 @@ interface RuntimeState {
     globalAlerts: Partial<
         Record<GlobalAlertId, { status: AlertStatus; message: string; url?: string; linkedApp?: string }>
     >;
-    /**
-     * The playhead of the timeline editor, shared between the timeline page and the window header.
-     * It is the index where new entries are inserted and the frame previewed in professional mode.
-     */
-    timelineCursor: number;
 }
 
 const initialState: RuntimeState = {
@@ -136,7 +165,6 @@ const initialState: RuntimeState = {
     existsNodeTypes: new Set<NodeType>(),
     isMapOverview: false,
     globalAlerts: {},
-    timelineCursor: 0,
 };
 
 /**
@@ -198,7 +226,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
 
     const lines = window.graph.size;
 
-    const parallelLinesCount = countParallelLines(window.graph);
+    const parallelLinesCount = countParallelLines();
     dispatch(setEdgesCount({ lines, parallel: parallelLinesCount }));
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO
@@ -253,7 +281,6 @@ const resetProjectInteractionState = (state: Draft<RuntimeState>) => {
     state.lastTool = undefined;
     state.isDetailsOpen = 'close';
     state.radialTouchMenu = defaultRadialTouchMenuState;
-    state.timelineCursor = 0;
 };
 
 const runtimeSlice = createSlice({
@@ -358,9 +385,6 @@ const runtimeSlice = createSlice({
         setMapOverview: (state, action: PayloadAction<boolean>) => {
             state.isMapOverview = action.payload;
         },
-        setTimelineCursor: (state, action: PayloadAction<number>) => {
-            state.timelineCursor = Math.max(0, Math.floor(action.payload));
-        },
         /**
          * If linkedApp is true, alert will try to open link in the current domain.
          * E.g. linkedApp=true, url='/rmp' will open https://railmapgen.github.io/rmp/
@@ -428,7 +452,6 @@ export const {
     setRadialTouchMenu,
     closeRadialTouchMenu,
     setMapOverview,
-    setTimelineCursor,
     setGlobalAlert,
     closeGlobalAlert,
 } = runtimeSlice.actions;

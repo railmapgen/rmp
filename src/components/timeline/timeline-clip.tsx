@@ -10,7 +10,6 @@ import { getTimelineEntryAccent, getTimelineEntrySubtitle, getTimelineEntryTitle
 interface TimelineClipProps {
     entry: TimelineElementEntry;
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
-    isPro: boolean;
     isSelected: boolean;
     onSelect: () => void;
     onToggleAnimation: () => void;
@@ -24,7 +23,6 @@ interface TimelineClipProps {
 export default function TimelineClip({
     entry,
     graph,
-    isPro,
     isSelected,
     onSelect,
     onToggleAnimation,
@@ -102,30 +100,26 @@ export default function TimelineClip({
                     >
                         {entry.kind === 'node' ? 'Node' : 'Edge'}
                     </Badge>
-                    {isPro && (
-                        <Badge colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'} variant="subtle">
-                            {entry.phase === 'exit'
-                                ? t('header.timelinePage.exitPhase')
-                                : t('header.timelinePage.enterPhase')}
-                        </Badge>
-                    )}
-                    {isPro && (
-                        <Tooltip label={t('header.timelinePage.showAnimation')} hasArrow>
-                            <IconButton
-                                aria-label={t('header.timelinePage.showAnimation')}
-                                aria-pressed={entry.showAnimation}
-                                icon={<MdAnimation />}
-                                size="xs"
-                                variant="ghost"
-                                color={entry.showAnimation ? 'gray.500' : 'gray.300'}
-                                opacity={entry.showAnimation ? 1 : 0.55}
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    onToggleAnimation();
-                                }}
-                            />
-                        </Tooltip>
-                    )}
+                    <Badge colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'} variant="subtle">
+                        {entry.phase === 'exit'
+                            ? t('header.timelinePage.exitPhase')
+                            : t('header.timelinePage.enterPhase')}
+                    </Badge>
+                    <Tooltip label={t('header.timelinePage.showAnimation')} hasArrow>
+                        <IconButton
+                            aria-label={t('header.timelinePage.showAnimation')}
+                            aria-pressed={entry.showAnimation}
+                            icon={<MdAnimation />}
+                            size="xs"
+                            variant="ghost"
+                            color={entry.showAnimation ? 'gray.500' : 'gray.300'}
+                            opacity={entry.showAnimation ? 1 : 0.55}
+                            onClick={e => {
+                                e.stopPropagation();
+                                onToggleAnimation();
+                            }}
+                        />
+                    </Tooltip>
                 </Flex>
                 <Text fontWeight="bold" noOfLines={2}>
                     {getTimelineEntryTitle(graph, entry)}

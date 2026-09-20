@@ -1,5 +1,4 @@
 import { MultiDirectedGraph } from 'graphology';
-import { createEmptyTimelineDocument } from '../constants/timeline';
 import type { RootDispatch, RootState } from '.';
 import {
     applyRedoAction,
@@ -34,7 +33,7 @@ const refreshGraphState = (dispatch: RootDispatch) => {
  */
 export const replaceProject = (project: ProjectReplacement) => (dispatch: RootDispatch, getState: () => RootState) => {
     replaceWindowGraph(project.graph);
-    dispatch(replaceProjectState(project, getState().timeline.present));
+    dispatch(replaceProjectState(project));
     return refreshGraphState(dispatch);
 };
 
@@ -44,14 +43,7 @@ export const undoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
-    dispatch(
-        applyUndoAction(
-            entry.scope,
-            entry.scope === 'project'
-                ? { current: getState().timeline.present, restored: entry.timeline ?? createEmptyTimelineDocument() }
-                : undefined
-        )
-    );
+    dispatch(applyUndoAction(entry.scope));
     return refreshGraphState(dispatch);
 };
 
@@ -61,13 +53,6 @@ export const redoAction = () => (dispatch: RootDispatch, getState: () => RootSta
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
-    dispatch(
-        applyRedoAction(
-            entry.scope,
-            entry.scope === 'project'
-                ? { current: getState().timeline.present, restored: entry.timeline ?? createEmptyTimelineDocument() }
-                : undefined
-        )
-    );
+    dispatch(applyRedoAction(entry.scope));
     return refreshGraphState(dispatch);
 };

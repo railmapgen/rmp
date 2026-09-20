@@ -4,8 +4,7 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { MdEdit, MdHelp, MdRedo, MdSettings, MdTimeline, MdTranslate, MdUndo } from 'react-icons/md';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/project-history';
@@ -16,18 +15,13 @@ import { MapToggleButton } from './map-toggle-button';
 import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
-import TimelineProActions from './timeline-pro-actions';
 import { ZoomPopover } from './zoom-popover';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { past, future } = useRootSelector(state => state.param);
-    const timelineMode = useRootSelector(state => state.timeline.present.mode);
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const isTimelinePage = location.pathname === '/timeline';
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
@@ -36,8 +30,6 @@ export default function WindowHeader() {
     const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
 
     const orientation = useScreenOrientation();
-
-    const isProMode = isTimelinePage && timelineMode === 'pro';
 
     React.useEffect(() => {
         // environment !== RmgEnv.DEV -> wait after rmgRuntime.ready() in useReadyConfig
@@ -80,48 +72,33 @@ export default function WindowHeader() {
                             )
                         }
                     />
-                    {isProMode && <TimelineProActions />}
                 </HStack>
 
                 <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
-                    {!isTimelinePage && <SearchPopover />}
-
-                    {!isTimelinePage && (
-                        <IconButton
-                            size="sm"
-                            variant="ghost"
-                            aria-label={t('header.undo')}
-                            icon={<MdUndo />}
-                            isDisabled={past.length === 0}
-                            onClick={handleUndo}
-                        />
-                    )}
-                    {!isTimelinePage && (
-                        <IconButton
-                            size="sm"
-                            variant="ghost"
-                            aria-label={t('header.redo')}
-                            icon={<MdRedo />}
-                            isDisabled={future.length === 0}
-                            onClick={handleRedo}
-                        />
-                    )}
-
-                    <ZoomPopover />
-
-                    {!isTimelinePage && <OpenActions />}
-
-                    <DownloadActions />
+                    <SearchPopover />
 
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label={
-                            isTimelinePage ? t('header.timelinePage.backToEditor') : t('header.timelinePage.open')
-                        }
-                        icon={isTimelinePage ? <MdEdit /> : <MdTimeline />}
-                        onClick={() => navigate(isTimelinePage ? '/' : '/timeline')}
+                        aria-label={t('header.undo')}
+                        icon={<MdUndo />}
+                        isDisabled={past.length === 0}
+                        onClick={handleUndo}
                     />
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label={t('header.redo')}
+                        icon={<MdRedo />}
+                        isDisabled={future.length === 0}
+                        onClick={handleRedo}
+                    />
+
+                    <ZoomPopover />
+
+                    <OpenActions />
+
+                    <DownloadActions />
 
                     {rmgRuntime.isStandaloneWindow() && (
                         <Menu>

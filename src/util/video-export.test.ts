@@ -23,6 +23,7 @@ import {
     getRenderedEdgeLength,
     getStationActivationProgress,
     getVideoExportDimensions,
+    getVideoWatermarkLayout,
     interpolateCameraZoom,
     renderBasicStationMarkup,
     renderStationMarkup,
@@ -99,6 +100,35 @@ describe('video export resolution', () => {
         expect(getVideoExportDimensions('1080p')).toEqual({ width: 1920, height: 1080 });
         expect(getVideoExportDimensions('2k')).toEqual({ width: 2560, height: 1440 });
         expect(getVideoExportDimensions('4k')).toEqual({ width: 3840, height: 2160 });
+    });
+});
+
+describe('video export watermark', () => {
+    it('keeps a small watermark fixed to the top-right corner when the camera moves', () => {
+        const outputWidth = 1280;
+        const outputHeight = 720;
+        const originalViewBox = { x: -160, y: -90, width: 320, height: 180 };
+        const movedViewBox = { x: 840, y: 410, width: 320, height: 180 };
+
+        const getPixelBounds = (viewBox: typeof originalViewBox) => {
+            const layout = getVideoWatermarkLayout(viewBox, outputWidth, outputHeight);
+            const pixelsPerWorldUnit = outputWidth / viewBox.width;
+            return {
+                left: (layout.x - viewBox.x) * pixelsPerWorldUnit,
+                top: (layout.y - viewBox.y) * pixelsPerWorldUnit,
+                width: layout.width * pixelsPerWorldUnit,
+                height: layout.height * pixelsPerWorldUnit,
+            };
+        };
+
+        const originalBounds = getPixelBounds(originalViewBox);
+        const movedBounds = getPixelBounds(movedViewBox);
+
+        expect(movedBounds).toEqual(originalBounds);
+        expect(originalBounds.top).toBe(20);
+        expect(originalBounds.left + originalBounds.width).toBe(outputWidth - 20);
+        expect(originalBounds.width).toBeLessThan(outputWidth * 0.2);
+        expect(originalBounds.height).toBeLessThan(outputHeight * 0.1);
     });
 });
 
@@ -318,7 +348,6 @@ describe('generateAnimationSequence', () => {
                 { ...edgeEntry('line_ab', 7), phase: 'exit' },
                 ...entrances.slice(3)
             ),
-            mode: 'pro',
         };
 
         const sequence = generateAnimationSequence(graph, timeline);

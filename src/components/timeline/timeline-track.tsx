@@ -297,7 +297,6 @@ export default function TimelineTrack({
                                 <TimelineClip
                                     entry={entry}
                                     graph={graph}
-                                    isPro={document.mode === 'pro'}
                                     isSelected={selectedEntryIds.has(entry.id)}
                                     onSelect={() => onSelectEntry(entry)}
                                     onContextMenu={e => handleContextMenu(e, entry)}

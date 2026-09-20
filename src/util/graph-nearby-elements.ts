@@ -10,7 +10,7 @@ import {
 } from '../constants/constants';
 import { StationAttributes } from '../constants/stations';
 import i18n from '../i18n/config';
-import { RootDispatch } from '../redux';
+import type { RootDispatch } from '../redux';
 import { setSelected } from '../redux/runtime/runtime-slice';
 import { importSelectedNodesAndEdges } from './clipboard';
 import { toCamelCase } from './helpers';

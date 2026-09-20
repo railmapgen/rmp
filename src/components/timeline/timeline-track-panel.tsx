@@ -1,11 +1,11 @@
 import { Badge, Box, Button, Flex, HStack, IconButton, Text, Tooltip, VStack, useToast } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSkipNext, MdSkipPrevious, MdSwapHoriz } from 'react-icons/md';
+import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry, isPauseEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
+import type { TimelineGraph } from '../../timeline/timeline-project-context';
+import { useSvgRenderContext } from '../svg-render-context';
 import {
     findShortestPathByLine,
     getAdjacentLineColors,
@@ -32,6 +32,8 @@ interface TimelineTrackPanelProps {
     onSelectEntry: (entry: TimelineEntry) => void;
     onCursorChange: (index: number) => void;
     onDocumentChange: (document: TimelineDocument) => void;
+    graph?: TimelineGraph;
+    insertionIndex?: number;
 }
 
 export default function TimelineTrackPanel({
@@ -46,11 +48,13 @@ export default function TimelineTrackPanel({
     onSelectEntry,
     onCursorChange,
     onDocumentChange,
+    graph: graphProp,
+    insertionIndex = 0,
 }: TimelineTrackPanelProps) {
+    const renderContext = useSvgRenderContext();
+    const graph = graphProp ?? renderContext.graph;
     const { t } = useTranslation();
     const toast = useToast();
-    const dispatch = useRootDispatch();
-    const graph = React.useRef(window.graph);
     const [draftDocument, setDraftDocument] = React.useState(document);
     const dragEntryIdRef = React.useRef<string | null>(null);
     const dragDocumentRef = React.useRef(document);
@@ -64,14 +68,8 @@ export default function TimelineTrackPanel({
         selectedEntryId ? new Set([selectedEntryId]) : new Set()
     );
 
-    const {
-        timelineCursor: insertionIndex,
-        refresh: { nodes: refreshNodes, edges: refreshEdges },
-    } = useRootSelector(state => state.runtime);
-    const isPro = draftDocument.mode === 'pro';
-
     React.useEffect(() => {
-        if (!isPlaying || !isPro) return;
+        if (!isPlaying) return;
 
         const timer = window.setInterval(() => {
             const next = insertionIndex + 1;
@@ -83,7 +81,7 @@ export default function TimelineTrackPanel({
         }, 300);
 
         return () => window.clearInterval(timer);
-    }, [draftDocument.track.length, insertionIndex, isPlaying, isPro, onCursorChange]);
+    }, [draftDocument.track.length, insertionIndex, isPlaying, onCursorChange]);
 
     React.useEffect(() => {
         setDraftDocument(document);
@@ -98,17 +96,13 @@ export default function TimelineTrackPanel({
     }, [selectedEntryId]);
 
     React.useEffect(() => {
-        if (document.track.length < insertionIndex) dispatch(setTimelineCursor(document.track.length));
-    }, [document.track.length, dispatch, insertionIndex]);
-
-    React.useEffect(() => {
-        if (!isPro) setIsPlaying(false);
-    }, [isPro]);
+        if (document.track.length < insertionIndex) onCursorChange(document.track.length);
+    }, [document.track.length, insertionIndex, onCursorChange]);
 
     React.useEffect(() => {
         if (pathMode && selectedId && !selectedId.startsWith('line_') && selectedId !== pathMode.startNode) {
             const destNode = selectedId as NodeId;
-            const path = findShortestPathByLine(graph.current, pathMode.startNode, destNode, pathMode.themeStr);
+            const path = findShortestPathByLine(graph, pathMode.startNode, destNode, pathMode.themeStr);
             if (path) {
                 const nextDocument = insertTimelineEntries(draftDocument, path, insertionIndex);
                 const addedCount = nextDocument.track.length - draftDocument.track.length;
@@ -140,7 +134,7 @@ export default function TimelineTrackPanel({
             }
             setPathMode(null);
         }
-    }, [selectedId, pathMode, draftDocument, insertionIndex, onDocumentChange, t, toast]);
+    }, [selectedId, pathMode, draftDocument, graph, insertionIndex, onCursorChange, onDocumentChange, t, toast]);
 
     const selectedEntry = React.useMemo((): TimelineEntry | undefined => {
         if (!selectedId) return undefined;
@@ -165,11 +159,6 @@ export default function TimelineTrackPanel({
     const hasSelectedEntry = !!selectedEntry;
     const isDuplicate =
         !!selectedId && draftDocument.track.some(entry => isElementEntry(entry) && entry.refId === selectedId);
-    const handleToggleMode = () => {
-        const nextDocument: TimelineDocument = { ...draftDocument, mode: isPro ? 'quick' : 'pro' };
-        setDraftDocument(nextDocument);
-        onDocumentChange(nextDocument);
-    };
     const insertionLabel =
         insertionIndex === draftDocument.track.length
             ? t('header.timelinePage.cursorEnd')
@@ -177,10 +166,10 @@ export default function TimelineTrackPanel({
 
     const adjacentLineColors = React.useMemo(() => {
         if (selectedEntry?.kind === 'node') {
-            return getAdjacentLineColors(graph.current, selectedEntry.refId as NodeId);
+            return getAdjacentLineColors(graph, selectedEntry.refId as NodeId);
         }
         return [];
-    }, [selectedEntry, refreshEdges]);
+    }, [graph, selectedEntry]);
 
     const handleAddSelected = () => {
         if (!selectedId) return;
@@ -294,7 +283,7 @@ export default function TimelineTrackPanel({
                         spacing={1}
                         flex={1}
                         minW={0}
-                        sx={isPro ? { [NARROW_SCREEN_QUERY]: { flexBasis: '100%' } } : undefined}
+                        sx={{ [NARROW_SCREEN_QUERY]: { flexBasis: '100%' } }}
                     >
                         <HStack spacing={2}>
                             <Text fontWeight="bold">{t('header.timelinePage.trackTitle')}</Text>
@@ -302,44 +291,12 @@ export default function TimelineTrackPanel({
                             <Text fontSize="xs" color="blue.600" noOfLines={1}>
                                 {insertionLabel}
                             </Text>
-                            <Tooltip
-                                label={
-                                    isPro
-                                        ? t('header.timelinePage.switchToQuick')
-                                        : t('header.timelinePage.switchToPro')
-                                }
-                                hasArrow
-                            >
-                                <Badge
-                                    as="button"
-                                    type="button"
-                                    aria-label={
-                                        isPro
-                                            ? t('header.timelinePage.switchToQuick')
-                                            : t('header.timelinePage.switchToPro')
-                                    }
-                                    colorScheme={isPro ? 'purple' : 'blue'}
-                                    variant="subtle"
-                                    borderRadius="md"
-                                    px={2}
-                                    py={1}
-                                    display="inline-flex"
-                                    alignItems="center"
-                                    gap={1}
-                                    textTransform="none"
-                                    cursor="pointer"
-                                    onClick={handleToggleMode}
-                                >
-                                    <MdSwapHoriz />
-                                    {isPro ? t('header.timelinePage.quickMode') : t('header.timelinePage.proMode')}
-                                </Badge>
-                            </Tooltip>
                         </HStack>
                         {hasSelectedEntry ? (
                             <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
-                                {getTimelineEntryTitle(graph.current, selectedEntry)}
+                                {getTimelineEntryTitle(graph, selectedEntry)}
                                 {' · '}
-                                {getTimelineEntrySubtitle(graph.current, selectedEntry)}
+                                {getTimelineEntrySubtitle(graph, selectedEntry)}
                             </Text>
                         ) : (
                             <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
@@ -371,52 +328,48 @@ export default function TimelineTrackPanel({
                             </HStack>
                         )}
                     </VStack>
-                    {isPro && (
-                        <HStack
-                            spacing={1}
-                            position="absolute"
-                            left="50%"
-                            transform="translateX(-50%)"
-                            sx={{
-                                [NARROW_SCREEN_QUERY]: {
-                                    position: 'static',
-                                    transform: 'none',
-                                    flex: 1,
-                                    justifyContent: 'center',
-                                },
-                            }}
-                            aria-label={t('header.timelinePage.playbackControls')}
-                        >
-                            <IconButton
-                                size="md"
-                                variant="ghost"
-                                aria-label={t('header.timelinePage.previousFrame')}
-                                icon={<MdSkipPrevious size="1.5em" />}
-                                isDisabled={insertionIndex <= 0}
-                                onClick={() => onCursorChange(insertionIndex - 1)}
-                            />
-                            <IconButton
-                                size="md"
-                                variant="solid"
-                                colorScheme="purple"
-                                aria-label={
-                                    isPlaying
-                                        ? t('header.timelinePage.pausePreview')
-                                        : t('header.timelinePage.playPreview')
-                                }
-                                icon={isPlaying ? <MdPause size="1.5em" /> : <MdPlayArrow size="1.5em" />}
-                                onClick={() => setIsPlaying(value => !value)}
-                            />
-                            <IconButton
-                                size="md"
-                                variant="ghost"
-                                aria-label={t('header.timelinePage.nextFrame')}
-                                icon={<MdSkipNext size="1.5em" />}
-                                isDisabled={insertionIndex >= draftDocument.track.length}
-                                onClick={() => onCursorChange(insertionIndex + 1)}
-                            />
-                        </HStack>
-                    )}
+                    <HStack
+                        spacing={1}
+                        position="absolute"
+                        left="50%"
+                        transform="translateX(-50%)"
+                        sx={{
+                            [NARROW_SCREEN_QUERY]: {
+                                position: 'static',
+                                transform: 'none',
+                                flex: 1,
+                                justifyContent: 'center',
+                            },
+                        }}
+                        aria-label={t('header.timelinePage.playbackControls')}
+                    >
+                        <IconButton
+                            size="md"
+                            variant="ghost"
+                            aria-label={t('header.timelinePage.previousFrame')}
+                            icon={<MdSkipPrevious size="1.5em" />}
+                            isDisabled={insertionIndex <= 0}
+                            onClick={() => onCursorChange(insertionIndex - 1)}
+                        />
+                        <IconButton
+                            size="md"
+                            variant="solid"
+                            colorScheme="purple"
+                            aria-label={
+                                isPlaying ? t('header.timelinePage.pausePreview') : t('header.timelinePage.playPreview')
+                            }
+                            icon={isPlaying ? <MdPause size="1.5em" /> : <MdPlayArrow size="1.5em" />}
+                            onClick={() => setIsPlaying(value => !value)}
+                        />
+                        <IconButton
+                            size="md"
+                            variant="ghost"
+                            aria-label={t('header.timelinePage.nextFrame')}
+                            icon={<MdSkipNext size="1.5em" />}
+                            isDisabled={insertionIndex >= draftDocument.track.length}
+                            onClick={() => onCursorChange(insertionIndex + 1)}
+                        />
+                    </HStack>
 
                     <HStack flexShrink={0} spacing={3} wrap="wrap" justify="flex-end">
                         {selectedEntry?.kind === 'node' && adjacentLineColors.length > 0 && (
@@ -443,11 +396,8 @@ export default function TimelineTrackPanel({
                                     textTransform="none"
                                 >
                                     <MdAltRoute />
-                                    {t('header.timelinePage.addPathFromHere')}
-                                </Badge>
-                                <Text fontSize="xs" color="blue.700" fontWeight="medium">
                                     {t('header.timelinePage.addPathByColor')}
-                                </Text>
+                                </Badge>
                                 {adjacentLineColors.map(info => {
                                     const isMultiColor = info.color.length > 1;
                                     const bg = isMultiColor
@@ -525,9 +475,8 @@ export default function TimelineTrackPanel({
             >
                 {draftDocument.track.length > 0 || (draftDocument.audioTrack?.length ?? 0) > 0 ? (
                     <TimelineTrack
-                        key={`${refreshNodes}-${refreshEdges}`}
                         document={draftDocument}
-                        graph={graph.current}
+                        graph={graph}
                         insertionIndex={insertionIndex}
                         onSelectEntry={entry => {
                             setSelectedEntryIds(new Set([entry.id]));

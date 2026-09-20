@@ -1,0 +1,282 @@
+import { MultiDirectedGraph } from 'graphology';
+import { describe, expect, it, vi } from 'vitest';
+import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { LinePathType, LineStyleType } from '../constants/lines';
+import { MiscNodeType } from '../constants/nodes';
+import { StationType } from '../constants/stations';
+import { createEmptyTimelineDocument, TimelineDocument } from '../constants/timeline';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { blobToBase64 } from '../util/binary';
+import { CURRENT_VERSION } from '../util/save';
+import { timelineProjectDB } from './timeline-project-db';
+import {
+    createTimelineProjectFromRmp,
+    exportTimelineProjectFile,
+    getOpenRmpProjectSource,
+    importTimelineProjectFile,
+    parseRmpTimelineSource,
+    prepareTimelineProjectSync,
+} from './timeline-project-io';
+import { TimelineAssetRecord, TimelineProjectRecord, TimelineProjectRevision } from './timeline-project';
+
+type Graph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+const makeStationAttributes = (name: string) =>
+    ({
+        visible: true,
+        zIndex: 0,
+        x: 0,
+        y: 0,
+        type: StationType.ShmetroBasic,
+        [StationType.ShmetroBasic]: {
+            names: [name, name],
+            nameOffsetX: 'right',
+            nameOffsetY: 'top',
+        },
+    }) as NodeAttributes;
+
+const makeRmpSave = (graph: Graph, overrides: Record<string, unknown> = {}) =>
+    JSON.stringify({
+        version: CURRENT_VERSION,
+        graph: graph.export(),
+        mapEnabled: false,
+        mapStyle: structuredClone(DEFAULT_MAP_STYLE),
+        svgViewBoxZoom: 100,
+        svgViewBoxMin: { x: 0, y: 0 },
+        ...overrides,
+    });
+
+describe('Timeline project import and sync', () => {
+    it('copies RMP map state and images into a project with an empty Timeline', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_image', {
+            visible: true,
+            zIndex: 0,
+            x: 10,
+            y: 20,
+            type: MiscNodeType.Image,
+            [MiscNodeType.Image]: {
+                type: 'local',
+                href: 'img-l_fixture',
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+            },
+        } as NodeAttributes);
+        const parsed = await parseRmpTimelineSource(
+            makeRmpSave(graph, {
+                mapEnabled: true,
+                mapStyle: { roads: {}, rails: {}, labels: { enabled: true, categories: {} } },
+                svgViewBoxZoom: 175,
+                svgViewBoxMin: { x: 12, y: 34 },
+                images: [{ id: 'img-l_fixture', base64: 'data:text/plain;base64,aW1hZ2U=' }],
+            })
+        );
+
+        expect(parsed.revision.mapEnabled).toBe(true);
+        expect(parsed.revision.svgViewBoxZoom).toBe(175);
+        expect(parsed.revision.svgViewBoxMin).toEqual({ x: 12, y: 34 });
+        expect(parsed.revision.mapStyle.labels.categories['place-major']).toEqual(
+            DEFAULT_MAP_STYLE.labels.categories['place-major']
+        );
+        expect(parsed.revision.timeline).toEqual(createEmptyTimelineDocument());
+        expect(parsed.assets).toHaveLength(1);
+        expect(await blobToBase64(parsed.assets[0].blob)).toBe('data:text/plain;base64,aW1hZ2U=');
+    });
+
+    it('builds a self-contained source from the project open in the painter on demand', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_open_image', {
+            visible: true,
+            zIndex: 0,
+            x: 10,
+            y: 20,
+            type: MiscNodeType.Image,
+            [MiscNodeType.Image]: {
+                type: 'local',
+                href: 'img-l_open-project',
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+            },
+        } as NodeAttributes);
+        const { imageStoreIndexedDB } = await import('../util/image-store-indexed-db');
+        await imageStoreIndexedDB.save('img-l_open-project', 'data:text/plain;base64,b3Blbg==');
+        localStorage.setItem(LocalStorageKey.PARAM, makeRmpSave(graph));
+
+        const source = JSON.parse(await getOpenRmpProjectSource());
+
+        expect(source.images).toEqual([{ id: 'img-l_open-project', base64: 'data:text/plain;base64,b3Blbg==' }]);
+        localStorage.removeItem(LocalStorageKey.PARAM);
+        await imageStoreIndexedDB.delete('img-l_open-project');
+    });
+
+    it('fails before creating a project when a referenced image is missing', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_image', {
+            visible: true,
+            zIndex: 0,
+            x: 0,
+            y: 0,
+            type: MiscNodeType.Image,
+            [MiscNodeType.Image]: {
+                type: 'local',
+                href: 'img-l_missing',
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+            },
+        } as NodeAttributes);
+
+        await expect(createTimelineProjectFromRmp(makeRmpSave(graph), 'Broken')).rejects.toThrow(
+            'Missing image resource: img-l_missing'
+        );
+        expect((await timelineProjectDB.listProjects()).some(project => project.name === 'Broken')).toBe(false);
+    });
+
+    it('exports and imports a self-contained project with image and audio under a new local id', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_image', {
+            visible: true,
+            zIndex: 0,
+            x: 0,
+            y: 0,
+            type: MiscNodeType.Image,
+            [MiscNodeType.Image]: {
+                type: 'local',
+                href: 'img-l_roundtrip',
+                scale: 1,
+                rotate: 0,
+                opacity: 1,
+            },
+        } as NodeAttributes);
+        const timeline: TimelineDocument = {
+            ...createEmptyTimelineDocument(),
+            audioTrack: [
+                {
+                    id: 'audio-entry',
+                    kind: 'audio',
+                    blobId: 'audio-blob',
+                    name: 'sound.txt',
+                    startSlot: 0,
+                    endSlot: 0,
+                },
+            ],
+        };
+        const original: TimelineProjectRecord = {
+            id: 'original-local-id',
+            name: 'Round trip',
+            version: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            revision: {
+                rmpVersion: CURRENT_VERSION,
+                graph: graph.export(),
+                mapEnabled: false,
+                mapStyle: structuredClone(DEFAULT_MAP_STYLE),
+                svgViewBoxZoom: 100,
+                svgViewBoxMin: { x: 0, y: 0 },
+                timeline,
+            },
+        };
+        const exportedAssets: TimelineAssetRecord[] = [
+            {
+                key: 'image-key',
+                projectId: original.id,
+                kind: 'image',
+                id: 'img-l_roundtrip',
+                blob: new Blob(['picture'], { type: 'text/plain' }),
+            },
+            {
+                key: 'audio-key',
+                projectId: original.id,
+                kind: 'audio',
+                id: 'audio-blob',
+                blob: new Blob(['sound'], { type: 'text/plain' }),
+                name: 'sound.txt',
+            },
+        ];
+        const getAssetsSpy = vi.spyOn(timelineProjectDB, 'getAssets').mockResolvedValue(exportedAssets);
+        let importedAssets: Omit<TimelineAssetRecord, 'key' | 'projectId'>[] = [];
+        const createProjectSpy = vi
+            .spyOn(timelineProjectDB, 'createProject')
+            .mockImplementation(async (_record, assets) => {
+                importedAssets = assets;
+            });
+
+        const exported = await exportTimelineProjectFile(original);
+        const imported = await importTimelineProjectFile(exported);
+        getAssetsSpy.mockRestore();
+        createProjectSpy.mockRestore();
+
+        expect(imported.id).not.toBe(original.id);
+        expect(imported.name).toBe(original.name);
+        expect(imported.revision).toEqual(original.revision);
+        expect(importedAssets.map(asset => `${asset.kind}:${asset.id}`).sort()).toEqual([
+            'audio:audio-blob',
+            'image:img-l_roundtrip',
+        ]);
+        expect(await blobToBase64(importedAssets.find(asset => asset.kind === 'audio')!.blob)).toBe(
+            'data:text/plain;base64,c291bmQ='
+        );
+    });
+
+    it('prunes invalid entries and remaps audio slots during manual RMP sync', async () => {
+        const oldGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        oldGraph.addNode('stn_keep', makeStationAttributes('Keep'));
+        oldGraph.addNode('stn_remove', makeStationAttributes('Remove'));
+        oldGraph.addDirectedEdgeWithKey('line_remove', 'stn_keep', 'stn_remove', {
+            visible: true,
+            zIndex: 0,
+            type: LinePathType.Simple,
+            [LinePathType.Simple]: { offset: 0 },
+            style: LineStyleType.SingleColor,
+            [LineStyleType.SingleColor]: { color: ['shanghai', 'sh1', '#f00', '#fff'] },
+            reconcileId: '',
+            parallelIndex: -1,
+        } as EdgeAttributes);
+        const timeline: TimelineDocument = {
+            version: 1,
+            track: [
+                { id: 'keep', kind: 'node', refId: 'stn_keep', phase: 'enter', showAnimation: true },
+                { id: 'remove-node', kind: 'node', refId: 'stn_remove', phase: 'enter', showAnimation: true },
+                { id: 'remove-edge', kind: 'edge', refId: 'line_remove', phase: 'enter', showAnimation: true },
+                { id: 'remove-keyframe', kind: 'keyframe', refId: 'stn_remove', x: 1, y: 2 },
+                { id: 'pause', kind: 'pause', position: 'after', duration: 1 },
+            ],
+            audioTrack: [
+                {
+                    id: 'audio',
+                    kind: 'audio',
+                    blobId: 'audio-blob',
+                    name: 'audio',
+                    startSlot: 1,
+                    endSlot: 5,
+                },
+            ],
+        };
+        const current: TimelineProjectRevision = {
+            rmpVersion: CURRENT_VERSION,
+            graph: oldGraph.export(),
+            mapEnabled: false,
+            mapStyle: structuredClone(DEFAULT_MAP_STYLE),
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline,
+        };
+        const replacement = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        replacement.addNode('stn_keep', makeStationAttributes('Keep updated'));
+
+        const result = await prepareTimelineProjectSync(makeRmpSave(replacement, { mapEnabled: true }), current);
+
+        expect(result.removedEntries).toBe(3);
+        expect(result.revision.mapEnabled).toBe(true);
+        expect(result.revision.timeline.track.map(entry => entry.id)).toEqual(['keep', 'pause']);
+        expect(result.revision.timeline.audioTrack?.[0]).toMatchObject({ startSlot: 1, endSlot: 2 });
+    });
+
+    it('rejects unsupported Timeline file versions', async () => {
+        await expect(
+            importTimelineProjectFile(JSON.stringify({ app: 'rmp-timeline', version: 999, assets: [] }))
+        ).rejects.toThrow('Unsupported Timeline project version');
+    });
+});

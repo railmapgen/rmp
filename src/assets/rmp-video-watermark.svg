@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 110" role="img" aria-label="RMP watermark">
+  <path
+    data-watermark-part="wordmark"
+    d="M20 68V5H59C77 5 88 14 88 30C88 40 82 48 72 52L91 68H68L53 53H39V68ZM39 20V39H58C66 39 70 35 70 30C70 24 66 20 58 20ZM101 68V5H122L140 34L158 5H179V68H160V32L146 55H134L120 32V68ZM190 68V5H229C248 5 260 15 260 31C260 48 248 57 229 57H209V68ZM209 20V42H227C236 42 241 38 241 31C241 24 236 20 227 20Z"
+    fill="#20252b"
+    fill-rule="evenodd"
+    stroke="#fff"
+    stroke-width="3"
+    stroke-linejoin="round"
+    paint-order="stroke"
+  />
+  <g fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round">
+    <line x1="20" y1="94" x2="123" y2="94" />
+    <line x1="157" y1="94" x2="260" y2="94" />
+  </g>
+  <line
+    data-watermark-part="red-line"
+    x1="20"
+    y1="94"
+    x2="123"
+    y2="94"
+    stroke="#e3002b"
+    stroke-width="9"
+    stroke-linecap="round"
+  />
+  <line
+    data-watermark-part="green-line"
+    x1="157"
+    y1="94"
+    x2="260"
+    y2="94"
+    stroke="#82bf25"
+    stroke-width="9"
+    stroke-linecap="round"
+  />
+  <circle cx="140" cy="94" r="14" fill="none" stroke="#fff" stroke-width="9" />
+  <circle
+    data-watermark-part="interchange"
+    cx="140"
+    cy="94"
+    r="14"
+    fill="none"
+    stroke="#20252b"
+    stroke-width="5"
+  />
+</svg>

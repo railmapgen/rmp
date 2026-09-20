@@ -38,7 +38,6 @@ describe('TimelinePreview', () => {
     it('keeps a station visible on its exit card and hides it after the card', () => {
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [
                 { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_a_exit', kind: 'node', refId: 'stn_a', phase: 'exit', showAnimation: true },
@@ -102,7 +101,6 @@ describe('TimelinePreview', () => {
         const original = structuredClone(graph.export());
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [
                 { id: 'clip_a', kind: 'edge', refId: 'line_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_b', kind: 'edge', refId: 'line_b', phase: 'enter', showAnimation: true },
@@ -133,7 +131,6 @@ describe('TimelinePreview', () => {
         const onKeyframeMove = vi.fn();
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [
                 { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 keyframe(10, 20),
@@ -173,7 +170,6 @@ describe('TimelinePreview', () => {
         const onViewportChange = vi.fn();
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [{ id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true }],
         };
         const { container } = render(

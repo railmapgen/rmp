@@ -263,7 +263,6 @@ export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): Ti
 
     const normalized: TimelineDocument = {
         version: 1,
-        mode: doc.mode === 'pro' ? 'pro' : 'quick',
         track: (doc.track as RawTimelineEntry[])
             .map(entry => normalizeTimelineEntry(entry))
             .filter((entry): entry is TimelineEntry => !!entry),

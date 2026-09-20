@@ -141,25 +141,11 @@ describe('Unit tests for param upgrade function', () => {
         expect(Math.max(...allKeys) + 1).toEqual(CURRENT_VERSION);
     });
 
-    it('stringifyParam should export timeline at the top level', () => {
+    it('stringifyParam should not export legacy timeline data', () => {
         const paramState = createStore().getState().param;
-        const timeline = {
-            version: 1 as const,
-            mode: 'quick' as const,
-            track: [
-                {
-                    id: 'clip_1',
-                    kind: 'node' as const,
-                    refId: 'stn_a' as const,
-                    phase: 'enter' as const,
-                    showAnimation: true,
-                },
-            ],
-        };
+        const save = JSON.parse(stringifyParam(paramState));
 
-        const save = JSON.parse(stringifyParam(paramState, timeline));
-
-        expect(save.timeline).toEqual(timeline);
+        expect(save.timeline).toBeUndefined();
         expect(save.graph).toBeDefined();
     });
 

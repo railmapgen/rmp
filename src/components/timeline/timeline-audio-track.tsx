@@ -2,7 +2,7 @@ import { Alert, AlertIcon, Box, CloseButton, Text, Tooltip } from '@chakra-ui/re
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TimelineAudioEntry, TimelineDocument } from '../../constants/timeline';
-import { audioStoreIndexedDB } from '../../util/audio-store-indexed-db';
+import { useOptionalTimelineProjectContext } from '../../timeline/timeline-project-context';
 
 interface TimelineAudioTrackProps {
     document: TimelineDocument;
@@ -16,6 +16,8 @@ const AUDIO_COLOR = '#3182CE';
 const CURSOR_WIDTH = 32;
 const CLIP_WIDTH = 220;
 const KEYFRAME_SLOT_WIDTH = 24;
+const getMissingAudio = async () => undefined;
+const ignoreAudioSave = async () => undefined;
 
 const getEntryWidth = (entry: TimelineDocument['track'][number]) =>
     entry.kind === 'keyframe' ? KEYFRAME_SLOT_WIDTH : CLIP_WIDTH;
@@ -41,6 +43,9 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 
 export default function TimelineAudioTrack({ document, totalWidth, onChange }: TimelineAudioTrackProps) {
     const { t } = useTranslation();
+    const projectContext = useOptionalTimelineProjectContext();
+    const getAudio = projectContext?.getAudio ?? getMissingAudio;
+    const saveAudio = projectContext?.saveAudio ?? ignoreAudioSave;
     const entries = document.audioTrack ?? [];
     const [missing, setMissing] = React.useState<Set<string>>(new Set());
     const inputRef = React.useRef<HTMLInputElement>(null);
@@ -62,13 +67,13 @@ export default function TimelineAudioTrack({ document, totalWidth, onChange }: T
 
     React.useEffect(() => {
         let active = true;
-        Promise.all(
-            entries.map(async entry => [entry.id, !(await audioStoreIndexedDB.get(entry.blobId))] as const)
-        ).then(result => active && setMissing(new Set(result.filter(([, value]) => value).map(([id]) => id))));
+        Promise.all(entries.map(async entry => [entry.id, !(await getAudio(entry.blobId))] as const)).then(
+            result => active && setMissing(new Set(result.filter(([, value]) => value).map(([id]) => id)))
+        );
         return () => {
             active = false;
         };
-    }, [document.audioTrack]);
+    }, [document.audioTrack, getAudio]);
 
     const updateEntry = (entryId: string, startSlot: number, endSlot: number) => {
         onChange({
@@ -139,7 +144,6 @@ export default function TimelineAudioTrack({ document, totalWidth, onChange }: T
     };
 
     const remove = async (entry: TimelineAudioEntry) => {
-        await audioStoreIndexedDB.delete(entry.blobId);
         onChange({ ...document, audioTrack: entries.filter(item => item.id !== entry.id) });
     };
 
@@ -153,7 +157,7 @@ export default function TimelineAudioTrack({ document, totalWidth, onChange }: T
         event.target.value = '';
         const entry = restoreRef.current;
         if (!file || !entry) return;
-        await audioStoreIndexedDB.save(entry.blobId, file);
+        await saveAudio(entry.blobId, file, file.name);
         setMissing(current => new Set([...current].filter(id => id !== entry.id)));
     };
 

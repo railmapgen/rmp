@@ -3,17 +3,21 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Id } from '../../constants/constants';
 import { isElementEntry, isKeyframeEntry, TimelineEntry, TimelineKeyframeEntry } from '../../constants/timeline';
-import { useRootDispatch, useRootSelector } from '../../redux';
-import { clearSelected, setSelected, setTimelineCursor } from '../../redux/runtime/runtime-slice';
-import { setTimelineDocument } from '../../redux/timeline/timeline-slice';
+import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
+import {
+    replaceTimeline,
+    setCursor,
+    setSelected,
+    setViewport,
+    useTimelineDispatch,
+    useTimelineSelector,
+} from '../../timeline/timeline-store';
 import { useWindowSize } from '../../util/hooks';
 import { getTimelineCoverage, updateKeyframePosition } from '../../util/timeline';
 import TimelinePreview from '../timeline/timeline-preview';
 import TimelineTrackPanel from '../timeline/timeline-track-panel';
 import { KEYFRAME_ROW_HEIGHT } from '../timeline/timeline-track';
 import TimelineSvgWrapper, { TimelineSvgHandle } from '../timeline/timeline-svg-wrapper';
-import { Viewport } from '../timeline/use-timeline-viewport';
-import { audioStoreIndexedDB } from '../../util/audio-store-indexed-db';
 
 const TRACK_PANEL_BASE_HEIGHT = 300;
 const TRACK_PANEL_MIN_HEIGHT_RATIO = 0.3;
@@ -21,14 +25,13 @@ const TRACK_PANEL_AUTO_MAX_HEIGHT_RATIO = 0.4;
 
 export default function TimelinePage() {
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
-    const timeline = useRootSelector(state => state.timeline.present);
-    const timelineCursor = useRootSelector(state => state.runtime.timelineCursor);
-    const {
-        selected,
-        refresh: { nodes: refreshNodes, edges: refreshEdges },
-    } = useRootSelector(state => state.runtime);
-    const { svgViewBoxMin, svgViewBoxZoom } = useRootSelector(state => state.param.present);
+    const dispatch = useTimelineDispatch();
+    const active = useTimelineSelector(state => state.project.active)!;
+    const timeline = active.revision.timeline;
+    const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
+    const selected = useTimelineSelector(state => state.runtime.selected);
+    const { graph } = useTimelineProjectContext();
+    const { svgViewBoxMin, svgViewBoxZoom, mapEnabled, mapStyle } = active.revision;
     const { height: windowHeight } = useWindowSize();
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
     const pageRef = React.useRef<HTMLDivElement>(null);
@@ -37,35 +40,23 @@ export default function TimelinePage() {
     const [resizedTrackHeight, setResizedTrackHeight] = React.useState<number>();
     const resizeRef = React.useRef<{ pointerId: number; startY: number; startHeight: number } | null>(null);
     const svgHandleRef = React.useRef<TimelineSvgHandle>(null);
-    const graph = React.useRef(window.graph);
     const selectedId = selected.size === 1 ? [...selected][0] : undefined;
     const [selectedEntryId, setSelectedEntryId] = React.useState<string | undefined>(undefined);
     const [showMissingHighlight, setShowMissingHighlight] = React.useState(false);
-    const [viewport, setViewport] = React.useState<Viewport>({
+    const viewport = useTimelineSelector(state => state.runtime.viewport) ?? {
         x: svgViewBoxMin.x,
         y: svgViewBoxMin.y,
         zoom: svgViewBoxZoom,
-    });
-
-    React.useEffect(() => {
-        setViewport({ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom });
-    }, [svgViewBoxMin.x, svgViewBoxMin.y, svgViewBoxZoom]);
-    React.useEffect(() => {
-        audioStoreIndexedDB
-            .deleteExcept((timeline.audioTrack ?? []).map(entry => entry.blobId))
-            .catch(error => console.error('Failed to clean up orphaned timeline audio', error));
-    }, [timeline.audioTrack]);
-
-    const coverage = React.useMemo(
-        () => getTimelineCoverage(graph.current, timeline),
-        [refreshEdges, refreshNodes, timeline]
+    };
+    const handleViewportChange = React.useCallback(
+        (nextViewport: typeof viewport) => dispatch(setViewport(nextViewport)),
+        [dispatch]
     );
+    const coverage = React.useMemo(() => getTimelineCoverage(graph, timeline), [graph, timeline]);
     const highlightedIds = React.useMemo(
         () => (showMissingHighlight && !coverage.isComplete ? new Set<Id>(coverage.missingIds) : undefined),
         [coverage.isComplete, coverage.missingIds, showMissingHighlight]
     );
-
-    const isPro = timeline.mode === 'pro';
 
     React.useEffect(() => {
         const page = pageRef.current;
@@ -141,7 +132,7 @@ export default function TimelinePage() {
 
     const handleTimelineChange = React.useCallback(
         (nextDocument: typeof timeline) => {
-            dispatch(setTimelineDocument(nextDocument));
+            dispatch(replaceTimeline(nextDocument));
         },
         [dispatch]
     );
@@ -149,7 +140,7 @@ export default function TimelinePage() {
     const handleCursorChange = React.useCallback(
         (nextCursor: number) => {
             setSelectedEntryId(undefined);
-            dispatch(setTimelineCursor(nextCursor));
+            dispatch(setCursor(nextCursor));
         },
         [dispatch]
     );
@@ -176,7 +167,7 @@ export default function TimelinePage() {
             }
             setSelectedEntryId(undefined);
             if (id) dispatch(setSelected(new Set<Id>([id])));
-            else dispatch(clearSelected());
+            else dispatch(setSelected(new Set()));
         },
         [dispatch, handleCursorChange, timeline.track]
     );
@@ -189,17 +180,17 @@ export default function TimelinePage() {
     );
 
     React.useEffect(() => {
-        if (selectedId && !graph.current.hasNode(selectedId) && !graph.current.hasEdge(selectedId)) {
-            dispatch(clearSelected());
+        if (selectedId && !graph.hasNode(selectedId) && !graph.hasEdge(selectedId)) {
+            dispatch(setSelected(new Set()));
         }
         if (selectedEntryId && !timeline.track.some(entry => entry.id === selectedEntryId)) {
             setSelectedEntryId(undefined);
         }
-    }, [refreshEdges, refreshNodes, selectedId, selectedEntryId, timeline.track, dispatch]);
+    }, [graph, selectedId, selectedEntryId, timeline.track, dispatch]);
 
     React.useEffect(
         () => () => {
-            dispatch(clearSelected());
+            dispatch(setSelected(new Set()));
         },
         [dispatch]
     );
@@ -223,49 +214,53 @@ export default function TimelinePage() {
         <Flex ref={pageRef} direction="column" height="100%" overflow="hidden">
             <Flex flex="1" minH="0">
                 <Box flex="1" minW="0" position="relative">
-                    {isPro && <Badge {...paneLabelProps}>{t('header.timelinePage.editorPane')}</Badge>}
+                    <Badge {...paneLabelProps}>{t('header.timelinePage.editorPane')}</Badge>
                     <TimelineSvgWrapper
                         ref={svgHandleRef}
                         selectedId={selectedId}
                         highlightedIds={highlightedIds}
                         onSelect={handleCanvasSelect}
                         viewport={viewport}
-                        onViewportChange={setViewport}
+                        onViewportChange={handleViewportChange}
+                        graph={graph}
+                        mapEnabled={mapEnabled}
+                        mapStyle={mapStyle}
+                        isSubscriber={false}
                     />
                 </Box>
-                {isPro && (
-                    <>
-                        <Divider orientation="vertical" borderColor={borderColor} />
-                        <Box flex="1" minW="0" position="relative">
-                            <Badge {...paneLabelProps}>{t('header.timelinePage.previewPane')}</Badge>
-                            <TimelinePreview
-                                document={timeline}
-                                cursor={timelineCursor}
-                                viewport={viewport}
-                                editableKeyframe={editableKeyframe}
-                                onKeyframeMove={handleKeyframeMove}
-                                onViewportChange={setViewport}
-                            />
-                            {editableKeyframe && (
-                                <Badge
-                                    position="absolute"
-                                    bottom={2}
-                                    left="50%"
-                                    transform="translateX(-50%)"
-                                    zIndex={1}
-                                    colorScheme="purple"
-                                    variant="solid"
-                                    pointerEvents="none"
-                                    textTransform="none"
-                                    px={2}
-                                    py={1}
-                                >
-                                    {t('header.timelinePage.keyframeHint')}
-                                </Badge>
-                            )}
-                        </Box>
-                    </>
-                )}
+                <Divider orientation="vertical" borderColor={borderColor} />
+                <Box flex="1" minW="0" position="relative">
+                    <Badge {...paneLabelProps}>{t('header.timelinePage.previewPane')}</Badge>
+                    <TimelinePreview
+                        document={timeline}
+                        cursor={timelineCursor}
+                        viewport={viewport}
+                        editableKeyframe={editableKeyframe}
+                        onKeyframeMove={handleKeyframeMove}
+                        onViewportChange={handleViewportChange}
+                        graph={graph}
+                        mapEnabled={mapEnabled}
+                        mapStyle={mapStyle}
+                        isSubscriber={false}
+                    />
+                    {editableKeyframe && (
+                        <Badge
+                            position="absolute"
+                            bottom={2}
+                            left="50%"
+                            transform="translateX(-50%)"
+                            zIndex={1}
+                            colorScheme="purple"
+                            variant="solid"
+                            pointerEvents="none"
+                            textTransform="none"
+                            px={2}
+                            py={1}
+                        >
+                            {t('header.timelinePage.keyframeHint')}
+                        </Badge>
+                    )}
+                </Box>
             </Flex>
             <Flex direction="column" height={`${trackPanelHeight}px`} flexShrink={0} minH="30vh">
                 <Flex
@@ -310,6 +305,8 @@ export default function TimelinePage() {
                         onSelectEntry={handleSelectEntry}
                         onCursorChange={handleCursorChange}
                         onDocumentChange={handleTimelineChange}
+                        graph={graph}
+                        insertionIndex={timelineCursor}
                     />
                 </Box>
             </Flex>

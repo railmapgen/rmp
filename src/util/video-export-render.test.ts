@@ -130,6 +130,32 @@ const makeGraph = (length: number) => {
 };
 
 describe('video export frame timing', () => {
+    it('burns the fixed watermark into every exported frame', async () => {
+        await exportVideo(
+            makeGraph(200),
+            createEmptyTimelineDocument(),
+            [],
+            { ...defaultOptions, hideWatermark: false },
+            'white'
+        );
+
+        const frames = renderedSVGs.slice(1);
+        expect(frames).toHaveLength(91);
+        expect(frames.every(frame => frame.getElementById('rmp_info') !== null)).toBe(true);
+        expect(frames.every(frame => frame.lastElementChild?.id === 'rmp_info')).toBe(true);
+        const watermark = frames[0].getElementById('rmp_info')!;
+        expect(watermark.querySelector('[data-watermark-part="wordmark"]')?.tagName).toBe('path');
+        expect(watermark.querySelector('[data-watermark-part="wordmark"]')?.getAttribute('d')).toContain('M20 68V5');
+        const redLine = watermark.querySelector('[data-watermark-part="red-line"]');
+        const greenLine = watermark.querySelector('[data-watermark-part="green-line"]');
+        expect(redLine?.getAttribute('stroke')).toBe('#e3002b');
+        expect(redLine?.getAttribute('x2')).toBe('123');
+        expect(greenLine?.getAttribute('stroke')).toBe('#82bf25');
+        expect(greenLine?.getAttribute('x1')).toBe('157');
+        expect(watermark.querySelector('[data-watermark-part="interchange"]')?.getAttribute('fill')).toBe('none');
+        expect(watermark.querySelector('rect, image')).toBeNull();
+    });
+
     it.each([
         { length: 200, speedMultiplier: 1, fps: 30, drawingSeconds: 2 },
         { length: 400, speedMultiplier: 1, fps: 30, drawingSeconds: 4 },
@@ -185,7 +211,7 @@ describe('video export frame timing', () => {
     });
 });
 
-const proTimeline = (...track: TimelineEntry[]): TimelineDocument => ({ version: 1, mode: 'pro', track });
+const authoredTimeline = (...track: TimelineEntry[]): TimelineDocument => ({ version: 1, track });
 const nodeEntry: TimelineEntry = { id: 'enter_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true };
 const edgeEntry: TimelineEntry = {
     id: 'enter_ab',
@@ -215,7 +241,7 @@ describe('authored video frames', () => {
             const entries: TimelineEntry[] = [nodeEntry, edgeEntry, { ...nodeEntry, id: 'enter_b', refId: 'stn_b' }];
             if (keyframes) entries.push({ id: 'marker', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 });
             entries.push({ ...edgeEntry, id: 'enter_bc', refId: 'line_bc' });
-            await exportVideo(graph, proTimeline(...entries), [], { ...defaultOptions, fps }, 'white');
+            await exportVideo(graph, authoredTimeline(...entries), [], { ...defaultOptions, fps }, 'white');
             expect(addFrame).toHaveBeenCalledTimes(5 * fps + 1);
             const frames = renderedSVGs.slice(1);
             const centerX = (frame: number) => {
@@ -229,9 +255,9 @@ describe('authored video frames', () => {
         }
     );
 
-    it.each(['quick', 'pro'] as const)(
-        'exports %s video through real SVG preparation without an editor canvas',
-        async mode => {
+    it.each(['empty', 'authored'] as const)(
+        'exports an %s timeline through real SVG preparation without an editor canvas',
+        async scenario => {
             editorCanvas.remove();
             expect(document.getElementById('canvas')).toBeNull();
             const { makeRenderReadySVGElement: prepareSVG } =
@@ -258,9 +284,9 @@ describe('authored video frames', () => {
                 return result;
             });
             const timeline =
-                mode === 'quick'
+                scenario === 'empty'
                     ? createEmptyTimelineDocument()
-                    : proTimeline(
+                    : authoredTimeline(
                           nodeEntry,
                           edgeEntry,
                           { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 },
@@ -273,7 +299,7 @@ describe('authored video frames', () => {
             expect(renderedSVGs[0].getElementById('line_ab')).not.toBeNull();
             expect(renderedSVGs.at(-1)?.getElementById('line_ab')).not.toBeNull();
             expect(document.getElementById('canvas')).toBeNull();
-            if (mode === 'pro') {
+            if (scenario === 'authored') {
                 expect(renderedSVGs.at(-1)?.getElementById('stn_a')).toBeNull();
                 expect(
                     renderedSVGs.some(svg =>
@@ -338,8 +364,8 @@ describe('authored video frames', () => {
         expect(onProgress).not.toHaveBeenCalledWith(1);
     });
 
-    it('preserves simple entrance timing when only the editor mode changes', async () => {
-        await exportVideo(makeGraph(200), proTimeline(nodeEntry, edgeEntry), [], defaultOptions, 'white');
+    it('preserves simple authored entrance timing', async () => {
+        await exportVideo(makeGraph(200), authoredTimeline(nodeEntry, edgeEntry), [], defaultOptions, 'white');
         expect(addFrame).toHaveBeenCalledTimes(91);
     });
 
@@ -348,7 +374,7 @@ describe('authored video frames', () => {
         const original = structuredClone(graph.export());
         await exportVideo(
             graph,
-            proTimeline(nodeEntry, { id: 'first', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 }, edgeEntry, {
+            authoredTimeline(nodeEntry, { id: 'first', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 }, edgeEntry, {
                 id: 'second',
                 kind: 'keyframe',
                 refId: 'stn_a',
@@ -375,7 +401,7 @@ describe('authored video frames', () => {
     it('fades nodes out and keeps them hidden throughout the overview', async () => {
         await exportVideo(
             makeGraph(200),
-            proTimeline(nodeEntry, { ...nodeEntry, id: 'exit_a', phase: 'exit' }),
+            authoredTimeline(nodeEntry, { ...nodeEntry, id: 'exit_a', phase: 'exit' }),
             [],
             defaultOptions,
             'white'
@@ -390,7 +416,7 @@ describe('authored video frames', () => {
     it('retracts lines on exit and leaves the final frame empty', async () => {
         await exportVideo(
             makeGraph(200),
-            proTimeline(edgeEntry, { ...edgeEntry, id: 'exit_ab', phase: 'exit' }),
+            authoredTimeline(edgeEntry, { ...edgeEntry, id: 'exit_ab', phase: 'exit' }),
             [],
             defaultOptions,
             'white'
@@ -403,7 +429,7 @@ describe('authored video frames', () => {
     it('shows animation-disabled entries immediately without fading or scaling', async () => {
         await exportVideo(
             makeGraph(200),
-            proTimeline({ ...nodeEntry, showAnimation: false }, { ...edgeEntry, showAnimation: false }),
+            authoredTimeline({ ...nodeEntry, showAnimation: false }, { ...edgeEntry, showAnimation: false }),
             [],
             defaultOptions,
             'white'
@@ -425,7 +451,7 @@ describe('authored video frames', () => {
         });
         await exportVideo(
             graph,
-            proTimeline(edgeEntry, { ...edgeEntry, id: 'exit_ab', phase: 'exit' }),
+            authoredTimeline(edgeEntry, { ...edgeEntry, id: 'exit_ab', phase: 'exit' }),
             [],
             defaultOptions,
             'white'

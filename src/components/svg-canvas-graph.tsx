@@ -10,6 +10,7 @@ import { PathPoint } from '../constants/path';
 import { StationType } from '../constants/stations';
 import { useRootDispatch, useRootSelector } from '../redux';
 import { saveGraph } from '../redux/param/param-slice';
+import { loadFont } from '../redux/fonts/fonts-slice';
 import {
     addSelected,
     clearSelected,
@@ -37,6 +38,7 @@ import { makeParallelIndex, supportsParallelLinePath } from '../util/parallel';
 import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
+import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
 import {
     getNearestSnapLine,
     getNearestSnapPoints,
@@ -49,6 +51,7 @@ import { LineCreationPreview, type LineDrawingGesture } from './line-creation-pr
 import { Overlay } from './overlay';
 import SnapPointGuideLines from './snap-point-guide-lines';
 import SvgLayer from './svg-layer';
+import { SvgRenderProvider, type SvgRenderContextValue } from './svg-render-context';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
@@ -98,15 +101,10 @@ const SvgCanvas = () => {
     } = useRootSelector(state => state.app);
     const { mapEnabled, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
     const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
-    const {
-        selected,
-        pointerPosition,
-        active,
-        refresh: { nodes: refreshNodes, edges: refreshEdges },
-        mode,
-        keepLastPath,
-        theme,
-    } = useRootSelector(state => state.runtime);
+    const { selected, pointerPosition, active, refresh, mode, keepLastPath, theme } = useRootSelector(
+        state => state.runtime
+    );
+    const { nodes: refreshNodes, edges: refreshEdges } = refresh;
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
 
@@ -593,20 +591,51 @@ const SvgCanvas = () => {
         () => [...getLines(graph.current), ...getNodes(graph.current)],
         [refreshEdges, refreshNodes]
     );
+    const getRenderImage = React.useCallback<SvgRenderContextValue['getImage']>(id => imageStoreIndexedDB.get(id), []);
+    const ensureRenderFont = React.useCallback<SvgRenderContextValue['ensureFont']>(
+        language => dispatch(loadFont(language)),
+        [dispatch]
+    );
+    const updateRenderStationAttributes = React.useCallback<
+        NonNullable<SvgRenderContextValue['updateStationAttributes']>
+    >(
+        (id, type, attributes) => {
+            graph.current.mergeNodeAttributes(id, { [type]: attributes });
+            dispatch(saveGraph(graph.current.export()));
+            dispatch(refreshNodesThunk());
+        },
+        [dispatch]
+    );
+    const renderContext = React.useMemo<SvgRenderContextValue>(
+        () => ({
+            graph: graph.current,
+            graphRefresh: refresh,
+            imageRefresh: refresh.images,
+            getImage: getRenderImage,
+            ensureFont: ensureRenderFont,
+            selected,
+            mode,
+            svgViewBoxZoom,
+            updateStationAttributes: updateRenderStationAttributes,
+        }),
+        [ensureRenderFont, getRenderImage, mode, refresh, selected, svgViewBoxZoom, updateRenderStationAttributes]
+    );
 
     return (
         <>
-            <SvgLayer
-                elements={elements}
-                selected={selected}
-                handlePointerDown={handlePointerDown}
-                handlePointerMove={handlePointerMove}
-                handlePointerUp={handlePointerUp}
-                handleEdgePointerDown={handleEdgePointerDown}
-                handleEdgeDoubleClick={handleEdgeDoubleClick}
-                mapEnabled={mapEnabled}
-                isSubscriber={isSubscriber}
-            />
+            <SvgRenderProvider value={renderContext}>
+                <SvgLayer
+                    elements={elements}
+                    selected={selected}
+                    handlePointerDown={handlePointerDown}
+                    handlePointerMove={handlePointerMove}
+                    handlePointerUp={handlePointerUp}
+                    handleEdgePointerDown={handleEdgePointerDown}
+                    handleEdgeDoubleClick={handleEdgeDoubleClick}
+                    mapEnabled={mapEnabled}
+                    isSubscriber={isSubscriber}
+                />
+            </SvgRenderProvider>
             <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
             <Overlay />
             {activeSnapLines.length !== 0 &&

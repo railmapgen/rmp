@@ -10,7 +10,6 @@ import { closePaletteAppClip, onPaletteAppClipEmit } from '../redux/runtime/runt
 
 const PageHeader = React.lazy(() => import('./page-header/page-header'));
 const EditorPage = React.lazy(() => import('./pages/editor-page'));
-const TimelinePage = React.lazy(() => import('./pages/timeline-page'));
 const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip'));
 
 export default function AppRoot() {
@@ -84,7 +83,6 @@ export default function AppRoot() {
                         <React.Suspense fallback={loadingFallback}>
                             <Routes>
                                 <Route path="/" element={<EditorPage isMapOverview={isMapOverview} />} />
-                                <Route path="/timeline" element={<TimelinePage />} />
                                 <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>
                         </React.Suspense>

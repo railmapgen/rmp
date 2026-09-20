@@ -81,7 +81,6 @@ describe('VirtualJoystick', () => {
                     radialTouchMenu: defaultRadialTouchMenuState,
                     isMapOverview: false,
                     globalAlerts: {},
-                    timelineCursor: 0,
                 },
             },
         });

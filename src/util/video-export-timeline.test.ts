@@ -39,7 +39,7 @@ const keyframe = (id: string, x: number, y: number): TimelineEntry => ({
 const playback = (track: TimelineEntry[], speed = 1) =>
     createVideoTimelinePlayback(
         makeGraph(),
-        { version: 1, mode: 'pro', track },
+        { version: 1, track },
         new Map<LineId, number>([
             ['line_ab', 200],
             ['line_bc', 200],

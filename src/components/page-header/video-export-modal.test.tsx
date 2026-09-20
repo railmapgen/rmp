@@ -2,8 +2,15 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import { MemoryRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { createEmptyTimelineDocument } from '../../constants/timeline';
+import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { render } from '../../test-utils';
+import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
+import { TimelineProjectRecord } from '../../timeline/timeline-project';
+import { openProject, timelineStore } from '../../timeline/timeline-store';
 import { exportVideo } from '../../util/video-export';
 import VideoExportModal from './video-export-modal';
 
@@ -15,12 +22,33 @@ vi.mock('../../util/download', () => ({ downloadBlobAs: vi.fn() }));
 
 describe('VideoExportModal speed setting', () => {
     it('replaces duration with a speed slider and exports using the selected multiplier', async () => {
-        window.graph = new MultiDirectedGraph();
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const record: TimelineProjectRecord = {
+            id: 'video-export-test',
+            name: 'Video export test',
+            version: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            revision: {
+                rmpVersion: 80,
+                graph: graph.export(),
+                mapEnabled: false,
+                mapStyle: structuredClone(DEFAULT_MAP_STYLE),
+                svgViewBoxZoom: 100,
+                svgViewBoxMin: { x: 0, y: 0 },
+                timeline: createEmptyTimelineDocument(),
+            },
+        };
+        timelineStore.dispatch(openProject(record));
         render(
             <ChakraProvider>
-                <MemoryRouter>
-                    <VideoExportModal isOpen={true} onClose={vi.fn()} />
-                </MemoryRouter>
+                <Provider store={timelineStore}>
+                    <MemoryRouter>
+                        <TimelineProjectProvider projectId={record.id} graph={graph} revision={record.revision}>
+                            <VideoExportModal isOpen={true} onClose={vi.fn()} />
+                        </TimelineProjectProvider>
+                    </MemoryRouter>
+                </Provider>
             </ChakraProvider>
         );
 

@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { describe, expect, it, vi } from 'vitest';
-import store from '../../redux';
+import store from '../../redux/store';
 import TouchOverlay from './touch-overlay';
 
 // Mock the helper function

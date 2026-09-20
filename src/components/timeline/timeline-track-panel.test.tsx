@@ -4,8 +4,8 @@ import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { createStore } from '../../redux';
-import { setTimelineCursor } from '../../redux/runtime/runtime-slice';
 import { TimelineDocument } from '../../constants/timeline';
 import TimelineTrackPanel from './timeline-track-panel';
 
@@ -31,6 +31,7 @@ vi.mock('react-i18next', async importOriginal => {
                     return 'The track is empty. Select an element above to start building the timeline.';
                 }
                 if (key === 'header.timelinePage.addSelected') return 'Add selected';
+                if (key === 'header.timelinePage.addPathByColor') return 'Add a line by color';
                 if (key === 'header.timelinePage.cursorBefore') {
                     return `Insert new content before item ${options?.position}`;
                 }
@@ -42,7 +43,7 @@ vi.mock('react-i18next', async importOriginal => {
 });
 
 const defaultProps = {
-    document: { version: 1 as const, mode: 'quick' as const, track: [] },
+    document: { version: 1 as const, track: [] },
     missingNodeCount: 0,
     missingEdgeCount: 0,
     isCoverageComplete: true,
@@ -105,26 +106,20 @@ describe('TimelineTrackPanel', () => {
     it('should insert selected content at the cursor position', () => {
         const onDocumentChange = vi.fn();
         const onCursorChange = vi.fn();
-        const store = createStore();
-        onCursorChange.mockImplementation((index: number) => store.dispatch(setTimelineCursor(index)));
-        renderPanel(
-            {
-                document: {
-                    version: 1,
-                    mode: 'quick',
-                    track: [
-                        { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
-                        { id: 'clip_b', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
-                    ],
-                },
-                selectedId: 'stn_c',
-                onDocumentChange,
-                onCursorChange,
+        renderPanel({
+            document: {
+                version: 1,
+                track: [
+                    { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+                    { id: 'clip_b', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
+                ],
             },
-            store
-        );
+            selectedId: 'stn_c',
+            onDocumentChange,
+            onCursorChange,
+            insertionIndex: 1,
+        });
 
-        fireEvent.click(screen.getByRole('button', { name: 'Insert new content before item 2' }));
         fireEvent.click(screen.getByRole('button', { name: 'Add selected' }));
 
         expect(onDocumentChange).toHaveBeenCalledOnce();
@@ -136,24 +131,39 @@ describe('TimelineTrackPanel', () => {
         expect(onCursorChange).toHaveBeenCalledWith(2);
     });
 
-    it('should switch between quick and pro modes', () => {
-        const onDocumentChange = vi.fn();
-        renderPanel({ onDocumentChange });
+    it('combines the path-by-color guidance into the badge', () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('stn_a', {} as NodeAttributes);
+        graph.addNode('stn_b', {} as NodeAttributes);
+        graph.addDirectedEdgeWithKey('line_a', 'stn_a', 'stn_b', {
+            visible: true,
+            zIndex: 0,
+            type: 'simple',
+            simple: {},
+            style: 'single-color',
+            reconcileId: '',
+            parallelIndex: -1,
+            'single-color': { color: ['other', 'red', '#ff0000', '#fff'] },
+        } as unknown as EdgeAttributes);
 
-        fireEvent.click(screen.getByRole('button', { name: 'header.timelinePage.switchToPro' }));
+        renderPanel({ graph, selectedId: 'stn_a' });
 
-        expect(onDocumentChange).toHaveBeenCalledOnce();
-        expect(onDocumentChange.mock.calls[0][0].mode).toBe('pro');
+        expect(screen.queryByText('Add a line by color')).not.toBeNull();
+        expect(screen.queryByText('header.timelinePage.addPathFromHere')).toBeNull();
+    });
+
+    it('always shows playback controls', () => {
+        renderPanel();
+
+        expect(screen.queryByRole('button', { name: 'header.timelinePage.playPreview' })).not.toBeNull();
+        expect(screen.queryByRole('button', { name: 'header.timelinePage.switchToPro' })).toBeNull();
     });
 
     it('removes dependent cards together and adjusts the cursor by all removed entries before it', () => {
         const onDocumentChange = vi.fn();
         const onCursorChange = vi.fn();
-        const store = createStore();
-        store.dispatch(setTimelineCursor(4));
         const document: TimelineDocument = {
             version: 1,
-            mode: 'pro',
             track: [
                 { id: 'enter_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 },
@@ -162,7 +172,7 @@ describe('TimelineTrackPanel', () => {
                 { id: 'enter_c', kind: 'node', refId: 'stn_c', phase: 'enter', showAnimation: true },
             ],
         };
-        renderPanel({ document, onDocumentChange, onCursorChange }, store);
+        renderPanel({ document, onDocumentChange, onCursorChange, insertionIndex: 4 });
 
         fireEvent.click(screen.getAllByRole('button', { name: 'Close' })[0]);
 
@@ -178,7 +188,6 @@ describe('TimelineTrackPanel', () => {
         renderPanel({
             document: {
                 version: 1,
-                mode: 'pro',
                 track: [
                     { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                     { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 10, y: 20 },
@@ -196,7 +205,6 @@ describe('TimelineTrackPanel', () => {
         renderPanel({
             document: {
                 version: 1,
-                mode: 'pro',
                 track: [{ id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true }],
             },
             onDocumentChange,

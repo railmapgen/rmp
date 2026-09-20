@@ -1,8 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Provider } from 'react-redux';
 import { utils } from '@railmapgen/svg-assets';
+import videoWatermarkSVG from '../assets/rmp-video-watermark.svg?raw';
 import {
     EdgeAttributes,
     ExternalStationAttributes,
@@ -15,11 +15,11 @@ import {
 } from '../constants/constants';
 import stations from '../components/svgs/stations/stations';
 import SvgLayer from '../components/svg-layer';
+import { SvgRenderProvider } from '../components/svg-render-context';
 import { StationType } from '../constants/stations';
 import { isElementEntry, TimelineDocument, TimelineEntry } from '../constants/timeline';
-import i18n from '../i18n/config';
-import store from '../redux';
-import { TextLanguage } from './fonts';
+import { DEFAULT_MAP_STYLE, MapStyle } from '../map/map-style';
+import { loadFont, TextLanguage } from './fonts';
 import { changeStationType, checkAndChangeStationIntType } from './change-types';
 import { makeRenderReadySVGElement } from './download';
 import { calculateCanvasSize } from './helpers';
@@ -27,7 +27,6 @@ import { getLines, getNodes } from './process-elements';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions } from './video-encoder';
-import { audioStoreIndexedDB } from './audio-store-indexed-db';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -46,12 +45,6 @@ export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>>
     [StationType.HzmetroInt]: StationType.HzmetroBasic,
 };
 
-const StaticMarkupProvider = Provider as React.ComponentType<
-    React.PropsWithChildren<{
-        store: typeof store;
-    }>
->;
-
 export type VideoExportResolution = '720p' | '1080p' | '2k' | '4k';
 
 export const videoExportResolutions: Record<VideoExportResolution, { width: number; height: number }> = {
@@ -69,6 +62,15 @@ export interface VideoExportOptions extends VideoEncodingOptions {
     fullscreenScale: number;
     isSystemFontsOnly: boolean;
     hideWatermark: boolean;
+}
+
+export interface VideoExportEnvironment {
+    mapEnabled: boolean;
+    mapStyle: MapStyle;
+    svgViewBoxMin: { x: number; y: number };
+    svgViewBoxZoom: number;
+    isSubscriber?: boolean;
+    getAudio?: (id: string) => Promise<Blob | undefined>;
 }
 
 export interface AnimationStep {
@@ -101,9 +103,10 @@ const CameraFocusSmoothing = 0.14;
 const OverviewZoomTransitionRatio = 0.5;
 const CameraViewportHeight = (CameraViewportBaseHeight * CameraViewportZoom) / 100;
 const CameraViewportWidth = CameraViewportHeight * CameraViewportAspectRatio;
-const VideoWatermarkWidth = 350;
-const VideoWatermarkHeight = 50;
-const VideoWatermarkMargin = 24;
+const VideoWatermarkContentWidth = 280;
+const VideoWatermarkContentHeight = 110;
+const VideoWatermarkDisplayScale = 0.55;
+const VideoWatermarkMargin = 20;
 const VideoExportStyleId = 'rmp_video_export_styles';
 const VideoExportCSS = `
 .rmp-name-outline {
@@ -113,7 +116,7 @@ const VideoExportCSS = `
 }
 `;
 
-let watermarkLogoMarkupCache: string | undefined;
+let videoWatermarkGraphic: SVGSVGElement | undefined;
 
 type CameraFocus = VideoCameraFocus;
 
@@ -279,17 +282,19 @@ const measureRenderedEdgeLengths = async (
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
     renderGeometry = false,
-    sourceCanvas?: SVGSVGElement
+    sourceCanvas?: SVGSVGElement,
+    mapEnabled = false,
+    isSubscriber = false
 ): Promise<Map<LineId, number>> => {
     const { elem } = await makeRenderReadySVGElement(
         graph,
-        store.getState().param.present.mapEnabled,
+        mapEnabled,
         true,
         isSystemFontsOnly,
         languages,
         false,
         2,
-        renderGeometry ? clone => renderVideoFrameGeometry(graph, clone) : undefined,
+        renderGeometry ? clone => renderVideoFrameGeometry(graph, clone, mapEnabled, isSubscriber) : undefined,
         sourceCanvas
     );
     const edgeLengths = new Map<LineId, number>();
@@ -461,19 +466,15 @@ export const renderStationMarkup = (
         : ({} as ExternalStationAttributes);
 
     return renderToStaticMarkup(
-        React.createElement(
-            StaticMarkupProvider,
-            { store },
-            React.createElement(station.component, {
-                id: stationId,
-                attrs,
-                x: 0,
-                y: 0,
-                handlePointerDown: () => {},
-                handlePointerMove: () => {},
-                handlePointerUp: () => {},
-            })
-        )
+        React.createElement(station.component, {
+            id: stationId,
+            attrs,
+            x: 0,
+            y: 0,
+            handlePointerDown: () => {},
+            handlePointerMove: () => {},
+            handlePointerUp: () => {},
+        })
     );
 };
 
@@ -514,63 +515,45 @@ export const getOverviewZoomProgress = (overviewFrame: number, overviewFrames: n
     return clamp01(overviewFrame / (transitionFrames - 1));
 };
 
-const getWatermarkLogoMarkup = async (): Promise<string> => {
-    if (!watermarkLogoMarkupCache) {
-        const logoSVGRep = await fetch('logo.svg');
-        const logoSVG = await logoSVGRep.text();
-        const temp = document.createElement('div');
-        temp.innerHTML = logoSVG;
-        watermarkLogoMarkupCache = temp.querySelector('svg')?.innerHTML ?? '';
-    }
+export const getVideoWatermarkLayout = (
+    viewBox: { x: number; y: number; width: number; height: number },
+    outputWidth: number,
+    outputHeight: number
+) => {
+    const worldUnitsPerPixel = viewBox.width / outputWidth;
+    const resolutionScale = outputHeight / videoExportResolutions['720p'].height;
+    const scale = worldUnitsPerPixel * resolutionScale * VideoWatermarkDisplayScale;
+    const width = VideoWatermarkContentWidth * scale;
+    const height = VideoWatermarkContentHeight * scale;
+    const margin = VideoWatermarkMargin * resolutionScale * worldUnitsPerPixel;
 
-    return watermarkLogoMarkupCache;
+    return {
+        x: viewBox.x + viewBox.width - width - margin,
+        y: viewBox.y + margin,
+        width,
+        height,
+        scale,
+    };
 };
 
-const createVideoWatermarkElement = async (zoom: number, outputWidth: number, outputHeight: number) => {
-    const zoomFactor = Math.max(zoom, 1) / 100;
-    const viewportWidth = CameraViewportWidth / zoomFactor;
-    const worldUnitsPerPixel = viewportWidth / outputWidth;
-    const resolutionScale = outputHeight / videoExportResolutions['720p'].height;
-    const watermarkWidth = VideoWatermarkWidth * resolutionScale;
-    const watermarkHeight = VideoWatermarkHeight * resolutionScale;
-    const watermarkMargin = VideoWatermarkMargin * resolutionScale;
-    const watermarkX = (outputWidth - watermarkWidth - watermarkMargin) * worldUnitsPerPixel;
-    const watermarkY = (outputHeight - watermarkHeight - watermarkMargin) * worldUnitsPerPixel;
+const createVideoWatermarkElement = (
+    viewBox: { x: number; y: number; width: number; height: number },
+    outputWidth: number,
+    outputHeight: number
+) => {
+    const watermark = getVideoWatermarkLayout(viewBox, outputWidth, outputHeight);
 
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('id', 'rmp_info');
-    info.setAttribute('opacity', '0.5');
-    info.setAttribute(
-        'transform',
-        `translate(${watermarkX}, ${watermarkY}) scale(${worldUnitsPerPixel * resolutionScale})`
-    );
+    info.setAttribute('aria-label', 'RMP watermark');
+    info.setAttribute('opacity', '0.72');
+    info.setAttribute('transform', `translate(${watermark.x}, ${watermark.y}) scale(${watermark.scale})`);
 
-    const logo = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    logo.setAttribute('transform', `scale(0.1)`);
-    logo.setAttribute('font-family', 'Arial, sans-serif');
-    logo.innerHTML = await getWatermarkLogoMarkup();
-
-    const rmp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    rmp.setAttribute('font-family', 'Arial, sans-serif');
-    rmp.setAttribute('font-size', '32');
-    rmp.setAttribute('x', '60');
-    rmp.setAttribute('y', '25');
-    rmp.appendChild(document.createTextNode(i18n.t('header.about.rmp')));
-
-    const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    link.setAttribute('font-family', 'Arial, sans-serif');
-    link.setAttribute('font-size', '20');
-    link.setAttribute('x', '60');
-    link.setAttribute('y', '50');
-    let url = window.location.origin;
-    if (url.includes('github')) url = 'https://railmapgen.github.io/';
-    else if (url.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
-    url += '?app=rmp';
-    link.appendChild(document.createTextNode(url));
-
-    info.appendChild(logo);
-    info.appendChild(rmp);
-    info.appendChild(link);
+    if (!videoWatermarkGraphic) {
+        videoWatermarkGraphic = new DOMParser().parseFromString(videoWatermarkSVG, 'image/svg+xml')
+            .documentElement as unknown as SVGSVGElement;
+    }
+    Array.from(videoWatermarkGraphic.children).forEach(child => info.appendChild(document.importNode(child, true)));
 
     return info;
 };
@@ -716,6 +699,8 @@ const applyCameraViewBox = (
     elem.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
     elem.setAttribute('width', outputWidth.toString());
     elem.setAttribute('height', outputHeight.toString());
+
+    return viewBox;
 };
 
 export const getCameraViewBox = (center: { x: number; y: number }, zoom: number) => {
@@ -859,7 +844,9 @@ export const embedVideoExportStyles = (elem: SVGSVGElement) => {
 /** Rebuild the detached graph layer before export cleanup embeds fonts and facility symbols. */
 export const renderVideoFrameGeometry = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    elem: SVGSVGElement
+    elem: SVGSVGElement,
+    mapEnabled = false,
+    isSubscriber = false
 ) => {
     let layer = elem.querySelector<SVGGElement>('[data-editor-layer]');
     if (!layer) {
@@ -868,19 +855,26 @@ export const renderVideoFrameGeometry = (
         elem.appendChild(layer);
     }
     layer.removeAttribute('display');
-    const state = store.getState();
     layer.innerHTML = renderToStaticMarkup(
         React.createElement(
-            StaticMarkupProvider,
-            { store },
+            SvgRenderProvider,
+            {
+                value: {
+                    graph,
+                    graphRefresh: graph,
+                    imageRefresh: graph,
+                    getImage: async () => undefined,
+                    ensureFont: language => void loadFont(language),
+                },
+            },
             React.createElement(
                 utils.SvgAssetsContextProvider,
                 null,
                 React.createElement(SvgLayer, {
                     elements: [...getLines(graph, { showReconcileWarnings: false }), ...getNodes(graph)],
                     selected: new Set<Id>(),
-                    mapEnabled: state.param.present.mapEnabled,
-                    isSubscriber: !!state.account.activeSubscriptions.RMP_CLOUD,
+                    mapEnabled,
+                    isSubscriber,
                     handlePointerDown: () => {},
                     handlePointerMove: () => {},
                     handlePointerUp: () => {},
@@ -917,19 +911,23 @@ const createFrameSVG = async (
     languages: TextLanguage[],
     renderGeometry = false,
     disabledNodeAnimations = new Set<NodeId>(),
-    sourceCanvas?: SVGSVGElement
+    sourceCanvas?: SVGSVGElement,
+    mapEnabled = false,
+    isSubscriber = false
 ): Promise<{ elem: SVGSVGElement; cameraCenter: { x: number; y: number } }> => {
     const frameStationGraph = createFrameStationGraph(graph, visibleEdges, autoChangeStationType);
     const basicStations = getBasicStations(frameStationGraph);
     const { elem } = await makeRenderReadySVGElement(
         graph,
-        store.getState().param.present.mapEnabled,
+        mapEnabled,
         true,
         isSystemFontsOnly,
         languages,
         false,
         2,
-        renderGeometry ? clone => renderVideoFrameGeometry(frameStationGraph, clone) : undefined,
+        renderGeometry
+            ? clone => renderVideoFrameGeometry(frameStationGraph, clone, mapEnabled, isSubscriber)
+            : undefined,
         sourceCanvas
     );
 
@@ -1012,10 +1010,10 @@ const createFrameSVG = async (
           }
         : targetCenter;
 
-    applyCameraViewBox(graph, elem, nextCameraCenter, zoom, outputWidth, outputHeight);
+    const viewBox = applyCameraViewBox(graph, elem, nextCameraCenter, zoom, outputWidth, outputHeight);
 
     if (!hideWatermark) {
-        elem.appendChild(await createVideoWatermarkElement(zoom, outputWidth, outputHeight));
+        elem.appendChild(await createVideoWatermarkElement(viewBox, outputWidth, outputHeight));
     }
 
     return {
@@ -1062,9 +1060,15 @@ export const exportVideo = async (
     languages: TextLanguage[],
     options: VideoExportOptions,
     bgColor: string,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    environment: VideoExportEnvironment = {
+        mapEnabled: false,
+        mapStyle: DEFAULT_MAP_STYLE,
+        svgViewBoxMin: { x: 0, y: 0 },
+        svgViewBoxZoom: 100,
+    }
 ): Promise<Blob> => {
-    const { mapEnabled, mapStyle, svgViewBoxMin, svgViewBoxZoom } = store.getState().param.present;
+    const { mapEnabled, mapStyle, svgViewBoxMin, svgViewBoxZoom } = environment;
     const source = createVideoExportCanvas(
         mapEnabled,
         mapStyle,
@@ -1074,7 +1078,7 @@ export const exportVideo = async (
     try {
         const audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = [];
         for (const entry of timeline.audioTrack ?? []) {
-            const blob = await audioStoreIndexedDB.get(entry.blobId);
+            const blob = await environment.getAudio?.(entry.blobId);
             if (!blob) throw new Error(`Audio asset is missing: ${entry.blobId}`);
             audioClips.push({ blob, startSlot: entry.startSlot, endSlot: entry.endSlot });
         }
@@ -1088,7 +1092,8 @@ export const exportVideo = async (
                 source,
                 onProgress,
                 false,
-                audioClips
+                audioClips,
+                environment
             );
         } catch (error) {
             if (!(error instanceof NativeVideoEncodingError)) throw error;
@@ -1103,7 +1108,8 @@ export const exportVideo = async (
                 source,
                 onProgress,
                 true,
-                audioClips
+                audioClips,
+                environment
             );
         }
     } finally {
@@ -1120,7 +1126,13 @@ const renderVideo = async (
     source: ReturnType<typeof createVideoExportCanvas>,
     onProgress?: (progress: number) => void,
     forceSoftware = false,
-    audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = []
+    audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = [],
+    environment: VideoExportEnvironment = {
+        mapEnabled: false,
+        mapStyle: DEFAULT_MAP_STYLE,
+        svgViewBoxMin: { x: 0, y: 0 },
+        svgViewBoxZoom: 100,
+    }
 ): Promise<Blob> => {
     const {
         fps,
@@ -1182,7 +1194,9 @@ const renderVideo = async (
         isSystemFontsOnly,
         languages,
         renderGeometry,
-        source.canvas
+        source.canvas,
+        environment.mapEnabled,
+        !!environment.isSubscriber
     );
     const multiplier = Number.isFinite(speedMultiplier)
         ? Math.max(videoExportSpeedRange.min, Math.min(videoExportSpeedRange.max, speedMultiplier))
@@ -1444,7 +1458,9 @@ const renderVideo = async (
                 languages,
                 renderGeometry,
                 disabledNodeAnimations,
-                source.canvas
+                source.canvas,
+                environment.mapEnabled,
+                !!environment.isSubscriber
             );
             cameraCenter = nextCameraCenter;
             try {

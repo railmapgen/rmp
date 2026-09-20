@@ -4,13 +4,15 @@ import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { Id, LineId, NodeId } from '../../constants/constants';
 import { TimelineDocument, TimelineKeyframeEntry } from '../../constants/timeline';
-import { useRootSelector } from '../../redux';
+import { DEFAULT_MAP_STYLE, type MapStyle } from '../../map/map-style';
+import type { TimelineGraph } from '../../timeline/timeline-project-context';
 import { roundToMultiple } from '../../util/helpers';
 import { getLines, getNodes } from '../../util/process-elements';
 import { getTimelinePreviewState } from '../../util/timeline';
 import SvgLayer from '../svg-layer';
-import MapCanvas, { type MapCanvasHandle } from '../map-canvas';
+import { MapCanvasCore, type MapCanvasHandle } from '../map-canvas';
 import { getUnavailableLineIds } from '../../util/line-path-availability';
+import { useSvgRenderContext } from '../svg-render-context';
 import { useTimelineViewport, viewportToTransform, Viewport } from './use-timeline-viewport';
 
 const getTimelinePointerPosition = (e: React.PointerEvent<SVGElement>) => {
@@ -34,6 +36,10 @@ interface TimelinePreviewProps {
     editableKeyframe?: TimelineKeyframeEntry;
     onKeyframeMove: (entryId: string, x: number, y: number) => void;
     onViewportChange: (viewport: Viewport) => void;
+    graph?: TimelineGraph;
+    mapEnabled?: boolean;
+    mapStyle?: MapStyle;
+    isSubscriber?: boolean;
 }
 
 export default function TimelinePreview({
@@ -43,7 +49,16 @@ export default function TimelinePreview({
     editableKeyframe,
     onKeyframeMove,
     onViewportChange,
+    graph,
+    mapEnabled,
+    mapStyle,
+    isSubscriber,
 }: TimelinePreviewProps) {
+    const renderContext = useSvgRenderContext();
+    const renderGraph = graph ?? renderContext.graph;
+    const effectiveMapEnabled = mapEnabled ?? false;
+    const effectiveMapStyle = mapStyle ?? DEFAULT_MAP_STYLE;
+    const effectiveSubscriber = isSubscriber ?? false;
     const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
     // Preview geometry is more expensive than the track interaction. Keep cursor
     // scrubbing responsive and let the preview settle on the latest position.
@@ -55,7 +70,6 @@ export default function TimelinePreview({
     React.useEffect(() => {
         mapCanvasRef.current?.updateViewport(viewport);
     }, [viewport]);
-    const graph = React.useRef(window.graph);
     const [dragPosition, setDragPosition] = React.useState<{ x: number; y: number } | undefined>(undefined);
     const dragStateRef = React.useRef<
         | {
@@ -68,22 +82,16 @@ export default function TimelinePreview({
         | undefined
     >(undefined);
 
-    const {
-        refresh: { nodes: refreshNodes, edges: refreshEdges },
-    } = useRootSelector(state => state.runtime);
-    const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
-    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
-
     const previewState = React.useMemo(
-        () => getTimelinePreviewState(graph.current, document, previewCursor),
-        [document, previewCursor, refreshNodes, refreshEdges]
+        () => getTimelinePreviewState(renderGraph, document, previewCursor),
+        [document, renderGraph, previewCursor]
     );
 
     const elements = React.useMemo(() => {
         const overrides = new Map(previewState.positions);
         if (dragPosition && editableKeyframe) overrides.set(editableKeyframe.refId, dragPosition);
 
-        const target = graph.current.copy();
+        const target = renderGraph.copy();
         overrides.forEach((position, id) => {
             if (target.hasNode(id)) target.mergeNodeAttributes(id, position);
         });
@@ -96,10 +104,10 @@ export default function TimelinePreview({
             ...getLines(target, { showReconcileWarnings: false }),
             ...getNodes(target).filter(element => previewState.visibleIds.has(element.id)),
         ];
-    }, [previewState, dragPosition, editableKeyframe, refreshNodes, refreshEdges]);
+    }, [previewState, dragPosition, editableKeyframe, renderGraph]);
     const unavailableLineIds = React.useMemo(
-        () => getUnavailableLineIds(graph.current, mapEnabled, isSubscriber),
-        [mapEnabled, isSubscriber, refreshEdges]
+        () => getUnavailableLineIds(renderGraph, effectiveMapEnabled, effectiveSubscriber),
+        [effectiveMapEnabled, effectiveSubscriber, renderGraph]
     );
 
     const selected = React.useMemo(
@@ -183,14 +191,20 @@ export default function TimelinePreview({
                     </filter>
                 </defs>
                 <g transform={viewportToTransform(viewport)}>
-                    <MapCanvas ref={mapCanvasRef} />
+                    <MapCanvasCore
+                        ref={mapCanvasRef}
+                        mapEnabled={effectiveMapEnabled}
+                        mapStyle={effectiveMapStyle}
+                        initialViewport={viewport}
+                    />
                     <utils.SvgAssetsContextProvider>
                         <SvgLayer
+                            key={renderContext.fontRevision}
                             elements={elements}
                             selected={selected}
                             highlighted={unavailableLineIds}
-                            mapEnabled={mapEnabled}
-                            isSubscriber={isSubscriber}
+                            mapEnabled={effectiveMapEnabled}
+                            isSubscriber={effectiveSubscriber}
                             handlePointerDown={handlePointerDown}
                             handlePointerMove={handlePointerMove}
                             handlePointerUp={handlePointerUp}

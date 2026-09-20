@@ -1,0 +1,460 @@
+import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
+    Box,
+    Button,
+    Flex,
+    Heading,
+    HStack,
+    IconButton,
+    Input,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuList,
+    Modal,
+    ModalBody,
+    ModalContent,
+    ModalFooter,
+    ModalHeader,
+    ModalOverlay,
+    Popover,
+    PopoverBody,
+    PopoverContent,
+    PopoverTrigger,
+    Portal,
+    Text,
+    useDisclosure,
+    VStack,
+} from '@chakra-ui/react';
+import { RmgWindowHeader } from '@railmapgen/rmg-components';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+    MdChevronRight,
+    MdDownload,
+    MdEdit,
+    MdFolder,
+    MdHelp,
+    MdInsertDriveFile,
+    MdRedo,
+    MdSync,
+    MdTranslate,
+    MdUndo,
+    MdUpload,
+    MdVideoLibrary,
+    MdZoomIn,
+    MdZoomOut,
+} from 'react-icons/md';
+import { downloadAs } from '../../util/download';
+import {
+    exportTimelineProjectFile,
+    getTimelineRevisionAssetIds,
+    getOpenRmpProjectSource,
+    prepareTimelineProjectSync,
+} from '../../timeline/timeline-project-io';
+import { timelineProjectDB } from '../../timeline/timeline-project-db';
+import {
+    clearRuntime,
+    closeProject,
+    commitRevision,
+    refreshTimelineProjects,
+    redo,
+    setError,
+    setProjectName,
+    setViewport,
+    undo,
+    useTimelineDispatch,
+    useTimelineSelector,
+} from '../../timeline/timeline-store';
+import AboutModal from './about-modal';
+import TimelineActions from './timeline-actions';
+import VideoExportModal from './video-export-modal';
+
+type PendingTimelineSync = Awaited<ReturnType<typeof prepareTimelineProjectSync>>;
+
+export default function TimelineWindowHeader() {
+    const { t } = useTranslation();
+    const dispatch = useTimelineDispatch();
+    const active = useTimelineSelector(state => state.project.active);
+    const canUndo = useTimelineSelector(state => state.project.past.length > 0);
+    const canRedo = useTimelineSelector(state => state.project.future.length > 0);
+    const runtimeViewport = useTimelineSelector(state => state.runtime.viewport);
+    const syncInput = React.useRef<HTMLInputElement>(null);
+    const renameInput = React.useRef<HTMLInputElement>(null);
+    const syncCancel = React.useRef<HTMLButtonElement>(null);
+    const filesMenu = useDisclosure();
+    const [filesMenuPage, setFilesMenuPage] = React.useState<'root' | 'importRmp'>('root');
+    const [isVideoOpen, setIsVideoOpen] = React.useState(false);
+    const [isAboutOpen, setIsAboutOpen] = React.useState(false);
+    const [isRenameOpen, setIsRenameOpen] = React.useState(false);
+    const [renameName, setRenameName] = React.useState('');
+    const [pendingSync, setPendingSync] = React.useState<PendingTimelineSync>();
+
+    const closeFilesMenu = () => {
+        setFilesMenuPage('root');
+        filesMenu.onClose();
+    };
+
+    const goHome = async () => {
+        if (active) {
+            await timelineProjectDB.garbageCollectAssets(active.id, getTimelineRevisionAssetIds(active.revision));
+        }
+        dispatch(closeProject());
+        dispatch(clearRuntime());
+        await refreshTimelineProjects();
+    };
+
+    const handleDownload = async () => {
+        if (!active) return;
+        const source = await exportTimelineProjectFile(active);
+        downloadAs(`Timeline_${Date.now()}.json`, 'application/json', source);
+    };
+
+    const openRename = () => {
+        if (!active) return;
+        setRenameName(active.name);
+        setIsRenameOpen(true);
+    };
+
+    const handleRename = async () => {
+        if (!active) return;
+        const name = renameName.trim();
+        if (!name) return;
+        if (name === active.name) {
+            setIsRenameOpen(false);
+            return;
+        }
+        try {
+            const renamed = await timelineProjectDB.renameProject(active.id, name);
+            dispatch(setProjectName(renamed.name));
+            await refreshTimelineProjects();
+            setIsRenameOpen(false);
+        } catch (cause) {
+            dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        }
+    };
+
+    const changeZoom = (factor: number) => {
+        if (!active) return;
+        const viewport = runtimeViewport ?? {
+            x: active.revision.svgViewBoxMin.x,
+            y: active.revision.svgViewBoxMin.y,
+            zoom: active.revision.svgViewBoxZoom,
+        };
+        dispatch(setViewport({ ...viewport, zoom: Math.max(10, Math.min(400, viewport.zoom * factor)) }));
+    };
+
+    const handleSync = async (source: string | Promise<string>) => {
+        if (!active) return;
+        dispatch(setError(undefined));
+        try {
+            const prepared = await prepareTimelineProjectSync(await source, active.revision);
+            setPendingSync(prepared);
+        } catch (cause) {
+            dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        }
+    };
+
+    const confirmSync = async () => {
+        if (!active || !pendingSync) return;
+        try {
+            const next = { ...active, revision: pendingSync.revision, updatedAt: Date.now() };
+            await timelineProjectDB.saveProjectWithAssets(next, pendingSync.assets);
+            dispatch(commitRevision(pendingSync.revision));
+            dispatch(
+                setViewport({
+                    x: pendingSync.revision.svgViewBoxMin.x,
+                    y: pendingSync.revision.svgViewBoxMin.y,
+                    zoom: pendingSync.revision.svgViewBoxZoom,
+                })
+            );
+            setPendingSync(undefined);
+        } catch (cause) {
+            dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        }
+    };
+
+    return (
+        <RmgWindowHeader>
+            <Flex width="100%" align="center">
+                <HStack minW={0}>
+                    <Heading as="h4" size="md" whiteSpace="nowrap">
+                        Timeline
+                    </Heading>
+                    {active && (
+                        <>
+                            <Text maxW="32vw" noOfLines={1} color="gray.500">
+                                {active.name}
+                            </Text>
+                            <Popover
+                                isOpen={filesMenu.isOpen}
+                                onOpen={() => {
+                                    setFilesMenuPage('root');
+                                    filesMenu.onOpen();
+                                }}
+                                onClose={closeFilesMenu}
+                                placement="bottom-start"
+                            >
+                                <PopoverTrigger>
+                                    <Button size="sm" variant="ghost" leftIcon={<MdFolder />}>
+                                        {t('header.timelinePage.files')}
+                                    </Button>
+                                </PopoverTrigger>
+                                <Portal>
+                                    <PopoverContent width="auto">
+                                        <PopoverBody p={1}>
+                                            <Flex align="stretch">
+                                                <VStack align="stretch" spacing={0} minW="240px">
+                                                    <Button
+                                                        size="sm"
+                                                        justifyContent="flex-start"
+                                                        variant="ghost"
+                                                        fontWeight="normal"
+                                                        leftIcon={<MdFolder />}
+                                                        onClick={() => {
+                                                            closeFilesMenu();
+                                                            void goHome();
+                                                        }}
+                                                    >
+                                                        {t('header.timelinePage.backToMainMenu')}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        justifyContent="flex-start"
+                                                        variant="ghost"
+                                                        fontWeight="normal"
+                                                        leftIcon={<MdSync />}
+                                                        rightIcon={<MdChevronRight />}
+                                                        onClick={() => setFilesMenuPage('importRmp')}
+                                                    >
+                                                        <Text flex="1" textAlign="left">
+                                                            {t('header.timelinePage.importRmpData')}
+                                                        </Text>
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        justifyContent="flex-start"
+                                                        variant="ghost"
+                                                        fontWeight="normal"
+                                                        leftIcon={<MdEdit />}
+                                                        onClick={() => {
+                                                            closeFilesMenu();
+                                                            openRename();
+                                                        }}
+                                                    >
+                                                        {t('header.timelinePage.renameProject')}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        justifyContent="flex-start"
+                                                        variant="ghost"
+                                                        fontWeight="normal"
+                                                        leftIcon={<MdDownload />}
+                                                        onClick={() => {
+                                                            closeFilesMenu();
+                                                            void handleDownload();
+                                                        }}
+                                                    >
+                                                        {t('header.timelinePage.downloadProject')}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        justifyContent="flex-start"
+                                                        variant="ghost"
+                                                        fontWeight="normal"
+                                                        leftIcon={<MdVideoLibrary />}
+                                                        onClick={() => {
+                                                            closeFilesMenu();
+                                                            setIsVideoOpen(true);
+                                                        }}
+                                                    >
+                                                        {t('header.timelinePage.exportVideo')}
+                                                    </Button>
+                                                </VStack>
+                                                {filesMenuPage === 'importRmp' && (
+                                                    <Box borderLeftWidth="1px" ml={1} pl={1} minW="240px">
+                                                        <Text px={3} py={2} fontSize="sm" fontWeight="semibold">
+                                                            {t('header.timelinePage.importRmpData')}
+                                                        </Text>
+                                                        <VStack align="stretch" spacing={0}>
+                                                            <Button
+                                                                size="sm"
+                                                                justifyContent="flex-start"
+                                                                variant="ghost"
+                                                                fontWeight="normal"
+                                                                leftIcon={<MdInsertDriveFile />}
+                                                                onClick={() => {
+                                                                    closeFilesMenu();
+                                                                    void handleSync(getOpenRmpProjectSource());
+                                                                }}
+                                                            >
+                                                                {t('header.timelinePage.importOpenPainterProject')}
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                justifyContent="flex-start"
+                                                                variant="ghost"
+                                                                fontWeight="normal"
+                                                                leftIcon={<MdUpload />}
+                                                                onClick={() => {
+                                                                    closeFilesMenu();
+                                                                    syncInput.current?.click();
+                                                                }}
+                                                            >
+                                                                {t('header.timelinePage.importLocalConfig')}
+                                                            </Button>
+                                                        </VStack>
+                                                    </Box>
+                                                )}
+                                            </Flex>
+                                        </PopoverBody>
+                                    </PopoverContent>
+                                </Portal>
+                            </Popover>
+                            <input
+                                ref={syncInput}
+                                type="file"
+                                accept=".json,application/json"
+                                hidden
+                                onChange={event => {
+                                    const file = event.target.files?.[0];
+                                    if (file) void handleSync(file.text());
+                                    event.target.value = '';
+                                }}
+                            />
+                        </>
+                    )}
+                    {active && <TimelineActions />}
+                </HStack>
+                <HStack ml="auto">
+                    {active && (
+                        <>
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('header.undo')}
+                                icon={<MdUndo />}
+                                isDisabled={!canUndo}
+                                onClick={() => dispatch(undo())}
+                            />
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label={t('header.redo')}
+                                icon={<MdRedo />}
+                                isDisabled={!canRedo}
+                                onClick={() => dispatch(redo())}
+                            />
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label="Zoom out"
+                                icon={<MdZoomOut />}
+                                onClick={() => changeZoom(1.25)}
+                            />
+                            <IconButton
+                                size="sm"
+                                variant="ghost"
+                                aria-label="Zoom in"
+                                icon={<MdZoomIn />}
+                                onClick={() => changeZoom(0.8)}
+                            />
+                        </>
+                    )}
+                    {rmgRuntime.isStandaloneWindow() && (
+                        <Menu>
+                            <MenuButton
+                                as={IconButton}
+                                icon={<MdTranslate />}
+                                variant="ghost"
+                                size="sm"
+                                aria-label="Language"
+                            />
+                            <MenuList>
+                                {(['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko'] as LanguageCode[]).map(language => (
+                                    <MenuItem
+                                        key={language}
+                                        onClick={() => void rmgRuntime.getI18nInstance().changeLanguage(language)}
+                                    >
+                                        {LANGUAGE_NAMES[language][language]}
+                                    </MenuItem>
+                                ))}
+                            </MenuList>
+                        </Menu>
+                    )}
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label="Help"
+                        icon={<MdHelp />}
+                        onClick={() => setIsAboutOpen(true)}
+                    />
+                </HStack>
+            </Flex>
+            {active && <VideoExportModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />}
+            <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+            <Modal
+                isOpen={isRenameOpen}
+                onClose={() => setIsRenameOpen(false)}
+                initialFocusRef={renameInput}
+                isCentered
+            >
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>{t('header.timelinePage.renameProject')}</ModalHeader>
+                    <ModalBody>
+                        <Input
+                            ref={renameInput}
+                            aria-label={t('header.timelinePage.renameProjectPrompt')}
+                            value={renameName}
+                            onChange={event => setRenameName(event.target.value)}
+                            onKeyDown={event => {
+                                if (event.key === 'Enter') void handleRename();
+                            }}
+                        />
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button onClick={() => setIsRenameOpen(false)}>{t('cancel')}</Button>
+                        <Button colorScheme="teal" ml={3} isDisabled={!renameName.trim()} onClick={handleRename}>
+                            {t('header.timelinePage.renameProject')}
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+            <AlertDialog
+                isOpen={pendingSync !== undefined}
+                leastDestructiveRef={syncCancel}
+                onClose={() => setPendingSync(undefined)}
+                isCentered
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>{t('header.timelinePage.importRmpData')}</AlertDialogHeader>
+                        <AlertDialogBody>
+                            {pendingSync &&
+                                `Sync this RMP file (${pendingSync.nodeCount} nodes, ${pendingSync.edgeCount} edges)? ` +
+                                    `Map changes: +${pendingSync.changes.addedNodes}/-${pendingSync.changes.removedNodes} nodes, ` +
+                                    `+${pendingSync.changes.addedEdges}/-${pendingSync.changes.removedEdges} lines. ` +
+                                    `${pendingSync.removedEntries} invalid Timeline entries will be removed.`}
+                        </AlertDialogBody>
+                        <AlertDialogFooter>
+                            <Button ref={syncCancel} onClick={() => setPendingSync(undefined)}>
+                                {t('cancel')}
+                            </Button>
+                            <Button colorScheme="teal" ml={3} onClick={confirmSync}>
+                                {t('header.timelinePage.importRmpData')}
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+        </RmgWindowHeader>
+    );
+}

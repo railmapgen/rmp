@@ -6,7 +6,6 @@ import appReducer from './app/app-slice';
 import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
-import timelineReducer from './timeline/timeline-slice';
 import viewportReducer from './viewport/viewport-slice';
 
 enableMapSet();
@@ -15,7 +14,6 @@ const rootReducer = combineReducers({
     account: accountReducer,
     app: appReducer,
     param: paramReducer,
-    timeline: timelineReducer,
     runtime: runtimeReducer,
     fonts: fontsReducer,
     viewport: viewportReducer,
@@ -34,15 +32,12 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
             getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
         preloadedState,
     });
-const store = createStore();
-export type RootStore = typeof store;
+export type RootStore = ReturnType<typeof createStore>;
 
-export type RootDispatch = typeof store.dispatch;
+export type RootDispatch = RootStore['dispatch'];
 export const useRootDispatch = () => useDispatch<RootDispatch>();
 export const useRootSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const useRootStore = () => useStore() as RootStore;
 
 type RootStartListening = TypedStartListening<RootState, RootDispatch>;
 export const startRootListening = listenerMiddleware.startListening as RootStartListening;
-
-export default store;

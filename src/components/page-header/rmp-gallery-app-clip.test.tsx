@@ -7,7 +7,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { createStore } from '../../redux';
 import { setMapEnabled, setMapStyle, setSvgViewport } from '../../redux/param/param-slice';
-import { setTimelineDocument } from '../../redux/timeline/timeline-slice';
 import { render } from '../../test-utils';
 import { stringifyParam } from '../../util/save';
 import RmpGalleryAppClip from './rmp-gallery-app-clip';
@@ -60,21 +59,7 @@ describe('RmpGalleryAppClip', () => {
         sourceStore.dispatch(setMapEnabled(true));
         sourceStore.dispatch(setMapStyle(mapStyle));
         sourceStore.dispatch(setSvgViewport({ zoom: 45, min: { x: 67, y: 89 } }));
-        const timeline = {
-            version: 1 as const,
-            mode: 'quick' as const,
-            track: [
-                {
-                    id: 'clip_gallery',
-                    kind: 'node' as const,
-                    refId: 'misc_node_gallery' as const,
-                    phase: 'enter' as const,
-                    showAnimation: true,
-                },
-            ],
-        };
-        sourceStore.dispatch(setTimelineDocument(timeline));
-        const save = JSON.parse(stringifyParam(sourceStore.getState().param, timeline));
+        const save = JSON.parse(stringifyParam(sourceStore.getState().param));
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue({
@@ -96,6 +81,5 @@ describe('RmpGalleryAppClip', () => {
         expect(store.getState().param.present.mapStyle).toEqual(mapStyle);
         expect(store.getState().param.present.svgViewBoxZoom).toBe(45);
         expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 67, y: 89 });
-        expect(store.getState().timeline.present).toEqual(timeline);
     });
 });

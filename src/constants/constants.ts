@@ -155,6 +155,7 @@ export enum LocalStorageKey {
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+    TIMELINE_ONBOARDING_DISMISSED = 'rmp__timelineOnboardingDismissed_v1',
     ACCOUNT = 'rmg-home__account',
 }
 

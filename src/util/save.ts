@@ -38,7 +38,6 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { TimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
@@ -52,7 +51,6 @@ export interface RMPSave extends ProjectSnapshot {
      * The version of the current save. May be upgraded on first launch via `upgrade`.
      */
     version: number;
-    timeline?: TimelineDocument;
     images?: { id: string; base64: string }[];
 }
 
@@ -115,32 +113,55 @@ export const getInitialParam = async () => JSON.stringify((await import('../save
 /**
  * Upgrade the passed param to the latest format.
  */
-export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
-    let changed = false;
-
-    if (!originalParam) {
-        originalParam = await getInitialParam();
-        changed = true;
+const upgradeSaveString = (originalParam: string): string => {
+    const parsed = JSON.parse(originalParam);
+    const originalSave =
+        parsed && Number.isInteger(parsed.version)
+            ? parsed
+            : parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)
+              ? { version: 0, graph: parsed }
+              : undefined;
+    if (!originalSave) {
+        throw new Error('Cannot parse version from the uploaded file');
     }
-
-    let originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) {
-        originalSave = JSON.parse(await getInitialParam());
-        changed = true;
-    }
-
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
     while (version in UPGRADE_COLLECTION) {
         save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
+    }
+    return repairNodeXYNullCoordinates(save);
+};
+
+/** Upgrade an explicitly supplied save without reading or writing RMP LocalStorage. */
+export const upgradeWithoutBackup = async (originalParam: string): Promise<string> => upgradeSaveString(originalParam);
+
+export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
+    let changed = false;
+    if (!originalParam) {
+        originalParam = await getInitialParam();
         changed = true;
     }
 
-    // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
-    const repairedSave = repairNodeXYNullCoordinates(save);
-    changed ||= repairedSave !== save;
-    save = repairedSave;
+    let originalSave: RMPSave;
+    try {
+        const parsed = JSON.parse(originalParam);
+        if (Number.isInteger(parsed?.version)) {
+            originalSave = parsed as RMPSave;
+        } else if (Array.isArray(parsed?.nodes) && Array.isArray(parsed?.edges)) {
+            originalSave = { version: 0, graph: parsed } as RMPSave;
+        } else {
+            throw new Error('Invalid save version');
+        }
+    } catch {
+        originalParam = await getInitialParam();
+        originalSave = JSON.parse(originalParam) as RMPSave;
+        changed = true;
+    }
+
+    const save = upgradeSaveString(originalParam);
+    changed ||= save !== originalParam;
+    const version = Number((JSON.parse(save) as RMPSave).version);
 
     if (changed) {
         logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
@@ -165,13 +186,8 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
  * Returns a save containing only the current project snapshot, never its undo
  * and redo stacks. Images are attached only when supplied by an export flow.
  */
-export const stringifyParam = (
-    paramState: ParamState & Pick<RMPSave, 'images'>,
-    timeline?: TimelineDocument,
-    images = paramState.images
-) => {
+export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>, images = paramState.images) => {
     const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
-    if (timeline) save.timeline = timeline;
     if (images) save.images = images;
     return JSON.stringify(save);
 };

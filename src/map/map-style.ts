@@ -105,6 +105,76 @@ export const DEFAULT_MAP_STYLE: MapStyle = {
     },
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    !!value && typeof value === 'object' && !Array.isArray(value);
+const booleanOr = (value: unknown, fallback: boolean) => (typeof value === 'boolean' ? value : fallback);
+const stringOr = (value: unknown, fallback: string) => (typeof value === 'string' ? value : fallback);
+const numberOr = (value: unknown, fallback: number) =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+/** Completes partial or branch-era persisted styles without trusting malformed leaf values. */
+export const normalizeMapStyle = (value: unknown): MapStyle => {
+    const style = isRecord(value) ? value : {};
+    const roads = isRecord(style.roads) ? style.roads : {};
+    const rails = isRecord(style.rails) ? style.rails : {};
+    const labels = isRecord(style.labels) ? style.labels : {};
+    const categories = isRecord(labels.categories) ? labels.categories : {};
+
+    const normalizedRoads = Object.fromEntries(
+        (Object.keys(DEFAULT_MAP_STYLE.roads) as MapRoadKind[]).map(kind => {
+            const fallback = DEFAULT_MAP_STYLE.roads[kind];
+            const candidate = isRecord(roads[kind]) ? roads[kind] : {};
+            return [
+                kind,
+                {
+                    enabled: booleanOr(candidate.enabled, fallback.enabled),
+                    casingColor: stringOr(candidate.casingColor, fallback.casingColor),
+                    color: stringOr(candidate.color, fallback.color),
+                    widthScale: numberOr(candidate.widthScale, fallback.widthScale),
+                },
+            ];
+        })
+    ) as Record<MapRoadKind, MapRoadStyle>;
+    const normalizedRails = Object.fromEntries(
+        (Object.keys(DEFAULT_MAP_STYLE.rails) as MapRailKind[]).map(kind => {
+            const fallback = DEFAULT_MAP_STYLE.rails[kind];
+            const candidate = isRecord(rails[kind]) ? rails[kind] : {};
+            return [
+                kind,
+                {
+                    enabled: booleanOr(candidate.enabled, fallback.enabled),
+                    color: stringOr(candidate.color, fallback.color),
+                    widthScale: numberOr(candidate.widthScale, fallback.widthScale),
+                },
+            ];
+        })
+    ) as Record<MapRailKind, MapRailStyle>;
+    const normalizedCategories = Object.fromEntries(
+        MAP_LABEL_KINDS.map(kind => {
+            const fallback = DEFAULT_MAP_STYLE.labels.categories[kind];
+            const candidate = isRecord(categories[kind]) ? categories[kind] : {};
+            return [
+                kind,
+                {
+                    enabled: booleanOr(candidate.enabled, fallback.enabled),
+                    color: stringOr(candidate.color, fallback.color),
+                    strokeColor: stringOr(candidate.strokeColor, fallback.strokeColor),
+                    sizeScale: numberOr(candidate.sizeScale, fallback.sizeScale),
+                },
+            ];
+        })
+    ) as Record<MapLabelKind, MapLabelStyle>;
+
+    return {
+        roads: normalizedRoads,
+        rails: normalizedRails,
+        labels: {
+            enabled: booleanOr(labels.enabled, DEFAULT_MAP_STYLE.labels.enabled),
+            categories: normalizedCategories,
+        },
+    };
+};
+
 /**
  * Limits generated CSS precision so slider arithmetic does not create noisy,
  * unstable style text or unnecessarily different exported SVG snapshots.
@@ -245,6 +315,7 @@ const compileLabelStyleCss = (labels: MapStyle['labels']) =>
  * such as `labels` cannot be affected.
  */
 export const compileMapStyleCss = (style: MapStyle) => {
+    style = normalizeMapStyle(style);
     const { path, local, collector, arterial } = style.roads;
     const display = (enabled: boolean) => (enabled ? 'inline' : 'none');
     const labelDisplay = style.labels.enabled ? 'inline' : 'none';
