@@ -226,13 +226,7 @@ interface RawTimelineEntry {
 }
 
 const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undefined => {
-    if (!entry || typeof entry.id !== 'string' || typeof entry.refId !== 'string') return undefined;
-
-    if (entry.kind === 'keyframe') {
-        if (typeof entry.x !== 'number' || !Number.isFinite(entry.x)) return undefined;
-        if (typeof entry.y !== 'number' || !Number.isFinite(entry.y)) return undefined;
-        return { id: entry.id, kind: 'keyframe', refId: entry.refId as NodeId, x: entry.x, y: entry.y };
-    }
+    if (!entry || typeof entry.id !== 'string') return undefined;
 
     if (entry.kind === 'pause') {
         const position = entry.position === 'after' ? 'after' : entry.position === 'before' ? 'before' : undefined;
@@ -243,6 +237,14 @@ const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undef
             position,
             duration: Math.max(0, entry.duration),
         };
+    }
+
+    if (typeof entry.refId !== 'string') return undefined;
+
+    if (entry.kind === 'keyframe') {
+        if (typeof entry.x !== 'number' || !Number.isFinite(entry.x)) return undefined;
+        if (typeof entry.y !== 'number' || !Number.isFinite(entry.y)) return undefined;
+        return { id: entry.id, kind: 'keyframe', refId: entry.refId as NodeId, x: entry.x, y: entry.y };
     }
 
     if (entry.kind === 'node' || entry.kind === 'edge') {

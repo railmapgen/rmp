@@ -232,6 +232,15 @@ describe('timeline utilities', () => {
         expect(normalized.track[1]).toMatchObject({ kind: 'keyframe', x: 1, y: 2 });
     });
 
+    it('normalizeTimelineDocument should preserve pause entries without a ref', () => {
+        const normalized = normalizeTimelineDocument({
+            version: 1,
+            track: [{ id: 'pause_1', kind: 'pause', position: 'after', duration: 2 }],
+        });
+
+        expect(normalized.track).toEqual([{ id: 'pause_1', kind: 'pause', position: 'after', duration: 2 }]);
+    });
+
     it('should derive labels and centers from graph refs', () => {
         const graph = makeGraph();
 
