@@ -27,7 +27,7 @@ import { buildPhases } from '../../util/player-schedule';
 import { exportVideoWithFrameCallback } from '../../util/video-export';
 import { calculateCanvasSize } from '../../util/helpers';
 import { renderMapLayerForExport } from '../../map/map-tile-controller';
-import { getActionDuration, scheduleActionRows } from '../../util/action-schedule';
+import { getActionDuration, getBatchAnchorIndex, scheduleActionRows } from '../../util/action-schedule';
 
 interface TimelinePlayerProps {
     isOpen: boolean;
@@ -113,6 +113,8 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
             actionRows.map(action => getActionDuration(action) * 1000)
         );
         const actionLineEdges = new Map<string, string[]>();
+        // 开启"同时"的边元素：实时预览以边为动画粒度，节点随邻边渲染
+        const simultaneousElements = new Set<string>();
         lines.forEach(line =>
             actionLineEdges.set(
                 line.id,
@@ -121,11 +123,19 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
                     .map(element => element.id as string)
             )
         );
+        lines.forEach(line => {
+            line.elements.forEach(element => {
+                if (element.simultaneous && typeof element.id === 'string' && element.id.startsWith('line_')) {
+                    simultaneousElements.add(element.id);
+                }
+            });
+        });
         const rawSchedule = buildPhases(diffsMs, {
             edgeOrder,
             actionRows,
             actionSchedule: actionSchedule.entries,
             actionLineEdges,
+            simultaneousElements,
         });
 
         // 预览以动作时长作为唯一总时长；diff 调度的默认绘制时长不能额外拉长播放时间。
@@ -263,27 +273,39 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
         };
     };
 
-    // 获取活跃线路（显示所有线路组）
+    // 获取活跃线路（显示所有线路组）。
+    // 并行批次（withPrevious）整体结算：批次进行中不增删线路，批次结束后一次性应用
+    // 批次内全部增删，保证并行动作显示与首动作完全相同的"已开通线路"。
     const getActiveLines = (): LineGroup[] => {
         if (!hudState) return [];
         const timeSeconds = hudState.currentMs / 1000;
-        let cursor = 0;
         const openedSegments = new Set<string>();
+        const batchLastEnd = new Map<number, number>();
+        actionRows.forEach((_, index) => {
+            const entry = actionSchedule.entries[index];
+            if (!entry) return;
+            batchLastEnd.set(entry.batchIndex, Math.max(batchLastEnd.get(entry.batchIndex) ?? 0, entry.endTime / 1000));
+        });
+        const settledBatches = new Set<number>();
         for (let index = 0; index < actionRows.length; index++) {
-            const action = actionRows[index];
-            const duration = getActionDuration(action);
-            const startTime = (actionSchedule.entries[index]?.startTime ?? cursor * 1000) / 1000;
-            if (startTime >= timeSeconds) break;
-            if (action.actionLineId && (action.actionType === 'open' || action.actionType === 'close')) {
-                const endTime = actionSchedule.entries[index]
-                    ? actionSchedule.entries[index].endTime / 1000
-                    : startTime + duration;
-                if (endTime <= timeSeconds) {
-                    if (action.actionType === 'open') openedSegments.add(action.actionLineId);
-                    else openedSegments.delete(action.actionLineId);
+            const entry = actionSchedule.entries[index];
+            if (!entry) continue;
+            if (entry.startTime / 1000 >= timeSeconds) break;
+            const lastEnd = batchLastEnd.get(entry.batchIndex) ?? entry.endTime / 1000;
+            if (lastEnd > timeSeconds) continue; // 批次尚未整体结束
+            if (settledBatches.has(entry.batchIndex)) continue;
+            settledBatches.add(entry.batchIndex);
+            // 批次整体结束：统一应用批次内全部开通/停运增删
+            actionRows.forEach((batchAction, batchActionIndex) => {
+                if (actionSchedule.entries[batchActionIndex]?.batchIndex !== entry.batchIndex) return;
+                if (
+                    batchAction.actionLineId &&
+                    (batchAction.actionType === 'open' || batchAction.actionType === 'close')
+                ) {
+                    if (batchAction.actionType === 'open') openedSegments.add(batchAction.actionLineId);
+                    else openedSegments.delete(batchAction.actionLineId);
                 }
-            }
-            cursor = Math.max(cursor, startTime + duration);
+            });
         }
         const groupIds = new Set(
             [...openedSegments]
@@ -300,11 +322,14 @@ export default function TimelinePlayer({ isOpen, onClose }: TimelinePlayerProps)
         if (!hudState || actionRows.length === 0) return null;
         const timeSeconds = hudState.currentMs / 1000;
         for (let index = 0; index < actionRows.length; index++) {
-            const action = actionRows[index];
             const entry = actionSchedule.entries[index];
-            if (entry && timeSeconds >= entry.startTime / 1000 && timeSeconds < entry.endTime / 1000) return action;
+            if (entry && timeSeconds >= entry.startTime / 1000 && timeSeconds < entry.endTime / 1000) {
+                // 并行动作的徽章/备注继承批次首动作
+                return actionRows[getBatchAnchorIndex(actionRows, index)] ?? actionRows[index];
+            }
         }
-        return actionRows[actionRows.length - 1] ?? null;
+        const lastIndex = actionRows.length - 1;
+        return actionRows[getBatchAnchorIndex(actionRows, lastIndex)] ?? null;
     };
 
     const currentAction = getCurrentAction();

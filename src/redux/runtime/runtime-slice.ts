@@ -264,6 +264,15 @@ const runtimeSlice = createSlice({
             state.selected = new Set<Id>();
             state.isDetailsOpen = getIsDetailsOpen(state);
         },
+        resetTransientInteractionState: state => {
+            state.selected = new Set<Id>();
+            state.pointerPosition = undefined;
+            state.active = undefined;
+            state.mode = 'free';
+            state.lastTool = undefined;
+            state.isDetailsOpen = 'close';
+            state.radialTouchMenu = defaultRadialTouchMenuState;
+        },
         setPointerPosition: (state, action: PayloadAction<{ x: number; y: number } | undefined>) => {
             state.pointerPosition = action.payload;
         },
@@ -404,6 +413,7 @@ export const {
     addSelected,
     removeSelected,
     clearSelected,
+    resetTransientInteractionState,
     setPointerPosition,
     setActive,
     showDetailsPanel,

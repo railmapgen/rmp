@@ -64,6 +64,8 @@ export interface AnimationStep {
     id: Id;
     kind: 'node' | 'edge';
     reverse: boolean;
+    /** 是否与上一个元素同时开始动画（元素级并行） */
+    simultaneous?: boolean;
     version?: number;
 }
 
@@ -97,21 +99,59 @@ export interface AnimationPhase {
     quickComplete?: boolean;
 }
 
-const getActionLineCounts = (line: TimelineLine | undefined) => ({
-    stationCount: line?.elements.filter(element => isStationNodeId(element.id)).length ?? 0,
-    edgeCount: line?.elements.filter(element => isLineId(element.id)).length ?? 0,
-});
-
-export const getActionLineMinimumDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
-    if (!line) return Math.max(0.1, nodeAnimationDuration);
-    const { stationCount, edgeCount } = getActionLineCounts(line);
-    return Math.max(0.1, stationCount * nodeAnimationDuration + edgeCount * 0.5);
+/**
+ * 将元素列表切分为"同时链"：第一个元素为链头，其后连续开启"同时"的元素
+ * 并入同一条链；遇到普通元素则开始新链。链内元素并行绘制、各自独立计时，
+ * 链的墙钟耗时取链内各元素动画耗时的最大值；链间串行衔接。
+ * 停运方向按反转顺序调度，但链成员集合不变、链成本与顺序无关，故无需区分方向。
+ */
+const getSimultaneousChains = (line: TimelineLine | undefined): Array<{ stationCount: number; edgeCount: number }> => {
+    const chains: Array<{ stationCount: number; edgeCount: number }> = [];
+    line?.elements.forEach((element, index) => {
+        const isStation = isStationNodeId(element.id);
+        const isEdge = isLineId(element.id);
+        if (!isStation && !isEdge) return;
+        if (index > 0 && element.simultaneous && chains.length > 0) {
+            const chain = chains[chains.length - 1];
+            if (isStation) chain.stationCount += 1;
+            else chain.edgeCount += 1;
+        } else {
+            chains.push({ stationCount: isStation ? 1 : 0, edgeCount: isEdge ? 1 : 0 });
+        }
+    });
+    return chains;
 };
 
+/**
+ * 线路段最小时长（启用"同时"时的并行资源分配算法）：
+ * 每条同时链内的车站与边并行绘制，链耗时 = max(车站数>0 ? 单站耗时 : 0, 边数>0 ? 单边最小0.5s : 0)；
+ * 各链串行求和。无"同时"元素时与线性公式（车站数×单站耗时 + 边数×0.5）完全等价。
+ */
+export const getActionLineMinimumDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
+    if (!line) return Math.max(0.1, nodeAnimationDuration);
+    const chains = getSimultaneousChains(line);
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration);
+    const total = chains.reduce(
+        (sum, chain) =>
+            sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 0.5 : 0),
+        0
+    );
+    return Math.max(0.1, total);
+};
+
+/**
+ * 线路段建议时长：与最小时长同一套同时链模型，边按 1s 的舒适节奏估算，
+ * 并行链只计一次边成本，避免为同时绘制的元素重复分配时间。
+ */
 export const getActionLineSuggestedDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
     if (!line) return Math.max(0.1, nodeAnimationDuration);
-    const { stationCount, edgeCount } = getActionLineCounts(line);
-    return Math.max(0.1, stationCount * nodeAnimationDuration + edgeCount);
+    const chains = getSimultaneousChains(line);
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration);
+    const total = chains.reduce(
+        (sum, chain) => sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 1 : 0),
+        0
+    );
+    return Math.max(0.1, total);
 };
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -236,8 +276,33 @@ export function buildAnimationPhases(
 ): AnimationPhase[] {
     const schedule = scheduleActionRows(actionRows, actionRows.map(getActionDuration));
     const phases: AnimationPhase[] = [];
-    // 按动作顺序自动推导已开通的线路组（不再读取用户手动维护的 activeLineIds）
+    // 按动作顺序自动推导已开通的线路组（不再读取用户手动维护的 activeLineIds）。
+    // 并行批次（withPrevious）期间，批次内所有动作显示与首动作完全相同的"已开通线路"集合，
+    // 批次内其余动作的开通/停运增删在批次结束时统一结算。
     const openedGroupIds: Set<string> = new Set();
+    // 预计算每个批次的首尾动作索引
+    const batchFirstIndex = actionRows.map((_, i) => {
+        const batchIndex = schedule.entries[i]?.batchIndex;
+        return actionRows.findIndex((__, j) => schedule.entries[j]?.batchIndex === batchIndex);
+    });
+    const batchLastIndex = actionRows.map((_, i) => {
+        const batchIndex = schedule.entries[i]?.batchIndex;
+        let last = i;
+        for (let j = actionRows.length - 1; j >= 0; j--) {
+            if (schedule.entries[j]?.batchIndex === batchIndex) {
+                last = j;
+                break;
+            }
+        }
+        return last;
+    });
+    const applyGroupChange = (row: ActionRow) => {
+        if (row.actionType !== 'open' && row.actionType !== 'close') return;
+        const line = row.actionLineId ? lines.find(l => l.id === row.actionLineId) : undefined;
+        if (!line?.groupId) return;
+        if (row.actionType === 'open') openedGroupIds.add(line.groupId);
+        else openedGroupIds.delete(line.groupId);
+    };
 
     for (let i = 0; i < actionRows.length; i++) {
         const action = actionRows[i];
@@ -257,13 +322,14 @@ export function buildAnimationPhases(
                             id: elem.id as Id,
                             kind,
                             reverse: elem.reverse ?? false,
+                            ...(elem.simultaneous ? { simultaneous: true } : {}),
                             ...(kind === 'node' ? { version: elem.version ?? 1 } : {}),
                         });
                     }
                     if (timelineLine.groupId) {
                         targetGroupId = timelineLine.groupId;
-                        if (action.actionType === 'open') openedGroupIds.add(timelineLine.groupId);
-                        else openedGroupIds.delete(timelineLine.groupId);
+                        // 仅批次首动作立即改变"已开通线路"集合；后续并行动作继承相同内容
+                        if (i === batchFirstIndex[i]) applyGroupChange(action);
                     }
                 }
             }
@@ -326,13 +392,19 @@ export function buildAnimationPhases(
                 : targetLine?.elements;
         const targetElement = targetElements?.find(element => !isVirtualNode(_graph, element.id));
 
+        // 并行动作的日期/备注同样继承批次首动作（存储层已归一化，这里再兜底保证导出一致）
+        const anchorAction = actionRows[batchFirstIndex[i]];
+        const isBatchFirst = i === batchFirstIndex[i];
+        const phaseRemark = isBatchFirst ? action.remark || '' : anchorAction?.remark || '';
+        const phaseDate = isBatchFirst ? action.date || '' : anchorAction?.date || '';
+
         phases.push({
             type: action.actionType,
             actionRowIndex: i,
             elements,
             activeLineIds: [...openedGroupIds],
-            date: action.date || '',
-            remark: action.remark || '',
+            date: phaseDate,
+            remark: phaseRemark,
             durationWeight,
             duration: action.actionType === 'open' || action.actionType === 'close' ? durationWeight : baseWeight,
             focusTarget: targetElement
@@ -356,6 +428,13 @@ export function buildAnimationPhases(
             batchIndex: schedule.entries[i].batchIndex,
             quickComplete: isQuickCompleteAction(action),
         });
+
+        // 批次最后一个动作入队后，统一结算批次内其余并行动作对"已开通线路"的增删
+        if (i === batchLastIndex[i]) {
+            for (let j = batchFirstIndex[i] + 1; j <= i; j++) {
+                applyGroupChange(actionRows[j]);
+            }
+        }
     }
 
     return phases;
@@ -1345,8 +1424,19 @@ const createFrameSVG = async (
                     'image/svg+xml'
                 ).documentElement.firstElementChild;
             };
+            const currentName = currentElement.querySelector<SVGGElement>(`#stn_name_${nodeId}`);
+            const applyNameLayout = (element: Element | null) => {
+                if (!currentName || !element) return;
+
+                const renderedName = element.querySelector<SVGGElement>('[id^="stn_name_"]');
+                if (!renderedName) return;
+
+                renderedName.setAttribute('transform', currentName.getAttribute('transform') ?? '');
+                renderedName.setAttribute('text-anchor', currentName.getAttribute('text-anchor') ?? 'middle');
+            };
             const parsed = renderVersion(versionNumber, nodeId);
             if (parsed) {
+                applyNameLayout(parsed);
                 currentElement.setAttribute('transform', `translate(${snapshot.x}, ${snapshot.y})`);
                 currentElement.innerHTML = parsed.innerHTML;
                 elem.getElementById(`${nodeId}.pre`)?.remove();
@@ -1355,6 +1445,7 @@ const createFrameSVG = async (
                 if (transition && transition.from !== versionNumber) {
                     const oldElement = renderVersion(transition.from, `${nodeId}.history-old`);
                     if (oldElement) {
+                        applyNameLayout(oldElement);
                         oldElement.setAttribute('opacity', `${1 - transition.progress}`);
                         oldElement.setAttribute('pointer-events', 'none');
                         currentElement.setAttribute('opacity', `${transition.progress}`);
@@ -1607,7 +1698,19 @@ interface FrameContext {
     overviewPhaseProgress?: number;
     currentZoom?: number;
     focusZoom?: number;
-    focusZoomTransition?: { phaseIndex: number; start: number; target: number; progress: number } | null;
+    /**
+     * 镜头缩放平滑过渡（帧域驱动，自带惯性）：
+     * - id：过渡场景标识（并行合并/同时组/惯性回放），同 id 持续期间不重启，避免每帧跳变；
+     * - startFrame/durationFrames：过渡在帧时间轴上的区间，zoom 按 smoothstep 平滑推进；
+     * - 并行组结束后以 restore 过渡惯性回放到用户缩放，而非瞬间切回。
+     */
+    focusZoomTransition?: {
+        id: string;
+        startFrame: number;
+        durationFrames: number;
+        start: number;
+        target: number;
+    } | null;
     /** 全览保持状态：overview 结束后继续保持全览缩放与视口，直到 focus 动作取消 */
     overviewHold?: { center: { x: number; y: number }; zoom: number } | null;
     focusCenterHold?: { center: { x: number; y: number }; zoom: number; batchIndex: number } | null;
@@ -1738,34 +1841,58 @@ function scheduleElementFrames(
     };
 
     // 第一步：排定基础起始帧与动画时长（暂不写入 ctx，供第二步整体拉伸）
+    // 元素级"同时"规则（阻塞以后者为准）：
+    //   - simultaneous 元素与紧邻的上一个元素同时开始（相同起始帧）；
+    //   - 一条"同时链"= 链头（普通元素）+ 其后连续的 simultaneous 元素，链内元素
+    //     共享起始帧、各自独立计时；
+    //   - 链后的下一个普通元素必须等待链内最晚结束的元素（后者）播放完毕后才开始，
+    //     即阻塞以后者为准；无并行元素时保持原有的无缝重叠衔接节奏。
     const scheduled: Array<{ step: AnimationStep; start: number; dur: number }> = [];
+    let anchor: { step: AnimationStep; start: number; dur: number } | null = null;
+    let chainMaxEnd = phaseRange.start;
+    let chainHasSimultaneous = false;
     for (const step of elements) {
         if (ctx.elementStartFrame.has(getKey(step.id))) continue;
         const prev = scheduled.length > 0 ? scheduled[scheduled.length - 1] : null;
-        let thisStartFrame = prev ? prev.start + prev.dur : phaseRange.start;
+        let thisStartFrame = phaseRange.start;
 
-        if (prev) {
-            if (prev.step.kind === 'edge' && step.kind === 'node') {
+        if (prev && step.simultaneous) {
+            // 与上一个元素同时开始
+            thisStartFrame = prev.start;
+        } else if (anchor) {
+            let serialStart: number;
+            if (anchor.step.kind === 'edge' && step.kind === 'node') {
                 // Edge→Node: 节点在边完成前 0.5s 启动（不得早于边的起点）
-                thisStartFrame = Math.max(prev.start, prev.start + prev.dur - baseNodeFrames);
-            } else if (prev.step.kind === 'node' && step.kind === 'node') {
+                serialStart = Math.max(anchor.start, anchor.start + anchor.dur - baseNodeFrames);
+            } else if (anchor.step.kind === 'node' && step.kind === 'node') {
                 // Node→Node: 下一个节点在当前节点启动后 0.8s 启动，节点间无缝
-                thisStartFrame = prev.start + Math.max(1, Math.round(baseNodeFrames * 0.8));
-            } else if (prev.step.kind === 'node' && step.kind === 'edge') {
+                serialStart = anchor.start + Math.max(1, Math.round(baseNodeFrames * 0.8));
+            } else if (anchor.step.kind === 'node' && step.kind === 'edge') {
                 // Node→Edge: 后一条线在节点完成前 0.1s 启动，避免点线点序列停顿
-                thisStartFrame = prev.start + baseNodeFrames - Math.max(1, Math.round(ctx.fps * 0.1));
-            } else if (prev.step.kind === 'edge' && step.kind === 'edge') {
+                serialStart = anchor.start + baseNodeFrames - Math.max(1, Math.round(ctx.fps * 0.1));
+            } else {
                 // Edge→Edge: 下一条边在当前边完成前 0.1s 启动，保持连续
-                thisStartFrame = Math.max(
+                serialStart = Math.max(
                     phaseRange.start,
-                    prev.start + prev.dur - Math.max(1, Math.round(ctx.fps * 0.1))
+                    anchor.start + anchor.dur - Math.max(1, Math.round(ctx.fps * 0.1))
                 );
             }
+            // 以后者为准：链中存在同时元素时，后续元素等待链内最晚结束者
+            thisStartFrame = chainHasSimultaneous ? Math.max(serialStart, chainMaxEnd) : serialStart;
         }
 
         const clampedStart = Math.min(phaseRange.end, Math.max(phaseRange.start, thisStartFrame));
         const dur = step.kind === 'edge' ? getBaseEdgeDur(step.id) : baseNodeFrames;
-        scheduled.push({ step, start: clampedStart, dur });
+        const item = { step, start: clampedStart, dur };
+        scheduled.push(item);
+        if (!step.simultaneous) {
+            anchor = item;
+            chainMaxEnd = clampedStart + dur;
+            chainHasSimultaneous = false;
+        } else {
+            chainMaxEnd = Math.max(chainMaxEnd, clampedStart + dur);
+            chainHasSimultaneous = true;
+        }
     }
 
     // 第二步：等比拉伸整个序列，使最后一个元素恰好画完到 phase 末尾（填满，消除尾部空转）
@@ -1775,11 +1902,15 @@ function scheduleElementFrames(
     const actualSpan = Math.max(1, lastEnd - firstStart);
     const stretch = Math.max(1, phaseSpan / actualSpan);
 
+    const stretchedStarts: number[] = [];
     for (const item of scheduled) {
-        const newStart = Math.max(
-            phaseRange.start,
-            Math.round(phaseRange.start + (item.start - phaseRange.start) * stretch)
-        );
+        // simultaneous 元素严格复用紧邻上一元素拉伸后的起始帧，保证二者真正同时开始
+        const ownIndex = stretchedStarts.length;
+        const newStart =
+            item.step.simultaneous && ownIndex > 0
+                ? stretchedStarts[ownIndex - 1]
+                : Math.max(phaseRange.start, Math.round(phaseRange.start + (item.start - phaseRange.start) * stretch));
+        stretchedStarts.push(newStart);
         const newDur = Math.max(
             item.step.kind === 'edge' ? Math.ceil(ctx.fps * 0.5) : 1,
             Math.round(item.dur * stretch)
@@ -1795,11 +1926,12 @@ const getEffectiveZoom = (overviewProgress: number, userScale: number, overviewZ
     return userScale + (overviewZoom - userScale) * t;
 };
 
-const getFrameEffectiveZoom = (ctx: FrameContext, overviewProgress: number): number => {
-    const focusZoom = ctx.focusZoomTransition
-        ? ctx.focusZoomTransition.start +
-          (ctx.focusZoomTransition.target - ctx.focusZoomTransition.start) *
-              smoothstep(0, 1, ctx.focusZoomTransition.progress)
+const getFrameEffectiveZoom = (ctx: FrameContext, overviewProgress: number, frameIndex: number): number => {
+    const tr = ctx.focusZoomTransition;
+    const focusZoom = tr
+        ? tr.start +
+          (tr.target - tr.start) *
+              smoothstep(0, 1, clamp01((frameIndex - tr.startFrame) / Math.max(1, tr.durationFrames)))
         : ctx.focusZoom;
     const zoom =
         focusZoom ?? getEffectiveZoom(overviewProgress, ctx.userScale, ctx.overviewZoomOverride ?? ctx.overviewZoom);
@@ -1837,6 +1969,19 @@ function processFrame(
     const previousNodeVersions = new Map<NodeId, number>();
     const animatingElements = new Map<Id, ElementAnimation>();
 
+    // 并行批次（withPrevious）版本赢家规则：同一元素出现在批次内多个动作中时，
+    // 以后一个动作（phaseIndex 更大）为赢家——元素只由赢家动作绘制、版本以赢家为准；
+    // 非赢家动作跳过该元素的更新绘制（即使赢家先开始绘制，前者也不得用旧版本覆盖）。
+    const batchElementWinner = new Map<string, number>();
+    phases.forEach((p, phaseIndex) => {
+        if (p.type !== 'open' && p.type !== 'close') return;
+        for (const elem of p.elements) {
+            batchElementWinner.set(`${p.batchIndex}:${String(elem.id)}`, phaseIndex);
+        }
+    });
+    const isBatchElementWinner = (p: AnimationPhase, phaseIndex: number, elementId: Id): boolean =>
+        batchElementWinner.get(`${p.batchIndex}:${String(elementId)}`) === phaseIndex;
+
     let focus: CameraFocus = { kind: 'none' };
     let currentDate = '';
     let currentRemark = '';
@@ -1844,8 +1989,11 @@ function processFrame(
     /** 全览动作专用安全相机（由 getSafeOverviewCamera 计算），传递给 createFrameSVG 用于精确设置 viewBox 和 HUD */
     let safeOverviewCamera: { center: { x: number; y: number }; zoom: number } | undefined;
 
-    const stateEnd = isOverview ? phases.length : Math.max(0, currentPhaseIndex);
-    for (let i = 0; i < stateEnd; i++) {
+    // 只提交"已真正结束"的相位：并行批次中各相位完成顺序与索引顺序无关，
+    // 不能用 currentPhaseIndex 作为上界（否则先完成的后者相位被跳过 → 元素消失，
+    // 或仍在运行的前者相位被整体提交 → 共享元素以旧版本提前出现）。
+    for (let i = 0; i < phases.length; i++) {
+        if (!isOverview && phaseFrameRanges[i].end > frameIndex) continue;
         const previousPhase = phases[i];
         if (previousPhase.type === 'open' || previousPhase.type === 'close') {
             currentDate = previousPhase.date || currentDate;
@@ -1854,6 +2002,8 @@ function processFrame(
         }
         if (previousPhase.type === 'open') {
             for (const elem of previousPhase.elements) {
+                // 共享元素仅由赢家相位提交，非赢家相位结束时不结算
+                if (!isBatchElementWinner(previousPhase, i, elem.id)) continue;
                 if (elem.kind === 'node') {
                     visibleNodes.add(elem.id as NodeId);
                     nodeVersions.set(elem.id as NodeId, elem.version ?? 1);
@@ -1861,6 +2011,7 @@ function processFrame(
             }
         } else if (previousPhase.type === 'close') {
             for (const elem of previousPhase.elements) {
+                if (!isBatchElementWinner(previousPhase, i, elem.id)) continue;
                 if (elem.kind === 'node') {
                     const nodeId = elem.id as NodeId;
                     const closeStyle = previousPhase.closeNodeStyles?.[nodeId];
@@ -1881,14 +2032,19 @@ function processFrame(
     previousNodeVersions.clear();
     nodeVersions.forEach((version, nodeId) => previousNodeVersions.set(nodeId, version));
 
+    // 收集并行批次（withPrevious）中所有 open/close 相位的元素，用于后续镜头合并
+    const parallelOpenCloseIndices: number[] = [];
     // 将同时进行但非主阶段的开通/停运动画合并到本帧；主阶段仍负责镜头和文案。
     for (const phaseIndex of activePhaseIndices.filter(index => index !== currentPhaseIndex)) {
         const activePhase = phases[phaseIndex];
         if (activePhase.type !== 'open' && activePhase.type !== 'close') continue;
+        parallelOpenCloseIndices.push(phaseIndex);
         const range = phaseFrameRanges[phaseIndex];
         const steps = activePhase.type === 'close' ? [...activePhase.elements].reverse() : activePhase.elements;
         if (!activePhase.quickComplete) scheduleElementFrames(ctx, activePhase, range, phaseIndex);
         for (const step of steps) {
+            // 批次内共享元素只由后一个动作（赢家）绘制，前者跳过更新
+            if (!isBatchElementWinner(activePhase, phaseIndex, step.id)) continue;
             const key = `${phaseIndex}:${step.id}`;
             const startFrame = activePhase.quickComplete ? range.start : (ctx.elementStartFrame.get(key) ?? range.end);
             const duration = activePhase.quickComplete
@@ -1927,6 +2083,34 @@ function processFrame(
         }
     }
 
+    // 并行批次镜头合并：当多个 open/close 相位同时活动（withPrevious）时，
+    // 镜头取所有相位元素的包围盒并集做 fit-zoom，避免只跟踪后一个动作导致前一个在画面外绘制。
+    const parallelFocusOverride = (() => {
+        if (parallelOpenCloseIndices.length === 0) return undefined;
+        if (!phase || (phase.type !== 'open' && phase.type !== 'close')) return undefined;
+        // 收集所有并行相位的元素 bounds
+        const allBounds: GraphBounds[] = [];
+        const collectBounds = (p: AnimationPhase) => {
+            const steps: AnimationStep[] = p.elements.map(e => ({
+                id: e.id,
+                kind: e.kind,
+                reverse: e.reverse,
+            }));
+            const b = getElementBounds(ctx.graph, steps);
+            if (b) allBounds.push(b);
+        };
+        collectBounds(phase);
+        for (const idx of parallelOpenCloseIndices) collectBounds(phases[idx]);
+        if (allBounds.length === 0) return undefined;
+        const merged: GraphBounds = {
+            xMin: Math.min(...allBounds.map(b => b.xMin)),
+            yMin: Math.min(...allBounds.map(b => b.yMin)),
+            xMax: Math.max(...allBounds.map(b => b.xMax)),
+            yMax: Math.max(...allBounds.map(b => b.yMax)),
+        };
+        return merged;
+    })();
+
     ctx.overviewZoomOverride = undefined;
     ctx.overviewPhaseProgress = undefined;
     if (isOverview) {
@@ -1951,6 +2135,10 @@ function processFrame(
             ctx.focusCenterHold?.batchIndex === phase.batchIndex;
         if (phase.type !== 'focus' && !keepsFocusZoom) {
             ctx.focusZoom = undefined;
+        }
+        // 全览阶段使用独立的全览缩放，不携带并行缩放惯性；open/close 阶段的过渡
+        // 改由 requestFocusZoom/settleZoomAfterOverride 按帧管理，不能每帧清除。
+        if (phase.type === 'overview') {
             ctx.focusZoomTransition = null;
         }
         if (phase.type === 'open' || phase.type === 'close') {
@@ -1966,10 +2154,63 @@ function processFrame(
         }
 
         const getKey = (id: Id) => `${currentPhaseIndex}:${id}`;
+        // 请求一段帧域驱动的缩放过渡：同一场景（id）持续期间不重启，保证并行开始/结束
+        // 的视口缩放都是带惯性的平滑动画，而非逐帧跳变。
+        const ZOOM_TRANSITION_FRAMES = Math.max(1, Math.round(ctx.fps * 0.45));
+        let zoomOverrideActive = false;
+        const requestFocusZoom = (id: string, target: number) => {
+            zoomOverrideActive = true;
+            if (ctx.focusZoomTransition?.id === id) return;
+            ctx.focusZoomTransition = {
+                id,
+                startFrame: frameIndex,
+                durationFrames: ZOOM_TRANSITION_FRAMES,
+                start: ctx.currentZoom ?? ctx.userScale,
+                target,
+            };
+        };
+        // 并行（动作级/元素级同时）或聚焦动作结束后，惯性回放到用户缩放；回放完毕再清除过渡
+        const settleZoomAfterOverride = () => {
+            const tr = ctx.focusZoomTransition;
+            if (zoomOverrideActive) return;
+            if (tr && (tr.id.startsWith('parallel:') || tr.id.startsWith('sim:') || tr.id.startsWith('focus:'))) {
+                requestFocusZoom(`restore:${currentPhaseIndex}`, ctx.userScale);
+            } else if (tr?.id.startsWith('restore:') && frameIndex - tr.startFrame >= tr.durationFrames) {
+                ctx.focusZoomTransition = null;
+            }
+        };
+        // 元素级"同时"镜头：若当前帧有 simultaneous 元素正在动画，收集与其同时启动
+        // （相同起始帧）的整组元素，用整条 bounds 合并视口，保证并行动画元素完整可见。
+        const getSimultaneousFocusBounds = (ordered: AnimationStep[]): GraphBounds | undefined => {
+            if (phase.quickComplete) return undefined;
+            const groups = new Map<number, AnimationStep[]>();
+            let hasActiveSimultaneous = false;
+            for (const step of ordered) {
+                const startFrame = ctx.elementStartFrame.get(getKey(step.id));
+                if (startFrame === undefined) continue;
+                const dur =
+                    ctx.elementDurationFrame.get(getKey(step.id)) ??
+                    Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration));
+                const frameSinceStart = frameIndex - startFrame;
+                if (frameSinceStart < 0) continue;
+                if (step.simultaneous && frameSinceStart < dur) hasActiveSimultaneous = true;
+                const group = groups.get(startFrame) ?? [];
+                group.push(step);
+                groups.set(startFrame, group);
+            }
+            if (!hasActiveSimultaneous) return undefined;
+            const groupSteps: AnimationStep[] = [];
+            groups.forEach(group => {
+                if (group.some(step => step.simultaneous)) groupSteps.push(...group);
+            });
+            return getElementBounds(ctx.graph, groupSteps);
+        };
         if (phase.type === 'open') {
             if (!phase.quickComplete)
                 scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
             for (const elem of phase.elements) {
+                // 批次内共享元素只由后一个动作（赢家）绘制，当前动作跳过更新
+                if (!isBatchElementWinner(phase, currentPhaseIndex, elem.id)) continue;
                 const startFrame = phase.quickComplete
                     ? phaseFrameRanges[currentPhaseIndex].start
                     : (ctx.elementStartFrame.get(getKey(elem.id)) ?? phaseFrameRanges[currentPhaseIndex].end);
@@ -1990,6 +2231,8 @@ function processFrame(
             // Process animations and set focus
             let latestFocusElement: AnimationStep | undefined;
             for (const step of phase.elements) {
+                // 批次内共享元素只由后一个动作（赢家）绘制与决定镜头，当前动作跳过
+                if (!isBatchElementWinner(phase, currentPhaseIndex, step.id)) continue;
                 const startFrame = phase.quickComplete
                     ? phaseFrameRanges[currentPhaseIndex].start
                     : (ctx.elementStartFrame.get(getKey(step.id)) ?? frameIndex);
@@ -2038,6 +2281,7 @@ function processFrame(
                     if (frameSinceStart >= 0) latestFocusElement = step;
                 }
             }
+            const simultaneousFocusBounds = getSimultaneousFocusBounds(phase.elements);
             const keepFocusFromTransition =
                 phases[currentPhaseIndex - 1]?.type === 'focus' && ctx.lastFocus.kind !== 'none';
             const keepQuickCompleteFocus =
@@ -2064,6 +2308,29 @@ function processFrame(
                 ctx.lastFocus = focus;
             } else if (keepQuickCompleteFocus) {
                 focus = ctx.lastFocus;
+            } else if (parallelFocusOverride) {
+                const center = {
+                    x: (parallelFocusOverride.xMin + parallelFocusOverride.xMax) / 2,
+                    y: (parallelFocusOverride.yMin + parallelFocusOverride.yMax) / 2,
+                };
+                const targetZoom = getBoundsFitZoom(parallelFocusOverride);
+                requestFocusZoom(`parallel:${currentPhaseIndex}`, targetZoom);
+                ctx.focusZoom = targetZoom;
+                focus = { kind: 'center', center };
+                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
+                ctx.lastFocus = focus;
+            } else if (simultaneousFocusBounds) {
+                // 元素级并行：镜头居中并缩放到同时动画元素的整条包围盒，保证完整可见
+                const center = {
+                    x: (simultaneousFocusBounds.xMin + simultaneousFocusBounds.xMax) / 2,
+                    y: (simultaneousFocusBounds.yMin + simultaneousFocusBounds.yMax) / 2,
+                };
+                const targetZoom = getBoundsFitZoom(simultaneousFocusBounds);
+                requestFocusZoom(`sim:${currentPhaseIndex}`, targetZoom);
+                ctx.focusZoom = targetZoom;
+                focus = { kind: 'center', center };
+                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
+                ctx.lastFocus = focus;
             } else if (latestFocusElement) {
                 const step = latestFocusElement;
                 if (step.kind === 'node') {
@@ -2083,16 +2350,7 @@ function processFrame(
             const targetBounds = phase.focusTargetBounds;
             if (targetBounds) {
                 const targetZoom = getBoundsFitZoom(targetBounds);
-                if (ctx.focusZoomTransition?.phaseIndex !== currentPhaseIndex) {
-                    ctx.focusZoomTransition = {
-                        phaseIndex: currentPhaseIndex,
-                        start: ctx.currentZoom ?? ctx.userScale,
-                        target: targetZoom,
-                        progress: phaseLocalProgress,
-                    };
-                } else {
-                    ctx.focusZoomTransition.progress = phaseLocalProgress;
-                }
+                requestFocusZoom(`focus:${currentPhaseIndex}`, targetZoom);
                 ctx.focusZoom = targetZoom;
                 focus = {
                     kind: 'center',
@@ -2126,6 +2384,8 @@ function processFrame(
             let latestFocusStartFrame = -1;
             const closeElements = [...phase.elements].reverse();
             for (const step of closeElements) {
+                // 批次内共享元素只由后一个动作（赢家）更新，当前动作跳过
+                if (!isBatchElementWinner(phase, currentPhaseIndex, step.id)) continue;
                 const startFrame = ctx.elementStartFrame.get(getKey(step.id)) ?? frameIndex;
                 const duration = phase.quickComplete
                     ? Math.max(1, Math.round(ctx.fps))
@@ -2180,9 +2440,33 @@ function processFrame(
                 phase.quickComplete &&
                 phases[currentPhaseIndex - 1]?.type === 'focus' &&
                 ctx.lastFocus.kind === 'center';
+            const simultaneousFocusBounds = getSimultaneousFocusBounds(closeElements);
             const closeFocusElement = latestFocusElement ?? closeElements[0];
             if (keepQuickCompleteFocus) {
                 focus = ctx.lastFocus;
+            } else if (parallelFocusOverride) {
+                const center = {
+                    x: (parallelFocusOverride.xMin + parallelFocusOverride.xMax) / 2,
+                    y: (parallelFocusOverride.yMin + parallelFocusOverride.yMax) / 2,
+                };
+                const targetZoom = getBoundsFitZoom(parallelFocusOverride);
+                requestFocusZoom(`parallel:${currentPhaseIndex}`, targetZoom);
+                ctx.focusZoom = targetZoom;
+                focus = { kind: 'center', center };
+                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
+                ctx.lastFocus = focus;
+            } else if (simultaneousFocusBounds) {
+                // 元素级并行：镜头居中并缩放到同时动画元素的整条包围盒，保证完整可见
+                const center = {
+                    x: (simultaneousFocusBounds.xMin + simultaneousFocusBounds.xMax) / 2,
+                    y: (simultaneousFocusBounds.yMin + simultaneousFocusBounds.yMax) / 2,
+                };
+                const targetZoom = getBoundsFitZoom(simultaneousFocusBounds);
+                requestFocusZoom(`sim:${currentPhaseIndex}`, targetZoom);
+                ctx.focusZoom = targetZoom;
+                focus = { kind: 'center', center };
+                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
+                ctx.lastFocus = focus;
             } else if (closeFocusElement) {
                 if (closeFocusElement.kind === 'node') {
                     focus = { kind: 'node', id: closeFocusElement.id as NodeId };
@@ -2201,14 +2485,18 @@ function processFrame(
                 ctx.lastFocus = focus;
             }
         }
-        if (
+        const keepsQuickCompleteFocus =
             phase.quickComplete &&
             (phase.type === 'open' || phase.type === 'close') &&
-            ctx.focusCenterHold?.batchIndex === phase.batchIndex
-        ) {
+            ctx.focusCenterHold?.batchIndex === phase.batchIndex;
+        if (keepsQuickCompleteFocus) {
             focus = { kind: 'center', center: ctx.focusCenterHold.center };
             ctx.focusZoom = ctx.focusCenterHold.zoom;
             ctx.lastFocus = focus;
+        } else if (phase.type === 'open' || phase.type === 'close') {
+            // 并行动作中先完成的元素退出合并视口时，缩放在此惯性回放到用户缩放，
+            // 中心则继续由弹簧相机平滑追赶下一个焦点（双重惯性，不瞬切）。
+            settleZoomAfterOverride();
         }
         // 等待阶段保持当前镜头；全览阶段使用全图中心。
         if (phase.type === 'wait' && focus.kind === 'none' && ctx.lastFocus.kind !== 'none') {
@@ -2219,11 +2507,15 @@ function processFrame(
     // Current active line groups info
     const currentActiveLineGroups = ctx.activeLineGroups.filter(g => currentActiveLineIds.includes(g.id));
 
-    // 左上角线路徽章 = 当前 open/close 动作目标线路段所在线路
+    // 左上角线路徽章 = 并行批次首动作目标线路段所在线路（并行动作继承首动作的徽章）
     let badgeGroup: { bgColor: string; text: string } | null = null;
-    if (phase && (phase.type === 'open' || phase.type === 'close') && phase.targetGroupId) {
-        const target = ctx.activeLineGroups.find(g => g.id === phase.targetGroupId);
-        if (target) badgeGroup = { bgColor: target.bgColor, text: target.text };
+    if (phase && (phase.type === 'open' || phase.type === 'close')) {
+        const anchorPhase = phases.find(p => p.batchIndex === phase.batchIndex);
+        const badgeGroupId = anchorPhase?.targetGroupId;
+        if (badgeGroupId) {
+            const target = ctx.activeLineGroups.find(g => g.id === badgeGroupId);
+            if (target) badgeGroup = { bgColor: target.bgColor, text: target.text };
+        }
     }
 
     // 全览保持：overview 结束后保持缩放与视口，仅 focus 动作恢复（下一条线起点）
@@ -2419,7 +2711,7 @@ async function exportAsWebM(
         const overviewProgress =
             frame < animationEndFrame ? -1 : (frame - animationEndFrame) / Math.max(remainingFrames, 1);
         const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
-        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
+        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress, frame);
 
         const {
             elem,
@@ -2654,7 +2946,7 @@ async function exportAsMP4(
         const overviewProgress =
             frame < animationEndFrame ? -1 : (frame - animationEndFrame) / Math.max(remainingFrames, 1);
         const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
-        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
+        const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress, frame);
 
         const {
             elem,
@@ -3580,7 +3872,7 @@ export const createVideoPreview = async (
             const overviewProgress =
                 f < animationEndFrame ? -1 : (f - animationEndFrame) / Math.max(remainingFrames, 1);
             const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
-            const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress);
+            const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress, f);
             const { elem, cameraCenter, cameraVelocity } = await createFrameSVG(
                 graph,
                 visibleNodes,

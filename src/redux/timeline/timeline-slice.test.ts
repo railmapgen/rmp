@@ -42,7 +42,30 @@ describe('timeline action row ids', () => {
             })
         );
 
-        expect(state.lines[0]).toEqual({ id: 'line_1', groupId: 'group_1', elements: [] });
+        expect(state.lines[0]).toEqual({ id: 'line_1', groupId: 'group_1', text: '#1', elements: [] });
+    });
+
+    it('keeps segment text and fills default names for legacy segments without text', () => {
+        const state = timelineReducer(
+            undefined,
+            loadTimeline({
+                enabled: true,
+                totalDuration: 60,
+                currentTime: 0,
+                dateRows: [],
+                groups: [],
+                lines: [
+                    { id: 'line_1', groupId: 'group_1', elements: [] } as TimelineLine,
+                    { id: 'line_2', groupId: 'group_1', text: '一期工程', elements: [] } as TimelineLine,
+                ],
+                actionRows: [],
+                diffs: [],
+                baseGraph: {} as SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+            })
+        );
+
+        expect(state.lines[0].text).toBe('#1');
+        expect(state.lines[1].text).toBe('一期工程');
     });
 
     it('normalizes duplicate ids when loading saved timeline data', () => {

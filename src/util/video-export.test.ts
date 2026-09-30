@@ -3,7 +3,12 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { ActionRow, TimelineLine } from '../constants/timeline';
-import { buildFallbackSequence, buildAnimationPhases, getActionLineMinimumDuration } from './video-export';
+import {
+    buildFallbackSequence,
+    buildAnimationPhases,
+    getActionLineMinimumDuration,
+    getActionLineSuggestedDuration,
+} from './video-export';
 
 const makeGraph = () => new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
@@ -42,6 +47,7 @@ describe('buildAnimationPhases', () => {
         const line: TimelineLine = {
             id: 'line1',
             groupId: 'group1',
+            text: 'Segment 1',
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
         };
 
@@ -73,6 +79,7 @@ describe('buildAnimationPhases', () => {
         const line: TimelineLine = {
             id: 'line1',
             groupId: 'group1',
+            text: 'Segment 1',
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }],
         };
 
@@ -95,6 +102,7 @@ describe('buildAnimationPhases', () => {
             {
                 id: 'line1',
                 groupId: 'group1',
+                text: 'Segment 1',
                 elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab', reverse: true }],
             },
         ];
@@ -134,6 +142,7 @@ describe('buildAnimationPhases', () => {
             {
                 id: 'line1',
                 groupId: 'group1',
+                text: 'Segment 1',
                 elements: [{ id: 'stn_a' }, { id: 'stn_b' }],
             },
         ];
@@ -175,11 +184,13 @@ describe('buildAnimationPhases', () => {
             {
                 id: 'line1',
                 groupId: 'group1',
+                text: 'Segment 1',
                 elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
             },
             {
                 id: 'line2',
                 groupId: 'group2',
+                text: 'Segment 2',
                 elements: [{ id: 'stn_c' }, { id: 'stn_d' }, { id: 'line_cd' }],
             },
         ];
@@ -208,8 +219,18 @@ describe('buildAnimationPhases', () => {
         addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
         addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
         const lines: TimelineLine[] = [
-            { id: 'line1', groupId: 'group1', elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }] },
-            { id: 'line2', groupId: 'group2', elements: [{ id: 'stn_b' }, { id: 'stn_c' }, { id: 'line_bc' }] },
+            {
+                id: 'line1',
+                groupId: 'group1',
+                text: 'Segment 1',
+                elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
+            },
+            {
+                id: 'line2',
+                groupId: 'group2',
+                text: 'Segment 2',
+                elements: [{ id: 'stn_b' }, { id: 'stn_c' }, { id: 'line_bc' }],
+            },
         ];
         const phases = buildAnimationPhases(
             [
@@ -244,6 +265,82 @@ describe('buildAnimationPhases', () => {
         expect(phases[0].focusTargetBatch).toBe(phases[1].batchIndex);
     });
 
+    it('并行批次内后续动作继承首动作的已开通线路与备注，批次结束后统一结算', () => {
+        const graph = makeGraph();
+        addNode(graph, 'stn_a', 0, 0);
+        addNode(graph, 'stn_b', 100, 0);
+        addNode(graph, 'stn_c', 200, 0);
+        addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
+        addEdge(graph, 'line_bc', 'stn_b', 'stn_c');
+        const lines: TimelineLine[] = [
+            {
+                id: 'line1',
+                groupId: 'group1',
+                text: 'Segment 1',
+                elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
+            },
+            {
+                id: 'line2',
+                groupId: 'group2',
+                text: 'Segment 2',
+                elements: [{ id: 'stn_b' }, { id: 'stn_c' }, { id: 'line_bc' }],
+            },
+        ];
+        const actionRows: ActionRow[] = [
+            {
+                id: 'a',
+                date: '2024-05-01',
+                activeLineIds: [],
+                remark: '批次备注',
+                actionType: 'open',
+                actionLineId: 'line1',
+            },
+            {
+                id: 'b',
+                date: '',
+                activeLineIds: [],
+                remark: '',
+                actionType: 'open',
+                actionLineId: 'line2',
+                withPrevious: true,
+            },
+            { id: 'c', date: '', activeLineIds: [], remark: '', actionType: 'wait' },
+        ];
+
+        const phases = buildAnimationPhases(actionRows, lines, graph);
+
+        // 批次进行中：两个动作显示完全相同的"已开通线路"、日期与备注
+        expect(phases[0].activeLineIds).toEqual(['group1']);
+        expect(phases[1].activeLineIds).toEqual(['group1']);
+        expect(phases[0].date).toBe('2024-05-01');
+        expect(phases[1].date).toBe('2024-05-01');
+        expect(phases[1].remark).toBe('批次备注');
+        // 后续并行动作的目标线路段仍然各自独立（动画元素来自 line2）
+        expect(phases[1].elements.map(e => e.id)).toContain('line_bc');
+        // 批次结束后：第二个动作的线路才统一结算进来
+        expect(phases[2].activeLineIds).toEqual(['group1', 'group2']);
+    });
+
+    it('将元素的 simultaneous 标志透传到动画步骤', () => {
+        const graph = makeGraph();
+        addNode(graph, 'stn_a', 0, 0);
+        addNode(graph, 'stn_b', 100, 0);
+        addEdge(graph, 'line_ab', 'stn_a', 'stn_b');
+        const line: TimelineLine = {
+            id: 'line1',
+            groupId: 'group1',
+            text: 'Segment 1',
+            elements: [{ id: 'stn_a' }, { id: 'stn_b', simultaneous: true }, { id: 'line_ab' }],
+        };
+        const phases = buildAnimationPhases(
+            [{ id: 'a', date: '', activeLineIds: [], remark: '', actionType: 'open', actionLineId: 'line1' }],
+            [line],
+            graph
+        );
+        expect(phases[0].elements.find(e => e.id === 'stn_b')?.simultaneous).toBe(true);
+        expect(phases[0].elements.find(e => e.id === 'line_ab')?.simultaneous).toBeUndefined();
+    });
+
     it('fills targetGroupId for open/close phases only', () => {
         const actionRows: ActionRow[] = [
             { id: 'row1', date: '', activeLineIds: [], remark: '', actionType: 'open', actionLineId: 'line1' },
@@ -255,6 +352,7 @@ describe('buildAnimationPhases', () => {
             {
                 id: 'line1',
                 groupId: 'group1',
+                text: 'Segment 1',
                 elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
             },
         ];
@@ -290,5 +388,43 @@ describe('buildFallbackSequence', () => {
             { id: 'line_ab', kind: 'edge', reverse: false },
             { id: 'line_bc', kind: 'edge', reverse: false },
         ]);
+    });
+});
+
+describe('getActionLineMinimumDuration / getActionLineSuggestedDuration（同时链并行算法）', () => {
+    const makeLine = (elements: TimelineLine['elements']): TimelineLine => ({
+        id: 'line1',
+        groupId: 'group1',
+        text: 'Segment 1',
+        elements,
+    });
+
+    it('同一条同时链内的车站与边并行，只计 max 成本', () => {
+        // stn_b 与 line_ab 均并入链头 stn_a：2 站 1 边并行 → max(1s, 0.5s) = 1s
+        const line = makeLine([
+            { id: 'stn_a' },
+            { id: 'stn_b', simultaneous: true },
+            { id: 'line_ab', simultaneous: true },
+        ]);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(1);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(1);
+    });
+
+    it('多条同时链之间串行求和', () => {
+        // 链1：stn_a + stn_b（并行，车站成本 1s）；链2：line_ab（普通元素开新链，0.5s/1s）
+        const line = makeLine([{ id: 'stn_a' }, { id: 'stn_b', simultaneous: true }, { id: 'line_ab' }]);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(1.5);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(2);
+    });
+
+    it('首元素即使带 simultaneous 标志也作为链头（不影响链划分）', () => {
+        const line = makeLine([{ id: 'stn_a', simultaneous: true }, { id: 'line_ab' }]);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(1.5);
+    });
+
+    it('无"同时"元素时与线性公式等价', () => {
+        const line = makeLine([{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }]);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(3);
     });
 });

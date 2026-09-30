@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ActionRow } from '../constants/timeline';
-import { getActionDuration, scheduleActionRows } from './action-schedule';
+import {
+    getActionDuration,
+    getBatchAnchorIndex,
+    normalizeInheritedActionFields,
+    scheduleActionRows,
+} from './action-schedule';
 
 const action = (id: string, withPrevious = false): ActionRow => ({
     id,
@@ -46,5 +51,66 @@ describe('scheduleActionRows', () => {
 
     it('第一行动作忽略 withPrevious', () => {
         expect(scheduleActionRows([action('a', true)], [2]).entries[0].startTime).toBe(0);
+    });
+});
+
+describe('getBatchAnchorIndex', () => {
+    it('沿 withPrevious 链回溯到批次首个动作', () => {
+        const rows = [action('a'), action('b', true), action('c', true), action('d')];
+        expect(getBatchAnchorIndex(rows, 0)).toBe(0);
+        expect(getBatchAnchorIndex(rows, 1)).toBe(0);
+        expect(getBatchAnchorIndex(rows, 2)).toBe(0);
+        expect(getBatchAnchorIndex(rows, 3)).toBe(3);
+    });
+});
+
+describe('normalizeInheritedActionFields', () => {
+    const openAction = (id: string, extra: Partial<ActionRow> = {}): ActionRow => ({
+        ...action(id),
+        actionType: 'open',
+        ...extra,
+    });
+
+    it('后续 withPrevious 动作继承首动作的日期与备注，但目标线路段各自独立', () => {
+        const rows = [
+            openAction('a', { date: '2024-01-01', remark: '首动作备注', actionLineId: 'line1' }),
+            openAction('b', {
+                date: '2099-01-01',
+                remark: '会被覆盖',
+                actionLineId: 'line2',
+                withPrevious: true,
+            }),
+            openAction('c', {
+                date: '2099-01-02',
+                remark: '同样继承',
+                actionLineId: 'line3',
+                withPrevious: true,
+            }),
+        ];
+        const normalized = normalizeInheritedActionFields(rows);
+        expect(normalized[1].date).toBe('2024-01-01');
+        expect(normalized[1].remark).toBe('首动作备注');
+        expect(normalized[1].actionLineId).toBe('line2');
+        expect(normalized[2].date).toBe('2024-01-01');
+        expect(normalized[2].remark).toBe('首动作备注');
+        expect(normalized[2].actionLineId).toBe('line3');
+    });
+
+    it('元动作（全览/等待/聚焦）继承备注但日期始终为空', () => {
+        const rows = [
+            openAction('a', { date: '2024-01-01', remark: '首动作备注', actionLineId: 'line1' }),
+            { ...action('b', true), actionType: 'wait', date: '2024-01-01' },
+        ];
+        const normalized = normalizeInheritedActionFields(rows);
+        expect(normalized[1].date).toBe('');
+        expect(normalized[1].remark).toBe('首动作备注');
+    });
+
+    it('非并行动作与首个动作保持不变', () => {
+        const rows = [
+            openAction('a', { remark: 'A', actionLineId: 'line1' }),
+            openAction('b', { remark: 'B', actionLineId: 'line2' }),
+        ];
+        expect(normalizeInheritedActionFields(rows)).toEqual(rows);
     });
 });

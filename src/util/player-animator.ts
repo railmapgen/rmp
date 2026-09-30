@@ -8,6 +8,7 @@ import {
     GLOBAL_CAMERA_PARAMS,
     zoomToFit,
     calculateBoundingBox,
+    PLAYER_HUD_INSET,
 } from './player-camera';
 
 /**
@@ -55,6 +56,8 @@ export class PlayerAnimator {
     private playing: boolean = false;
 
     private camera: PlayerCamera;
+    /** 初始（用户）基准缩放：并行合并视口拉远结束后，镜头靠 zoom 弹簧惯性回放到该值 */
+    private baseZoom: number = 1;
     private phaseIndex: number = -1;
     private settledSince: number | null = null;
     private phaseEnterTime: number | undefined = undefined;
@@ -83,6 +86,7 @@ export class PlayerAnimator {
 
         const initialCam = this.calculateInitialCamera();
         this.camera = new PlayerCamera(initialCam);
+        this.baseZoom = initialCam.zoom;
 
         this.updateStats(0);
         this.hideAllEdges();
@@ -265,10 +269,13 @@ export class PlayerAnimator {
         });
         this.highlightedEdges.clear();
 
+        // 正在与主相位并行绘制的边不得被重置，否则其描边动画属性会被每帧清掉
+        const activeEdgeIds = new Set<string>([phase.edgeId, ...(phase.parallelEdges ?? []).map(p => p.edgeId)]);
+
         const edgeGroups = this.svgElement.querySelectorAll<HTMLElement>('g[data-edge-id]');
         edgeGroups.forEach(g => {
             const edgeId = g.getAttribute('data-edge-id');
-            if (!edgeId || edgeId === phase.edgeId) return;
+            if (!edgeId || activeEdgeIds.has(edgeId)) return;
 
             g.querySelectorAll<SVGPathElement>('path').forEach(path => {
                 path.removeAttribute('stroke-dasharray');
@@ -319,29 +326,87 @@ export class PlayerAnimator {
     private updateCameraTarget(phase: AnimPhase, progress: number): void {
         if (!this.svgElement || !phase.edgeId) return;
 
-        const g = this.svgElement.querySelector<HTMLElement>(`g[data-edge-id="${phase.edgeId}"]`);
-        if (!g) return;
+        // 并行绘制时镜头跟随所有仍在动画中的边的中心。
+        // 已完成（进度≥1）的并行边从合并视口剔除，镜头目标自然切换为剩余边，
+        // 由 zoom 弹簧惯性平滑回放，而不是等整批结束后瞬切。
+        const targets: Array<{ edgeId: string; edgeAction?: string }> = [
+            { edgeId: phase.edgeId, edgeAction: phase.edgeAction },
+            ...(phase.parallelEdges ?? [])
+                .filter(p => {
+                    if (p.startMs === undefined || p.endMs === undefined) return true;
+                    const dur = Math.max(1, p.endMs - p.startMs);
+                    const localProgress = Math.max(0, Math.min(1, (this.currentMs - p.startMs) / dur));
+                    return localProgress < 1;
+                })
+                .map(p => ({ edgeId: p.edgeId, edgeAction: p.edgeAction })),
+        ];
+
+        const points: Array<{ x: number; y: number }> = [];
+        for (const target of targets) {
+            // remove 动作的绘制端点按剩余显示比例反向
+            const adjusted = target.edgeAction === 'remove' ? 1 - progress : progress;
+            const point = this.getDrawPoint(target.edgeId, adjusted);
+            if (point) points.push(point);
+        }
+        if (points.length === 0) return;
+
+        const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
+        const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
+
+        // 默认目标为基准缩放：并行结束后 zoom 弹簧会带着惯性平滑回放，
+        // 而不是冻结在并行拉远值或瞬间切回。
+        let targetZoom = this.baseZoom;
+        if (targets.length > 1) {
+            const endpoints: Array<{ x: number; y: number }> = [];
+            for (const target of targets) {
+                const p0 = this.getDrawPoint(target.edgeId, 0);
+                const p1 = this.getDrawPoint(target.edgeId, 1);
+                if (p0) endpoints.push(p0);
+                if (p1) endpoints.push(p1);
+            }
+            const bbox = calculateBoundingBox(endpoints);
+            if (bbox) {
+                const containerRect = this.svgContainer.getBoundingClientRect();
+                const fitZoom = zoomToFit(
+                    bbox,
+                    containerRect.width || 800,
+                    containerRect.height || 600,
+                    0.12,
+                    PLAYER_HUD_INSET
+                );
+                // 仅在需要拉远以容纳全部并行边时改变 zoom，避免无意义的拉近跳动；
+                // 不需要拉远时保持基准值（弹簧惯性回归）。
+                targetZoom = Math.min(this.baseZoom, fitZoom);
+            }
+        }
+        // 应用 HUD 偏移：动画过程中始终让目标避开 HUD 区域
+        const hudLeft = 220;
+        const hudTop = 72;
+        const hudRight = 220;
+        const hudBottom = 72;
+        this.camera.setTarget(cx + (hudLeft - hudRight) / 2, cy + (hudTop - hudBottom) / 2, targetZoom);
+    }
+
+    /** 计算某条边在当前进度下的绘制端点坐标。 */
+    private getDrawPoint(edgeId: string, progress: number): { x: number; y: number } | null {
+        if (!this.svgElement) return null;
+
+        const g = this.svgElement.querySelector<HTMLElement>(`g[data-edge-id="${edgeId}"]`);
+        if (!g) return null;
 
         const direction = g.getAttribute('data-appear-direction') || 'forward';
         const path = g.querySelector<SVGPathElement>('path');
-        if (!path) return;
+        if (!path) return null;
 
         try {
             const len = path.getTotalLength();
-            if (!len || len <= 0) return;
+            if (!len || len <= 0) return null;
 
             const p = direction === 'forward' ? progress : 1 - progress;
             const point = path.getPointAtLength(len * Math.max(0, Math.min(1, p)));
-
-            const currentZoom = this.camera.getState().zoom;
-            // 应用 HUD 偏移：动画过程中始终让目标避开 HUD 区域
-            const hudLeft = 220;
-            const hudTop = 72;
-            const hudRight = 220;
-            const hudBottom = 72;
-            this.camera.setTarget(point.x + (hudLeft - hudRight) / 2, point.y + (hudTop - hudBottom) / 2, currentZoom);
+            return { x: point.x, y: point.y };
         } catch (e) {
-            // 忽略
+            return null;
         }
     }
 
@@ -414,8 +479,16 @@ export class PlayerAnimator {
         }
 
         if (phase.type === 'segment') {
+            // 所有并行边（含主边）按各自的排期区间独立计算进度，
+            // 先完成的边不会随主边进度回退而被回退重绘。
+            const segmentProgress = (startMs?: number, endMs?: number): number => {
+                if (startMs === undefined || endMs === undefined) return progress;
+                const dur = Math.max(1, endMs - startMs);
+                return Math.max(0, Math.min(1, (ms - startMs) / dur));
+            };
             if (phase.parallelEdges) {
                 phase.parallelEdges.forEach(parallel => {
+                    const localProgress = segmentProgress(parallel.startMs, parallel.endMs);
                     this.applyDrawingAnimation(
                         {
                             ...phase,
@@ -424,8 +497,14 @@ export class PlayerAnimator {
                             direction: parallel.direction,
                             isDrawing: parallel.isDrawing,
                         },
-                        progress
+                        localProgress
                     );
+                    if (parallel.edgeAction === 'add' && localProgress >= 1) {
+                        this.appearedEdges.add(parallel.edgeId);
+                    } else if (parallel.edgeAction === 'remove') {
+                        if (localProgress >= 1) this.appearedEdges.delete(parallel.edgeId);
+                        else this.appearedEdges.add(parallel.edgeId);
+                    }
                 });
             }
             if (phase.edgeAction === 'highlight') {
@@ -445,7 +524,7 @@ export class PlayerAnimator {
                 }
 
                 if (phase.edgeAction === 'add' || phase.edgeAction === 'remove') {
-                    this.updateCameraTarget(phase, phase.edgeAction === 'remove' ? 1 - progress : progress);
+                    this.updateCameraTarget(phase, progress);
                 }
             }
         } else if (phase.type === 'segmentHold') {
@@ -555,9 +634,14 @@ export class PlayerAnimator {
         this.currentMs = Math.max(0, Math.min(ms, this.totalDuration));
         this.appearedEdges.clear();
         this.schedule.forEach(phase => {
-            if (phase.endMs > this.currentMs || !phase.edgeId) return;
-            if (phase.edgeAction === 'remove') this.appearedEdges.delete(phase.edgeId);
-            else if (phase.edgeAction === 'add') this.appearedEdges.add(phase.edgeId);
+            if (phase.endMs > this.currentMs) return;
+            const applyEdge = (edgeId?: string, edgeAction?: string) => {
+                if (!edgeId) return;
+                if (edgeAction === 'remove') this.appearedEdges.delete(edgeId);
+                else if (edgeAction === 'add') this.appearedEdges.add(edgeId);
+            };
+            applyEdge(phase.edgeId, phase.edgeAction);
+            phase.parallelEdges?.forEach(p => applyEdge(p.edgeId, p.edgeAction));
         });
         this.phaseIndex = -1;
         this.settledSince = null;

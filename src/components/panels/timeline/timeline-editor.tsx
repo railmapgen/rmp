@@ -7,7 +7,6 @@ import {
     AlertDialogOverlay,
     Badge,
     Box,
-    Checkbox,
     Collapse,
     Slider,
     SliderFilledTrack,
@@ -28,7 +27,6 @@ import {
     Select,
     Switch,
     Text,
-    Tooltip,
     VStack,
     useColorModeValue,
     useToast,
@@ -40,12 +38,14 @@ import {
     MdArrowBack,
     MdArrowDownward,
     MdArrowUpward,
+    MdAutoFixHigh,
     MdChevronLeft,
     MdChevronRight,
     MdDelete,
     MdEdit,
     MdExpandMore,
     MdSwapHoriz,
+    MdSchedule,
 } from 'react-icons/md';
 import { RmgSidePanel, RmgSidePanelBody, RmgSidePanelHeader } from '@railmapgen/rmg-components';
 import { useRootDispatch, useRootSelector } from '../../../redux';
@@ -82,7 +82,7 @@ import {
     getActionConstraintState,
 } from '../../../util/timeline';
 import { getActionLineMinimumDuration, getActionLineSuggestedDuration } from '../../../util/video-export';
-import { isQuickCompleteAction } from '../../../util/action-schedule';
+import { getBatchAnchorIndex, isQuickCompleteAction } from '../../../util/action-schedule';
 import ThemeButton from '../theme-button';
 import TimelineColorPicker from './timeline-color-picker';
 import InvalidDateModal from './invalid-date-modal';
@@ -161,6 +161,10 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     // 线路内添加线路段
     const [addingSegmentForGroupId, setAddingSegmentForGroupId] = React.useState<string | null>(null);
+    // 新建线路段时输入的名称
+    const [newSegmentName, setNewSegmentName] = React.useState('');
+    // 元素列表视图中编辑线路段名称的草稿（失焦/回车时提交，避免每次按键 dispatch）
+    const [segmentNameDraft, setSegmentNameDraft] = React.useState('');
 
     // 动作行编辑状态
     const [editingActionRow, setEditingActionRow] = React.useState<ActionRow | null>(null);
@@ -191,8 +195,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
     const [newNodeAnimationDuration, setNewNodeAnimationDuration] = React.useState('1');
     const [newActionWithPrevious, setNewActionWithPrevious] = React.useState(false);
     const [newActionQuickComplete, setNewActionQuickComplete] = React.useState(false);
-    const [newUseSuggestedDuration, setNewUseSuggestedDuration] = React.useState(false);
-    const [editingUseSuggestedDuration, setEditingUseSuggestedDuration] = React.useState(false);
+    const [newUseSuggestedDuration, setNewUseSuggestedDuration] = React.useState(true);
     const [closeNodeStylesModal, setCloseNodeStylesModal] = React.useState<ActionRow | null>(null);
     const [draftCloseNodeStyles, setDraftCloseNodeStyles] = React.useState<Record<NodeId, CloseNodeStyle>>({});
     const [actionRowBeforeEditing, setActionRowBeforeEditing] = React.useState<ActionRow | null>(null);
@@ -235,7 +238,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
     }, [newUseSuggestedDuration, newActionType, newActionLineSegmentId, newNodeAnimationDuration, graphRefresh, lines]);
 
     React.useEffect(() => {
-        if (!editingUseSuggestedDuration || !editingActionRow) return;
+        if (!editingActionRow?.useSuggestedDuration) return;
         if (editingActionRow.actionType !== 'open' && editingActionRow.actionType !== 'close') return;
         const suggested = getSuggestedActionDuration(
             editingActionRow.actionLineId,
@@ -245,7 +248,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
             setEditingActionRow(prev => (prev ? { ...prev, actionDuration: Number(suggested) } : null));
         }
     }, [
-        editingUseSuggestedDuration,
+        editingActionRow?.useSuggestedDuration,
         editingActionRow?.actionType,
         editingActionRow?.actionLineId,
         editingActionRow?.nodeAnimationDuration,
@@ -328,6 +331,41 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     const bgColor = useColorModeValue('white', 'gray.800');
     const rowBgColor = useColorModeValue('gray.50', 'gray.700');
+    const toggleBg = useColorModeValue('rgb(44, 122, 123)', 'rgb(72, 187, 120)');
+
+    // 统一的"开关按钮"样式：魔杖图标 + 文本，外层只有一层框，选中时主题绿填充
+    const renderToggleSwitch = (checked: boolean, onChange: (v: boolean) => void, label: string) => (
+        <Box
+            as="button"
+            type="button"
+            role="switch"
+            aria-checked={checked}
+            aria-label={label}
+            display="inline-flex"
+            alignItems="center"
+            gap={1.5}
+            px={2}
+            py={1}
+            borderRadius="md"
+            borderWidth={1}
+            borderStyle="solid"
+            borderColor={checked ? toggleBg : 'gray.300'}
+            bg={checked ? toggleBg : 'transparent'}
+            color={checked ? 'white' : 'gray.600'}
+            fontSize="xs"
+            fontWeight={checked ? 'semibold' : 'normal'}
+            cursor="pointer"
+            _hover={{
+                borderColor: checked ? toggleBg : 'gray.400',
+                bg: checked ? toggleBg : 'gray.50',
+            }}
+            _focusVisible={{ outline: '2px solid', outlineColor: toggleBg, outlineOffset: 1 }}
+            onClick={() => onChange(!checked)}
+        >
+            <MdAutoFixHigh size="13px" />
+            <span style={{ lineHeight: 1.3, whiteSpace: 'nowrap' }}>{label}</span>
+        </Box>
+    );
 
     // ===== 辅助函数：获取线路段所属的线路 =====
     const getGroupForSegment = (lineId: string): LineGroup | undefined => {
@@ -537,7 +575,14 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     // ===== 线路段 CRUD =====
     const handleAddSegment = (groupId: string) => {
-        dispatch(addTimelineLine({ groupId, elements: [] }));
+        dispatch(
+            addTimelineLine({
+                groupId,
+                text: newSegmentName.trim() || t('timeline.newSegment', '新线路段'),
+                elements: [],
+            })
+        );
+        setNewSegmentName('');
         setAddingSegmentForGroupId(null);
     };
 
@@ -553,6 +598,17 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     const handleBackFromElements = () => {
         setEditingElementsForLineId(null);
+    };
+
+    // 提交线路段名称（失焦/回车），空值回退为默认名
+    const commitSegmentName = () => {
+        if (!editingLineData) return;
+        const trimmed = segmentNameDraft.trim();
+        const finalText = trimmed || t('timeline.newSegment', '新线路段');
+        if (finalText !== editingLineData.text) {
+            dispatch(updateTimelineLine({ id: editingLineData.id, updates: { text: finalText } }));
+        }
+        setSegmentNameDraft(finalText);
     };
 
     // ===== 元素列表操作 =====
@@ -608,6 +664,15 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         const isEdge = line.elements[elementIndex].id.startsWith('line_');
         if (!isEdge) return;
         const newElements = line.elements.map((el, i) => (i === elementIndex ? { ...el, reverse: !el.reverse } : el));
+        dispatch(updateTimelineLine({ id: lineId, updates: { elements: newElements } }));
+    };
+
+    const handleToggleElementSimultaneous = (lineId: string, elementIndex: number) => {
+        const line = lines.find(l => l.id === lineId);
+        if (!line || elementIndex === 0) return;
+        const newElements = line.elements.map((el, i) =>
+            i === elementIndex ? { ...el, simultaneous: !el.simultaneous } : el
+        );
         dispatch(updateTimelineLine({ id: lineId, updates: { elements: newElements } }));
     };
 
@@ -837,14 +902,15 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
             }
         }
         const constraintState = getActionConstraintState(actionRows, actionRows.length);
-        if (shouldAddFocus && constraintState.canAddFocus) {
+        if (shouldAddFocus && constraintState.canAddFocus && !newActionWithPrevious) {
             dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'focus', actionDuration: 4 }));
         }
         dispatch(
             addActionRow({
-                date: isMetaAction ? '' : unsavedDate || '',
+                // 并行动作的日期与备注继承批次首动作；目标线路段各自独立选择
+                date: isMetaAction ? '' : (newActionAnchorRow?.date ?? (unsavedDate || '')),
                 activeLineIds: [],
-                remark: isMetaAction ? '' : newActionRemark || '',
+                remark: isMetaAction ? '' : (newActionAnchorRow?.remark ?? (newActionRemark || '')),
                 actionType: newActionType,
                 actionLineId:
                     newActionType === 'open' || newActionType === 'close'
@@ -863,14 +929,13 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                 withPrevious: actionRows.length > 0 ? newActionWithPrevious : undefined,
                 quickComplete:
                     newActionType === 'open' || newActionType === 'close' ? newActionQuickComplete : undefined,
+                // 仅开通/停运且非快速完成时保存建议时长开关
+                useSuggestedDuration:
+                    (newActionType === 'open' || newActionType === 'close') && !newActionQuickComplete
+                        ? newUseSuggestedDuration
+                        : undefined,
             })
         );
-        if (newActionType === 'open' || newActionType === 'close') {
-            dispatch(
-                addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'overview', actionDuration: 4 })
-            );
-            dispatch(addActionRow({ date: '', activeLineIds: [], remark: '', actionType: 'wait', actionDuration: 2 }));
-        }
         dispatch(setUnsavedDate(''));
         setNewActionRemark('');
         setNewActionLineSegmentId('');
@@ -878,6 +943,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         setNewNodeAnimationDuration('1');
         setNewActionWithPrevious(false);
         setNewActionQuickComplete(false);
+        setNewUseSuggestedDuration(false);
     };
 
     const handleAddActionRowBelow = (index: number) => {
@@ -988,9 +1054,10 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                     id: editingActionRow.id,
                     updates: {
                         ...editingActionRow,
-                        date: isMetaAction ? '' : editingActionRow.date,
+                        // 并行动作的日期与备注继承批次首动作；目标线路段各自独立
+                        date: isMetaAction ? '' : (editingAnchorRow?.date ?? editingActionRow.date),
                         activeLineIds: [],
-                        remark: isMetaAction ? '' : editingActionRow.remark,
+                        remark: isMetaAction ? '' : (editingAnchorRow?.remark ?? editingActionRow.remark),
                         actionLineId: isMetaAction ? undefined : editingActionRow.actionLineId,
                         withPrevious:
                             actionRows.findIndex(row => row.id === editingActionRow.id) === 0
@@ -999,6 +1066,12 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                         quickComplete:
                             editingActionRow.actionType === 'open' || editingActionRow.actionType === 'close'
                                 ? isQuickCompleteAction(editingActionRow)
+                                : undefined,
+                        // 仅开通/停运且非快速完成时保留建议时长开关，其余情况清除
+                        useSuggestedDuration:
+                            (editingActionRow.actionType === 'open' || editingActionRow.actionType === 'close') &&
+                            !isQuickCompleteAction(editingActionRow)
+                                ? editingActionRow.useSuggestedDuration
                                 : undefined,
                         actionDuration:
                             editingActionRow.actionType === 'overview' || editingActionRow.actionType === 'focus'
@@ -1040,6 +1113,11 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
     const editingLineData = editingElementsForLineId ? lines.find(l => l.id === editingElementsForLineId) : null;
 
+    // 进入元素列表视图或段名被外部修改时，同步名称草稿
+    React.useEffect(() => {
+        setSegmentNameDraft(editingLineData?.text ?? '');
+    }, [editingElementsForLineId, editingLineData?.text]);
+
     React.useEffect(() => {
         if (!editingElementsForLineId) return;
         const line = lines.find(item => item.id === editingElementsForLineId);
@@ -1069,6 +1147,22 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
         return { color: '#E3002B', text: '' };
     };
 
+    // 新建动作开启"与上一动作同时"时，继承的批次首动作（线路徽章/备注/已开通线路均以它为准）
+    const newActionAnchorRow =
+        newActionWithPrevious && actionRows.length > 0
+            ? actionRows[getBatchAnchorIndex(actionRows, actionRows.length - 1)]
+            : undefined;
+    // 编辑中的并行动作所继承的批次首动作（以草稿中的 withPrevious 为准，
+    // 即用户刚在模态框勾选"与上一动作同时"也能立即看到继承效果）
+    const editingAnchorRow = (() => {
+        if (!editingActionRow?.withPrevious) return undefined;
+        const rowIndex = actionRows.findIndex(row => row.id === editingActionRow.id);
+        if (rowIndex <= 0) return undefined;
+        const virtualRows = [...actionRows];
+        virtualRows[rowIndex] = { ...virtualRows[rowIndex], withPrevious: true };
+        return virtualRows[getBatchAnchorIndex(virtualRows, rowIndex)];
+    })();
+
     const isMetaAction = newActionType === 'overview' || newActionType === 'wait' || newActionType === 'focus';
 
     return (
@@ -1078,9 +1172,9 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                     <Text flex={1}>{t('timeline.editor.title', '动画时间线')}</Text>
                 </Flex>
             </RmgSidePanelHeader>
-            <Box overflow="hidden" flex="1" minH={0}>
+            <Box overflow="hidden" flex="1" minH={0} display="flex" flexDirection="column">
                 <RmgSidePanelBody>
-                    <VStack spacing={3} align="stretch">
+                    <VStack spacing={3} align="stretch" minH={0}>
                         {/* 选取状态提示 - 单元素添加 */}
                         {pickingForLineId && (
                             <Box p={2} bg="blue.50" borderRadius="md">
@@ -1175,15 +1269,32 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                 aria-label={t('back', '返回')}
                                                 onClick={handleBackFromElements}
                                             />
-                                            <Text fontSize="sm" fontWeight="bold">
+                                            <Text fontSize="sm" fontWeight="bold" whiteSpace="nowrap">
                                                 {(() => {
                                                     const g = getGroupForSegment(editingLineData.id);
                                                     return g ? g.text : editingLineData.id;
                                                 })()}
                                                 {' - '}
-                                                {t('timeline.elements', '元素')}
                                             </Text>
-                                            <Text fontSize="xs" color="gray.500">
+                                            <Input
+                                                size="xs"
+                                                flex={1}
+                                                minWidth={0}
+                                                value={segmentNameDraft}
+                                                onChange={e => setSegmentNameDraft(e.target.value)}
+                                                onBlur={commitSegmentName}
+                                                onKeyDown={e => {
+                                                    if (e.key === 'Enter') {
+                                                        (e.target as HTMLInputElement).blur();
+                                                    } else if (e.key === 'Escape') {
+                                                        setSegmentNameDraft(editingLineData.text);
+                                                        (e.target as HTMLInputElement).blur();
+                                                    }
+                                                }}
+                                                placeholder={t('timeline.segmentName', '线路段名称')}
+                                                aria-label={t('timeline.segmentName', '线路段名称')}
+                                            />
+                                            <Text fontSize="xs" color="gray.500" whiteSpace="nowrap">
                                                 ({editingLineData.elements.length})
                                             </Text>
                                         </HStack>
@@ -1386,6 +1497,34 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                     </Text>
                                                                 </Button>
                                                             )}
+                                                            <Button
+                                                                size="xs"
+                                                                variant="outline"
+                                                                leftIcon={<MdSchedule />}
+                                                                bg={el.simultaneous ? 'blue.600' : 'white'}
+                                                                color={el.simultaneous ? 'white' : 'blue.600'}
+                                                                borderColor="blue.600"
+                                                                isDisabled={index === 0}
+                                                                _hover={{
+                                                                    bg: el.simultaneous ? 'blue.600' : 'white',
+                                                                    color: el.simultaneous ? 'white' : 'blue.600',
+                                                                    borderColor: 'blue.600',
+                                                                }}
+                                                                _active={{
+                                                                    bg: el.simultaneous ? 'blue.600' : 'white',
+                                                                    color: el.simultaneous ? 'white' : 'blue.600',
+                                                                    borderColor: 'blue.600',
+                                                                }}
+                                                                onClick={event => {
+                                                                    event.stopPropagation();
+                                                                    handleToggleElementSimultaneous(
+                                                                        editingLineData.id,
+                                                                        index
+                                                                    );
+                                                                }}
+                                                            >
+                                                                {t('timeline.simultaneous', '同时')}
+                                                            </Button>
                                                             <IconButton
                                                                 size="xs"
                                                                 variant="ghost"
@@ -1560,13 +1699,17 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                 >
                                                                                     <Text
                                                                                         fontSize="xs"
-                                                                                        color="gray.500"
+                                                                                        flex={1}
+                                                                                        minWidth={0}
+                                                                                        noOfLines={1}
+                                                                                        wordBreak="break-all"
                                                                                     >
-                                                                                        #
+                                                                                        {seg.text}
                                                                                     </Text>
                                                                                     <Badge
                                                                                         fontSize="xs"
                                                                                         variant="outline"
+                                                                                        flexShrink={0}
                                                                                     >
                                                                                         {seg.elements?.length ?? 0}
                                                                                     </Badge>
@@ -1603,33 +1746,61 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
 
                                                                     {/* 添加线路段 */}
                                                                     {addingSegmentForGroupId === group.id ? (
-                                                                        <HStack spacing={1}>
-                                                                            <Button
+                                                                        <VStack spacing={1} align="stretch">
+                                                                            <Input
                                                                                 size="xs"
-                                                                                onClick={() =>
-                                                                                    handleAddSegment(group.id)
+                                                                                autoFocus
+                                                                                value={newSegmentName}
+                                                                                onChange={e =>
+                                                                                    setNewSegmentName(e.target.value)
                                                                                 }
-                                                                            >
-                                                                                {t('confirm', '确定')}
-                                                                            </Button>
-                                                                            <Button
-                                                                                size="xs"
-                                                                                variant="outline"
-                                                                                onClick={() =>
-                                                                                    setAddingSegmentForGroupId(null)
-                                                                                }
-                                                                            >
-                                                                                {t('cancel', '取消')}
-                                                                            </Button>
-                                                                        </HStack>
+                                                                                onKeyDown={e => {
+                                                                                    if (e.key === 'Enter') {
+                                                                                        handleAddSegment(group.id);
+                                                                                    } else if (e.key === 'Escape') {
+                                                                                        setNewSegmentName('');
+                                                                                        setAddingSegmentForGroupId(
+                                                                                            null
+                                                                                        );
+                                                                                    }
+                                                                                }}
+                                                                                placeholder={t(
+                                                                                    'timeline.segmentName',
+                                                                                    '线路段名称'
+                                                                                )}
+                                                                            />
+                                                                            <HStack spacing={1}>
+                                                                                <Button
+                                                                                    size="xs"
+                                                                                    onClick={() =>
+                                                                                        handleAddSegment(group.id)
+                                                                                    }
+                                                                                >
+                                                                                    {t('confirm', '确定')}
+                                                                                </Button>
+                                                                                <Button
+                                                                                    size="xs"
+                                                                                    variant="outline"
+                                                                                    onClick={() => {
+                                                                                        setNewSegmentName('');
+                                                                                        setAddingSegmentForGroupId(
+                                                                                            null
+                                                                                        );
+                                                                                    }}
+                                                                                >
+                                                                                    {t('cancel', '取消')}
+                                                                                </Button>
+                                                                            </HStack>
+                                                                        </VStack>
                                                                     ) : (
                                                                         <Button
                                                                             size="xs"
                                                                             variant="ghost"
                                                                             leftIcon={<MdAdd />}
-                                                                            onClick={() =>
-                                                                                setAddingSegmentForGroupId(group.id)
-                                                                            }
+                                                                            onClick={() => {
+                                                                                setNewSegmentName('');
+                                                                                setAddingSegmentForGroupId(group.id);
+                                                                            }}
                                                                         >
                                                                             {t('timeline.addSegment', '添加线路段')}
                                                                         </Button>
@@ -1698,11 +1869,12 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                     <VStack spacing={1} p={2} bg={rowBgColor} borderRadius="md" mb={2}>
                                         <Input
                                             size="xs"
-                                            value={unsavedDate}
+                                            value={newActionAnchorRow?.date ?? unsavedDate}
                                             isDisabled={
                                                 newActionType === 'overview' ||
                                                 newActionType === 'wait' ||
-                                                newActionType === 'focus'
+                                                newActionType === 'focus' ||
+                                                Boolean(newActionAnchorRow)
                                             }
                                             onChange={e => dispatch(setUnsavedDate(e.target.value))}
                                             onBlur={() => {
@@ -1726,7 +1898,11 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                     dispatch(setUnsavedDate(''));
                                                 }
                                             }}
-                                            placeholder="YYYY-MM-DD"
+                                            placeholder={
+                                                newActionAnchorRow
+                                                    ? t('timeline.action.dateInherited', '继承首个并行动作的日期')
+                                                    : 'YYYY-MM-DD'
+                                            }
                                             borderColor={
                                                 enableActionDateFormatValidation &&
                                                 unsavedDate &&
@@ -1815,7 +1991,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                   ? groups.find(gr => gr.id === seg.groupId)
                                                                   : undefined;
                                                               return g
-                                                                  ? `${g.text} > #${lines.indexOf(seg!) + 1}`
+                                                                  ? `${g.text} > ${seg.text}`
                                                                   : t('timeline.action.selectSegment', '选择线路段');
                                                           })()
                                                         : t('timeline.action.selectSegment', '选择线路段')}
@@ -1855,29 +2031,19 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                     isDisabled={
                                                         newActionType === 'overview' ||
                                                         newActionType === 'focus' ||
-                                                        newActionQuickComplete
+                                                        newActionQuickComplete ||
+                                                        newUseSuggestedDuration
                                                     }
                                                     onChange={e => setNewActionDuration(e.target.value)}
                                                     width="80px"
                                                 />
                                                 <Text fontSize="xs">{t('timeline.second', '秒')}</Text>
                                                 {(newActionType === 'open' || newActionType === 'close') &&
-                                                    !newActionQuickComplete && (
-                                                        <Checkbox
-                                                            size="sm"
-                                                            isChecked={newUseSuggestedDuration}
-                                                            onChange={event =>
-                                                                setNewUseSuggestedDuration(event.target.checked)
-                                                            }
-                                                            sx={{
-                                                                '&[data-checked]': {
-                                                                    bg: 'rgb(44, 122, 123)',
-                                                                    color: 'white',
-                                                                },
-                                                            }}
-                                                        >
-                                                            使用建议时长
-                                                        </Checkbox>
+                                                    !newActionQuickComplete &&
+                                                    renderToggleSwitch(
+                                                        newUseSuggestedDuration,
+                                                        setNewUseSuggestedDuration,
+                                                        t('timeline.useSuggestedDuration', '使用建议时长')
                                                     )}
                                             </HStack>
                                         )}
@@ -1924,20 +2090,25 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                         {!isMetaAction && (
                                             <Input
                                                 size="xs"
-                                                value={newActionRemark}
+                                                value={newActionAnchorRow?.remark ?? newActionRemark}
+                                                isDisabled={Boolean(newActionAnchorRow)}
                                                 onChange={e => setNewActionRemark(e.target.value)}
-                                                placeholder={t('timeline.action.remark', '备注')}
+                                                placeholder={
+                                                    newActionAnchorRow
+                                                        ? t('timeline.action.remarkInherited', '继承首个并行动作的备注')
+                                                        : t('timeline.action.remark', '备注')
+                                                }
                                             />
                                         )}
-                                        <Tooltip label={t('timeline.addAction', '添加动作')} hasArrow>
-                                            <IconButton
-                                                size="xs"
-                                                icon={<MdAdd />}
-                                                aria-label={t('timeline.addAction', '添加动作')}
-                                                onClick={handleAddActionRow}
-                                                width="100%"
-                                            />
-                                        </Tooltip>
+                                        <Button
+                                            size="xs"
+                                            leftIcon={<MdAdd />}
+                                            onClick={handleAddActionRow}
+                                            width="100%"
+                                            variant="outline"
+                                        >
+                                            {t('timeline.addAction', '添加动作')}
+                                        </Button>
                                     </VStack>
 
                                     {/* 动作列表 */}
@@ -1980,7 +2151,8 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                     }}
                                                     onDragEnd={() => setDragActionIndex(null)}
                                                 >
-                                                    {editingActionRow?.id === row.id ? (
+                                                    {/* 编辑弹窗通过 portal 挂载，与行内容并列渲染，避免该行在列表中消失 */}
+                                                    {editingActionRow?.id === row.id && (
                                                         <Modal
                                                             isOpen
                                                             onClose={requestCloseActionEditor}
@@ -1994,13 +2166,18 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                     <VStack spacing={1}>
                                                                         <Input
                                                                             size="xs"
-                                                                            value={editingActionRow.date}
+                                                                            value={
+                                                                                editingAnchorRow?.date ??
+                                                                                editingActionRow.date
+                                                                            }
                                                                             isDisabled={
                                                                                 editingActionRow.actionType ===
                                                                                     'overview' ||
                                                                                 editingActionRow.actionType ===
                                                                                     'wait' ||
-                                                                                editingActionRow.actionType === 'focus'
+                                                                                editingActionRow.actionType ===
+                                                                                    'focus' ||
+                                                                                Boolean(editingAnchorRow)
                                                                             }
                                                                             onChange={e =>
                                                                                 setEditingActionRow(prev =>
@@ -2038,7 +2215,14 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                     );
                                                                                 }
                                                                             }}
-                                                                            placeholder="YYYY-MM-DD"
+                                                                            placeholder={
+                                                                                editingAnchorRow
+                                                                                    ? t(
+                                                                                          'timeline.action.dateInherited',
+                                                                                          '继承首个并行动作的日期'
+                                                                                      )
+                                                                                    : 'YYYY-MM-DD'
+                                                                            }
                                                                             borderColor={
                                                                                 enableActionDateFormatValidation &&
                                                                                 editingActionRow.date &&
@@ -2170,7 +2354,7 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                                     )
                                                                                                   : undefined;
                                                                                               return g
-                                                                                                  ? `${g.text} > #${lines.indexOf(seg!) + 1}`
+                                                                                                  ? `${g.text} > ${seg.text}`
                                                                                                   : t(
                                                                                                         'timeline.action.selectSegment',
                                                                                                         '选择线路段'
@@ -2242,6 +2426,9 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                             'focus' ||
                                                                                         Boolean(
                                                                                             editingActionRow.quickComplete
+                                                                                        ) ||
+                                                                                        Boolean(
+                                                                                            editingActionRow.useSuggestedDuration
                                                                                         )
                                                                                     }
                                                                                     onChange={e =>
@@ -2276,26 +2463,25 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                     'open' ||
                                                                                     editingActionRow.actionType ===
                                                                                         'close') &&
-                                                                                    !editingActionRow.quickComplete && (
-                                                                                        <Checkbox
-                                                                                            size="sm"
-                                                                                            isChecked={
-                                                                                                editingUseSuggestedDuration
-                                                                                            }
-                                                                                            onChange={event =>
-                                                                                                setEditingUseSuggestedDuration(
-                                                                                                    event.target.checked
-                                                                                                )
-                                                                                            }
-                                                                                            sx={{
-                                                                                                '&[data-checked]': {
-                                                                                                    bg: 'rgb(44, 122, 123)',
-                                                                                                    color: 'white',
-                                                                                                },
-                                                                                            }}
-                                                                                        >
-                                                                                            使用建议时长
-                                                                                        </Checkbox>
+                                                                                    !editingActionRow.quickComplete &&
+                                                                                    renderToggleSwitch(
+                                                                                        Boolean(
+                                                                                            editingActionRow.useSuggestedDuration
+                                                                                        ),
+                                                                                        v =>
+                                                                                            setEditingActionRow(prev =>
+                                                                                                prev
+                                                                                                    ? {
+                                                                                                          ...prev,
+                                                                                                          useSuggestedDuration:
+                                                                                                              v,
+                                                                                                      }
+                                                                                                    : null
+                                                                                            ),
+                                                                                        t(
+                                                                                            'timeline.useSuggestedDuration',
+                                                                                            '使用建议时长'
+                                                                                        )
                                                                                     )}
                                                                             </HStack>
                                                                         )}
@@ -2401,7 +2587,11 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                 'close') && (
                                                                             <Input
                                                                                 size="xs"
-                                                                                value={editingActionRow.remark}
+                                                                                value={
+                                                                                    editingAnchorRow?.remark ??
+                                                                                    editingActionRow.remark
+                                                                                }
+                                                                                isDisabled={Boolean(editingAnchorRow)}
                                                                                 onChange={e =>
                                                                                     setEditingActionRow(prev =>
                                                                                         prev
@@ -2413,9 +2603,14 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                                             : null
                                                                                     )
                                                                                 }
-                                                                                placeholder={t(
-                                                                                    'timeline.action.remark'
-                                                                                )}
+                                                                                placeholder={
+                                                                                    editingAnchorRow
+                                                                                        ? t(
+                                                                                              'timeline.action.remarkInherited',
+                                                                                              '继承首个并行动作的备注'
+                                                                                          )
+                                                                                        : t('timeline.action.remark')
+                                                                                }
                                                                             />
                                                                         )}
                                                                     </VStack>
@@ -2439,104 +2634,99 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                 </ModalFooter>
                                                             </ModalContent>
                                                         </Modal>
-                                                    ) : (
-                                                        <Flex justify="space-between" align="center">
-                                                            <HStack spacing={2} flex={1} minWidth={0}>
-                                                                <Badge
-                                                                    bg={badgeInfo.color}
-                                                                    color="white"
-                                                                    fontSize="xs"
-                                                                    px={1}
-                                                                    borderRadius="sm"
-                                                                >
-                                                                    {badgeInfo.text || '#' + (index + 1)}
-                                                                </Badge>
-                                                                <Text fontSize="xs">{row.date || '-'}</Text>
-                                                                <Badge
-                                                                    fontSize="xs"
-                                                                    textTransform="none"
-                                                                    colorScheme={
-                                                                        row.actionType === 'open'
-                                                                            ? 'green'
-                                                                            : row.actionType === 'close'
-                                                                              ? 'red'
-                                                                              : row.actionType === 'overview'
-                                                                                ? 'blue'
-                                                                                : row.actionType === 'focus'
-                                                                                  ? 'purple'
-                                                                                  : 'gray'
-                                                                    }
-                                                                >
-                                                                    {t(
-                                                                        `timeline.action.${row.actionType}`,
-                                                                        row.actionType
-                                                                    )}
-                                                                    {row.actionType === 'wait' &&
-                                                                        ` ${Number(row.actionDuration ?? 0).toString()}s`}
-                                                                </Badge>
-                                                                {row.actionType === 'focus' &&
-                                                                    !getFocusTargetRow(index) && (
-                                                                        <Text fontSize="xs" color="red.500">
-                                                                            {t(
-                                                                                'timeline.action.focusTargetMissing',
-                                                                                '无后续目标'
-                                                                            )}
-                                                                        </Text>
-                                                                    )}
-                                                                <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                                                                    {row.remark}
-                                                                </Text>
-                                                            </HStack>
-                                                            <HStack spacing={0}>
-                                                                <IconButton
-                                                                    size="xs"
-                                                                    variant="ghost"
-                                                                    icon={<MdEdit />}
-                                                                    aria-label={t('edit')}
-                                                                    onClick={() => {
-                                                                        setActionRowBeforeEditing(row);
-                                                                        setEditingUseSuggestedDuration(false);
-                                                                        setEditingActionRow(row);
-                                                                    }}
-                                                                />
-                                                                <IconButton
-                                                                    size="xs"
-                                                                    variant="ghost"
-                                                                    colorScheme="red"
-                                                                    icon={<MdDelete />}
-                                                                    aria-label={t('remove')}
-                                                                    onClick={() => handleRemoveActionRow(row.id)}
-                                                                />
-                                                                <IconButton
-                                                                    size="xs"
-                                                                    variant="ghost"
-                                                                    icon={<MdArrowUpward />}
-                                                                    aria-label={t('timeline.moveUp', '上移')}
-                                                                    isDisabled={index === 0}
-                                                                    onClick={() => moveActionRow(index, -1)}
-                                                                />
-                                                                <IconButton
-                                                                    size="xs"
-                                                                    variant="ghost"
-                                                                    icon={<MdArrowDownward />}
-                                                                    aria-label={t('timeline.moveDown', '下移')}
-                                                                    isDisabled={index === actionRows.length - 1}
-                                                                    onClick={() => moveActionRow(index, 1)}
-                                                                />
-                                                                <IconButton
-                                                                    size="xs"
-                                                                    variant="ghost"
-                                                                    icon={
-                                                                        <Text fontSize="md" fontWeight="bold">
-                                                                            +
-                                                                        </Text>
-                                                                    }
-                                                                    aria-label={t('timeline.addBelow', '在下方添加')}
-                                                                    onClick={() => handleAddActionRowBelow(index)}
-                                                                />
-                                                            </HStack>
-                                                        </Flex>
                                                     )}
+                                                    <Flex justify="space-between" align="center">
+                                                        <HStack spacing={2} flex={1} minWidth={0}>
+                                                            <Badge
+                                                                bg={badgeInfo.color}
+                                                                color="white"
+                                                                fontSize="xs"
+                                                                px={1}
+                                                                borderRadius="sm"
+                                                            >
+                                                                {badgeInfo.text || '#' + (index + 1)}
+                                                            </Badge>
+                                                            <Text fontSize="xs">{row.date || '-'}</Text>
+                                                            <Badge
+                                                                fontSize="xs"
+                                                                textTransform="none"
+                                                                colorScheme={
+                                                                    row.actionType === 'open'
+                                                                        ? 'green'
+                                                                        : row.actionType === 'close'
+                                                                          ? 'red'
+                                                                          : row.actionType === 'overview'
+                                                                            ? 'blue'
+                                                                            : row.actionType === 'focus'
+                                                                              ? 'purple'
+                                                                              : 'gray'
+                                                                }
+                                                            >
+                                                                {t(`timeline.action.${row.actionType}`, row.actionType)}
+                                                                {row.actionType === 'wait' &&
+                                                                    ` ${Number(row.actionDuration ?? 0).toString()}s`}
+                                                            </Badge>
+                                                            {row.actionType === 'focus' &&
+                                                                !getFocusTargetRow(index) && (
+                                                                    <Text fontSize="xs" color="red.500">
+                                                                        {t(
+                                                                            'timeline.action.focusTargetMissing',
+                                                                            '无后续目标'
+                                                                        )}
+                                                                    </Text>
+                                                                )}
+                                                            <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                                                                {row.remark}
+                                                            </Text>
+                                                        </HStack>
+                                                        <HStack spacing={0}>
+                                                            <IconButton
+                                                                size="xs"
+                                                                variant="ghost"
+                                                                icon={<MdEdit />}
+                                                                aria-label={t('edit')}
+                                                                onClick={() => {
+                                                                    setActionRowBeforeEditing(row);
+                                                                    setEditingActionRow(row);
+                                                                }}
+                                                            />
+                                                            <IconButton
+                                                                size="xs"
+                                                                variant="ghost"
+                                                                colorScheme="red"
+                                                                icon={<MdDelete />}
+                                                                aria-label={t('remove')}
+                                                                onClick={() => handleRemoveActionRow(row.id)}
+                                                            />
+                                                            <IconButton
+                                                                size="xs"
+                                                                variant="ghost"
+                                                                icon={<MdArrowUpward />}
+                                                                aria-label={t('timeline.moveUp', '上移')}
+                                                                isDisabled={index === 0}
+                                                                onClick={() => moveActionRow(index, -1)}
+                                                            />
+                                                            <IconButton
+                                                                size="xs"
+                                                                variant="ghost"
+                                                                icon={<MdArrowDownward />}
+                                                                aria-label={t('timeline.moveDown', '下移')}
+                                                                isDisabled={index === actionRows.length - 1}
+                                                                onClick={() => moveActionRow(index, 1)}
+                                                            />
+                                                            <IconButton
+                                                                size="xs"
+                                                                variant="ghost"
+                                                                icon={
+                                                                    <Text fontSize="md" fontWeight="bold">
+                                                                        +
+                                                                    </Text>
+                                                                }
+                                                                aria-label={t('timeline.addBelow', '在下方添加')}
+                                                                onClick={() => handleAddActionRowBelow(index)}
+                                                            />
+                                                        </HStack>
+                                                    </Flex>
                                                 </Box>
                                             );
                                         })}
@@ -2650,6 +2840,15 @@ export default function TimelineEditorPanel({ isOpen, onClose, zIndex }: Timelin
                                                                 <Badge fontSize="xs" variant="outline" mr={2}>
                                                                     {seg.elements?.length ?? 0}
                                                                 </Badge>
+                                                                <Text
+                                                                    fontSize="xs"
+                                                                    flex={1}
+                                                                    minWidth={0}
+                                                                    noOfLines={1}
+                                                                    wordBreak="break-all"
+                                                                >
+                                                                    {seg.text}
+                                                                </Text>
                                                             </Flex>
                                                         ))
                                                     )}

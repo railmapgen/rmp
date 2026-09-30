@@ -4,6 +4,7 @@ import { SerializedGraph } from 'graphology-types';
 import { Draft } from 'immer';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
+import { nextHistoryOrder } from '../history-order';
 
 /** Limits retained undo snapshots to prevent unbounded graph memory usage. */
 export const MAX_UNDO_SIZE = 49;
@@ -43,6 +44,7 @@ export type HistoryScope = 'graph' | 'project';
 /** A project snapshot together with the policy used to restore it. */
 export interface HistoryEntry extends ProjectSnapshot {
     scope: HistoryScope;
+    order: number;
 }
 
 /**
@@ -97,8 +99,8 @@ const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
  * settings and viewport; project history replaces the entire snapshot.
  */
 const restoreHistoryEntry = (state: Draft<ParamState>, entry: Draft<HistoryEntry>): Draft<HistoryEntry> => {
-    const current = { scope: entry.scope, ...state.present };
-    const { scope, ...snapshot } = entry;
+    const { scope, order, ...snapshot } = entry;
+    const current = { scope, order, ...state.present };
     state.present =
         scope === 'project'
             ? snapshot
@@ -128,7 +130,7 @@ const paramSlice = createSlice({
          */
         saveGraph: (state, action: PayloadAction<ParamGraph>) => {
             state.future = [];
-            pushPast(state, { scope: 'graph', ...state.present });
+            pushPast(state, { scope: 'graph', order: nextHistoryOrder(), ...state.present });
             state.present = {
                 ...state.present,
                 graph: structuredClone(action.payload),
@@ -137,7 +139,7 @@ const paramSlice = createSlice({
         /** Records a whole-project replacement, including its persisted viewport. */
         replaceProjectState: (state, action: PayloadAction<ProjectSnapshot>) => {
             state.future = [];
-            pushPast(state, { scope: 'project', ...state.present });
+            pushPast(state, { scope: 'project', order: nextHistoryOrder(), ...state.present });
             state.present = structuredClone(action.payload);
         },
         setSvgViewport: (state, action: PayloadAction<{ zoom: number; min: { x: number; y: number } }>) => {

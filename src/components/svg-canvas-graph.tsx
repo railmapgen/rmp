@@ -443,6 +443,8 @@ const SvgCanvas = () => {
                         [style]: styleAttr,
                         reconcileId: '',
                         parallelIndex,
+                        // 新线段默认开启按地图实际长度自动填充
+                        autoFillMileage: true,
                     });
                     // 里程自动填充：仅当真实地图与动画时间线同时开启时，按地图实际长度写入 mileage，否则沿用原默认（1）逻辑。
                     if (mapEnabled && timelineFeatureEnabled) {
@@ -555,6 +557,8 @@ const SvgCanvas = () => {
             const { zIndex, type: linePathType, style: lineStyleType } = edgeAttrs;
             const typeAttr = edgeAttrs[linePathType];
             const styleAttr = edgeAttrs[lineStyleType];
+            // 分割出的新线段继承原线段的自动填充设置（未设置时默认开启）
+            const inheritedAutoFill = edgeAttrs.autoFillMileage ?? true;
             const [source, target] = graph.current.extremities(edge);
             // new stations must not have existing lines, so leave it to 0 if auto parallel is on
             const parallelIndex = autoParallel && supportsParallelLinePath(linePathType) ? 0 : -1;
@@ -569,6 +573,7 @@ const SvgCanvas = () => {
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
                 parallelIndex,
+                autoFillMileage: inheritedAutoFill,
             });
             graph.current.addDirectedEdgeWithKey(secondSplitEdgeId, id, target, {
                 visible: true,
@@ -579,6 +584,7 @@ const SvgCanvas = () => {
                 [lineStyleType]: structuredClone(styleAttr),
                 reconcileId: '',
                 parallelIndex,
+                autoFillMileage: inheritedAutoFill,
             });
             // 分割产生的新线段同样按双视图开启时的实际地图长度自动填充里程，否则沿用原默认逻辑。
             if (mapEnabled && timelineFeatureEnabled) {

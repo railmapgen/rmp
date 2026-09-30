@@ -9,6 +9,8 @@ export interface LineElement {
     id: Id;
     /** 线段是否反转方向 */
     reverse?: boolean;
+    /** 是否与上一个元素同时开始动画 */
+    simultaneous?: boolean;
     /** 节点历史版本号 (仅节点有效) */
     version?: number;
 }
@@ -50,6 +52,8 @@ export interface TimelineLine {
     id: string;
     /** 所属线路ID */
     groupId: string;
+    /** 线路段名称 */
+    text: string;
     /** 关联的图元素列表 */
     elements: LineElement[];
 }
@@ -86,6 +90,8 @@ export interface ActionRow {
     withPrevious?: boolean;
     /** 是否快速完成开通/停运动作 */
     quickComplete?: boolean;
+    /** 是否使用建议时长（开通/停运时根据线路长度自动计算动作时长） */
+    useSuggestedDuration?: boolean;
 }
 
 export type DiffAction = 'add' | 'update' | 'remove';
@@ -132,6 +138,7 @@ export interface TimelineState {
     diffs: TimelineDiff[];
     baseGraph: SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     undoStack: Array<{
+        order: number;
         dateRows: DateRow[];
         groups: LineGroup[];
         lines: TimelineLine[];
@@ -140,6 +147,7 @@ export interface TimelineState {
         diffs: TimelineDiff[];
     }>;
     redoStack: Array<{
+        order: number;
         dateRows: DateRow[];
         groups: LineGroup[];
         lines: TimelineLine[];

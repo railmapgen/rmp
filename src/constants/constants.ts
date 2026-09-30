@@ -63,6 +63,10 @@ export type EdgeAttributes = BaseAttributes & {
      */
     mileage?: number;
     /**
+     * 时间线属性：是否按地图实际长度自动填充里程（每条线段独立）。
+     */
+    autoFillMileage?: boolean;
+    /**
      * 时间线动画属性：线是否正在绘制中。
      */
     isDrawing?: boolean;

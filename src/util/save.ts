@@ -74,7 +74,7 @@ export interface RMPSave {
     };
 }
 
-export const CURRENT_VERSION = 79;
+export const CURRENT_VERSION = 80;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.

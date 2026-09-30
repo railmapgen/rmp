@@ -216,6 +216,8 @@ const PredictNextNode = () => {
             [LineStyleType.SingleColor]: { color: mostFrequentTheme },
             reconcileId: '',
             parallelIndex,
+            // 新线段默认开启按地图实际长度自动填充
+            autoFillMileage: true,
         });
         // 预测节点创建的线段同样遵循双视图开启时的实际地图里程自动填充规则。
         if (mapEnabled && timelineFeatureEnabled) {

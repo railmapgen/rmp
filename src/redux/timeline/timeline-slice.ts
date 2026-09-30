@@ -12,6 +12,8 @@ import {
     TIMELINE_DEFAULTS,
 } from '../../constants/timeline';
 import { applyUndoAction, applyRedoAction } from '../param/param-slice';
+import { nextHistoryOrder } from '../history-order';
+import { normalizeInheritedActionFields } from '../../util/action-schedule';
 
 const initialState: TimelineState = {
     ...TIMELINE_DEFAULTS,
@@ -55,6 +57,7 @@ const timelineSlice = createSlice({
         // DateRow actions
         addDateRow: (state, action: PayloadAction<Omit<DateRow, 'id'>>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -72,6 +75,7 @@ const timelineSlice = createSlice({
         },
         updateDateRow: (state, action: PayloadAction<{ id: string; updates: Partial<DateRow> }>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -88,6 +92,7 @@ const timelineSlice = createSlice({
         },
         removeDateRow: (state, action: PayloadAction<string>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -102,6 +107,7 @@ const timelineSlice = createSlice({
         // LineGroup actions
         addLineGroup: (state, action: PayloadAction<Omit<LineGroup, 'id'>>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -118,6 +124,7 @@ const timelineSlice = createSlice({
         },
         updateLineGroup: (state, action: PayloadAction<{ id: string; updates: Partial<LineGroup> }>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -133,6 +140,7 @@ const timelineSlice = createSlice({
         },
         removeLineGroup: (state, action: PayloadAction<string>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -150,6 +158,7 @@ const timelineSlice = createSlice({
         // TimelineLine (segment) actions
         addTimelineLine: (state, action: PayloadAction<Omit<TimelineLine, 'id'>>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -166,6 +175,7 @@ const timelineSlice = createSlice({
         },
         updateTimelineLine: (state, action: PayloadAction<{ id: string; updates: Partial<TimelineLine> }>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -181,6 +191,7 @@ const timelineSlice = createSlice({
         },
         removeTimelineLine: (state, action: PayloadAction<string>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -202,6 +213,7 @@ const timelineSlice = createSlice({
         // ActionRow actions
         addActionRow: (state, action: PayloadAction<Omit<ActionRow, 'id'>>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -216,9 +228,11 @@ const timelineSlice = createSlice({
                 id: createActionRowId(existingIds),
             };
             state.actionRows.push(newRow);
+            state.actionRows = normalizeInheritedActionFields(state.actionRows);
         },
         updateActionRow: (state, action: PayloadAction<{ id: string; updates: Partial<ActionRow> }>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -230,10 +244,12 @@ const timelineSlice = createSlice({
             const index = state.actionRows.findIndex(row => row.id === action.payload.id);
             if (index !== -1) {
                 state.actionRows[index] = { ...state.actionRows[index], ...action.payload.updates };
+                state.actionRows = normalizeInheritedActionFields(state.actionRows);
             }
         },
         removeActionRow: (state, action: PayloadAction<string>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -246,6 +262,7 @@ const timelineSlice = createSlice({
         },
         reorderActionRows: (state, action: PayloadAction<{ fromIndex: number; toIndex: number }>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -265,11 +282,13 @@ const timelineSlice = createSlice({
             }
             const [removed] = state.actionRows.splice(fromIndex, 1);
             state.actionRows.splice(toIndex, 0, removed);
+            state.actionRows = normalizeInheritedActionFields(state.actionRows);
         },
 
         // Batch action: clear dates for multiple action rows (one undo entry)
         batchClearActionRowDates: (state, action: PayloadAction<string[]>) => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -339,8 +358,12 @@ const timelineSlice = createSlice({
             state.currentTime = action.payload.currentTime;
             state.dateRows = action.payload.dateRows ?? [];
             state.groups = (action.payload.groups ?? []).map(({ remark: _, ...group }) => group);
-            state.lines = (action.payload.lines ?? []).map(({ remark: _, ...line }) => line);
-            state.actionRows = normalizeActionRowIds(action.payload.actionRows ?? []);
+            // 旧存档的线路段没有名称，按全局序号补默认名（与历史 UI 显示一致）
+            state.lines = (action.payload.lines ?? []).map(({ remark: _, ...line }, index) => ({
+                text: `#${index + 1}`,
+                ...line,
+            }));
+            state.actionRows = normalizeInheritedActionFields(normalizeActionRowIds(action.payload.actionRows ?? []));
             state.diffs = action.payload.diffs ?? [];
             state.baseGraph = action.payload.baseGraph;
             state.undoStack = [];
@@ -350,6 +373,7 @@ const timelineSlice = createSlice({
             const prev = state.undoStack.pop();
             if (prev) {
                 state.redoStack.push({
+                    order: prev.order,
                     dateRows: [...state.dateRows],
                     groups: [...state.groups],
                     lines: [...state.lines],
@@ -369,6 +393,7 @@ const timelineSlice = createSlice({
             const next = state.redoStack.pop();
             if (next) {
                 state.undoStack.push({
+                    order: next.order,
                     dateRows: [...state.dateRows],
                     groups: [...state.groups],
                     lines: [...state.lines],
@@ -392,6 +417,7 @@ const timelineSlice = createSlice({
         },
         clearUnsavedDraft: state => {
             state.undoStack.push({
+                order: nextHistoryOrder(),
                 dateRows: [...state.dateRows],
                 groups: [...state.groups],
                 lines: [...state.lines],
@@ -409,6 +435,7 @@ const timelineSlice = createSlice({
                 const prev = state.undoStack.pop();
                 if (prev) {
                     state.redoStack.push({
+                        order: prev.order,
                         dateRows: [...state.dateRows],
                         groups: [...state.groups],
                         lines: [...state.lines],
@@ -429,6 +456,7 @@ const timelineSlice = createSlice({
                 const next = state.redoStack.pop();
                 if (next) {
                     state.undoStack.push({
+                        order: next.order,
                         dateRows: [...state.dateRows],
                         groups: [...state.groups],
                         lines: [...state.lines],

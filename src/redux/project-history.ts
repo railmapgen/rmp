@@ -7,7 +7,8 @@ import {
     ProjectSnapshot,
     replaceProjectState,
 } from './param/param-slice';
-import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
+import { undoTimeline, redoTimeline } from './timeline/timeline-slice';
+import { refreshEdgesThunk, refreshNodesThunk, resetTransientInteractionState } from './runtime/runtime-slice';
 
 const replaceWindowGraph = (graph: ParamGraph) => {
     // Validate and clone the target before clearing the live graph. A malformed
@@ -34,25 +35,44 @@ const refreshGraphState = (dispatch: RootDispatch) => {
 export const replaceProject = (project: ProjectSnapshot) => (dispatch: RootDispatch) => {
     replaceWindowGraph(project.graph);
     dispatch(replaceProjectState(project));
+    dispatch(resetTransientInteractionState());
     return refreshGraphState(dispatch);
 };
 
 /** Restores the latest undo entry across the live graph, Redux, and derived runtime state. */
 export const undoAction = () => (dispatch: RootDispatch, getState: () => RootState) => {
-    const entry = getState().param.past.at(-1);
+    const state = getState();
+    const timelineEntry = state.timeline.undoStack.at(-1);
+    const paramEntry = state.param.past.at(-1);
+    if (timelineEntry && (!paramEntry || timelineEntry.order > paramEntry.order)) {
+        dispatch(undoTimeline());
+        return refreshGraphState(dispatch);
+    }
+
+    const entry = state.param.past.at(-1);
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
     dispatch(applyUndoAction(entry.scope));
+    if (entry.scope === 'project') dispatch(resetTransientInteractionState());
     return refreshGraphState(dispatch);
 };
 
 /** Restores the next redo entry across the live graph, Redux, and derived runtime state. */
 export const redoAction = () => (dispatch: RootDispatch, getState: () => RootState) => {
-    const entry = getState().param.future[0];
+    const state = getState();
+    const timelineEntry = state.timeline.redoStack.at(-1);
+    const paramEntry = state.param.future[0];
+    if (timelineEntry && (!paramEntry || timelineEntry.order > paramEntry.order)) {
+        dispatch(redoTimeline());
+        return refreshGraphState(dispatch);
+    }
+
+    const entry = state.param.future[0];
     if (!entry) return;
 
     replaceWindowGraph(entry.graph);
     dispatch(applyRedoAction(entry.scope));
+    if (entry.scope === 'project') dispatch(resetTransientInteractionState());
     return refreshGraphState(dispatch);
 };

@@ -21,6 +21,10 @@ export interface AnimPhase {
         direction?: 'forward' | 'backward';
         edgeAction: 'add' | 'remove' | 'highlight';
         isDrawing: boolean;
+        /** 并行边自身的排期区间：各边时长可能不同，绘制进度必须按各自区间独立计算，
+         *  否则共享主边进度会导致先完成的边被回退重绘（表现为已画完的线路段部分消失）。 */
+        startMs?: number;
+        endMs?: number;
     }>;
     /** 是否快速完成当前动作。 */
     quickComplete?: boolean;
@@ -59,6 +63,8 @@ export function buildPhases(
         actionRows?: ActionRow[];
         actionSchedule?: Array<{ startTime: number; endTime: number; actionRowIndex: number }>;
         actionLineEdges?: Map<string, string[]>;
+        /** 开启了"同时"的元素 id 集合（边级）：这些边与紧邻的上一条边同时开始，且不阻塞主链。 */
+        simultaneousElements?: ReadonlySet<string>;
     }
 ): AnimPhase[] {
     const drawSeconds = options?.drawSeconds ?? DEFAULT_DRAW_SECONDS;
@@ -147,7 +153,19 @@ export function buildPhases(
         if (events.length > 0) batchEvents.push(events);
     });
 
-    // 按批重排：组内边错开，组间空隙用 segmentHold 填充
+    // 按批重排：同一动作内的边错开，不同动作（withPrevious）的边同时开始
+    const actionRowsOpt = options?.actionRows;
+    const actionLineEdgesOpt = options?.actionLineEdges;
+    const edgeToActionKey = (edgeId: string): string => {
+        if (!actionRowsOpt || !actionLineEdgesOpt) return '';
+        for (const action of actionRowsOpt) {
+            if (action.actionLineId && actionLineEdgesOpt.get(action.actionLineId)?.includes(edgeId)) {
+                return action.actionLineId;
+            }
+        }
+        return '';
+    };
+
     const segments: AnimPhase[] = [];
     let previousEndMs = 0;
     for (let b = 0; b < batchEvents.length; b++) {
@@ -163,28 +181,70 @@ export function buildPhases(
         const batchStart = diffs[events[0].eventIndex].time; // 毫秒
         const nextBatchStart = b < batchEvents.length - 1 ? diffs[batchEvents[b + 1][0].eventIndex].time : undefined;
         const windowMs = nextBatchStart !== undefined ? Math.max(0, nextBatchStart - batchStart) : drawMs;
-        // 时间窗口不足以容纳所有边时，不能让阶段互相重叠；将停运事件顺延，保证逐条完成。
-        const perEdgeMs = Math.max(MIN_EDGE_MS, Math.min(drawMs, windowMs > 0 ? windowMs / events.length : drawMs));
 
-        for (let i = 0; i < events.length; i++) {
-            const ev = events[i];
-            const startMs = Math.max(batchStart + i * perEdgeMs, previousEndMs);
-            let durationMs = perEdgeMs;
-            if (ev.edgeAction === 'highlight') durationMs = Math.min(perEdgeMs, 1500);
-            else if (ev.edgeAction === 'remove')
-                durationMs = Math.min(perEdgeMs, Math.max(fadeSeconds * 1000, MIN_EDGE_MS));
-            const endMs = startMs + durationMs;
-            segments.push({
-                type: 'segment',
-                startMs,
-                endMs,
-                edgeId: ev.edgeId,
-                edgeAction: ev.edgeAction,
-                eventIndex: ev.eventIndex,
-                direction: ev.direction,
-                isDrawing: ev.isDrawing,
+        // 按动作分组：同一动作的边按顺序错开，不同动作的边同时开始
+        const actionGroups = new Map<string, typeof events>();
+        events.forEach(ev => {
+            const key = edgeToActionKey(ev.edgeId);
+            const group = actionGroups.get(key) ?? [];
+            group.push(ev);
+            actionGroups.set(key, group);
+        });
+        const maxGroupSize = Math.max(...[...actionGroups.values()].map(g => g.length), 1);
+        const perEdgeMs = Math.max(MIN_EDGE_MS, Math.min(drawMs, windowMs > 0 ? windowMs / maxGroupSize : drawMs));
+
+        // "同时"语义以元素列表顺序（edgeOrder）中的"上一行"为准，组内统一按元素顺序排期
+        const simultaneousSet = options?.simultaneousElements;
+        for (const [, rawGroupEvents] of actionGroups) {
+            const groupEvents = [...rawGroupEvents].sort((a, z) => {
+                const orderA = options?.edgeOrder?.get(a.edgeId) ?? Number.MAX_SAFE_INTEGER;
+                const orderZ = options?.edgeOrder?.get(z.edgeId) ?? Number.MAX_SAFE_INTEGER;
+                return orderA - orderZ;
             });
-            previousEndMs = endMs;
+            // 同时链 = 链头（普通边）+ 其后连续的 simultaneous 边。链内边共享起点、各自计时；
+            // 阻塞以后者为准：链后下一条普通边等待链内最晚结束的边播放完毕后才开始。
+            let anchorEnd = batchStart;
+            let mainChainCount = 0;
+            let prevStartMs = batchStart;
+            let chainMaxEnd = batchStart;
+            let chainHasSimultaneous = false;
+            for (let i = 0; i < groupEvents.length; i++) {
+                const ev = groupEvents[i];
+                const isSimultaneous = (simultaneousSet?.has(ev.edgeId) ?? false) && i > 0;
+                let startMs: number;
+                if (isSimultaneous) {
+                    startMs = prevStartMs;
+                } else {
+                    const serialStart = Math.max(batchStart + mainChainCount * perEdgeMs, anchorEnd);
+                    startMs = chainHasSimultaneous ? Math.max(serialStart, chainMaxEnd) : serialStart;
+                }
+                let durationMs = perEdgeMs;
+                if (ev.edgeAction === 'highlight') durationMs = Math.min(perEdgeMs, 1500);
+                else if (ev.edgeAction === 'remove')
+                    durationMs = Math.min(perEdgeMs, Math.max(fadeSeconds * 1000, MIN_EDGE_MS));
+                const endMs = startMs + durationMs;
+                segments.push({
+                    type: 'segment',
+                    startMs,
+                    endMs,
+                    edgeId: ev.edgeId,
+                    edgeAction: ev.edgeAction,
+                    eventIndex: ev.eventIndex,
+                    direction: ev.direction,
+                    isDrawing: ev.isDrawing,
+                });
+                prevStartMs = startMs;
+                if (!isSimultaneous) {
+                    mainChainCount += 1;
+                    anchorEnd = endMs;
+                    chainMaxEnd = endMs;
+                    chainHasSimultaneous = false;
+                } else {
+                    chainMaxEnd = Math.max(chainMaxEnd, endMs);
+                    chainHasSimultaneous = true;
+                }
+                previousEndMs = Math.max(previousEndMs, endMs);
+            }
         }
     }
 
@@ -249,6 +309,8 @@ export function buildPhases(
                         direction: peer.direction,
                         edgeAction: peer.edgeAction === 'update' ? 'highlight' : (peer.edgeAction ?? 'highlight'),
                         isDrawing: peer.isDrawing ?? false,
+                        startMs: peer.startMs,
+                        endMs: peer.endMs,
                     }));
             });
         });

@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { CURRENT_VERSION, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
