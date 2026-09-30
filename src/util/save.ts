@@ -1133,6 +1133,9 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
+    78: param =>
+        // Bump save version to support Wuhan facilities.
+        JSON.stringify({ ...JSON.parse(param), version: 79 }),
     /** Bump save version to support animation timeline. Timeline state is optional and old saves load without it. */
-    78: param => JSON.stringify({ ...JSON.parse(param), version: 79 }),
+    79: param => JSON.stringify({ ...JSON.parse(param), version: 80 }),
 };

@@ -62,6 +62,8 @@ export enum FacilitiesType {
     FerryShenzhen = 'ferry_shenzhen',
     TramShenzhen = 'tram_shenzhen',
     AirportShenzhen = 'airport_shenzhen',
+    RailwayWuhan = 'railway_wuhan',
+    AirportWuhan = 'airport_wuhan',
 }
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
@@ -175,6 +177,8 @@ const attrsComponent = (props: AttrsProps<FacilitiesAttributes>) => {
                 [FacilitiesType.FerryShenzhen]: t('panel.details.nodes.facilities.ferry_shenzhen'),
                 [FacilitiesType.TramShenzhen]: t('panel.details.nodes.facilities.tram_shenzhen'),
                 [FacilitiesType.AirportShenzhen]: t('panel.details.nodes.facilities.airport_shenzhen'),
+                [FacilitiesType.RailwayWuhan]: t('panel.details.nodes.facilities.railway_wuhan'),
+                [FacilitiesType.AirportWuhan]: t('panel.details.nodes.facilities.airport_wuhan'),
             },
             onChange: val => {
                 attrs.type = val as FacilitiesType;
