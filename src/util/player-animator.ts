@@ -270,7 +270,11 @@ export class PlayerAnimator {
         this.highlightedEdges.clear();
 
         // 正在与主相位并行绘制的边不得被重置，否则其描边动画属性会被每帧清掉
-        const activeEdgeIds = new Set<string>([phase.edgeId, ...(phase.parallelEdges ?? []).map(p => p.edgeId)]);
+        const activeEdgeIds = new Set<string>(
+            [phase.edgeId, ...(phase.parallelEdges ?? []).map(p => p.edgeId)].filter(
+                (id): id is string => Boolean(id)
+            )
+        );
 
         const edgeGroups = this.svgElement.querySelectorAll<HTMLElement>('g[data-edge-id]');
         edgeGroups.forEach(g => {

@@ -98,7 +98,8 @@ export const findThemesAtNode = (
     const seen = new Set<string>();
     for (const { edge } of graph.edgeEntries(node)) {
         for (const color of getEdgeThemes(graph, edge)) {
-            const key = color.toString();
+            // 按小写十六进制去重：#e3002b 与 #E3002B 是同一个主题
+            const key = color[2].toLowerCase();
             if (!seen.has(key)) {
                 seen.add(key);
                 themes.push(color);
@@ -111,13 +112,18 @@ export const findThemesAtNode = (
 /**
  * Check whether an edge's theme matches the target theme by hex color.
  * Supports dynamicColorInjection, DualColor, and Generic styles.
+ *
+ * Hex color strings may be stored with different letter cases (e.g. "#e3002b"
+ * vs "#E3002B"), so the comparison must be case-insensitive; otherwise the
+ * same visual colour is treated as two different themes.
  */
 const edgeMatchesTheme = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edge: string,
     targetTheme: Theme
 ): boolean => {
-    return getEdgeThemes(graph, edge).some(color => color[2] === targetTheme[2]);
+    const targetHex = targetTheme[2].toLowerCase();
+    return getEdgeThemes(graph, edge).some(color => color[2].toLowerCase() === targetHex);
 };
 
 /**
