@@ -17,6 +17,7 @@ import {
 } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
+import { LINE_WIDTH, LineStyleType } from '../constants/lines';
 import { ActionRow, CloseNodeStyle, LineGroup, TimelineDiff, TimelineLine } from '../constants/timeline';
 import allStations from '../components/svgs/stations/stations';
 import miscNodes from '../components/svgs/nodes/misc-nodes';
@@ -221,6 +222,8 @@ type ElementAnimation = {
     textProgress: number;
     reverse: boolean;
     state: NodeAnimationState;
+    /** True only for edge close animations, so frames keep the real style instead of a solid placeholder. */
+    closing?: boolean;
     versionTransition?: { from: number; progress: number };
 };
 
@@ -749,6 +752,40 @@ const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boo
     edgeElem.querySelectorAll<SVGElement>('*').forEach(element => {
         element.setAttribute('visibility', clampedProgress > 0 ? 'visible' : 'hidden');
     });
+};
+
+/**
+ * 非纯色线段在开通生长期间临时以纯色逐段生长：
+ * 取该边当前渲染的核心几何，移除 pre/post 装饰层并清空主层真实样式，只保留一条纯色 path。
+ * 每帧 SVG 均为全新克隆，生长完成（progress >= 1）的那一帧会重新渲染真实样式，故无需在此恢复。
+ */
+const makeSolidGrowingPath = (edgeElem: HTMLElement, edgeId: LineId, color: string): void => {
+    const paths = Array.from(edgeElem.querySelectorAll('path'));
+    const strokedPath = paths.find(pathElem => isColoredElement(pathElem.getAttribute('stroke')));
+    const d = (strokedPath ?? paths[0])?.getAttribute('d') ?? '';
+    const root = edgeElem.ownerSVGElement;
+    root?.getElementById(`${edgeId}.pre`)?.remove();
+    root?.getElementById(`${edgeId}.post`)?.remove();
+    edgeElem.innerHTML = '';
+
+    const solidPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    solidPath.setAttribute('d', d);
+    solidPath.setAttribute('fill', 'none');
+    solidPath.setAttribute('stroke', color);
+    solidPath.setAttribute('stroke-width', `${LINE_WIDTH}`);
+    solidPath.setAttribute('stroke-linecap', 'round');
+    edgeElem.appendChild(solidPath);
+};
+
+/**
+ * 取该边渲染中的“第一前景色”：主层第一个有效（非白色/透明/渐变引用）描边色；无则黑色。
+ */
+const getEdgeSolidForeground = (edgeElem: HTMLElement): string => {
+    for (const pathElem of edgeElem.querySelectorAll('path')) {
+        const stroke = pathElem.getAttribute('stroke');
+        if (isColoredElement(stroke)) return stroke as string;
+    }
+    return '#000000';
 };
 
 // ── Node reveal animation ──────────────────────────────────────────────────────
@@ -1486,9 +1523,17 @@ const createFrameSVG = async (
         const anim = animatingElements.get(edgeId);
         const progress = anim?.kind === 'edge' ? anim.progress : 1;
         const effectiveProgress = anim?.quickComplete ? 1 : progress;
+        const edgeStyle = graph.getEdgeAttribute(edgeId, 'style') as LineStyleType;
         // 广州地铁出站换乘（gzmtr-virtual-int）本身是方块虚线，不能使用逐段生长动画——
         // 生长动画会覆盖其 stroke-dasharray 使虚线变实线。该样式单独使用整体透明度渐变。
-        const isOpacityFadeEdge = graph.getEdgeAttribute(edgeId, 'style') === 'gzmtr-virtual-int';
+        const isOpacityFadeEdge = edgeStyle === LineStyleType.GzmtrVirtualInt;
+        // 非纯色线段在开通（非停运）生长期间，临时以“第一前景色”纯色逐段生长；
+        // effectiveProgress 到达 1 的那一帧自动渲染真实样式（每帧 SVG 均为全新克隆）。
+        const useSolidDuringGrowth =
+            !isOpacityFadeEdge &&
+            edgeStyle !== LineStyleType.SingleColor &&
+            !anim?.closing &&
+            effectiveProgress < 1;
         if (isOpacityFadeEdge) {
             if (effectiveProgress <= 0) {
                 edgeElem.setAttribute('visibility', 'hidden');
@@ -1498,6 +1543,10 @@ const createFrameSVG = async (
                 const fade = anim?.quickComplete ? progress : smoothstep(0, 1, clamp01(effectiveProgress));
                 edgeElem.setAttribute('opacity', `${fade}`);
             }
+        } else if (useSolidDuringGrowth) {
+            const foreground = getEdgeSolidForeground(edgeElem);
+            makeSolidGrowingPath(edgeElem, edgeId, foreground);
+            applyEdgeProgress(edgeElem, effectiveProgress, anim?.reverse ?? false, edgeLengths?.get(edgeId));
         } else {
             applyEdgeProgress(edgeElem, effectiveProgress, anim?.reverse ?? false, edgeLengths?.get(edgeId));
             if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
@@ -2487,6 +2536,7 @@ function processFrame(
                         reverse: step.reverse,
                         state: progress <= 0 ? 'not-drawn' : progress >= 1 ? 'drawn' : 'drawing',
                         quickComplete: phase.quickComplete,
+                        closing: true,
                     });
                 }
                 if (frameIndex >= startFrame && startFrame >= latestFocusStartFrame) {
