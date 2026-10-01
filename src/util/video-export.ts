@@ -734,54 +734,21 @@ const getBoundsFitZoom = (bounds: GraphBounds): number => {
 
 // ── Edge progress animation ────────────────────────────────────────────────────
 
-const applyEdgeProgress = (
-    frameRoot: SVGSVGElement,
-    edgeElem: HTMLElement,
-    progress: number,
-    reverse: boolean,
-    edgeLength?: number
-) => {
+const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boolean, edgeLength?: number) => {
     const pathElements = Array.from(edgeElem.querySelectorAll('path'));
     if (pathElements.length === 0) return;
     const clampedProgress = clamp01(progress);
-    // 整组可见性：进度 0 完全隐藏；>0 后每条路径的绘制长度由各自 clipPath 精确揭示。
-    edgeElem.querySelectorAll<SVGElement>('*').forEach(element => {
-        element.setAttribute('visibility', clampedProgress > 0 ? 'visible' : 'hidden');
-    });
-    // 进度 0：上面已整组隐藏；进度 1：保持路径自身样式原样（实线/虚线/双实线都正确）。
-    if (clampedProgress <= 0 || clampedProgress >= 1) return;
-
-    let defs = frameRoot.querySelector<SVGDefsElement>('defs');
-    if (!defs) {
-        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        frameRoot.insertBefore(defs, frameRoot.firstChild);
-    }
-    // clip id 只在本帧内使用（每帧 SVG 都是全新克隆）；净化 edgeId 中不适合做 id 的字符。
-    const safeEdgeId = (edgeElem.id || 'edge').replace(/[^a-zA-Z0-9_-]/g, '_');
-
     for (const [index, pathElem] of pathElements.entries()) {
         const totalLength =
             pathElements.length === 1 && index === 0 && edgeLength ? edgeLength : pathElem.getTotalLength();
-        if (!(totalLength > 0)) continue;
+        if (totalLength <= 0) continue;
         const dashLength = totalLength * clampedProgress;
-        // 克隆原路径作为裁剪描边：d / transform 等几何信息天然一致，覆盖为不透明的"实线生长"。
-        // 原路径自身的 stroke-dasharray 完全不动——clip 只是沿路径揭示，因此虚线样式
-        // （如 gzmtr-virtual-int 的方块虚线）在生长过程中也保持原有虚线图案，不会变实线。
-        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        const clipId = `rmp-grow-${safeEdgeId}-${index}`;
-        clipPath.setAttribute('id', clipId);
-        const clipStroke = pathElem.cloneNode(false) as SVGPathElement;
-        clipStroke.setAttribute('fill', 'none');
-        clipStroke.setAttribute('stroke', '#000');
-        const strokeWidth = parseFloat(pathElem.getAttribute('stroke-width') ?? '1');
-        // 裁剪描边略宽于原描边，避免抗锯齿边缘被裁掉半像素
-        clipStroke.setAttribute('stroke-width', `${(Number.isFinite(strokeWidth) ? strokeWidth : 1) + 2}`);
-        clipStroke.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
-        clipStroke.setAttribute('stroke-dashoffset', reverse ? `${-(totalLength - dashLength)}` : '0');
-        clipPath.appendChild(clipStroke);
-        defs.appendChild(clipPath);
-        pathElem.setAttribute('clip-path', `url(#${clipId})`);
+        pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
+        pathElem.setAttribute('stroke-dashoffset', reverse ? `${-(totalLength - dashLength)}` : '0');
     }
+    edgeElem.querySelectorAll<SVGElement>('*').forEach(element => {
+        element.setAttribute('visibility', clampedProgress > 0 ? 'visible' : 'hidden');
+    });
 };
 
 // ── Node reveal animation ──────────────────────────────────────────────────────
@@ -1518,14 +1485,28 @@ const createFrameSVG = async (
         if (!edgeElem) return;
         const anim = animatingElements.get(edgeId);
         const progress = anim?.kind === 'edge' ? anim.progress : 1;
-        applyEdgeProgress(
-            elem,
-            edgeElem,
-            anim?.quickComplete ? 1 : progress,
-            anim?.reverse ?? false,
-            edgeLengths?.get(edgeId)
-        );
-        if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
+        const effectiveProgress = anim?.quickComplete ? 1 : progress;
+        // 广州地铁出站换乘（gzmtr-virtual-int）本身是方块虚线，不能使用逐段生长动画——
+        // 生长动画会覆盖其 stroke-dasharray 使虚线变实线。该样式单独使用整体透明度渐变。
+        const isOpacityFadeEdge = graph.getEdgeAttribute(edgeId, 'style') === 'gzmtr-virtual-int';
+        if (isOpacityFadeEdge) {
+            if (effectiveProgress <= 0) {
+                edgeElem.setAttribute('visibility', 'hidden');
+                edgeElem.setAttribute('opacity', '0');
+            } else {
+                edgeElem.removeAttribute('visibility');
+                const fade = anim?.quickComplete ? progress : smoothstep(0, 1, clamp01(effectiveProgress));
+                edgeElem.setAttribute('opacity', `${fade}`);
+            }
+        } else {
+            applyEdgeProgress(
+                edgeElem,
+                effectiveProgress,
+                anim?.reverse ?? false,
+                edgeLengths?.get(edgeId)
+            );
+            if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
+        }
         const edgeMileage = graph.getEdgeAttribute(edgeId, 'mileage');
         mileage += typeof edgeMileage === 'number' && Number.isFinite(edgeMileage) ? edgeMileage * progress : 0;
     });
