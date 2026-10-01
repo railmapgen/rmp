@@ -12,7 +12,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
  * @returns true if any edge was updated.
  */
 export const canReconcileLine = (type: LinePathType, style: LineStyleType): boolean =>
-    linePaths[type].metadata.supportsReconcile && lineStyles[style].metadata.supportsReconcile;
+    linePaths[type].metadata.supportsReconcile !== false && lineStyles[style].metadata.supportsReconcile !== false;
 
 export const reconcileSelectedEdges = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
