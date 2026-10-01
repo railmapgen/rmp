@@ -1499,12 +1499,7 @@ const createFrameSVG = async (
                 edgeElem.setAttribute('opacity', `${fade}`);
             }
         } else {
-            applyEdgeProgress(
-                edgeElem,
-                effectiveProgress,
-                anim?.reverse ?? false,
-                edgeLengths?.get(edgeId)
-            );
+            applyEdgeProgress(edgeElem, effectiveProgress, anim?.reverse ?? false, edgeLengths?.get(edgeId));
             if (anim?.quickComplete) edgeElem.setAttribute('opacity', `${progress}`);
         }
         const edgeMileage = graph.getEdgeAttribute(edgeId, 'mileage');
