@@ -1530,9 +1530,7 @@ const createFrameSVG = async (
         // 非纯色线段在开通（非停运）生长期间，临时以“第一前景色”纯色逐段生长；
         // effectiveProgress 到达 1 的那一帧自动渲染真实样式（每帧 SVG 均为全新克隆）。
         const useSolidDuringGrowth =
-            !isOpacityFadeEdge &&
-            edgeStyle !== LineStyleType.SingleColor &&
-            !anim?.closing &&
+            !isOpacityFadeEdge && edgeStyle !== LineStyleType.SingleColor && !anim?.closing &&
             effectiveProgress < 1;
         if (isOpacityFadeEdge) {
             if (effectiveProgress <= 0) {
