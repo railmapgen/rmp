@@ -1401,7 +1401,9 @@ const createFrameSVG = async (
     /** 全览缩放缓动起点（由调用方逐帧持久化）：进入全览那一帧的真实缩放 */
     overviewEaseStartZoom?: number,
     /** 上一帧实际渲染缩放（由调用方逐帧持久化） */
-    lastRenderedZoom?: number
+    lastRenderedZoom?: number,
+    /** 尾部停留帧：镜头中心与缩放复用上一帧，画面内容仍按当前 progress 渲染 */
+    cameraFrozen = false
 ): Promise<{
     elem: SVGSVGElement;
     width: number;
@@ -1610,7 +1612,11 @@ const createFrameSVG = async (
     const targetCenter = refinedSafeCamera?.center ?? focusTarget;
     let nextCameraCenter: { x: number; y: number };
     let nextCameraVelocity: { x: number; y: number };
-    if (cameraOverrideCenter || snapCameraToTarget) {
+    if (cameraFrozen && cameraCenter) {
+        // 尾部停留：中心复用上一帧并清零速度，镜头完全静止
+        nextCameraCenter = cameraCenter;
+        nextCameraVelocity = { x: 0, y: 0 };
+    } else if (cameraOverrideCenter || snapCameraToTarget) {
         // 聚焦插值或预览跳转：直接定位到目标，跳过惯性模型。
         // 正常播放仍使用下方的弹簧-阻尼模型。
         nextCameraCenter = cameraOverrideCenter ?? targetCenter;
@@ -1656,7 +1662,11 @@ const createFrameSVG = async (
     // 全览首帧会先跳到 userScale 再开始缓动。
     let nextOverviewStartZoom = overviewEaseStartZoom;
     let finalZoom: number;
-    if (refinedSafeCamera) {
+    if (cameraFrozen) {
+        // 尾部停留：缩放复用上一帧，不推进任何 zoom transition / 全览缓动
+        finalZoom = lastRenderedZoom ?? effectiveZoom;
+        nextOverviewStartZoom = undefined;
+    } else if (refinedSafeCamera) {
         if (overviewEaseProgress === 0) {
             // 进入全览的首帧：缓动起点取"上一帧真实渲染缩放"，本帧画面与上一帧完全一致。
             // 不能用当帧 effectiveZoom——它在全览边界处可能已被 getEffectiveZoom(0)
@@ -2669,6 +2679,17 @@ function processFrame(
         safeOverviewCamera = safeCamera;
     }
 
+    // 尾部停留：开通/停运内容完成后的 hold 帧内镜头（中心与缩放）冻结为上一帧，
+    // 不触发“同时/并行”视口的 restore 缩放、弹簧追赶或聚焦插值；
+    // 停留结束进入下一 phase 时，镜头再从该冻结状态平滑切换（用户语义：先静止等待，再切视图）。
+    const holdFrames = Math.round(ctx.fps * POST_ANIMATION_HOLD_SECONDS);
+    const cameraFreeze =
+        !phase?.quickComplete &&
+        (phase?.type === 'open' || phase?.type === 'close') &&
+        currentRange !== undefined &&
+        currentRange.end - currentRange.start > holdFrames &&
+        frameIndex >= currentRange.end - holdFrames;
+
     // 聚焦插值：聚焦期间镜头沿"起点→聚焦目标"平滑移动（与缩放过渡同步），
     // 保证聚焦阶段内镜头一定到位，而非受惯性/速度上限限制追不上目标。
     let cameraOverrideCenter: { x: number; y: number } | null = null;
@@ -2706,6 +2727,7 @@ function processFrame(
         activeLineIds: currentActiveLineIds,
         currentActiveLineGroups,
         badgeGroup,
+        cameraFreeze,
         cameraOverrideCenter,
         overviewCenter:
             safeOverviewCamera?.center ??
@@ -2826,6 +2848,7 @@ async function exportAsWebM(
             badgeGroup,
             cameraOverrideCenter,
             safeOverviewCamera,
+            cameraFreeze,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
@@ -2866,7 +2889,8 @@ async function exportAsWebM(
             safeOverviewCamera,
             edgeLengths,
             ctx.overviewEaseStartZoom,
-            ctx.lastRenderedZoom
+            ctx.lastRenderedZoom,
+            cameraFreeze
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -3067,6 +3091,7 @@ async function exportAsMP4(
             badgeGroup,
             cameraOverrideCenter,
             safeOverviewCamera,
+            cameraFreeze,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
@@ -3107,7 +3132,8 @@ async function exportAsMP4(
             safeOverviewCamera,
             edgeLengths,
             ctx.overviewEaseStartZoom,
-            ctx.lastRenderedZoom
+            ctx.lastRenderedZoom,
+            cameraFreeze
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -4017,6 +4043,7 @@ export const createVideoPreview = async (
                 badgeGroup,
                 cameraOverrideCenter,
                 safeOverviewCamera,
+                cameraFreeze,
             } = processFrame(ctx, f, phases, phaseFrameRanges);
             maxRendered = f;
             const overviewProgress =
@@ -4056,7 +4083,8 @@ export const createVideoPreview = async (
                 safeOverviewCamera,
                 edgeLengths,
                 ctx.overviewEaseStartZoom,
-                ctx.lastRenderedZoom
+                ctx.lastRenderedZoom,
+                cameraFreeze
             );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
