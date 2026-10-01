@@ -739,9 +739,23 @@ const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boo
     if (pathElements.length === 0) return;
     const clampedProgress = clamp01(progress);
     for (const [index, pathElem] of pathElements.entries()) {
+        // 首次处理时缓存样式自带的 stroke-dasharray：gzmtr-virtual-int 本身就是虚线
+        // （strokeDasharray="3"），绘制动画若在完成后不还原，边会停留在"实线"状态。
+        let originalDash = pathElem.getAttribute('data-rmp-original-dasharray');
+        if (originalDash === null) {
+            originalDash = pathElem.getAttribute('stroke-dasharray') ?? '';
+            pathElem.setAttribute('data-rmp-original-dasharray', originalDash);
+        }
         const totalLength =
             pathElements.length === 1 && index === 0 && edgeLength ? edgeLength : pathElem.getTotalLength();
         if (totalLength <= 0) continue;
+        if (clampedProgress >= 1) {
+            // 绘制完成：恢复样式自身的虚线图案，移除绘制用 dashoffset
+            if (originalDash) pathElem.setAttribute('stroke-dasharray', originalDash);
+            else pathElem.removeAttribute('stroke-dasharray');
+            pathElem.removeAttribute('stroke-dashoffset');
+            continue;
+        }
         const dashLength = totalLength * clampedProgress;
         pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
         pathElem.setAttribute('stroke-dashoffset', reverse ? `${-(totalLength - dashLength)}` : '0');
@@ -1349,13 +1363,17 @@ const createFrameSVG = async (
     mapLayerTemplate?: SVGSVGElement,
     /** 全览专用安全相机（来自 processFrame 返回值）：存在时优先使用其精确值，跳过弹簧追赶系统 */
     safeOverviewCamera?: { center: { x: number; y: number }; zoom: number },
-    edgeLengths?: Map<LineId, number>
+    edgeLengths?: Map<LineId, number>,
+    /** 全览缩放缓动起点（由调用方逐帧持久化）：进入全览那一帧的真实缩放 */
+    overviewEaseStartZoom?: number
 ): Promise<{
     elem: SVGSVGElement;
     width: number;
     height: number;
     cameraCenter: { x: number; y: number };
     cameraVelocity: { x: number; y: number };
+    /** 本帧记录的全览缓动起点（非全览帧为 undefined），调用方需持久化并回传 */
+    overviewEaseStartZoom?: number;
 }> => {
     const { elem } = await makeRenderReadySVGElement(graph, false, true, isSystemFontsOnly, languages, false, 1.1);
 
@@ -1575,11 +1593,26 @@ const createFrameSVG = async (
     const frameSnapshot = elem.cloneNode(true) as SVGSVGElement;
 
     // 使用弹簧-阻尼模型输出的中心，避免全览目标变化时视口突然跳变。
-    // 缩放仍通过 smoothstep 平滑过渡到全览目标。
     const finalCameraCenter = nextCameraCenter;
-    const finalZoom = refinedSafeCamera
-        ? getEffectiveZoom(overviewEaseProgress, userScale, refinedSafeCamera.zoom)
-        : effectiveZoom;
+    // 缩放：全览期间从"全览之前的真实视口缩放"平滑过渡到安全全览缩放，
+    // 而不是从 userScale 起步——否则当前缩放与 userScale 不同（并行/聚焦拉远等）时，
+    // 全览首帧会先跳到 userScale 再开始缓动。
+    let nextOverviewStartZoom = overviewEaseStartZoom;
+    let finalZoom: number;
+    if (refinedSafeCamera) {
+        if (overviewEaseProgress <= 0) {
+            // 进入全览的首帧：以当前真实缩放作为缓动起点，画面不跳变
+            nextOverviewStartZoom = effectiveZoom;
+            finalZoom = effectiveZoom;
+        } else {
+            const startZoom = nextOverviewStartZoom ?? userScale;
+            const t = smoothstep(0, 1, clamp01(overviewEaseProgress));
+            finalZoom = startZoom + (refinedSafeCamera.zoom - startZoom) * t;
+        }
+    } else {
+        finalZoom = effectiveZoom;
+        nextOverviewStartZoom = undefined;
+    }
     applyCameraViewBox(graph, elem, finalCameraCenter, finalZoom);
 
     // 主画布和 HUD 始终使用同一个 finalCameraCenter，坐标系完全对齐
@@ -1616,6 +1649,7 @@ const createFrameSVG = async (
         height: VIDEO_EXPORT_OUTPUT_HEIGHT,
         cameraCenter: nextCameraCenter,
         cameraVelocity: nextCameraVelocity,
+        overviewEaseStartZoom: nextOverviewStartZoom,
     };
 };
 
@@ -1713,6 +1747,11 @@ interface FrameContext {
     } | null;
     /** 全览保持状态：overview 结束后继续保持全览缩放与视口，直到 focus 动作取消 */
     overviewHold?: { center: { x: number; y: number }; zoom: number } | null;
+    /**
+     * 全览缩放缓动起点：进入全览那一帧的真实缩放。全览缩放必须从"全览之前的视口缩放"
+     * 平滑过渡到安全全览缩放；若从 userScale 起步，当前缩放与 userScale 不同时首帧会跳变。
+     */
+    overviewEaseStartZoom?: number;
     focusCenterHold?: { center: { x: number; y: number }; zoom: number; batchIndex: number } | null;
     /** 聚焦插值起点：聚焦阶段首帧的相机位置，用于聚焦期间镜头沿"起点→目标"线性插值到位 */
     focusTransitionStart?: { x: number; y: number } | null;
@@ -2115,6 +2154,9 @@ function processFrame(
     ctx.overviewPhaseProgress = undefined;
     if (isOverview) {
         ctx.focusCenterHold = null;
+        // 进入全览：并行/聚焦阶段遗留的 focusZoom 必须清除，否则全览结束后的
+        // 聚焦离开缓动会被旧值短路（缩放不随缓动变化，结束时再跳变）。
+        ctx.focusZoom = undefined;
         const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
         focus = { kind: 'overview', center: safeCamera.center };
         ctx.lastFocus = focus;
@@ -2122,6 +2164,7 @@ function processFrame(
         safeOverviewCamera = safeCamera;
     } else if (phase?.type === 'overview') {
         ctx.focusCenterHold = null;
+        ctx.focusZoom = undefined;
         const safeCamera = getSafeOverviewCamera(ctx.graph, visibleNodes, visibleEdges);
         focus = { kind: 'overview', center: safeCamera.center };
         ctx.lastFocus = focus;
@@ -2717,6 +2760,7 @@ async function exportAsWebM(
             elem,
             cameraCenter: nextCameraCenter,
             cameraVelocity: nextCameraVelocity,
+            overviewEaseStartZoom: nextOverviewStartZoom,
         } = await createFrameSVG(
             graph,
             visibleNodes,
@@ -2742,10 +2786,12 @@ async function exportAsWebM(
             ctx.mapLayerMarkup,
             undefined,
             safeOverviewCamera,
-            edgeLengths
+            edgeLengths,
+            ctx.overviewEaseStartZoom
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
+        ctx.overviewEaseStartZoom = nextOverviewStartZoom;
 
         const canvas = await renderSVGToCanvas(
             elem,
@@ -2952,6 +2998,7 @@ async function exportAsMP4(
             elem,
             cameraCenter: nextCameraCenter,
             cameraVelocity: nextCameraVelocity,
+            overviewEaseStartZoom: nextOverviewStartZoom,
         } = await createFrameSVG(
             graph,
             visibleNodes,
@@ -2977,10 +3024,12 @@ async function exportAsMP4(
             mapLayerMarkup,
             undefined,
             safeOverviewCamera,
-            edgeLengths
+            edgeLengths,
+            ctx.overviewEaseStartZoom
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
+        ctx.overviewEaseStartZoom = nextOverviewStartZoom;
 
         const frameCanvas = await renderSVGToCanvas(
             elem,
@@ -3848,6 +3897,7 @@ export const createVideoPreview = async (
             ctx.lastFocus = { kind: 'none' };
             ctx.overviewHold = null;
             ctx.focusTransitionStart = null;
+            ctx.overviewEaseStartZoom = undefined;
             if (lastElem) {
                 lastElem.remove();
                 lastElem = null;
@@ -3873,35 +3923,38 @@ export const createVideoPreview = async (
                 f < animationEndFrame ? -1 : (f - animationEndFrame) / Math.max(remainingFrames, 1);
             const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
             const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress, f);
-            const { elem, cameraCenter, cameraVelocity } = await createFrameSVG(
-                graph,
-                visibleNodes,
-                visibleEdges,
-                animatingElements,
-                focus,
-                ctx.cameraCenter,
-                ctx.cameraVelocity,
-                ctx.previousBasicStations,
-                effectiveZoom,
-                cameraEaseProgress,
-                ctx.userScale,
-                isSystemFontsOnly,
-                languages,
-                existsNodeTypes,
-                date,
-                remark,
-                currentActiveLineGroups,
-                badgeGroup,
-                cameraOverrideCenter,
-                f === target && snapCameraToTarget,
-                nodeVersions,
-                ctx.mapLayerMarkup,
-                mapLayerTemplate,
-                safeOverviewCamera,
-                edgeLengths
-            );
+            const { elem, cameraCenter, cameraVelocity, overviewEaseStartZoom: nextOverviewStartZoom } =
+                await createFrameSVG(
+                    graph,
+                    visibleNodes,
+                    visibleEdges,
+                    animatingElements,
+                    focus,
+                    ctx.cameraCenter,
+                    ctx.cameraVelocity,
+                    ctx.previousBasicStations,
+                    effectiveZoom,
+                    cameraEaseProgress,
+                    ctx.userScale,
+                    isSystemFontsOnly,
+                    languages,
+                    existsNodeTypes,
+                    date,
+                    remark,
+                    currentActiveLineGroups,
+                    badgeGroup,
+                    cameraOverrideCenter,
+                    f === target && snapCameraToTarget,
+                    nodeVersions,
+                    ctx.mapLayerMarkup,
+                    mapLayerTemplate,
+                    safeOverviewCamera,
+                    edgeLengths,
+                    ctx.overviewEaseStartZoom
+                );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
+            ctx.overviewEaseStartZoom = nextOverviewStartZoom;
             if (f === target) {
                 if (lastElem) lastElem.remove();
                 lastElem = elem;
@@ -3930,6 +3983,7 @@ export const createVideoPreview = async (
             ctx.lastFocus = { kind: 'none' };
             ctx.overviewHold = null;
             ctx.focusTransitionStart = null;
+            ctx.overviewEaseStartZoom = undefined;
         },
     };
 };
