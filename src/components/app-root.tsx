@@ -18,13 +18,34 @@ import { addNodeVersion, applyNodeVersion, getCurrentNodeVersion, renameNodeVers
 import { NOTIFICATION_EVENT } from '../util/notifications';
 import { useTimelineDiff } from '../hooks/useTimelineDiff';
 
-const PageHeader = React.lazy(() => import('./page-header/page-header'));
-const ToolsPanel = React.lazy(() => import('./panels/tools/tools'));
-const SvgWrapper = React.lazy(() => import('./svg-wrapper'));
-const DetailsPanel = React.lazy(() => import('./panels/details/details'));
-const RmgPaletteAppClip = React.lazy(() => import('./panels/rmg-palette-app-clip'));
-const TimelineEditorPanel = React.lazy(() => import('./panels/timeline/timeline-editor'));
-const TimelinePlayer = React.lazy(() => import('./timeline/timeline-player'));
+/**
+ * 包装 React.lazy：动态 chunk 拉取失败（发版切换窗口期或瞬时网络抖动）时自动刷新页面一次，
+ * 避免用户直接卡在全局错误页。同一 session 只重试一次，防止持续故障时陷入刷新死循环。
+ */
+const lazyWithRetry: typeof React.lazy = factory =>
+    React.lazy(async () => {
+        try {
+            const loaded = await factory();
+            window.sessionStorage.removeItem('lazy-chunk-reload');
+            return loaded;
+        } catch (error) {
+            if (!window.sessionStorage.getItem('lazy-chunk-reload')) {
+                window.sessionStorage.setItem('lazy-chunk-reload', '1');
+                window.location.reload();
+                // 页面卸载前保持 Suspense 挂起，避免错误边界先闪现
+                return new Promise(() => {});
+            }
+            throw error;
+        }
+    });
+
+const PageHeader = lazyWithRetry(() => import('./page-header/page-header'));
+const ToolsPanel = lazyWithRetry(() => import('./panels/tools/tools'));
+const SvgWrapper = lazyWithRetry(() => import('./svg-wrapper'));
+const DetailsPanel = lazyWithRetry(() => import('./panels/details/details'));
+const RmgPaletteAppClip = lazyWithRetry(() => import('./panels/rmg-palette-app-clip'));
+const TimelineEditorPanel = lazyWithRetry(() => import('./panels/timeline/timeline-editor'));
+const TimelinePlayer = lazyWithRetry(() => import('./timeline/timeline-player'));
 
 export default function AppRoot() {
     const dispatch = useRootDispatch();
