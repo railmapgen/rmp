@@ -3923,35 +3923,39 @@ export const createVideoPreview = async (
                 f < animationEndFrame ? -1 : (f - animationEndFrame) / Math.max(remainingFrames, 1);
             const cameraEaseProgress = ctx.overviewPhaseProgress ?? (overviewProgress >= 0 ? overviewProgress : -1);
             const effectiveZoom = getFrameEffectiveZoom(ctx, cameraEaseProgress, f);
-            const { elem, cameraCenter, cameraVelocity, overviewEaseStartZoom: nextOverviewStartZoom } =
-                await createFrameSVG(
-                    graph,
-                    visibleNodes,
-                    visibleEdges,
-                    animatingElements,
-                    focus,
-                    ctx.cameraCenter,
-                    ctx.cameraVelocity,
-                    ctx.previousBasicStations,
-                    effectiveZoom,
-                    cameraEaseProgress,
-                    ctx.userScale,
-                    isSystemFontsOnly,
-                    languages,
-                    existsNodeTypes,
-                    date,
-                    remark,
-                    currentActiveLineGroups,
-                    badgeGroup,
-                    cameraOverrideCenter,
-                    f === target && snapCameraToTarget,
-                    nodeVersions,
-                    ctx.mapLayerMarkup,
-                    mapLayerTemplate,
-                    safeOverviewCamera,
-                    edgeLengths,
-                    ctx.overviewEaseStartZoom
-                );
+            const {
+                elem,
+                cameraCenter,
+                cameraVelocity,
+                overviewEaseStartZoom: nextOverviewStartZoom,
+            } = await createFrameSVG(
+                graph,
+                visibleNodes,
+                visibleEdges,
+                animatingElements,
+                focus,
+                ctx.cameraCenter,
+                ctx.cameraVelocity,
+                ctx.previousBasicStations,
+                effectiveZoom,
+                cameraEaseProgress,
+                ctx.userScale,
+                isSystemFontsOnly,
+                languages,
+                existsNodeTypes,
+                date,
+                remark,
+                currentActiveLineGroups,
+                badgeGroup,
+                cameraOverrideCenter,
+                f === target && snapCameraToTarget,
+                nodeVersions,
+                ctx.mapLayerMarkup,
+                mapLayerTemplate,
+                safeOverviewCamera,
+                edgeLengths,
+                ctx.overviewEaseStartZoom
+            );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
             ctx.overviewEaseStartZoom = nextOverviewStartZoom;
