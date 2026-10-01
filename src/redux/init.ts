@@ -112,7 +112,11 @@ export const initStore = async (store: RootStore) => {
     const param = await upgrade(paramState);
 
     const { version, graph, timeline: timelineSave, ...save } = JSON.parse(param) as RMPSave;
-    window.graph = MultiDirectedGraph.from(graph);
+    // graphology 的 import 按【引用】存储属性对象。下方同一份 graph 会进入 Redux，
+    // 被 Immer 的 autoFreeze 深度冻结，从而连带冻结 window.graph 的属性，导致
+    // setEdgeAttribute/removeNodeAttribute 等变更抛出 "object is not extensible"。
+    // 因此这里先深拷贝一份给 window.graph，切断与 Redux 状态的引用共享。
+    window.graph = MultiDirectedGraph.from(structuredClone(graph));
     if (store.getState().app.preference.timelineFeatureEnabled) {
         normalizeTimelineStationFlags(window.graph);
     }
