@@ -124,35 +124,43 @@ const getSimultaneousChains = (line: TimelineLine | undefined): Array<{ stationC
 };
 
 /**
+ * 开通/停运动画播放完毕后的内置停留（秒）：
+ * 计入动作时长（最小/建议时长均包含），不单独向用户展示。
+ */
+export const POST_ANIMATION_HOLD_SECONDS = 1;
+
+/**
  * 线路段最小时长（启用"同时"时的并行资源分配算法）：
  * 每条同时链内的车站与边并行绘制，链耗时 = max(车站数>0 ? 单站耗时 : 0, 边数>0 ? 单边最小0.5s : 0)；
  * 各链串行求和。无"同时"元素时与线性公式（车站数×单站耗时 + 边数×0.5）完全等价。
+ * 末尾另含 POST_ANIMATION_HOLD_SECONDS 的播完停留。
  */
 export const getActionLineMinimumDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
-    if (!line) return Math.max(0.1, nodeAnimationDuration);
+    if (!line) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
     const chains = getSimultaneousChains(line);
-    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration);
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
     const total = chains.reduce(
         (sum, chain) =>
             sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 0.5 : 0),
         0
     );
-    return Math.max(0.1, total);
+    return Math.max(0.1, total) + POST_ANIMATION_HOLD_SECONDS;
 };
 
 /**
  * 线路段建议时长：与最小时长同一套同时链模型，边按 1s 的舒适节奏估算，
  * 并行链只计一次边成本，避免为同时绘制的元素重复分配时间。
+ * 末尾另含 POST_ANIMATION_HOLD_SECONDS 的播完停留。
  */
 export const getActionLineSuggestedDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
-    if (!line) return Math.max(0.1, nodeAnimationDuration);
+    if (!line) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
     const chains = getSimultaneousChains(line);
-    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration);
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
     const total = chains.reduce(
         (sum, chain) => sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 1 : 0),
         0
     );
-    return Math.max(0.1, total);
+    return Math.max(0.1, total) + POST_ANIMATION_HOLD_SECONDS;
 };
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -741,6 +749,9 @@ const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boo
     const pathElements = Array.from(edgeElem.querySelectorAll('path'));
     if (pathElements.length === 0) return;
     const clampedProgress = clamp01(progress);
+    // 生长完成时直接保留克隆中的真实样式——
+    // 否则写入的 dasharray 会破坏中国铁路等样式自带的装饰性 dasharray（黑虚线被拉成纯黑实线）。
+    if (clampedProgress >= 1) return;
     for (const [index, pathElem] of pathElements.entries()) {
         const totalLength =
             pathElements.length === 1 && index === 0 && edgeLength ? edgeLength : pathElem.getTotalLength();
@@ -1919,8 +1930,8 @@ function scheduleElementFrames(
     const isClose = phase.type === 'close';
     const elements = isClose ? [...phase.elements].reverse() : phase.elements;
 
-    // t = phase duration (seconds), n = node count, l = total edge path length
-    const t = ctx.phaseDurations[phaseIndex] ?? 2;
+    // t = 动画内容时长（不含播完后的内置停留），n = node count, l = total edge path length
+    const t = (ctx.phaseDurations[phaseIndex] ?? 2) - POST_ANIMATION_HOLD_SECONDS;
     const nodeCount = elements.filter(e => e.kind === 'node' && !isVirtualNode(ctx.graph, e.id)).length;
     const edgeCount = elements.filter(e => e.kind === 'edge').length;
     const totalEdgeLen = elements
@@ -1995,8 +2006,10 @@ function scheduleElementFrames(
         }
     }
 
-    // 第二步：等比拉伸整个序列，使最后一个元素恰好画完到 phase 末尾（填满，消除尾部空转）
-    const phaseSpan = Math.max(1, phaseRange.end - phaseRange.start);
+    // 第二步：等比拉伸整个序列，使最后一个元素恰好画完到“停留段”起点（填满动画内容、消除空转）。
+    // phase 末尾保留 holdFrames 的播完停留，不参与拉伸。
+    const holdFrames = Math.round(ctx.fps * POST_ANIMATION_HOLD_SECONDS);
+    const phaseSpan = Math.max(1, phaseRange.end - phaseRange.start - holdFrames);
     const firstStart = scheduled.length > 0 ? scheduled[0].start : phaseRange.start;
     const lastEnd = scheduled.reduce((m, s) => Math.max(m, s.start + s.dur), firstStart);
     const actualSpan = Math.max(1, lastEnd - firstStart);

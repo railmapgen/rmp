@@ -51,7 +51,7 @@ describe('buildAnimationPhases', () => {
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }],
         };
 
-        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(3.5);
         expect(
             buildAnimationPhases(
                 [
@@ -83,7 +83,7 @@ describe('buildAnimationPhases', () => {
             elements: [{ id: 'stn_a' }, { id: 'stn_b' }],
         };
 
-        expect(getActionLineMinimumDuration(line, 1)).toBe(2);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(3);
     });
 
     it('creates open phases with elements from TimelineLine', () => {
@@ -406,25 +406,25 @@ describe('getActionLineMinimumDuration / getActionLineSuggestedDuration（同时
             { id: 'stn_b', simultaneous: true },
             { id: 'line_ab', simultaneous: true },
         ]);
-        expect(getActionLineMinimumDuration(line, 1)).toBe(1);
-        expect(getActionLineSuggestedDuration(line, 1)).toBe(1);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(2);
     });
 
     it('多条同时链之间串行求和', () => {
         // 链1：stn_a + stn_b（并行，车站成本 1s）；链2：line_ab（普通元素开新链，0.5s/1s）
         const line = makeLine([{ id: 'stn_a' }, { id: 'stn_b', simultaneous: true }, { id: 'line_ab' }]);
-        expect(getActionLineMinimumDuration(line, 1)).toBe(1.5);
-        expect(getActionLineSuggestedDuration(line, 1)).toBe(2);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(3);
     });
 
     it('首元素即使带 simultaneous 标志也作为链头（不影响链划分）', () => {
         const line = makeLine([{ id: 'stn_a', simultaneous: true }, { id: 'line_ab' }]);
-        expect(getActionLineMinimumDuration(line, 1)).toBe(1.5);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
     });
 
     it('无"同时"元素时与线性公式等价', () => {
         const line = makeLine([{ id: 'stn_a' }, { id: 'stn_b' }, { id: 'line_ab' }]);
-        expect(getActionLineMinimumDuration(line, 1)).toBe(2.5);
-        expect(getActionLineSuggestedDuration(line, 1)).toBe(3);
+        expect(getActionLineMinimumDuration(line, 1)).toBe(3.5);
+        expect(getActionLineSuggestedDuration(line, 1)).toBe(4);
     });
 });
