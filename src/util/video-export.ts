@@ -747,7 +747,7 @@ const getBoundsFitZoom = (bounds: GraphBounds): number => {
 
 // ── Edge progress animation ────────────────────────────────────────────────────
 
-const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boolean, edgeLength?: number) => {
+const applyEdgeProgress = (edgeElem: SVGElement, progress: number, reverse: boolean, edgeLength?: number) => {
     const pathElements = Array.from(edgeElem.querySelectorAll('path'));
     if (pathElements.length === 0) return;
     const clampedProgress = clamp01(progress);
@@ -772,7 +772,7 @@ const applyEdgeProgress = (edgeElem: HTMLElement, progress: number, reverse: boo
  * 取该边当前渲染的核心几何，移除 pre/post 装饰层并清空主层真实样式，只保留一条纯色 path。
  * 每帧 SVG 均为全新克隆，生长完成（progress >= 1）的那一帧会重新渲染真实样式，故无需在此恢复。
  */
-const makeSolidGrowingPath = (edgeElem: HTMLElement, edgeId: LineId, color: string): void => {
+const makeSolidGrowingPath = (edgeElem: SVGElement, edgeId: LineId, color: string): void => {
     const paths = Array.from(edgeElem.querySelectorAll('path'));
     const strokedPath = paths.find(pathElem => isColoredElement(pathElem.getAttribute('stroke')));
     const d = (strokedPath ?? paths[0])?.getAttribute('d') ?? '';
@@ -793,7 +793,7 @@ const makeSolidGrowingPath = (edgeElem: HTMLElement, edgeId: LineId, color: stri
 /**
  * 取该边渲染中的“第一前景色”：主层第一个有效（非白色/透明/渐变引用）描边色；无则黑色。
  */
-const getEdgeSolidForeground = (edgeElem: HTMLElement): string => {
+const getEdgeSolidForeground = (edgeElem: SVGElement): string => {
     for (const pathElem of edgeElem.querySelectorAll('path')) {
         const stroke = pathElem.getAttribute('stroke');
         if (isColoredElement(stroke)) return stroke as string;
@@ -1531,7 +1531,7 @@ const createFrameSVG = async (
             elem.getElementById(edgeId)?.remove();
             return;
         }
-        const edgeElem = elem.getElementById(edgeId) as HTMLElement | null;
+        const edgeElem = elem.getElementById(edgeId) as SVGElement | null;
         if (!edgeElem) return;
         const anim = animatingElements.get(edgeId);
         const progress = anim?.kind === 'edge' ? anim.progress : 1;
