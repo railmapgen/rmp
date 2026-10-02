@@ -65,7 +65,9 @@ export default function OpenActions() {
 
         // reset graph with new data
         graph.current.clear();
-        graph.current.import(save.graph);
+        // graphology 按引用存储 attributes；同一份 save.graph 稍后会作为 baseGraph 进入 Redux
+        // 并被 Immer 深度冻结。这里深拷贝后再导入，避免 window.graph 的属性被连带冻结。
+        graph.current.import(structuredClone(save.graph));
         if (timelineFeatureEnabled) {
             normalizeTimelineStationFlags(graph.current);
         }

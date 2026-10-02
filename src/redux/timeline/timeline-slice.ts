@@ -322,7 +322,9 @@ const timelineSlice = createSlice({
             state,
             action: PayloadAction<SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>>
         ) => {
-            state.baseGraph = action.payload;
+            // 深拷贝后再存入 Redux（与 param-slice 口径一致），避免 Immer autoFreeze
+            // 连带冻结调用方（如 window.graph）仍在引用的属性对象。
+            state.baseGraph = structuredClone(action.payload);
         },
         clearTimelineData: state => {
             state.enabled = false;
@@ -365,7 +367,9 @@ const timelineSlice = createSlice({
             }));
             state.actionRows = normalizeInheritedActionFields(normalizeActionRowIds(action.payload.actionRows ?? []));
             state.diffs = action.payload.diffs ?? [];
-            state.baseGraph = action.payload.baseGraph;
+            // 深拷贝后再存入 Redux：baseGraph 往往与刚导入 window.graph 的对象同源，
+            // 直接赋值会让 Immer 冻结外部 graph 的属性。
+            state.baseGraph = structuredClone(action.payload.baseGraph);
             state.undoStack = [];
             state.redoStack = [];
         },
