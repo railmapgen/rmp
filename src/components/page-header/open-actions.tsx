@@ -7,7 +7,7 @@ import { Events, LocalStorageKey } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { saveGraph, setSvgViewBoxMin, setSvgViewBoxZoom } from '../../redux/param/param-slice';
 import { clearSelected, refreshEdgesThunk, refreshNodesThunk, setGlobalAlert } from '../../redux/runtime/runtime-slice';
-import { loadTimeline } from '../../redux/timeline/timeline-slice';
+import { clearTimelineData, loadTimeline } from '../../redux/timeline/timeline-slice';
 import { getCanvasSize } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
@@ -53,6 +53,9 @@ export default function OpenActions() {
         graph.current.clear();
         dispatch(setSvgViewBoxZoom(100));
         dispatch(setSvgViewBoxMin({ x: 0, y: 0 }));
+        // 新建项目需同时清空时间线配置（启用状态、日期、动作、基准图等），
+        // 避免上一个项目的时间线残留到空白项目中。
+        dispatch(clearTimelineData());
         refreshAndSave();
     };
 
