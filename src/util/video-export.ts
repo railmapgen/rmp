@@ -2291,32 +2291,6 @@ function processFrame(
                 target,
             };
         };
-        // 元素级"同时"镜头：若当前帧有 simultaneous 元素正在动画，收集与其同时启动
-        // （相同起始帧）的整组元素，用整条 bounds 合并视口，保证并行动画元素完整可见。
-        const getSimultaneousFocusBounds = (ordered: AnimationStep[]): GraphBounds | undefined => {
-            if (phase.quickComplete) return undefined;
-            const groups = new Map<number, AnimationStep[]>();
-            let hasActiveSimultaneous = false;
-            for (const step of ordered) {
-                const startFrame = ctx.elementStartFrame.get(getKey(step.id));
-                if (startFrame === undefined) continue;
-                const dur =
-                    ctx.elementDurationFrame.get(getKey(step.id)) ??
-                    Math.max(1, Math.round(ctx.fps * phase.nodeAnimationDuration));
-                const frameSinceStart = frameIndex - startFrame;
-                if (frameSinceStart < 0) continue;
-                if (step.simultaneous && frameSinceStart < dur) hasActiveSimultaneous = true;
-                const group = groups.get(startFrame) ?? [];
-                group.push(step);
-                groups.set(startFrame, group);
-            }
-            if (!hasActiveSimultaneous) return undefined;
-            const groupSteps: AnimationStep[] = [];
-            groups.forEach(group => {
-                if (group.some(step => step.simultaneous)) groupSteps.push(...group);
-            });
-            return getElementBounds(ctx.graph, groupSteps);
-        };
         if (phase.type === 'open') {
             if (!phase.quickComplete)
                 scheduleElementFrames(ctx, phase, phaseFrameRanges[currentPhaseIndex], currentPhaseIndex);
@@ -2393,7 +2367,6 @@ function processFrame(
                     if (frameSinceStart >= 0) latestFocusElement = step;
                 }
             }
-            const simultaneousFocusBounds = getSimultaneousFocusBounds(phase.elements);
             const keepFocusFromTransition =
                 phases[currentPhaseIndex - 1]?.type === 'focus' && ctx.lastFocus.kind !== 'none';
             const keepQuickCompleteFocus =
@@ -2431,19 +2404,9 @@ function processFrame(
                 focus = { kind: 'center', center };
                 ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
                 ctx.lastFocus = focus;
-            } else if (simultaneousFocusBounds) {
-                // 元素级并行：镜头居中并缩放到同时动画元素的整条包围盒，保证完整可见
-                const center = {
-                    x: (simultaneousFocusBounds.xMin + simultaneousFocusBounds.xMax) / 2,
-                    y: (simultaneousFocusBounds.yMin + simultaneousFocusBounds.yMax) / 2,
-                };
-                const targetZoom = getBoundsFitZoom(simultaneousFocusBounds);
-                requestFocusZoom(`sim:${currentPhaseIndex}`, targetZoom);
-                ctx.focusZoom = targetZoom;
-                focus = { kind: 'center', center };
-                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
-                ctx.lastFocus = focus;
             } else if (latestFocusElement) {
+                // 镜头始终跟随正在绘制的元素（笔尖位置）；元素画完后的间隙与收尾
+                // 保持最后焦点不动，不再切到同时包围盒中心等其他位置。
                 const step = latestFocusElement;
                 if (step.kind === 'node') {
                     focus = { kind: 'node', id: step.id as NodeId };
@@ -2553,7 +2516,6 @@ function processFrame(
                 phase.quickComplete &&
                 phases[currentPhaseIndex - 1]?.type === 'focus' &&
                 ctx.lastFocus.kind === 'center';
-            const simultaneousFocusBounds = getSimultaneousFocusBounds(closeElements);
             const closeFocusElement = latestFocusElement ?? closeElements[0];
             if (keepQuickCompleteFocus) {
                 focus = ctx.lastFocus;
@@ -2568,19 +2530,8 @@ function processFrame(
                 focus = { kind: 'center', center };
                 ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
                 ctx.lastFocus = focus;
-            } else if (simultaneousFocusBounds) {
-                // 元素级并行：镜头居中并缩放到同时动画元素的整条包围盒，保证完整可见
-                const center = {
-                    x: (simultaneousFocusBounds.xMin + simultaneousFocusBounds.xMax) / 2,
-                    y: (simultaneousFocusBounds.yMin + simultaneousFocusBounds.yMax) / 2,
-                };
-                const targetZoom = getBoundsFitZoom(simultaneousFocusBounds);
-                requestFocusZoom(`sim:${currentPhaseIndex}`, targetZoom);
-                ctx.focusZoom = targetZoom;
-                focus = { kind: 'center', center };
-                ctx.focusCenterHold = { center, zoom: targetZoom, batchIndex: phase.batchIndex };
-                ctx.lastFocus = focus;
             } else if (closeFocusElement) {
+                // 与开通一致：镜头始终跟随正在擦除的元素，不切到同时包围盒中心
                 if (closeFocusElement.kind === 'node') {
                     focus = { kind: 'node', id: closeFocusElement.id as NodeId };
                 } else {
@@ -2625,33 +2576,7 @@ function processFrame(
                 };
             }
             const ordered = phase.type === 'close' ? [...phase.elements].reverse() : phase.elements;
-            if (!phase.quickComplete && ordered.length > 0) {
-                // 元素级同时：首个启动帧组含 simultaneous 元素时，镜头入场即对准该组包围盒
-                const firstStart = Math.min(
-                    ...ordered.map(step => ctx.elementStartFrame.get(getKey(step.id)) ?? Number.MAX_SAFE_INTEGER)
-                );
-                if (Number.isFinite(firstStart)) {
-                    const firstGroup = ordered.filter(
-                        step => ctx.elementStartFrame.get(getKey(step.id)) === firstStart
-                    );
-                    if (firstGroup.some(step => step.simultaneous)) {
-                        const bounds = getElementBounds(
-                            ctx.graph,
-                            firstGroup.map(step => ({ id: step.id, kind: step.kind, reverse: step.reverse }))
-                        );
-                        if (bounds) {
-                            return {
-                                center: {
-                                    x: (bounds.xMin + bounds.xMax) / 2,
-                                    y: (bounds.yMin + bounds.yMax) / 2,
-                                },
-                                zoom: getBoundsFitZoom(bounds),
-                            };
-                        }
-                    }
-                }
-            }
-            // 顺序动作：镜头对准首个元素的绘制笔尖端（开通=起点端，停运=满进度端）
+            // 镜头对准首个元素的绘制笔尖端（开通=起点端，停运=满进度端）
             const first = ordered[0];
             if (!first) return null;
             if (first.kind === 'node') {
