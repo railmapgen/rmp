@@ -124,43 +124,45 @@ const getSimultaneousChains = (line: TimelineLine | undefined): Array<{ stationC
 };
 
 /**
- * 开通/停运动画播放完毕后的内置停留（秒）：
+ * 开通/停运动画内容开始前的内置镜头过渡停留（秒）：
  * 计入动作时长（最小/建议时长均包含），不单独向用户展示。
+ * 这段时间画面保持上一动作结束时的内容，镜头在此完成缩放与平移，
+ * 从上一动作视口过渡到本动作入场视口；内容开始时镜头已就位并正常跟随进度。
  */
-export const POST_ANIMATION_HOLD_SECONDS = 1;
+export const PRE_ANIMATION_HOLD_SECONDS = 1;
 
 /**
  * 线路段最小时长（启用"同时"时的并行资源分配算法）：
  * 每条同时链内的车站与边并行绘制，链耗时 = max(车站数>0 ? 单站耗时 : 0, 边数>0 ? 单边最小0.5s : 0)；
  * 各链串行求和。无"同时"元素时与线性公式（车站数×单站耗时 + 边数×0.5）完全等价。
- * 末尾另含 POST_ANIMATION_HOLD_SECONDS 的播完停留。
+ * 开头另含 PRE_ANIMATION_HOLD_SECONDS 的镜头过渡停留。
  */
 export const getActionLineMinimumDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
-    if (!line) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
+    if (!line) return Math.max(0.1, nodeAnimationDuration) + PRE_ANIMATION_HOLD_SECONDS;
     const chains = getSimultaneousChains(line);
-    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + PRE_ANIMATION_HOLD_SECONDS;
     const total = chains.reduce(
         (sum, chain) =>
             sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 0.5 : 0),
         0
     );
-    return Math.max(0.1, total) + POST_ANIMATION_HOLD_SECONDS;
+    return Math.max(0.1, total) + PRE_ANIMATION_HOLD_SECONDS;
 };
 
 /**
  * 线路段建议时长：与最小时长同一套同时链模型，边按 1s 的舒适节奏估算，
  * 并行链只计一次边成本，避免为同时绘制的元素重复分配时间。
- * 末尾另含 POST_ANIMATION_HOLD_SECONDS 的播完停留。
+ * 开头另含 PRE_ANIMATION_HOLD_SECONDS 的镜头过渡停留。
  */
 export const getActionLineSuggestedDuration = (line: TimelineLine | undefined, nodeAnimationDuration = 1): number => {
-    if (!line) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
+    if (!line) return Math.max(0.1, nodeAnimationDuration) + PRE_ANIMATION_HOLD_SECONDS;
     const chains = getSimultaneousChains(line);
-    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + POST_ANIMATION_HOLD_SECONDS;
+    if (chains.length === 0) return Math.max(0.1, nodeAnimationDuration) + PRE_ANIMATION_HOLD_SECONDS;
     const total = chains.reduce(
         (sum, chain) => sum + Math.max(chain.stationCount > 0 ? nodeAnimationDuration : 0, chain.edgeCount > 0 ? 1 : 0),
         0
     );
-    return Math.max(0.1, total) + POST_ANIMATION_HOLD_SECONDS;
+    return Math.max(0.1, total) + PRE_ANIMATION_HOLD_SECONDS;
 };
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -1401,9 +1403,7 @@ const createFrameSVG = async (
     /** 全览缩放缓动起点（由调用方逐帧持久化）：进入全览那一帧的真实缩放 */
     overviewEaseStartZoom?: number,
     /** 上一帧实际渲染缩放（由调用方逐帧持久化） */
-    lastRenderedZoom?: number,
-    /** 尾部停留帧：镜头中心与缩放复用上一帧，画面内容仍按当前 progress 渲染 */
-    cameraFrozen = false
+    lastRenderedZoom?: number
 ): Promise<{
     elem: SVGSVGElement;
     width: number;
@@ -1612,11 +1612,7 @@ const createFrameSVG = async (
     const targetCenter = refinedSafeCamera?.center ?? focusTarget;
     let nextCameraCenter: { x: number; y: number };
     let nextCameraVelocity: { x: number; y: number };
-    if (cameraFrozen && cameraCenter) {
-        // 尾部停留：中心复用上一帧并清零速度，镜头完全静止
-        nextCameraCenter = cameraCenter;
-        nextCameraVelocity = { x: 0, y: 0 };
-    } else if (cameraOverrideCenter || snapCameraToTarget) {
+    if (cameraOverrideCenter || snapCameraToTarget) {
         // 聚焦插值或预览跳转：直接定位到目标，跳过惯性模型。
         // 正常播放仍使用下方的弹簧-阻尼模型。
         nextCameraCenter = cameraOverrideCenter ?? targetCenter;
@@ -1662,11 +1658,7 @@ const createFrameSVG = async (
     // 全览首帧会先跳到 userScale 再开始缓动。
     let nextOverviewStartZoom = overviewEaseStartZoom;
     let finalZoom: number;
-    if (cameraFrozen) {
-        // 尾部停留：缩放复用上一帧，不推进任何 zoom transition / 全览缓动
-        finalZoom = lastRenderedZoom ?? effectiveZoom;
-        nextOverviewStartZoom = undefined;
-    } else if (refinedSafeCamera) {
+    if (refinedSafeCamera) {
         if (overviewEaseProgress === 0) {
             // 进入全览的首帧：缓动起点取"上一帧真实渲染缩放"，本帧画面与上一帧完全一致。
             // 不能用当帧 effectiveZoom——它在全览边界处可能已被 getEffectiveZoom(0)
@@ -1940,8 +1932,11 @@ function scheduleElementFrames(
     const isClose = phase.type === 'close';
     const elements = isClose ? [...phase.elements].reverse() : phase.elements;
 
-    // t = 动画内容时长（不含播完后的内置停留），n = node count, l = total edge path length
-    const t = (ctx.phaseDurations[phaseIndex] ?? 2) - POST_ANIMATION_HOLD_SECONDS;
+    // t = 动画内容时长（不含开头的镜头过渡停留），n = node count, l = total edge path length
+    // 内容统一从 contentStart（phase 起点 + 过渡停留）开始排程，开头停留段留给镜头过渡。
+    const holdFrames = Math.round(ctx.fps * PRE_ANIMATION_HOLD_SECONDS);
+    const contentStart = phaseRange.start + holdFrames;
+    const t = (ctx.phaseDurations[phaseIndex] ?? 2) - PRE_ANIMATION_HOLD_SECONDS;
     const nodeCount = elements.filter(e => e.kind === 'node' && !isVirtualNode(ctx.graph, e.id)).length;
     const edgeCount = elements.filter(e => e.kind === 'edge').length;
     const totalEdgeLen = elements
@@ -1970,12 +1965,12 @@ function scheduleElementFrames(
     //     即阻塞以后者为准；无并行元素时保持原有的无缝重叠衔接节奏。
     const scheduled: Array<{ step: AnimationStep; start: number; dur: number }> = [];
     let anchor: { step: AnimationStep; start: number; dur: number } | null = null;
-    let chainMaxEnd = phaseRange.start;
+    let chainMaxEnd = contentStart;
     let chainHasSimultaneous = false;
     for (const step of elements) {
         if (ctx.elementStartFrame.has(getKey(step.id))) continue;
         const prev = scheduled.length > 0 ? scheduled[scheduled.length - 1] : null;
-        let thisStartFrame = phaseRange.start;
+        let thisStartFrame = contentStart;
 
         if (prev && step.simultaneous) {
             // 与上一个元素同时开始
@@ -1994,7 +1989,7 @@ function scheduleElementFrames(
             } else {
                 // Edge→Edge: 下一条边在当前边完成前 0.1s 启动，保持连续
                 serialStart = Math.max(
-                    phaseRange.start,
+                    contentStart,
                     anchor.start + anchor.dur - Math.max(1, Math.round(ctx.fps * 0.1))
                 );
             }
@@ -2002,7 +1997,7 @@ function scheduleElementFrames(
             thisStartFrame = chainHasSimultaneous ? Math.max(serialStart, chainMaxEnd) : serialStart;
         }
 
-        const clampedStart = Math.min(phaseRange.end, Math.max(phaseRange.start, thisStartFrame));
+        const clampedStart = Math.min(phaseRange.end, Math.max(contentStart, thisStartFrame));
         const dur = step.kind === 'edge' ? getBaseEdgeDur(step.id) : baseNodeFrames;
         const item = { step, start: clampedStart, dur };
         scheduled.push(item);
@@ -2016,11 +2011,10 @@ function scheduleElementFrames(
         }
     }
 
-    // 第二步：等比拉伸整个序列，使最后一个元素恰好画完到“停留段”起点（填满动画内容、消除空转）。
-    // phase 末尾保留 holdFrames 的播完停留，不参与拉伸。
-    const holdFrames = Math.round(ctx.fps * POST_ANIMATION_HOLD_SECONDS);
-    const phaseSpan = Math.max(1, phaseRange.end - phaseRange.start - holdFrames);
-    const firstStart = scheduled.length > 0 ? scheduled[0].start : phaseRange.start;
+    // 第二步：等比拉伸整个序列，使最后一个元素恰好画完到 phase 末尾（填满动画内容、消除空转）。
+    // phase 开头保留 holdFrames 的镜头过渡停留，不参与排程与拉伸。
+    const phaseSpan = Math.max(1, phaseRange.end - contentStart);
+    const firstStart = scheduled.length > 0 ? scheduled[0].start : contentStart;
     const lastEnd = scheduled.reduce((m, s) => Math.max(m, s.start + s.dur), firstStart);
     const actualSpan = Math.max(1, lastEnd - firstStart);
     const stretch = Math.max(1, phaseSpan / actualSpan);
@@ -2032,7 +2026,7 @@ function scheduleElementFrames(
         const newStart =
             item.step.simultaneous && ownIndex > 0
                 ? stretchedStarts[ownIndex - 1]
-                : Math.max(phaseRange.start, Math.round(phaseRange.start + (item.start - phaseRange.start) * stretch));
+                : Math.max(contentStart, Math.round(contentStart + (item.start - contentStart) * stretch));
         stretchedStarts.push(newStart);
         const newDur = Math.max(
             item.step.kind === 'edge' ? Math.ceil(ctx.fps * 0.5) : 1,
@@ -2109,6 +2103,8 @@ function processFrame(
     let currentDate = '';
     let currentRemark = '';
     let currentActiveLineIds: string[] = [];
+    /** 开场过渡帧的镜头中心（内容开始前的停留段内由插值直接决定） */
+    let leadingHoldCenter: { x: number; y: number } | null = null;
     /** 全览动作专用安全相机（由 getSafeOverviewCamera 计算），传递给 createFrameSVG 用于精确设置 viewBox 和 HUD */
     let safeOverviewCamera: { center: { x: number; y: number }; zoom: number } | undefined;
 
@@ -2282,9 +2278,7 @@ function processFrame(
         // 请求一段帧域驱动的缩放过渡：同一场景（id）持续期间不重启，保证并行开始/结束
         // 的视口缩放都是带惯性的平滑动画，而非逐帧跳变。
         const ZOOM_TRANSITION_FRAMES = Math.max(1, Math.round(ctx.fps * 0.45));
-        let zoomOverrideActive = false;
         const requestFocusZoom = (id: string, target: number) => {
-            zoomOverrideActive = true;
             if (ctx.focusZoomTransition?.id === id) return;
             ctx.focusZoomTransition = {
                 id,
@@ -2296,16 +2290,6 @@ function processFrame(
                 start: ctx.lastRenderedZoom ?? ctx.currentZoom ?? ctx.userScale,
                 target,
             };
-        };
-        // 并行（动作级/元素级同时）或聚焦动作结束后，惯性回放到用户缩放；回放完毕再清除过渡
-        const settleZoomAfterOverride = () => {
-            const tr = ctx.focusZoomTransition;
-            if (zoomOverrideActive) return;
-            if (tr && (tr.id.startsWith('parallel:') || tr.id.startsWith('sim:') || tr.id.startsWith('focus:'))) {
-                requestFocusZoom(`restore:${currentPhaseIndex}`, ctx.userScale);
-            } else if (tr?.id.startsWith('restore:') && frameIndex - tr.startFrame >= tr.durationFrames) {
-                ctx.focusZoomTransition = null;
-            }
         };
         // 元素级"同时"镜头：若当前帧有 simultaneous 元素正在动画，收集与其同时启动
         // （相同起始帧）的整组元素，用整条 bounds 合并视口，保证并行动画元素完整可见。
@@ -2623,14 +2607,98 @@ function processFrame(
             focus = { kind: 'center', center: focusCenterHold.center };
             ctx.focusZoom = focusCenterHold.zoom;
             ctx.lastFocus = focus;
-        } else if (phase.type === 'open' || phase.type === 'close') {
-            // 并行动作中先完成的元素退出合并视口时，缩放在此惯性回放到用户缩放，
-            // 中心则继续由弹簧相机平滑追赶下一个焦点（双重惯性，不瞬切）。
-            settleZoomAfterOverride();
         }
         // 等待阶段保持当前镜头；全览阶段使用全图中心。
         if (phase.type === 'wait' && focus.kind === 'none' && ctx.lastFocus.kind !== 'none') {
             focus = ctx.lastFocus;
+        }
+
+        // 开场过渡的入场视口：内容开始后镜头的首个目标（与内容首帧的镜头分支一致）。
+        const getPhaseEntryCamera = (): { center: { x: number; y: number }; zoom: number } | null => {
+            if (parallelFocusOverride) {
+                return {
+                    center: {
+                        x: (parallelFocusOverride.xMin + parallelFocusOverride.xMax) / 2,
+                        y: (parallelFocusOverride.yMin + parallelFocusOverride.yMax) / 2,
+                    },
+                    zoom: getBoundsFitZoom(parallelFocusOverride),
+                };
+            }
+            const ordered = phase.type === 'close' ? [...phase.elements].reverse() : phase.elements;
+            if (!phase.quickComplete && ordered.length > 0) {
+                // 元素级同时：首个启动帧组含 simultaneous 元素时，镜头入场即对准该组包围盒
+                const firstStart = Math.min(
+                    ...ordered.map(step => ctx.elementStartFrame.get(getKey(step.id)) ?? Number.MAX_SAFE_INTEGER)
+                );
+                if (Number.isFinite(firstStart)) {
+                    const firstGroup = ordered.filter(
+                        step => ctx.elementStartFrame.get(getKey(step.id)) === firstStart
+                    );
+                    if (firstGroup.some(step => step.simultaneous)) {
+                        const bounds = getElementBounds(
+                            ctx.graph,
+                            firstGroup.map(step => ({ id: step.id, kind: step.kind, reverse: step.reverse }))
+                        );
+                        if (bounds) {
+                            return {
+                                center: {
+                                    x: (bounds.xMin + bounds.xMax) / 2,
+                                    y: (bounds.yMin + bounds.yMax) / 2,
+                                },
+                                zoom: getBoundsFitZoom(bounds),
+                            };
+                        }
+                    }
+                }
+            }
+            // 顺序动作：镜头对准首个元素的绘制笔尖端（开通=起点端，停运=满进度端）
+            const first = ordered[0];
+            if (!first) return null;
+            if (first.kind === 'node') {
+                const point = getFocusApproxPoint(ctx.graph, { kind: 'node', id: first.id });
+                return point ? { center: point, zoom: ctx.userScale } : null;
+            }
+            if (!ctx.graph.hasEdge(first.id as LineId)) return null;
+            const [source, target] = ctx.graph.extremities(first.id as LineId);
+            const startNodeId = first.reverse ? target : source;
+            const endNodeId = first.reverse ? source : target;
+            const tipNodeId = phase.type === 'close' ? endNodeId : startNodeId;
+            if (!ctx.graph.hasNode(tipNodeId as NodeId)) return null;
+            const attr = ctx.graph.getNodeAttributes(tipNodeId as NodeId);
+            return { center: { x: attr.x, y: attr.y }, zoom: ctx.userScale };
+        };
+
+        // 开场镜头过渡：内容开始前的停留帧内，画面保持上一动作结束时的内容，
+        // 镜头（中心+缩放）从上一动作视口平滑过渡到本动作入场视口；
+        // 内容开始时镜头已就位，随后正常跟随进度，动作期间不再回缩用户缩放——
+        // 相邻动作的视口差统一由下一动作的开场过渡消化。
+        const holdFrames = Math.round(ctx.fps * PRE_ANIMATION_HOLD_SECONDS);
+        const inLeadingHold =
+            !phase.quickComplete &&
+            (phase.type === 'open' || phase.type === 'close') &&
+            currentRange !== undefined &&
+            currentRange.end - currentRange.start > holdFrames &&
+            frameIndex < currentRange.start + holdFrames;
+        if (inLeadingHold) {
+            const entry = getPhaseEntryCamera();
+            if (entry) {
+                const startCenter = ctx.cameraCenter ?? entry.center;
+                const t = smoothstep(0, 1, clamp01((frameIndex - currentRange.start) / holdFrames));
+                leadingHoldCenter = {
+                    x: startCenter.x + (entry.center.x - startCenter.x) * t,
+                    y: startCenter.y + (entry.center.y - startCenter.y) * t,
+                };
+                const preId = `pre:${currentPhaseIndex}`;
+                if (ctx.focusZoomTransition?.id !== preId) {
+                    ctx.focusZoomTransition = {
+                        id: preId,
+                        startFrame: currentRange.start,
+                        durationFrames: Math.max(1, holdFrames),
+                        start: ctx.lastRenderedZoom ?? ctx.currentZoom ?? entry.zoom,
+                        target: entry.zoom,
+                    };
+                }
+            }
         }
     }
 
@@ -2679,17 +2747,6 @@ function processFrame(
         safeOverviewCamera = safeCamera;
     }
 
-    // 尾部停留：开通/停运内容完成后的 hold 帧内镜头（中心与缩放）冻结为上一帧，
-    // 不触发“同时/并行”视口的 restore 缩放、弹簧追赶或聚焦插值；
-    // 停留结束进入下一 phase 时，镜头再从该冻结状态平滑切换（用户语义：先静止等待，再切视图）。
-    const holdFrames = Math.round(ctx.fps * POST_ANIMATION_HOLD_SECONDS);
-    const cameraFreeze =
-        !phase?.quickComplete &&
-        (phase?.type === 'open' || phase?.type === 'close') &&
-        currentRange !== undefined &&
-        currentRange.end - currentRange.start > holdFrames &&
-        frameIndex >= currentRange.end - holdFrames;
-
     // 聚焦插值：聚焦期间镜头沿"起点→聚焦目标"平滑移动（与缩放过渡同步），
     // 保证聚焦阶段内镜头一定到位，而非受惯性/速度上限限制追不上目标。
     let cameraOverrideCenter: { x: number; y: number } | null = null;
@@ -2716,6 +2773,9 @@ function processFrame(
         }
     }
 
+    // 开场过渡帧：镜头中心由过渡插值直接决定（缩放由 pre: 帧域过渡驱动）
+    if (leadingHoldCenter) cameraOverrideCenter = leadingHoldCenter;
+
     return {
         visibleNodes,
         visibleEdges,
@@ -2727,7 +2787,6 @@ function processFrame(
         activeLineIds: currentActiveLineIds,
         currentActiveLineGroups,
         badgeGroup,
-        cameraFreeze,
         cameraOverrideCenter,
         overviewCenter:
             safeOverviewCamera?.center ??
@@ -2848,7 +2907,6 @@ async function exportAsWebM(
             badgeGroup,
             cameraOverrideCenter,
             safeOverviewCamera,
-            cameraFreeze,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
@@ -2889,8 +2947,7 @@ async function exportAsWebM(
             safeOverviewCamera,
             edgeLengths,
             ctx.overviewEaseStartZoom,
-            ctx.lastRenderedZoom,
-            cameraFreeze
+            ctx.lastRenderedZoom
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -3091,7 +3148,6 @@ async function exportAsMP4(
             badgeGroup,
             cameraOverrideCenter,
             safeOverviewCamera,
-            cameraFreeze,
         } = processFrame(ctx, frame, phases, phaseFrameRanges);
 
         const overviewProgress =
@@ -3132,8 +3188,7 @@ async function exportAsMP4(
             safeOverviewCamera,
             edgeLengths,
             ctx.overviewEaseStartZoom,
-            ctx.lastRenderedZoom,
-            cameraFreeze
+            ctx.lastRenderedZoom
         );
         ctx.cameraCenter = nextCameraCenter;
         ctx.cameraVelocity = nextCameraVelocity;
@@ -4043,7 +4098,6 @@ export const createVideoPreview = async (
                 badgeGroup,
                 cameraOverrideCenter,
                 safeOverviewCamera,
-                cameraFreeze,
             } = processFrame(ctx, f, phases, phaseFrameRanges);
             maxRendered = f;
             const overviewProgress =
@@ -4083,8 +4137,7 @@ export const createVideoPreview = async (
                 safeOverviewCamera,
                 edgeLengths,
                 ctx.overviewEaseStartZoom,
-                ctx.lastRenderedZoom,
-                cameraFreeze
+                ctx.lastRenderedZoom
             );
             ctx.cameraCenter = cameraCenter;
             ctx.cameraVelocity = cameraVelocity;
