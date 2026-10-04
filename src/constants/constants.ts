@@ -1,5 +1,6 @@
 import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
+import type { LineDefinition } from './line-definitions';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
 import { PathPoint } from './path';
 import { ExternalStationAttributes, StationType } from './stations';
@@ -69,6 +70,9 @@ export type Id = NodeId | LineId;
 
 export type GraphAttributes = {
     name?: string;
+    lineDefinitions?: LineDefinition[];
+    /** Explicitly removed memberships stay outside automatic line discovery until reassigned. */
+    unassignedLineEdgeIds?: string[];
 };
 
 /** Viewport context supplied to an editor overlay. */

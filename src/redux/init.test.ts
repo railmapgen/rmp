@@ -57,4 +57,20 @@ describe('project persistence', () => {
         expect(localStorage.getItem(LocalStorageKey.PARAM)).toBeTruthy();
         expect(onRMPSaveUpdate).toHaveBeenCalledTimes(1);
     });
+
+    it('persists line information together with the project in localStorage', async () => {
+        const graph = structuredClone(store.getState().param.present.graph);
+        graph.attributes.lineDefinitions![0].openingDate = '2026-10-03';
+        graph.attributes.lineDefinitions![0].operator = 'Metro operator';
+        graph.attributes.lineDefinitions![0].notes = 'Persisted line';
+        store.dispatch(saveGraph(graph));
+        await flushListenerEffects();
+        const save = JSON.parse(localStorage.getItem(LocalStorageKey.PARAM)!);
+        expect(save.graph.attributes.lineDefinitions[0]).toMatchObject({
+            openingDate: '2026-10-03',
+            operator: 'Metro operator',
+            notes: 'Persisted line',
+        });
+        expect(onRMPSaveUpdate).toHaveBeenCalledTimes(1);
+    });
 });

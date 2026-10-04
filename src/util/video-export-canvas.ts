@@ -1,4 +1,4 @@
-import { MAP_TILE_BASE_URL } from '../map/map-config';
+import { MAP_ROUTING } from '../map/map-routing';
 import { compileMapStyleCss, MapStyle } from '../map/map-style';
 import { MapTileController } from '../map/map-tile-controller';
 import { LiveViewport } from '../redux/viewport/viewport-slice';
@@ -34,7 +34,7 @@ export const createVideoExportCanvas = (
         wrapper.append(mapLayer);
         controller = new MapTileController({
             root: mapLayer,
-            baseUrl: MAP_TILE_BASE_URL,
+            routing: MAP_ROUTING,
             styleCss: css,
             getViewportSize: () => size,
             rasterEnabled: false,

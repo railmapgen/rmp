@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MAP_ROUTING } from '../map/map-routing';
 import { DEFAULT_MAP_STYLE, compileMapStyleCss } from '../map/map-style';
 import { MapTileController } from '../map/map-tile-controller';
 import { createVideoExportCanvas } from './video-export-canvas';
@@ -46,6 +47,7 @@ describe('video export canvas lifecycle', () => {
         );
         const options = vi.mocked(MapTileController).mock.calls[0][0];
         expect(options.root).toBe(source.canvas.querySelector('[data-map-layer]'));
+        expect(options.routing).toBe(MAP_ROUTING);
         expect(options.rasterEnabled).toBe(false);
         expect(updateViewport).toHaveBeenCalledWith(viewport);
         source.dispose();

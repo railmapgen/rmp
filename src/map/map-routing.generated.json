@@ -1,0 +1,453 @@
+{
+    "formatVersion": 1,
+    "ownerZoom": 8,
+    "regions": [
+        {
+            "id": "china",
+            "ownerId": 1,
+            "origin": "https://cn.tiles.railmapgen.org"
+        },
+        {
+            "id": "japan",
+            "ownerId": 2,
+            "origin": "https://jp.tiles.railmapgen.org"
+        }
+    ],
+    "runs": [
+        {
+            "start": 21205,
+            "length": 4,
+            "ownerId": 1
+        },
+        {
+            "start": 21460,
+            "length": 6,
+            "ownerId": 1
+        },
+        {
+            "start": 21714,
+            "length": 9,
+            "ownerId": 1
+        },
+        {
+            "start": 21972,
+            "length": 7,
+            "ownerId": 1
+        },
+        {
+            "start": 22226,
+            "length": 10,
+            "ownerId": 1
+        },
+        {
+            "start": 22461,
+            "length": 2,
+            "ownerId": 1
+        },
+        {
+            "start": 22482,
+            "length": 11,
+            "ownerId": 1
+        },
+        {
+            "start": 22716,
+            "length": 4,
+            "ownerId": 1
+        },
+        {
+            "start": 22738,
+            "length": 15,
+            "ownerId": 1
+        },
+        {
+            "start": 22970,
+            "length": 7,
+            "ownerId": 1
+        },
+        {
+            "start": 22993,
+            "length": 15,
+            "ownerId": 1
+        },
+        {
+            "start": 23225,
+            "length": 9,
+            "ownerId": 1
+        },
+        {
+            "start": 23249,
+            "length": 15,
+            "ownerId": 1
+        },
+        {
+            "start": 23480,
+            "length": 11,
+            "ownerId": 1
+        },
+        {
+            "start": 23503,
+            "length": 1,
+            "ownerId": 1
+        },
+        {
+            "start": 23505,
+            "length": 15,
+            "ownerId": 1
+        },
+        {
+            "start": 23524,
+            "length": 2,
+            "ownerId": 2
+        },
+        {
+            "start": 23736,
+            "length": 12,
+            "ownerId": 1
+        },
+        {
+            "start": 23749,
+            "length": 3,
+            "ownerId": 1
+        },
+        {
+            "start": 23759,
+            "length": 17,
+            "ownerId": 1
+        },
+        {
+            "start": 23780,
+            "length": 5,
+            "ownerId": 2
+        },
+        {
+            "start": 23992,
+            "length": 16,
+            "ownerId": 1
+        },
+        {
+            "start": 24011,
+            "length": 2,
+            "ownerId": 1
+        },
+        {
+            "start": 24014,
+            "length": 16,
+            "ownerId": 1
+        },
+        {
+            "start": 24035,
+            "length": 6,
+            "ownerId": 2
+        },
+        {
+            "start": 24248,
+            "length": 38,
+            "ownerId": 1
+        },
+        {
+            "start": 24290,
+            "length": 6,
+            "ownerId": 2
+        },
+        {
+            "start": 24502,
+            "length": 39,
+            "ownerId": 1
+        },
+        {
+            "start": 24546,
+            "length": 5,
+            "ownerId": 2
+        },
+        {
+            "start": 24756,
+            "length": 38,
+            "ownerId": 1
+        },
+        {
+            "start": 24803,
+            "length": 3,
+            "ownerId": 2
+        },
+        {
+            "start": 25012,
+            "length": 37,
+            "ownerId": 1
+        },
+        {
+            "start": 25058,
+            "length": 4,
+            "ownerId": 2
+        },
+        {
+            "start": 25063,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 25268,
+            "length": 36,
+            "ownerId": 1
+        },
+        {
+            "start": 25312,
+            "length": 6,
+            "ownerId": 2
+        },
+        {
+            "start": 25524,
+            "length": 36,
+            "ownerId": 1
+        },
+        {
+            "start": 25568,
+            "length": 5,
+            "ownerId": 2
+        },
+        {
+            "start": 25781,
+            "length": 35,
+            "ownerId": 1
+        },
+        {
+            "start": 25822,
+            "length": 7,
+            "ownerId": 2
+        },
+        {
+            "start": 26039,
+            "length": 31,
+            "ownerId": 1
+        },
+        {
+            "start": 26075,
+            "length": 10,
+            "ownerId": 2
+        },
+        {
+            "start": 26295,
+            "length": 32,
+            "ownerId": 1
+        },
+        {
+            "start": 26331,
+            "length": 9,
+            "ownerId": 2
+        },
+        {
+            "start": 26551,
+            "length": 32,
+            "ownerId": 1
+        },
+        {
+            "start": 26586,
+            "length": 6,
+            "ownerId": 2
+        },
+        {
+            "start": 26595,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 26807,
+            "length": 33,
+            "ownerId": 1
+        },
+        {
+            "start": 26843,
+            "length": 3,
+            "ownerId": 2
+        },
+        {
+            "start": 26851,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 27064,
+            "length": 32,
+            "ownerId": 1
+        },
+        {
+            "start": 27099,
+            "length": 3,
+            "ownerId": 2
+        },
+        {
+            "start": 27107,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 27322,
+            "length": 30,
+            "ownerId": 1
+        },
+        {
+            "start": 27352,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 27355,
+            "length": 2,
+            "ownerId": 2
+        },
+        {
+            "start": 27579,
+            "length": 28,
+            "ownerId": 1
+        },
+        {
+            "start": 27610,
+            "length": 3,
+            "ownerId": 2
+        },
+        {
+            "start": 27620,
+            "length": 2,
+            "ownerId": 2
+        },
+        {
+            "start": 27839,
+            "length": 1,
+            "ownerId": 1
+        },
+        {
+            "start": 27845,
+            "length": 18,
+            "ownerId": 1
+        },
+        {
+            "start": 27863,
+            "length": 5,
+            "ownerId": 2
+        },
+        {
+            "start": 27869,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 27876,
+            "length": 2,
+            "ownerId": 2
+        },
+        {
+            "start": 28101,
+            "length": 18,
+            "ownerId": 1
+        },
+        {
+            "start": 28119,
+            "length": 4,
+            "ownerId": 2
+        },
+        {
+            "start": 28125,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 28132,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 28357,
+            "length": 18,
+            "ownerId": 1
+        },
+        {
+            "start": 28375,
+            "length": 3,
+            "ownerId": 2
+        },
+        {
+            "start": 28381,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 28388,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 28397,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 28614,
+            "length": 17,
+            "ownerId": 1
+        },
+        {
+            "start": 28870,
+            "length": 3,
+            "ownerId": 1
+        },
+        {
+            "start": 28875,
+            "length": 9,
+            "ownerId": 1
+        },
+        {
+            "start": 28885,
+            "length": 2,
+            "ownerId": 1
+        },
+        {
+            "start": 28896,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 29132,
+            "length": 4,
+            "ownerId": 1
+        },
+        {
+            "start": 29138,
+            "length": 2,
+            "ownerId": 1
+        },
+        {
+            "start": 29152,
+            "length": 1,
+            "ownerId": 2
+        },
+        {
+            "start": 29389,
+            "length": 3,
+            "ownerId": 1
+        },
+        {
+            "start": 29645,
+            "length": 4,
+            "ownerId": 1
+        },
+        {
+            "start": 29902,
+            "length": 4,
+            "ownerId": 1
+        },
+        {
+            "start": 29907,
+            "length": 1,
+            "ownerId": 1
+        },
+        {
+            "start": 30161,
+            "length": 1,
+            "ownerId": 1
+        },
+        {
+            "start": 30163,
+            "length": 1,
+            "ownerId": 1
+        }
+    ]
+}

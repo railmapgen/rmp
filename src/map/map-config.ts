@@ -1,5 +1,3 @@
-import { map_tile_base_url } from '../constants/server';
-
 export const MAP_TILE_SIZE = 256;
 export const MAP_RASTER_TILE_SIZE = 4096;
 
@@ -60,8 +58,6 @@ export const MAP_TILE_CACHE_MAX_ENTRIES = 512;
 export const MAP_RASTER_IDLE_DELAY_MS = 5_000;
 export const MAP_SOURCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export const MAP_RASTER_CACHE_MAX_BYTES = 256 * 1024 * 1024;
-
-export const MAP_TILE_BASE_URL = map_tile_base_url;
 
 /** Converts editable graph coordinates into the map dataset's stable reference space. */
 export const graphToWorldPixel = (point: { x: number; y: number }) => ({

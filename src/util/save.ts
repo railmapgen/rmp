@@ -41,6 +41,7 @@ import { StationType } from '../constants/stations';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
+import { reconcileLineDefinitions } from './line-definitions';
 
 /**
  * The save format of the project.
@@ -54,7 +55,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 79;
+export const CURRENT_VERSION = 80;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1063,7 +1064,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
-    /** Reconcile version 78 saves created by the timeline and real-map branches. */
+    /** Support Wuhan facilities and reconcile version 78 saves from the timeline and real-map branches. */
     78: param => {
         const save = JSON.parse(param) as Partial<RMPSave>;
         return JSON.stringify({
@@ -1072,5 +1073,9 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: save.mapEnabled ?? false,
             mapStyle: save.mapStyle ?? DEFAULT_MAP_STYLE,
         });
+    },
+    79: param => {
+        const save = JSON.parse(param) as RMPSave;
+        return JSON.stringify({ ...save, version: 80, graph: reconcileLineDefinitions(save.graph) });
     },
 };

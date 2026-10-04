@@ -196,8 +196,9 @@ const ToolsPanel = () => {
                 <Checkbox
                     isChecked={showOnlyFavorites}
                     onChange={e => dispatch(setShowOnlyFavorites(e.target.checked))}
-                    px={2}
-                    py={1}
+                    px={4}
+                    py={2}
+                    spacing={5}
                 >
                     {t('panel.tools.showOnlyFavorites')}
                 </Checkbox>
@@ -215,7 +216,7 @@ const ToolsPanel = () => {
                             aria-label="select"
                             leftIcon={selectIcon}
                             onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
-                            variant="ghost"
+                            variant={mode === 'select' ? 'solid' : 'ghost'}
                             sx={buttonStyle}
                             flex={1}
                         >
@@ -234,7 +235,7 @@ const ToolsPanel = () => {
                         <AccordionPanel sx={accordionPanelStyle}>
                             <Flex>
                                 <ThemeButton theme={theme} onClick={requestThemeChange} />
-                                <Text fontWeight="600" pl="1" alignSelf="center">
+                                <Text fontWeight="600" pl="3" alignSelf="center">
                                     {isTextShown ? t('color') : undefined}
                                 </Text>
                             </Flex>
@@ -270,7 +271,7 @@ const ToolsPanel = () => {
                                             aria-label={type}
                                             leftIcon={linePaths[type].icon}
                                             onClick={() => handleLine(type)}
-                                            variant="ghost"
+                                            variant={currentPath === type ? 'solid' : 'ghost'}
                                             isDisabled={isLinePathDisabled}
                                             sx={buttonStyle}
                                             flex={1}
@@ -303,7 +304,7 @@ const ToolsPanel = () => {
                                     aria-label={MiscNodeType.Virtual}
                                     leftIcon={miscNodes[MiscNodeType.Virtual].icon}
                                     onClick={() => handleMiscNode(MiscNodeType.Virtual)}
-                                    variant="ghost"
+                                    variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'ghost'}
                                     sx={buttonStyle}
                                     flex={1}
                                 >
@@ -337,7 +338,7 @@ const ToolsPanel = () => {
                                         aria-label={styleType}
                                         leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
-                                        variant="ghost"
+                                        variant={currentStyle === styleType ? 'solid' : 'ghost'}
                                         isDisabled={
                                             !availableLinePathTypes.some(pathType =>
                                                 canUseLineCombination(
@@ -403,7 +404,7 @@ const ToolsPanel = () => {
                                         aria-label={type}
                                         leftIcon={stations[type].icon}
                                         onClick={() => handleStation(type)}
-                                        variant="ghost"
+                                        variant={mode === `station-${type}` ? 'solid' : 'ghost'}
                                         sx={buttonStyle}
                                         flex={1}
                                     >
@@ -446,7 +447,7 @@ const ToolsPanel = () => {
                                         aria-label={type}
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
-                                        variant="ghost"
+                                        variant={mode === `misc-node-${type}` ? 'solid' : 'ghost'}
                                         sx={buttonStyle}
                                         flex={1}
                                     >

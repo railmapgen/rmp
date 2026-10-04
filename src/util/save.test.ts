@@ -4,6 +4,7 @@ import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from
 import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '../redux';
+import { createTestLineGraph } from '../test-utils';
 import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
@@ -176,6 +177,33 @@ describe('Unit tests for param upgrade function', () => {
         expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
         expect(upgraded.mapEnabled).toBe(false);
         expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it.each([false, true])('upgrades v78 map and line data together (mapEnabled=%s)', async mapEnabled => {
+        const graph = createTestLineGraph([['A', 'B']]).export();
+        delete graph.attributes.lineDefinitions;
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.arterial.color = '#123456';
+        const timeline = createEmptyTimelineDocument();
+        const save = JSON.stringify({
+            version: 78,
+            graph,
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline,
+            ...(mapEnabled ? { mapEnabled, mapStyle } : {}),
+        });
+        const upgraded = JSON.parse(await upgrade(save));
+
+        expect(upgraded.version).toBe(CURRENT_VERSION);
+        expect(upgraded.mapEnabled).toBe(mapEnabled);
+        expect(upgraded.mapStyle).toEqual(mapEnabled ? mapStyle : DEFAULT_MAP_STYLE);
+        expect(upgraded.timeline).toEqual(timeline);
+        expect(upgraded.graph.nodes).toEqual(graph.nodes);
+        expect(upgraded.graph.edges).toEqual(graph.edges);
+        expect(upgraded.graph.attributes.lineDefinitions).toEqual([
+            expect.objectContaining({ edgeIds: ['line_0'], status: 'operating', exportStartStationId: 'stn_A' }),
+        ]);
     });
 
     it('1 -> 2', () => {
@@ -1140,6 +1168,22 @@ describe('Unit tests for param upgrade function', () => {
             svgViewBoxZoom: 100,
             svgViewBoxMin: { x: 0, y: 0 },
             version: 78,
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        });
+    });
+
+    it('78 -> 79', () => {
+        // Bump save version to support Wuhan facilities.
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":78}';
+        const newParam = UPGRADE_COLLECTION[78](oldParam);
+        const graph = new MultiDirectedGraph() as MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+        expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
+        const expectParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":79}';
+        expect(JSON.parse(newParam)).toEqual({
+            ...JSON.parse(expectParam),
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         });
