@@ -7,6 +7,7 @@ import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
 import viewportReducer from './viewport/viewport-slice';
+import { lineDefinitionMiddleware } from './line-definition-middleware';
 
 enableMapSet();
 
@@ -29,7 +30,10 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
             // Runtime state deliberately contains transient Sets, so it is excluded
             // from persistence and the serializable state check is disabled.
             // https://stackoverflow.com/questions/61704805/getting-an-error-a-non-serializable-value-was-detected-in-the-state-when-using
-            getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
+            getDefaultMiddleware({ serializableCheck: false }).prepend(
+                listenerMiddleware.middleware,
+                lineDefinitionMiddleware
+            ),
         preloadedState,
     });
 const store = createStore();

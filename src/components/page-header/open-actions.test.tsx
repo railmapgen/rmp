@@ -107,5 +107,8 @@ describe('OpenActions', () => {
         expect(store.getState().param.present.mapStyle).toEqual(mapStyle);
         expect(store.getState().param.present.svgViewBoxZoom).toBe(55);
         expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 12, y: 34 });
+        await waitFor(() =>
+            expect(screen.queryByRole('button', { name: 'Confirm project replacement' })).not.toBeInTheDocument()
+        );
     });
 });

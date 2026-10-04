@@ -17,6 +17,9 @@ const replaceWindowGraph = (graph: ParamGraph) => {
     // Preserve object identity because existing canvas refs keep pointing to window.graph.
     window.graph.clear();
     window.graph.import(replacement);
+    // Graphology's Graph-instance import copies nodes/edges but omits graph attributes.
+    // Line definitions are part of the snapshot and must be restored explicitly.
+    window.graph.replaceAttributes(structuredClone(replacement.getAttributes()));
 };
 
 const refreshGraphState = (dispatch: RootDispatch) => {
