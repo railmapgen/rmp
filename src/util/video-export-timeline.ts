@@ -115,6 +115,81 @@ export const createVideoTimelinePlayback = (
         cursor++;
     }
 
+    const origins = new Map<NodeId, Position>();
+    graph.forEachNode((id, attrs) => origins.set(id as NodeId, { x: attrs.x, y: attrs.y }));
+    const focusClips: PlaybackClip[] = [];
+    const entered = new Set<string>();
+    for (const clip of clips) {
+        const key = `${clip.entry.kind}:${clip.entry.refId}`;
+        if (clip.entry.phase === 'enter') {
+            entered.add(key);
+            focusClips.push(clip);
+        } else if (entered.has(key)) {
+            // Exit clips consume time, and retain camera focus after completion.
+            // A following exit without another entrance is skipped by frameAt.
+            entered.delete(key);
+            focusClips.push(clip);
+        }
+    }
+    const focusForClip = ({ entry, start, end }: PlaybackClip, time: number): VideoCameraFocus => {
+        if (entry.kind === 'node') return { kind: 'node', id: entry.refId };
+        const progress = entry.showAnimation ? Math.min(1, Math.max(0, (time - start) / (end - start))) : 1;
+        return {
+            kind: 'edge',
+            id: entry.refId,
+            progress: entry.phase === 'enter' ? progress : 1 - progress,
+            reverse: directions.get(entry.refId) ?? false,
+        };
+    };
+
+    /** Query camera focus without constructing visibility sets or a frame graph. */
+    const cameraFocusAt = (time: number): VideoCameraFocus => {
+        if (Number.isNaN(time)) {
+            // Match frameAt's comparison semantics for non-finite caller input.
+            const visible = new Set<string>();
+            let focus: VideoCameraFocus = { kind: 'none' };
+            for (const clip of clips) {
+                const key = `${clip.entry.kind}:${clip.entry.refId}`;
+                if (clip.entry.phase === 'enter') visible.add(key);
+                if (!visible.has(key)) continue;
+                focus = focusForClip(clip, time);
+                if (clip.entry.phase === 'exit' && !clip.entry.showAnimation) visible.delete(key);
+            }
+            return focus;
+        }
+        let low = 0,
+            high = focusClips.length;
+        while (low < high) {
+            const middle = (low + high) >>> 1;
+            if (focusClips[middle].start <= time) low = middle + 1;
+            else high = middle;
+        }
+        return low > 0 ? focusForClip(focusClips[low - 1], time) : { kind: 'none' };
+    };
+
+    /** Query one node's position by binary-searching its authored anchors. */
+    const positionAt = (nodeId: NodeId, time: number): Position => {
+        const origin = origins.get(nodeId) ?? graph.getNodeAttributes(nodeId);
+        const anchors = positions.get(nodeId);
+        if (!anchors?.length) return { x: origin.x, y: origin.y };
+        let low = 0,
+            high = anchors.length;
+        const queryTime = Number.isNaN(time) ? Infinity : time;
+        while (low < high) {
+            const middle = (low + high) >>> 1;
+            if (anchors[middle].time <= queryTime) low = middle + 1;
+            else high = middle;
+        }
+        const previous = low > 0 ? anchors[low - 1] : { ...origin, time: 0 };
+        const next = anchors[low];
+        if (!next) return { x: previous.x, y: previous.y };
+        const progress = Math.max(0, (time - previous.time) / Math.max(next.time - previous.time, 1e-6));
+        return {
+            x: previous.x + (next.x - previous.x) * progress,
+            y: previous.y + (next.y - previous.y) * progress,
+        };
+    };
+
     const frameAt = (time: number): VideoTimelineFrame => {
         const state: VideoTimelineFrame = {
             visibleNodes: new Set(),
@@ -155,25 +230,10 @@ export const createVideoTimelinePlayback = (
             }
         }
 
-        positions.forEach((anchors, nodeId) => {
-            const origin = graph.getNodeAttributes(nodeId);
-            let previous: PositionKeyframe = { x: origin.x, y: origin.y, time: 0 };
-            for (const next of anchors) {
-                if (time < next.time) {
-                    const progress = Math.max(0, (time - previous.time) / Math.max(next.time - previous.time, 1e-6));
-                    state.positions.set(nodeId, {
-                        x: previous.x + (next.x - previous.x) * progress,
-                        y: previous.y + (next.y - previous.y) * progress,
-                    });
-                    return;
-                }
-                previous = next;
-            }
-            state.positions.set(nodeId, { x: previous.x, y: previous.y });
-        });
+        positions.forEach((_anchors, nodeId) => state.positions.set(nodeId, positionAt(nodeId, time)));
 
         return state;
     };
 
-    return { duration, frameAt, cursorTimes };
+    return { duration, frameAt, cameraFocusAt, positionAt, cursorTimes };
 };

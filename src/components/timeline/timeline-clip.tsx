@@ -6,6 +6,7 @@ import { MdAnimation } from 'react-icons/md';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { TimelineElementEntry } from '../../constants/timeline';
 import { getTimelineEntryAccent, getTimelineEntrySubtitle, getTimelineEntryTitle } from '../../util/timeline';
+import { TIMELINE_CLIP_WIDTH } from './timeline-track-dimensions';
 
 interface TimelineClipProps {
     entry: TimelineElementEntry;
@@ -48,12 +49,12 @@ export default function TimelineClip({
             onDragEnd={onDragEnd}
             onClick={onSelect}
             onContextMenu={onContextMenu}
-            minW="220px"
-            maxW="220px"
-            px={4}
-            py={3}
+            minW={`${TIMELINE_CLIP_WIDTH}px`}
+            maxW={`${TIMELINE_CLIP_WIDTH}px`}
+            px={3}
+            py={2}
             borderWidth="1px"
-            borderRadius="lg"
+            borderRadius="md"
             borderColor={isSelected ? borderColor : 'chakra-border-color'}
             bg={isSelected ? 'blackAlpha.50' : 'chakra-body-bg'}
             boxShadow={isSelected ? 'md' : 'sm'}
@@ -68,39 +69,48 @@ export default function TimelineClip({
                     top="0"
                     left="0"
                     bottom="0"
-                    width="6px"
+                    width="4px"
                     overflow="hidden"
-                    borderLeftRadius="lg"
+                    borderLeftRadius="md"
                 >
                     {accent.map((color, index) => (
                         <Box key={index} h={`${100 / accent.length}%`} bg={color} />
                     ))}
                 </Box>
             ) : (
-                <Box position="absolute" top="0" left="0" bottom="0" width="6px" bg={accent[0]} borderLeftRadius="lg" />
+                <Box position="absolute" top="0" left="0" bottom="0" width="4px" bg={accent[0]} borderLeftRadius="md" />
             )}
             <CloseButton
                 size="sm"
                 position="absolute"
-                top="8px"
-                right="8px"
+                top="4px"
+                right="4px"
                 onClick={e => {
                     e.stopPropagation();
                     onRemove();
                 }}
             />
 
-            <VStack align="start" spacing={2} pl={2} pr={6}>
-                <Flex align="center" gap={1} wrap="wrap">
+            <VStack align="start" spacing={1} pl={1}>
+                <Flex align="center" gap={0.5} wrap="wrap" pr={5}>
                     <Badge
                         colorScheme={entry.kind === 'node' ? 'blue' : 'green'}
                         display="inline-flex"
                         alignItems="center"
                         gap={1}
+                        fontSize="10px"
+                        lineHeight="16px"
+                        px={1}
                     >
                         {entry.kind === 'node' ? 'Node' : 'Edge'}
                     </Badge>
-                    <Badge colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'} variant="subtle">
+                    <Badge
+                        colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'}
+                        variant="subtle"
+                        fontSize="10px"
+                        lineHeight="16px"
+                        px={1}
+                    >
                         {entry.phase === 'exit'
                             ? t('header.timelinePage.exitPhase')
                             : t('header.timelinePage.enterPhase')}
@@ -111,6 +121,7 @@ export default function TimelineClip({
                             aria-pressed={entry.showAnimation}
                             icon={<MdAnimation />}
                             size="xs"
+                            fontSize="14px"
                             variant="ghost"
                             color={entry.showAnimation ? 'gray.500' : 'gray.300'}
                             opacity={entry.showAnimation ? 1 : 0.55}
@@ -121,14 +132,14 @@ export default function TimelineClip({
                         />
                     </Tooltip>
                 </Flex>
-                <Text fontWeight="bold" noOfLines={2}>
+                <Text fontSize="13px" fontWeight="bold" lineHeight="1.3" noOfLines={2}>
                     {getTimelineEntryTitle(graph, entry)}
                 </Text>
-                <Text fontSize="sm" color="gray.500" noOfLines={2}>
+                <Text fontSize="11px" lineHeight="1.35" color="gray.500" noOfLines={2}>
                     {getTimelineEntrySubtitle(graph, entry)}
                 </Text>
                 {!exists && (
-                    <Text fontSize="xs" color="red.500">
+                    <Text fontSize="11px" lineHeight="1.35" color="red.500">
                         Missing from current graph
                     </Text>
                 )}

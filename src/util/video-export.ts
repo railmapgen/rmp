@@ -17,16 +17,33 @@ import stations from '../components/svgs/stations/stations';
 import SvgLayer from '../components/svg-layer';
 import { SvgRenderProvider } from '../components/svg-render-context';
 import { StationType } from '../constants/stations';
-import { isElementEntry, TimelineDocument, TimelineEntry } from '../constants/timeline';
+import { MiscNodeType } from '../constants/nodes';
+import { ImageAttributes } from '../components/svgs/nodes/image';
+import {
+    getTimelineSettings,
+    isElementEntry,
+    TimelineDocument,
+    TimelineEntry,
+    TimelineLabelEntry,
+} from '../constants/timeline';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../map/map-style';
+import { renderMapLayerForExport } from '../map/map-tile-controller';
+import { positionMapAttribution } from '../map/map-attribution';
 import { loadFont, TextLanguage } from './fonts';
 import { changeStationType, checkAndChangeStationIntType } from './change-types';
 import { makeRenderReadySVGElement } from './download';
 import { calculateCanvasSize } from './helpers';
-import { getLines, getNodes } from './process-elements';
+import { Element as RenderElement, getLines, getNodes } from './process-elements';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions } from './video-encoder';
+import { createVideoLineOverlay, getVideoLineAnnotation } from './video-overlay';
+import { getTimelineAudioRange, getTimelineClipRange } from './timeline-playback';
+import { imageStoreIndexedDB } from './image-store-indexed-db';
+import { isOpenPath } from './path';
+import { getOpenPathPrimitives } from './open-path-primitives';
+import { getPointAtPrimitiveArcLength, getPrimitiveListLength } from './open-path-length';
+import { createVideoFrameScene, VIDEO_FRAME_BASE_VARIANT } from './video-frame-scene';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -58,10 +75,10 @@ export interface VideoExportOptions extends VideoEncodingOptions {
     speedMultiplier: number;
     resolution: VideoExportResolution;
     autoChangeStationType: boolean;
-    scale: number;
-    fullscreenScale: number;
     isSystemFontsOnly: boolean;
     hideWatermark: boolean;
+    showYear?: boolean;
+    showLineName?: boolean;
 }
 
 export interface VideoExportEnvironment {
@@ -71,6 +88,7 @@ export interface VideoExportEnvironment {
     svgViewBoxZoom: number;
     isSubscriber?: boolean;
     getAudio?: (id: string) => Promise<Blob | undefined>;
+    getImage?: (id: string) => Promise<string | undefined>;
 }
 
 export interface AnimationStep {
@@ -87,6 +105,8 @@ export interface AnimationSequence {
 
 // Drawing speed is measured in SVG/map coordinate units per second, regardless of output resolution or zoom.
 const BaseDrawingSpeed = 100;
+// Encoding and preview frame rates sample the same authored timing and camera path.
+const VideoTimelineTimingFps = 30;
 export const videoExportSpeedRange = { min: 0.5, max: 2, step: 0.1, default: 1 } as const;
 const NodeRevealSeconds = 0.2;
 const NodeTextDelaySeconds = 0.05;
@@ -284,8 +304,9 @@ const measureRenderedEdgeLengths = async (
     renderGeometry = false,
     sourceCanvas?: SVGSVGElement,
     mapEnabled = false,
-    isSubscriber = false
-): Promise<Map<LineId, number>> => {
+    isSubscriber = false,
+    imageAssets = new Map<string, string>()
+): Promise<{ edgeLengths: Map<LineId, number>; geometry: SVGSVGElement }> => {
     const { elem } = await makeRenderReadySVGElement(
         graph,
         mapEnabled,
@@ -294,7 +315,9 @@ const measureRenderedEdgeLengths = async (
         languages,
         false,
         2,
-        renderGeometry ? clone => renderVideoFrameGeometry(graph, clone, mapEnabled, isSubscriber) : undefined,
+        renderGeometry
+            ? clone => renderVideoFrameGeometry(graph, clone, mapEnabled, isSubscriber, imageAssets)
+            : undefined,
         sourceCanvas
     );
     const edgeLengths = new Map<LineId, number>();
@@ -307,7 +330,7 @@ const measureRenderedEdgeLengths = async (
         elem.remove();
     }
 
-    return edgeLengths;
+    return { edgeLengths, geometry: elem };
 };
 
 const buildTimelineSequence = (
@@ -502,11 +525,9 @@ export const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAt
     return Math.min(fitWidthZoom, fitHeightZoom);
 };
 
-export const applyZoomScale = (fitToElementsZoom: number, scale: number): number => fitToElementsZoom * (scale / 100);
-
-export const interpolateCameraZoom = (currentScale: number, fullscreenScale: number, progress: number): number => {
+export const interpolateCameraZoom = (currentZoom: number, overviewZoom: number, progress: number): number => {
     const transitionProgress = smoothstep(0, 1, progress);
-    return currentScale + (fullscreenScale - currentScale) * transitionProgress;
+    return currentZoom + (overviewZoom - currentZoom) * transitionProgress;
 };
 
 export const getOverviewZoomProgress = (overviewFrame: number, overviewFrames: number): number => {
@@ -629,80 +650,6 @@ const buildFallbackSequence = (
     return { steps, nodes, edges };
 };
 
-const getNodeFocusPoint = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    nodeId: NodeId
-) => {
-    const attr = graph.getNodeAttributes(nodeId);
-    return { x: attr.x, y: attr.y };
-};
-
-const getEdgeFocusPoint = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    elem: SVGSVGElement,
-    edgeId: LineId,
-    progress: number,
-    reverse: boolean
-) => {
-    const edgeElem = elem.getElementById(edgeId);
-    const path = edgeElem?.querySelector('path');
-    if (path) {
-        const totalLength = path.getTotalLength();
-        const distance = totalLength * (reverse ? 1 - progress : progress);
-        const point = path.getPointAtLength(Math.max(0, Math.min(totalLength, distance)));
-        return { x: point.x, y: point.y };
-    }
-
-    if (graph.hasEdge(edgeId)) {
-        const [source, target] = graph.extremities(edgeId);
-        const focusNode = reverse ? source : target;
-        if (graph.hasNode(focusNode as NodeId)) {
-            return getNodeFocusPoint(graph, focusNode as NodeId);
-        }
-    }
-
-    return undefined;
-};
-
-const getCameraTargetPointForFrame = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    elem: SVGSVGElement,
-    focus: CameraFocus
-) => {
-    if (focus.kind === 'node') {
-        return getNodeFocusPoint(graph, focus.id);
-    }
-
-    if (focus.kind === 'edge') {
-        return getEdgeFocusPoint(graph, elem, focus.id, focus.progress, focus.reverse);
-    }
-
-    return undefined;
-};
-
-const applyCameraViewBox = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    elem: SVGSVGElement,
-    center: { x: number; y: number },
-    zoom: number,
-    outputWidth: number,
-    outputHeight: number
-) => {
-    const fallbackBounds = calculateCanvasSize(graph);
-    const fallbackCenter = {
-        x: (fallbackBounds.xMin + fallbackBounds.xMax) / 2,
-        y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
-    };
-    const cameraFocus = center ?? fallbackCenter;
-    const viewBox = getCameraViewBox(cameraFocus, zoom);
-
-    elem.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
-    elem.setAttribute('width', outputWidth.toString());
-    elem.setAttribute('height', outputHeight.toString());
-
-    return viewBox;
-};
-
 export const getCameraViewBox = (center: { x: number; y: number }, zoom: number) => {
     const zoomFactor = Math.max(zoom, 1) / 100;
     const viewportWidth = CameraViewportWidth / zoomFactor;
@@ -735,18 +682,6 @@ export const generateAnimationSequence = (
         }
     }
     return buildFallbackSequence(graph);
-};
-
-const applyEdgeProgress = (edgeElem: Element, progress: number, reverse: boolean) => {
-    const pathElements = Array.from(edgeElem.querySelectorAll('path'));
-    if (pathElements.length === 0) return;
-
-    for (const pathElem of pathElements) {
-        const totalLength = pathElem.getTotalLength();
-        const dashLength = totalLength * progress;
-        pathElem.setAttribute('stroke-dasharray', `${dashLength} ${totalLength}`);
-        pathElem.setAttribute('stroke-dashoffset', reverse ? `${-(totalLength - dashLength)}` : '0');
-    }
 };
 
 export const createFrameStationGraph = (
@@ -802,36 +737,6 @@ const getBasicStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribut
     return basicStations;
 };
 
-const getBasicStationsForFrame = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    visibleEdges: Set<LineId>,
-    autoChangeStationType: boolean
-): Set<StnId> => getBasicStations(createFrameStationGraph(graph, visibleEdges, autoChangeStationType));
-
-const applyFrameStationAppearance = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    frameStationGraph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    elem: SVGSVGElement
-) => {
-    frameStationGraph.forEachNode(node => {
-        const stationId = node as Id;
-        if (!isStationNodeId(stationId)) return;
-
-        const stationGroup = elem.getElementById(stationId);
-        if (!stationGroup) return;
-
-        const originalType = graph.getNodeAttribute(stationId, 'type') as StationType;
-        const frameType = frameStationGraph.getNodeAttribute(stationId, 'type') as StationType;
-        const originalAttrs = graph.getNodeAttribute(stationId, originalType);
-        const frameAttrs = frameStationGraph.getNodeAttribute(stationId, frameType);
-        if (originalType === frameType && JSON.stringify(originalAttrs) === JSON.stringify(frameAttrs)) return;
-
-        const markup = renderStationMarkup(frameStationGraph, stationId);
-        if (!stationGroup || !markup) return;
-        stationGroup.innerHTML = markup;
-    });
-};
-
 export const embedVideoExportStyles = (elem: SVGSVGElement) => {
     if (elem.getElementById(VideoExportStyleId)) return;
 
@@ -846,7 +751,8 @@ export const renderVideoFrameGeometry = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     elem: SVGSVGElement,
     mapEnabled = false,
-    isSubscriber = false
+    isSubscriber = false,
+    imageAssets = new Map<string, string>()
 ) => {
     let layer = elem.querySelector<SVGGElement>('[data-editor-layer]');
     if (!layer) {
@@ -855,7 +761,39 @@ export const renderVideoFrameGeometry = (
         elem.appendChild(layer);
     }
     layer.removeAttribute('display');
-    layer.innerHTML = renderToStaticMarkup(
+    layer.innerHTML = renderVideoElementsGeometry(
+        graph,
+        [...getLines(graph, { showReconcileWarnings: false }), ...getNodes(graph)],
+        mapEnabled,
+        isSubscriber
+    );
+    graph.forEachNode((node, attrs) => {
+        if (attrs.type !== MiscNodeType.Image) return;
+        const imageAttrs = attrs[MiscNodeType.Image] as ImageAttributes | undefined;
+        const href = imageAttrs?.href && imageAssets.get(imageAttrs.href);
+        const group = elem.getElementById(node);
+        if (!href || !group || !imageAttrs) return;
+        const imageGroup = document.createElementNS(elem.namespaceURI, 'g');
+        imageGroup.setAttribute(
+            'transform',
+            'rotate(' + (imageAttrs.rotate ?? 0) + ') scale(' + (imageAttrs.scale ?? 1) + ')'
+        );
+        const image = document.createElementNS(elem.namespaceURI, 'image');
+        image.setAttribute('href', href);
+        image.setAttribute('opacity', String(imageAttrs.opacity ?? 1));
+        imageGroup.append(image);
+        group.append(imageGroup);
+    });
+};
+
+/** Render only elements whose geometry or station appearance has changed. */
+const renderVideoElementsGeometry = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    elements: RenderElement[],
+    mapEnabled: boolean,
+    isSubscriber: boolean
+) =>
+    renderToStaticMarkup(
         React.createElement(
             SvgRenderProvider,
             {
@@ -871,7 +809,7 @@ export const renderVideoFrameGeometry = (
                 utils.SvgAssetsContextProvider,
                 null,
                 React.createElement(SvgLayer, {
-                    elements: [...getLines(graph, { showReconcileWarnings: false }), ...getNodes(graph)],
+                    elements,
                     selected: new Set<Id>(),
                     mapEnabled,
                     isSubscriber,
@@ -884,143 +822,7 @@ export const renderVideoFrameGeometry = (
             )
         )
     );
-};
 
-const getElementGroups = (elem: SVGSVGElement, id: Id): SVGElement[] =>
-    [id, `${id}.pre`, `${id}.post`]
-        .map(groupId => elem.getElementById(groupId))
-        .filter((group): group is SVGElement => group !== null);
-
-const createFrameSVG = async (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    visibleNodes: Set<NodeId>,
-    visibleEdges: Set<LineId>,
-    nodeProgress: Map<NodeId, number>,
-    textProgress: Map<NodeId, number>,
-    edgeProgress: Map<LineId, number>,
-    edgeDirections: Map<LineId, boolean>,
-    focus: CameraFocus,
-    cameraCenter: { x: number; y: number } | undefined,
-    previousBasicStations: Set<StnId>,
-    autoChangeStationType: boolean,
-    zoom: number,
-    outputWidth: number,
-    outputHeight: number,
-    hideWatermark: boolean,
-    isSystemFontsOnly: boolean,
-    languages: TextLanguage[],
-    renderGeometry = false,
-    disabledNodeAnimations = new Set<NodeId>(),
-    sourceCanvas?: SVGSVGElement,
-    mapEnabled = false,
-    isSubscriber = false
-): Promise<{ elem: SVGSVGElement; cameraCenter: { x: number; y: number } }> => {
-    const frameStationGraph = createFrameStationGraph(graph, visibleEdges, autoChangeStationType);
-    const basicStations = getBasicStations(frameStationGraph);
-    const { elem } = await makeRenderReadySVGElement(
-        graph,
-        mapEnabled,
-        true,
-        isSystemFontsOnly,
-        languages,
-        false,
-        2,
-        renderGeometry
-            ? clone => renderVideoFrameGeometry(frameStationGraph, clone, mapEnabled, isSubscriber)
-            : undefined,
-        sourceCanvas
-    );
-
-    graph.forEachNode(node => {
-        if (!visibleNodes.has(node as NodeId)) {
-            getElementGroups(elem, node as NodeId).forEach(group => group.remove());
-        }
-    });
-
-    if (!renderGeometry) applyFrameStationAppearance(graph, frameStationGraph, elem);
-    embedVideoExportStyles(elem);
-
-    const changedStations = new Set<StnId>();
-    for (const stationId of basicStations) {
-        if (!previousBasicStations.has(stationId)) {
-            changedStations.add(stationId);
-        }
-    }
-    for (const stationId of previousBasicStations) {
-        if (!basicStations.has(stationId)) {
-            changedStations.add(stationId);
-        }
-    }
-
-    graph.forEachEdge(edge => {
-        const edgeId = edge as LineId;
-        if (!visibleEdges.has(edgeId)) {
-            getElementGroups(elem, edgeId).forEach(group => group.remove());
-            return;
-        }
-
-        const progress = edgeProgress.get(edgeId) ?? 1;
-        if (progress < 1) {
-            getElementGroups(elem, edgeId).forEach(group =>
-                applyEdgeProgress(group, progress, edgeDirections.get(edgeId) ?? false)
-            );
-        }
-    });
-
-    graph.forEachNode(node => {
-        const nodeId = node as NodeId;
-        if (!visibleNodes.has(nodeId)) return;
-
-        const revealProgress = nodeProgress.get(nodeId) ?? 1;
-        const nodeTextProgress = textProgress.get(nodeId) ?? revealProgress;
-        const transitionProgress =
-            isStationNodeId(nodeId) && !disabledNodeAnimations.has(nodeId)
-                ? getStationTransitionProgress(graph, focus, nodeId as StnId)
-                : undefined;
-        getElementGroups(elem, nodeId).forEach(nodeGroup => {
-            applyNodeRevealAnimation(
-                nodeGroup,
-                revealProgress,
-                nodeTextProgress,
-                transitionProgress,
-                isStationNodeId(nodeId)
-            );
-
-            if (transitionProgress !== undefined && isStationNodeId(nodeId) && changedStations.has(nodeId)) {
-                const revealOpacity = Number(nodeGroup.getAttribute('opacity') ?? 1);
-                const transitionOpacity = clamp01(0.92 + transitionProgress * 0.08);
-                nodeGroup.setAttribute(
-                    'opacity',
-                    `${(Number.isFinite(revealOpacity) ? revealOpacity : 1) * transitionOpacity}`
-                );
-            }
-        });
-    });
-
-    const fallbackBounds = calculateCanvasSize(graph);
-    const fallbackCenter = {
-        x: (fallbackBounds.xMin + fallbackBounds.xMax) / 2,
-        y: (fallbackBounds.yMin + fallbackBounds.yMax) / 2,
-    };
-    const targetCenter = getCameraTargetPointForFrame(graph, elem, focus) ?? fallbackCenter;
-    const nextCameraCenter = cameraCenter
-        ? {
-              x: cameraCenter.x + (targetCenter.x - cameraCenter.x) * CameraFocusSmoothing,
-              y: cameraCenter.y + (targetCenter.y - cameraCenter.y) * CameraFocusSmoothing,
-          }
-        : targetCenter;
-
-    const viewBox = applyCameraViewBox(graph, elem, nextCameraCenter, zoom, outputWidth, outputHeight);
-
-    if (!hideWatermark) {
-        elem.appendChild(await createVideoWatermarkElement(viewBox, outputWidth, outputHeight));
-    }
-
-    return {
-        elem,
-        cameraCenter: nextCameraCenter,
-    };
-};
 const renderSVGToCanvas = async (
     svgElem: SVGSVGElement,
     canvas: HTMLCanvasElement,
@@ -1073,14 +875,15 @@ export const exportVideo = async (
         mapEnabled,
         mapStyle,
         { ...svgViewBoxMin, zoom: svgViewBoxZoom },
-        getVideoExportDimensions(options.resolution)
+        getVideoExportDimensions(options.resolution),
+        false
     );
     try {
-        const audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = [];
+        const audioClips: { blob: Blob; entry: NonNullable<TimelineDocument['audioTrack']>[number] }[] = [];
         for (const entry of timeline.audioTrack ?? []) {
             const blob = await environment.getAudio?.(entry.blobId);
             if (!blob) throw new Error(`Audio asset is missing: ${entry.blobId}`);
-            audioClips.push({ blob, startSlot: entry.startSlot, endSlot: entry.endSlot });
+            audioClips.push({ blob, entry });
         }
         try {
             return await renderVideo(
@@ -1117,34 +920,41 @@ export const exportVideo = async (
     }
 };
 
-const renderVideo = async (
+const DefaultVideoEnvironment: VideoExportEnvironment = {
+    mapEnabled: false,
+    mapStyle: DEFAULT_MAP_STYLE,
+    svgViewBoxMin: { x: 0, y: 0 },
+    svgViewBoxZoom: 100,
+};
+
+const createPreparedVideoRenderer = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     timeline: TimelineDocument,
     languages: TextLanguage[],
     options: VideoExportOptions,
-    bgColor: string,
     source: ReturnType<typeof createVideoExportCanvas>,
-    onProgress?: (progress: number) => void,
-    forceSoftware = false,
-    audioClips: { blob: Blob; startSlot: number; endSlot: number }[] = [],
-    environment: VideoExportEnvironment = {
-        mapEnabled: false,
-        mapStyle: DEFAULT_MAP_STYLE,
-        svgViewBoxMin: { x: 0, y: 0 },
-        svgViewBoxZoom: 100,
-    }
-): Promise<Blob> => {
-    const {
-        fps,
-        speedMultiplier,
-        resolution,
-        isTransparent,
-        autoChangeStationType,
-        scale,
-        fullscreenScale,
-        isSystemFontsOnly,
-        hideWatermark,
-    } = options;
+    environment: VideoExportEnvironment
+) => {
+    const { fps, speedMultiplier, resolution, autoChangeStationType, isSystemFontsOnly, hideWatermark } = {
+        ...options,
+        ...timeline.settings,
+    };
+    const { cameraZoom } = getTimelineSettings(timeline);
+    const { showYear = false, showLineName = false } = { ...options, ...timeline.settings };
+    const imageAssets = new Map<string, string>();
+    const imageIds = new Set<string>();
+    graph.forEachNode((_node, attrs) => {
+        if (attrs.type === MiscNodeType.Image) {
+            const href = (attrs[MiscNodeType.Image] as ImageAttributes | undefined)?.href;
+            if (href) imageIds.add(href);
+        }
+    });
+    await Promise.all(
+        [...imageIds].map(async id => {
+            const asset = await (environment.getImage ?? (id => imageStoreIndexedDB.get(id)))(id);
+            if (asset) imageAssets.set(id, asset);
+        })
+    );
     const usesAuthoredPlayback = timeline.track.some(
         entry =>
             entry.kind === 'keyframe' ||
@@ -1167,8 +977,8 @@ const renderVideo = async (
     }
 
     const fitToElementsZoom = getOverviewZoom(graph);
-    const currentZoom = applyZoomScale(fitToElementsZoom, scale);
-    const fullscreenZoom = applyZoomScale(fitToElementsZoom, fullscreenScale);
+    const currentZoom = fitToElementsZoom * cameraZoom;
+    const fullscreenZoom = fitToElementsZoom;
     const playbackSegments: PlaybackSegment[] = [];
     let previousEdgeForPause: LineId | undefined;
     sequence.steps.forEach(step => {
@@ -1188,7 +998,7 @@ const renderVideo = async (
 
         playbackSegments.push({ kind: 'step', step, duration: 0 });
     });
-    const measuredEdgeLengths = await measureRenderedEdgeLengths(
+    const { edgeLengths: measuredEdgeLengths, geometry } = await measureRenderedEdgeLengths(
         graph,
         sequence.edges,
         isSystemFontsOnly,
@@ -1196,7 +1006,8 @@ const renderVideo = async (
         renderGeometry,
         source.canvas,
         environment.mapEnabled,
-        !!environment.isSubscriber
+        !!environment.isSubscriber,
+        imageAssets
     );
     const multiplier = Number.isFinite(speedMultiplier)
         ? Math.max(videoExportSpeedRange.min, Math.min(videoExportSpeedRange.max, speedMultiplier))
@@ -1209,7 +1020,11 @@ const renderVideo = async (
               new Map(
                   sequence.steps.filter(step => step.kind === 'edge').map(step => [step.id as LineId, step.reverse])
               ),
-              { fps, drawingSpeed: BaseDrawingSpeed * multiplier, nodeSeconds: NodeRevealSeconds / multiplier }
+              {
+                  fps: VideoTimelineTimingFps,
+                  drawingSpeed: BaseDrawingSpeed * multiplier,
+                  nodeSeconds: NodeRevealSeconds / multiplier,
+              }
           )
         : undefined;
     const playbackEdgeLengths: number[] = [];
@@ -1220,7 +1035,7 @@ const renderVideo = async (
     });
     const pauseSegmentCount = playbackSegments.filter(segment => segment.kind === 'pause').length;
     const { edgeDurations, pauseDuration } = getPlaybackSegmentDurations(
-        fps,
+        VideoTimelineTimingFps,
         playbackEdgeLengths,
         pauseSegmentCount,
         speedMultiplier
@@ -1254,233 +1069,710 @@ const renderVideo = async (
         ? [...authoredPlayback.cursorTimes]
         : getPlaybackCursorTimes(timeline.track.length, validTrackIndices, playbackSegments, animationDuration);
     if (cursorTimes.length > 0) cursorTimes[cursorTimes.length - 1] = totalFrames / fps;
-    const lastSlot = timeline.track.length;
-    const resolvedAudioTracks = audioClips
-        .map(clip => {
-            const startSlot = Math.max(0, Math.min(lastSlot, Math.round(clip.startSlot)));
-            const endSlot = Math.max(0, Math.min(lastSlot, Math.round(clip.endSlot)));
-            const start = cursorTimes[startSlot] ?? 0;
-            const end = cursorTimes[endSlot] ?? animationDuration;
-            return { blob: clip.blob, start, end: Math.max(end, start) };
-        })
-        .filter(clip => clip.end > clip.start);
+
     const cumulativeWeights: number[] = [];
     let runningWeight = 0;
     for (const segment of playbackSegments) {
         cumulativeWeights.push(runningWeight);
         runningWeight += segment.duration;
     }
-    let cameraCenter: { x: number; y: number } | undefined;
+    const allNodes = new Set<NodeId>();
+    const allEdges = new Set<LineId>();
+    graph.forEachNode(node => allNodes.add(node as NodeId));
+    graph.forEachEdge(edge => allEdges.add(edge as LineId));
+    const computeFrame = (frame: number) => {
+        let visibleNodes = new Set<NodeId>();
+        let visibleEdges = new Set<LineId>();
+        let nodeProgress = new Map<NodeId, number>();
+        let textProgress = new Map<NodeId, number>();
+        let edgeProgress = new Map<LineId, number>();
+        let edgeDirections = new Map<LineId, boolean>();
+        let focus: CameraFocus = { kind: 'none' };
+        let nextZoom = currentZoom;
+        let frameGraph = graph;
+        let disabledNodeAnimations = new Set<NodeId>();
 
-    const canvas = document.createElement('canvas');
-    canvas.width = outputWidth;
-    canvas.height = outputHeight;
-    let videoWriter: Awaited<ReturnType<typeof createVideoFrameWriter>> | undefined;
-    try {
-        const encodingOptions: VideoEncodingOptions = { ...options, audioTracks: resolvedAudioTracks };
-        videoWriter = await createVideoFrameWriter(canvas, encodingOptions, forceSoftware);
-        const allNodes = new Set<NodeId>();
-        const allEdges = new Set<LineId>();
-        graph.forEachNode(node => {
-            allNodes.add(node as NodeId);
-        });
-        graph.forEachEdge(edge => {
-            const edgeId = edge as LineId;
-            allEdges.add(edgeId);
-        });
-        let previousVisibleEdges = new Set<LineId>();
-        const nodeFirstVisibleFrame = new Map<NodeId, number>();
-
-        for (let frame = 0; frame < totalFrames; frame++) {
-            let visibleNodes = new Set<NodeId>();
-            let visibleEdges = new Set<LineId>();
-            let nodeProgress = new Map<NodeId, number>();
-            let textProgress = new Map<NodeId, number>();
-            let edgeProgress = new Map<LineId, number>();
-            let edgeDirections = new Map<LineId, boolean>();
-            let focus: CameraFocus = { kind: 'none' };
-            let nextZoom = currentZoom;
-            let frameGraph = graph;
-            let disabledNodeAnimations = new Set<NodeId>();
-
-            if (authoredPlayback) {
-                const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
-                ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
-                    state);
-                textProgress = nodeProgress;
-                focus = state.focus;
+        if (authoredPlayback) {
+            const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
+            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
+                state);
+            textProgress = nodeProgress;
+            focus = state.focus;
+            if (
+                [...state.positions].some(([id, position]) => {
+                    const original = graph.getNodeAttributes(id);
+                    return original.x !== position.x || original.y !== position.y;
+                })
+            ) {
                 frameGraph = graph.copy();
                 state.positions.forEach((position, nodeId) => frameGraph.mergeNodeAttributes(nodeId, position));
-                if (frame >= animationFrames) {
-                    focus = { kind: 'none' };
-                    const finalFullscreenZoom = applyZoomScale(getOverviewZoom(frameGraph), fullscreenScale);
-                    nextZoom = interpolateCameraZoom(
-                        currentZoom,
-                        finalFullscreenZoom,
-                        getOverviewZoomProgress(frame - animationFrames, overviewFrames)
-                    );
+            }
+            if (frame >= animationFrames) {
+                focus = { kind: 'none' };
+                const finalFullscreenZoom = getOverviewZoom(frameGraph);
+                nextZoom = interpolateCameraZoom(
+                    currentZoom,
+                    finalFullscreenZoom,
+                    getOverviewZoomProgress(frame - animationFrames, overviewFrames)
+                );
+            }
+        } else if (frame < animationFrames) {
+            const weightedProgress = Math.min(frame / fps, animationDuration);
+            let lastEdgeStartWeight = 0;
+            let lastEdgeWeight = 0;
+            let lastEdgeStep: AnimationStep | undefined;
+
+            playbackSegments.forEach((segment, index) => {
+                const startWeight = cumulativeWeights[index];
+                const weight = segment.duration;
+                const endWeight = startWeight + weight;
+
+                if (segment.kind === 'step' && segment.step.kind === 'edge') {
+                    lastEdgeStartWeight = startWeight;
+                    lastEdgeWeight = weight;
+                    lastEdgeStep = segment.step;
                 }
-            } else if (frame < animationFrames) {
-                const weightedProgress = Math.min(frame / fps, animationDuration);
-                let lastEdgeStartWeight = 0;
-                let lastEdgeWeight = 0;
-                let lastEdgeStep: AnimationStep | undefined;
 
-                playbackSegments.forEach((segment, index) => {
-                    const startWeight = cumulativeWeights[index];
-                    const weight = segment.duration;
-                    const endWeight = startWeight + weight;
+                if (weightedProgress < startWeight) return;
 
-                    if (segment.kind === 'step' && segment.step.kind === 'edge') {
-                        lastEdgeStartWeight = startWeight;
-                        lastEdgeWeight = weight;
-                        lastEdgeStep = segment.step;
-                    }
+                if (segment.kind === 'pause') {
+                    const previousEdgeId = segment.previousEdgeId;
+                    visibleEdges.add(previousEdgeId);
+                    const previousEdgeReverse = edgeDirections.get(previousEdgeId) ?? false;
+                    edgeDirections.set(previousEdgeId, previousEdgeReverse);
+                    edgeProgress.set(previousEdgeId, 1);
+                    focus = {
+                        kind: 'edge',
+                        id: previousEdgeId,
+                        progress: 1,
+                        reverse: previousEdgeReverse,
+                    };
+                    return;
+                }
 
-                    if (weightedProgress < startWeight) return;
+                const step = segment.step;
 
-                    if (segment.kind === 'pause') {
-                        const previousEdgeId = segment.previousEdgeId;
-                        visibleEdges.add(previousEdgeId);
-                        const previousEdgeReverse = edgeDirections.get(previousEdgeId) ?? false;
-                        edgeDirections.set(previousEdgeId, previousEdgeReverse);
-                        edgeProgress.set(previousEdgeId, 1);
-                        focus = {
-                            kind: 'edge',
-                            id: previousEdgeId,
-                            progress: 1,
-                            reverse: previousEdgeReverse,
-                        };
-                        return;
-                    }
-
-                    const step = segment.step;
-
-                    if (step.kind === 'node') {
-                        const nodeId = step.id as NodeId;
-                        let activationProgress = 1;
-                        if (isStationNodeId(nodeId) && lastEdgeStep && graph.hasEdge(lastEdgeStep.id)) {
-                            const edgeId = lastEdgeStep.id as LineId;
-                            const [source, target] = graph.extremities(edgeId);
-                            const arrivalNode = lastEdgeStep.reverse ? source : target;
-                            if (nodeId === arrivalNode) {
-                                activationProgress = getStationActivationProgress(
-                                    measuredEdgeLengths.get(edgeId) ?? 0,
-                                    currentZoom
-                                );
-                            }
+                if (step.kind === 'node') {
+                    const nodeId = step.id as NodeId;
+                    let activationProgress = 1;
+                    if (isStationNodeId(nodeId) && lastEdgeStep && graph.hasEdge(lastEdgeStep.id)) {
+                        const edgeId = lastEdgeStep.id as LineId;
+                        const [source, target] = graph.extremities(edgeId);
+                        const arrivalNode = lastEdgeStep.reverse ? source : target;
+                        if (nodeId === arrivalNode) {
+                            activationProgress = getStationActivationProgress(
+                                measuredEdgeLengths.get(edgeId) ?? 0,
+                                currentZoom
+                            );
                         }
-                        const activationWeight =
-                            index === 0 || lastEdgeWeight === 0
-                                ? 0
-                                : lastEdgeStartWeight + lastEdgeWeight * activationProgress;
-                        if (weightedProgress >= activationWeight) {
-                            visibleNodes.add(nodeId);
-                            if (!nodeFirstVisibleFrame.has(nodeId)) {
-                                nodeFirstVisibleFrame.set(nodeId, frame);
-                            }
-                            const nodeStartFrame = nodeFirstVisibleFrame.get(nodeId) ?? frame;
-                            const revealProgress = getNodeRevealProgressForFrame(nodeId, frame, nodeStartFrame, fps);
-                            nodeProgress.set(nodeId, revealProgress.nodeProgress);
-                            textProgress.set(nodeId, revealProgress.textProgress);
-                            if (weightedProgress >= lastEdgeStartWeight + lastEdgeWeight) {
-                                focus = { kind: 'node', id: nodeId };
-                            }
+                    }
+                    const activationWeight =
+                        index === 0 || lastEdgeWeight === 0
+                            ? 0
+                            : lastEdgeStartWeight + lastEdgeWeight * activationProgress;
+                    if (weightedProgress >= activationWeight) {
+                        visibleNodes.add(nodeId);
+                        const nodeStartFrame = Math.ceil(Math.max(activationWeight, startWeight) * fps);
+                        const revealProgress = getNodeRevealProgressForFrame(nodeId, frame, nodeStartFrame, fps);
+                        nodeProgress.set(nodeId, revealProgress.nodeProgress);
+                        textProgress.set(nodeId, revealProgress.textProgress);
+                        if (weightedProgress >= lastEdgeStartWeight + lastEdgeWeight) {
+                            focus = { kind: 'node', id: nodeId };
                         }
-                        return;
                     }
+                    return;
+                }
 
-                    const edgeId = step.id as LineId;
+                const edgeId = step.id as LineId;
 
-                    visibleEdges.add(edgeId);
-                    edgeDirections.set(edgeId, step.reverse);
-                    if (weightedProgress >= endWeight) {
-                        edgeProgress.set(edgeId, 1);
-                        focus = {
-                            kind: 'edge',
-                            id: edgeId,
-                            progress: 1,
-                            reverse: edgeDirections.get(edgeId) ?? false,
-                        };
-                        return;
-                    }
-
-                    const progress = Math.max(
-                        0,
-                        Math.min(1, (weightedProgress - startWeight) / Math.max(weight, 1e-6))
-                    );
-                    edgeProgress.set(edgeId, progress);
+                visibleEdges.add(edgeId);
+                edgeDirections.set(edgeId, step.reverse);
+                if (weightedProgress >= endWeight) {
+                    edgeProgress.set(edgeId, 1);
                     focus = {
                         kind: 'edge',
                         id: edgeId,
-                        progress,
+                        progress: 1,
                         reverse: edgeDirections.get(edgeId) ?? false,
                     };
-                });
-            } else {
-                const overviewProgress = getOverviewZoomProgress(frame - animationFrames, overviewFrames);
-                nextZoom = interpolateCameraZoom(currentZoom, fullscreenZoom, overviewProgress);
-                allNodes.forEach(nodeId => {
-                    visibleNodes.add(nodeId);
-                    nodeProgress.set(nodeId, 1);
-                    textProgress.set(nodeId, 1);
-                });
-                allEdges.forEach(edgeId => {
-                    visibleEdges.add(edgeId);
-                    edgeDirections.set(edgeId, false);
-                    edgeProgress.set(edgeId, 1);
-                });
+                    return;
+                }
+
+                const progress = Math.max(0, Math.min(1, (weightedProgress - startWeight) / Math.max(weight, 1e-6)));
+                edgeProgress.set(edgeId, progress);
+                focus = {
+                    kind: 'edge',
+                    id: edgeId,
+                    progress,
+                    reverse: edgeDirections.get(edgeId) ?? false,
+                };
+            });
+        } else {
+            const overviewProgress = getOverviewZoomProgress(frame - animationFrames, overviewFrames);
+            nextZoom = interpolateCameraZoom(currentZoom, fullscreenZoom, overviewProgress);
+            allNodes.forEach(nodeId => {
+                visibleNodes.add(nodeId);
+                nodeProgress.set(nodeId, 1);
+                textProgress.set(nodeId, 1);
+            });
+            allEdges.forEach(edgeId => {
+                visibleEdges.add(edgeId);
+                edgeDirections.set(edgeId, false);
+                edgeProgress.set(edgeId, 1);
+            });
+        }
+        if (cameraZoom === 1) nextZoom = getOverviewZoom(frameGraph);
+        return {
+            frameGraph,
+            visibleNodes,
+            visibleEdges,
+            nodeProgress,
+            textProgress,
+            edgeProgress,
+            edgeDirections,
+            focus,
+            nextZoom,
+            disabledNodeAnimations,
+        };
+    };
+
+    // A tiny frame cache reuses current/previous states without retaining a graph for every video frame.
+    const frameStates = new Map<number, ReturnType<typeof computeFrame>>();
+    const frameAt = (frame: number) => {
+        let state = frameStates.get(frame);
+        if (!state) {
+            state = computeFrame(frame);
+            frameStates.set(frame, state);
+            if (frameStates.size > 3) frameStates.delete(frameStates.keys().next().value!);
+        }
+        return state;
+    };
+    const movingNodes = new Set<NodeId>(
+        timeline.track.filter(entry => entry.kind === 'keyframe').map(entry => entry.refId)
+    );
+    const cameraGraph = movingNodes.size ? graph.copy() : graph;
+    let cameraLines: Map<Id, RenderElement> | undefined;
+    const updateCameraGraph = (time: number) => {
+        let changed = false;
+        for (const id of movingNodes) {
+            if (!graph.hasNode(id) || !authoredPlayback) continue;
+            const position = authoredPlayback.positionAt(id, time);
+            const current = cameraGraph.getNodeAttributes(id);
+            if (current.x !== position.x || current.y !== position.y) {
+                cameraGraph.mergeNodeAttributes(id, position);
+                changed = true;
             }
-
-            const previousBasicStations = getBasicStationsForFrame(
-                frameGraph,
-                previousVisibleEdges,
-                autoChangeStationType
+        }
+        if (changed) cameraLines = undefined;
+    };
+    updateCameraGraph(animationDuration);
+    const finalBounds = calculateCanvasSize(cameraGraph);
+    const overviewCenter = {
+        x: (finalBounds.xMin + finalBounds.xMax) / 2,
+        y: (finalBounds.yMin + finalBounds.yMax) / 2,
+    };
+    const finalFullscreenZoom = getOverviewZoom(cameraGraph);
+    const baseBounds = calculateCanvasSize(graph);
+    const baseCenter = { x: (baseBounds.xMin + baseBounds.xMax) / 2, y: (baseBounds.yMin + baseBounds.yMax) / 2 };
+    const originalPaths = new Map<LineId, { path: SVGPathElement; length: number }>();
+    for (const id of allEdges) {
+        const path = geometry.getElementById(id)?.querySelector('path');
+        if (!path) continue;
+        // Preserve original geometry even when a keyframe patches the live scene's d attribute.
+        const clone = path.cloneNode(true) as SVGPathElement;
+        if (Object.hasOwn(path, 'getPointAtLength')) clone.getPointAtLength = path.getPointAtLength.bind(path);
+        originalPaths.set(id, { path: clone, length: measuredEdgeLengths.get(id) ?? 0 });
+    }
+    const segmentFocus: CameraFocus[] = [];
+    const directions = new Map<LineId, boolean>();
+    for (const segment of playbackSegments) {
+        if (segment.kind === 'pause') {
+            segmentFocus.push({
+                kind: 'edge',
+                id: segment.previousEdgeId,
+                progress: 1,
+                reverse: directions.get(segment.previousEdgeId) ?? false,
+            });
+        } else if (segment.step.kind === 'node') {
+            segmentFocus.push({ kind: 'node', id: segment.step.id as NodeId });
+        } else {
+            const id = segment.step.id as LineId;
+            directions.set(id, segment.step.reverse);
+            segmentFocus.push({ kind: 'edge', id, progress: 1, reverse: segment.step.reverse });
+        }
+    }
+    const lastStartedIndex = (starts: number[], time: number) => {
+        let low = 0,
+            high = starts.length;
+        while (low < high) {
+            const middle = (low + high) >>> 1;
+            if (starts[middle] <= time) low = middle + 1;
+            else high = middle;
+        }
+        return low - 1;
+    };
+    const cameraFocusAt = (frame: number): CameraFocus => {
+        if (frame >= Math.ceil(animationDuration * VideoTimelineTimingFps) + 1) return { kind: 'none' };
+        const time = Math.min(frame / VideoTimelineTimingFps, animationDuration);
+        if (authoredPlayback) return authoredPlayback.cameraFocusAt(time);
+        const index = lastStartedIndex(cumulativeWeights, time);
+        const focus = segmentFocus[index] ?? { kind: 'none' };
+        const segment = playbackSegments[index];
+        return focus.kind === 'edge' && segment?.kind === 'step'
+            ? { ...focus, progress: clamp01((time - cumulativeWeights[index]) / Math.max(segment.duration, 1e-6)) }
+            : focus;
+    };
+    // Camera-only queries avoid generating visibility maps and copying the graph for skipped frames.
+    const centers: { x: number; y: number }[] = [];
+    const cameraTargetAt = (frame: number) => {
+        if (frame >= Math.ceil(animationDuration * VideoTimelineTimingFps) + 1) return overviewCenter;
+        const time = Math.min(frame / VideoTimelineTimingFps, animationDuration);
+        const focus = cameraFocusAt(frame);
+        updateCameraGraph(time);
+        if (focus.kind === 'node') {
+            const attrs = cameraGraph.getNodeAttributes(focus.id);
+            return { x: attrs.x, y: attrs.y };
+        }
+        if (focus.kind === 'edge') {
+            const [sourceId, targetId] = graph.extremities(focus.id);
+            const sourcePosition = cameraGraph.getNodeAttributes(sourceId);
+            const targetPosition = cameraGraph.getNodeAttributes(targetId);
+            const originalSource = graph.getNodeAttributes(sourceId);
+            const originalTarget = graph.getNodeAttributes(targetId);
+            const ratio = focus.reverse ? 1 - focus.progress : focus.progress;
+            if (
+                sourcePosition.x !== originalSource.x ||
+                sourcePosition.y !== originalSource.y ||
+                targetPosition.x !== originalTarget.x ||
+                targetPosition.y !== originalTarget.y
+            ) {
+                cameraLines ??= new Map(
+                    getLines(cameraGraph, { showReconcileWarnings: false }).map(line => [line.id, line])
+                );
+                const path = cameraLines.get(focus.id)?.line?.path;
+                if (path && isOpenPath(path)) {
+                    const primitives = getOpenPathPrimitives(path);
+                    if (primitives.length)
+                        return getPointAtPrimitiveArcLength(primitives, getPrimitiveListLength(primitives) * ratio);
+                }
+            }
+            const original = originalPaths.get(focus.id);
+            if (original) {
+                try {
+                    const point = original.path.getPointAtLength(original.length * ratio);
+                    return {
+                        x:
+                            point.x +
+                            (sourcePosition.x - originalSource.x) * (1 - ratio) +
+                            (targetPosition.x - originalTarget.x) * ratio,
+                        y:
+                            point.y +
+                            (sourcePosition.y - originalSource.y) * (1 - ratio) +
+                            (targetPosition.y - originalTarget.y) * ratio,
+                    };
+                } catch {
+                    /* Non-browser renderers use the endpoint interpolation below. */
+                }
+            }
+            return {
+                x: sourcePosition.x + (targetPosition.x - sourcePosition.x) * ratio,
+                y: sourcePosition.y + (targetPosition.y - sourcePosition.y) * ratio,
+            };
+        }
+        if (!movingNodes.size) return baseCenter;
+        const bounds = calculateCanvasSize(cameraGraph);
+        return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
+    };
+    const prepareCameraCenters = (frame: number) => {
+        for (let index = centers.length; index <= frame; index++) {
+            const target = cameraTargetAt(index);
+            const previous = centers[index - 1];
+            centers.push(
+                previous
+                    ? {
+                          x: previous.x + (target.x - previous.x) * CameraFocusSmoothing,
+                          y: previous.y + (target.y - previous.y) * CameraFocusSmoothing,
+                      }
+                    : target
             );
-
-            const { elem, cameraCenter: nextCameraCenter } = await createFrameSVG(
-                frameGraph,
-                visibleNodes,
-                visibleEdges,
-                nodeProgress,
-                textProgress,
-                edgeProgress,
-                edgeDirections,
-                focus,
-                cameraCenter,
-                previousBasicStations,
-                autoChangeStationType,
-                nextZoom,
-                outputWidth,
-                outputHeight,
-                hideWatermark,
-                isSystemFontsOnly,
-                languages,
-                renderGeometry,
-                disabledNodeAnimations,
-                source.canvas,
-                environment.mapEnabled,
-                !!environment.isSubscriber
+        }
+    };
+    const cameraCenterAt = (frame: number) => {
+        if (frame === totalFrames - 1) return overviewCenter;
+        if (cameraZoom === 1) {
+            const frameGraph = frameAt(frame).frameGraph;
+            const bounds = frameGraph === graph ? baseBounds : calculateCanvasSize(frameGraph);
+            return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
+        }
+        const position = (frame * VideoTimelineTimingFps) / fps;
+        const before = Math.floor(position + 1e-6);
+        const after = Math.ceil(position - 1e-6);
+        prepareCameraCenters(after);
+        const a = centers[before],
+            b = centers[after];
+        const ratio = clamp01(position - before);
+        return { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio };
+    };
+    // Map resources cover the keyframe travel area once, instead of fetching/cloning tiles every frame.
+    if (environment.mapEnabled && movingNodes.size) {
+        const bounds = { ...baseBounds };
+        for (const entry of timeline.track) {
+            if (entry.kind !== 'keyframe' || !graph.hasNode(entry.refId)) continue;
+            bounds.xMin = Math.min(bounds.xMin, entry.x);
+            bounds.xMax = Math.max(bounds.xMax, entry.x);
+            bounds.yMin = Math.min(bounds.yMin, entry.y);
+            bounds.yMax = Math.max(bounds.yMax, entry.y);
+        }
+        const viewport = getCameraViewBox(baseCenter, Math.min(currentZoom, finalFullscreenZoom));
+        const sourceMap = source.canvas.querySelector<SVGGElement>('[data-map-layer]');
+        const targetMap = geometry.querySelector<SVGGElement>('[data-map-layer]');
+        if (sourceMap && targetMap)
+            await renderMapLayerForExport(sourceMap, targetMap, {
+                xMin: bounds.xMin - viewport.width / 2,
+                xMax: bounds.xMax + viewport.width / 2,
+                yMin: bounds.yMin - viewport.height / 2,
+                yMax: bounds.yMax + viewport.height / 2,
+            });
+    }
+    const lineMarkers: { time: number; edgeId: LineId }[] = [];
+    if (timeline.track.length) {
+        timeline.track.forEach((entry, index) => {
+            if (entry.kind === 'edge' && graph.hasEdge(entry.refId))
+                lineMarkers.push({ time: cursorTimes[index] ?? 0, edgeId: entry.refId });
+        });
+    } else {
+        playbackSegments.forEach((segment, index) => {
+            if (segment.kind === 'step' && segment.step.kind === 'edge')
+                lineMarkers.push({ time: cumulativeWeights[index], edgeId: segment.step.id as LineId });
+        });
+    }
+    embedVideoExportStyles(geometry);
+    geometry.setAttribute('width', String(outputWidth));
+    geometry.setAttribute('height', String(outputHeight));
+    const scene = createVideoFrameScene(geometry, { nodeIds: allNodes, edgeIds: allEdges });
+    const baseStationKeys = new Map<StnId, string>();
+    graph.forEachNode((id, attrs) => {
+        if (isStationNodeId(id as Id))
+            baseStationKeys.set(id as StnId, JSON.stringify([attrs.type, attrs[attrs.type]]));
+    });
+    type Appearance = { basic: Set<StnId>; stations: Map<StnId, { key: string; attrs: NodeAttributes }> };
+    const appearances = new Map<string, Appearance>();
+    const stationAppearanceAt = (visibleEdges: Set<LineId>): Appearance => {
+        const key = autoChangeStationType ? [...visibleEdges].join('|') : '';
+        let appearance = appearances.get(key);
+        if (appearance) return appearance;
+        const analysis = autoChangeStationType ? createFrameStationGraph(graph, visibleEdges) : graph;
+        appearance = { basic: getBasicStations(analysis), stations: new Map() };
+        analysis.forEachNode((id, attrs) => {
+            const stationId = id as StnId;
+            if (!baseStationKeys.has(stationId)) return;
+            const variant = JSON.stringify([attrs.type, attrs[attrs.type]]);
+            if (variant !== baseStationKeys.get(stationId))
+                appearance!.stations.set(stationId, { key: variant, attrs });
+        });
+        appearances.set(key, appearance);
+        if (appearances.size > 8) appearances.delete(appearances.keys().next().value!);
+        return appearance;
+    };
+    const currentStationKeys = new Map<StnId, string>();
+    const stationTemplates = new Map<string, Map<string, SVGElement>>();
+    const parseTemplates = (markup: string) => {
+        const root = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        root.innerHTML = markup;
+        // Apply the same editor-only cleanup used during initial resource preparation.
+        root.querySelectorAll('[fill="url(#opaque)"],.removeMe').forEach(element => element.remove());
+        return new Map(Array.from(root.children).map(child => [child.id, child as SVGElement]));
+    };
+    const baselineLineKeys = new Map<Id, string>();
+    let currentLineKeys = new Map<Id, string>();
+    let lastGeometryGraph = graph;
+    if (movingNodes.size) {
+        for (const line of getLines(graph, { showReconcileWarnings: false }))
+            baselineLineKeys.set(line.id, JSON.stringify(line.line?.path));
+        currentLineKeys = new Map(baselineLineKeys);
+    }
+    const updateGeometry = (frameGraph: typeof graph) => {
+        if (lastGeometryGraph === frameGraph) return;
+        const changed: RenderElement[] = [];
+        for (const line of getLines(frameGraph, { showReconcileWarnings: false })) {
+            const key = JSON.stringify(line.line?.path);
+            if (currentLineKeys.get(line.id) === key) continue;
+            currentLineKeys.set(line.id, key);
+            if (key === baselineLineKeys.get(line.id)) {
+                for (const suffix of ['', '.pre', '.post']) {
+                    const id = line.id + suffix;
+                    if (scene.getGroup(id)) scene.replaceGroup(id, VIDEO_FRAME_BASE_VARIANT);
+                }
+            } else changed.push(line);
+        }
+        if (changed.length) {
+            const templates = parseTemplates(
+                renderVideoElementsGeometry(frameGraph, changed, environment.mapEnabled, !!environment.isSubscriber)
             );
-            cameraCenter = nextCameraCenter;
+            for (const [id, template] of templates)
+                scene.replaceGroup(id, currentLineKeys.get(id.replace(/\.(pre|post)$/, '') as Id)!, template);
+        }
+        lastGeometryGraph = frameGraph;
+    };
+    const updateStationAppearance = (appearance: Appearance) => {
+        for (const id of baseStationKeys.keys()) {
+            const variant = appearance.stations.get(id);
+            const key = variant?.key ?? VIDEO_FRAME_BASE_VARIANT;
+            if ((currentStationKeys.get(id) ?? VIDEO_FRAME_BASE_VARIANT) === key) continue;
+            if (!variant) {
+                for (const suffix of ['', '.pre', '.post'])
+                    if (scene.getGroup(id + suffix)) scene.replaceGroup(id + suffix, VIDEO_FRAME_BASE_VARIANT);
+            } else {
+                const cacheKey = id + key;
+                let templates = stationTemplates.get(cacheKey);
+                if (!templates) {
+                    templates = parseTemplates(
+                        renderVideoElementsGeometry(
+                            graph,
+                            [{ id, type: 'station', station: variant.attrs }],
+                            environment.mapEnabled,
+                            !!environment.isSubscriber
+                        )
+                    );
+                    stationTemplates.set(cacheKey, templates);
+                    if (stationTemplates.size > 128) stationTemplates.delete(stationTemplates.keys().next().value!);
+                }
+                for (const [groupId, template] of templates)
+                    if (scene.getGroup(id)) scene.replaceGroup(groupId, key, template);
+            }
+            currentStationKeys.set(id, key);
+        }
+    };
+    // Fills depend on their surrounding paths, including the visible topology used by automatic station switching.
+    const fills = getNodes(graph).filter(element => element.miscNode?.type === MiscNodeType.Fill);
+    let fillStateKey: string | undefined;
+    const fillVariantKeys = new Map<string, string>();
+    const updateFills = (frameGraph: typeof graph, visibleEdges: Set<LineId>) => {
+        if (!fills.length) return;
+        const key = JSON.stringify([
+            autoChangeStationType ? [...visibleEdges] : [],
+            [...movingNodes].map(id => (graph.hasNode(id) ? frameGraph.getNodeAttributes(id) : undefined)),
+        ]);
+        if (key === fillStateKey) return;
+        const fillGraph = autoChangeStationType ? frameGraph.copy() : frameGraph;
+        if (autoChangeStationType) {
+            for (const id of allEdges) if (!visibleEdges.has(id)) fillGraph.dropEdge(id);
+        }
+        const elements = fills.map(element => ({ ...element, miscNode: frameGraph.getNodeAttributes(element.id) }));
+        const templates = parseTemplates(
+            renderVideoElementsGeometry(fillGraph, elements, environment.mapEnabled, !!environment.isSubscriber)
+        );
+        for (const [id, template] of templates) {
+            const variant = template.outerHTML;
+            if (variant !== fillVariantKeys.get(id) && scene.getGroup(id)) scene.replaceGroup(id, variant, template);
+            fillVariantKeys.set(id, variant);
+        }
+        fillStateKey = key;
+    };
+    const initialViewBox = getCameraViewBox(baseCenter, currentZoom);
+    const mapAttribution = geometry.querySelector<SVGGElement>('[data-map-attribution]');
+    const watermark = hideWatermark
+        ? undefined
+        : createVideoWatermarkElement(initialViewBox, outputWidth, outputHeight);
+    if (watermark) geometry.append(watermark);
+    const markerTimes = lineMarkers.map(marker => marker.time);
+    let overlay: SVGGElement | undefined;
+    let annotationKey: string | undefined;
+    let lastFrame = -1;
+    const placeLabels = (labels: readonly TimelineLabelEntry[]) =>
+        labels.map(entry => ({
+            entry,
+            ...getTimelineClipRange(entry, cursorTimes, totalFrames / fps),
+        }));
+    let placedLabels = placeLabels(timeline.labelTrack ?? []);
+    const setLabelTrack = (labels: readonly TimelineLabelEntry[]) => {
+        placedLabels = placeLabels(labels);
+        lastFrame = -1;
+    };
+    const renderPreviewFrame = async (time: number, request: { force?: boolean } = {}): Promise<SVGSVGElement> => {
+        const frame = Math.max(
+            0,
+            Math.min(totalFrames - 1, Math.floor((Number.isFinite(time) ? time : 0) * fps + 1e-6))
+        );
+        if (lastFrame === frame && !request.force) return geometry;
+        if (request.force) scene.invalidate();
+        const state = frameAt(frame);
+        const appearance = stationAppearanceAt(state.visibleEdges);
+        const previous = stationAppearanceAt(frame > 0 ? frameAt(frame - 1).visibleEdges : new Set());
+        updateGeometry(state.frameGraph);
+        updateStationAppearance(appearance);
+        updateFills(state.frameGraph, state.visibleEdges);
+        const nodeTransitionProgress = new Map<NodeId, number>();
+        const nodeTransitionOpacity = new Map<NodeId, number>();
+        const nodeTransforms = new Map<NodeId, string>();
+        for (const id of state.visibleNodes) {
+            if (movingNodes.has(id)) {
+                const attrs = state.frameGraph.getNodeAttributes(id);
+                nodeTransforms.set(id, `translate(${attrs.x}, ${attrs.y})`);
+            }
+            if (!isStationNodeId(id) || state.disabledNodeAnimations.has(id)) continue;
+            const progress = getStationTransitionProgress(state.frameGraph, state.focus, id);
+            nodeTransitionProgress.set(id, progress);
+            if (appearance.basic.has(id) !== previous.basic.has(id))
+                nodeTransitionOpacity.set(id, clamp01(0.92 + progress * 0.08));
+        }
+        const viewBox = getCameraViewBox(cameraCenterAt(frame), state.nextZoom);
+        scene.applyFrame({ ...state, nodeTransitionProgress, nodeTransitionOpacity, nodeTransforms, viewBox });
+        if (mapAttribution) {
+            const unit = viewBox.width / outputWidth;
+            positionMapAttribution(mapAttribution, viewBox.x + 8 * unit, viewBox.y + viewBox.height - 8 * unit, unit);
+        }
+        if (watermark) {
+            const layout = getVideoWatermarkLayout(viewBox, outputWidth, outputHeight);
+            watermark.setAttribute('transform', `translate(${layout.x}, ${layout.y}) scale(${layout.scale})`);
+        }
+        const markerIndex = lastStartedIndex(markerTimes, frame / fps);
+        const edgeId = lineMarkers[Math.max(0, markerIndex)]?.edgeId;
+        const annotation = edgeId && getVideoLineAnnotation(graph, edgeId);
+        const labels = placedLabels
+            .filter(label => frame / fps >= label.start && frame / fps < label.end)
+            .map(label => label.entry);
+        const key = JSON.stringify([annotation, labels.map(label => [label.id, label.text])]);
+        if (key !== annotationKey) {
+            overlay?.remove();
+            overlay = createVideoLineOverlay(annotation || undefined, { showYear, showLineName }, viewBox, labels);
+            if (overlay) geometry.append(overlay);
+            annotationKey = key;
+        } else
+            overlay?.setAttribute('transform', `translate(${viewBox.x}, ${viewBox.y}) scale(${viewBox.width / 1280})`);
+        lastFrame = frame;
+        return geometry;
+    };
+    const renderFrame = async (time: number) => {
+        await renderPreviewFrame(time);
+        return scene.snapshot();
+    };
+    let disposed = false;
+    let warmup: number | undefined;
+    const cameraFrameCount = Math.ceil(((totalFrames - 1) * VideoTimelineTimingFps) / fps) + 1;
+    const warmCamera = () => {
+        if (cameraZoom === 1 || typeof requestIdleCallback !== 'function' || disposed) return;
+        warmup = requestIdleCallback(deadline => {
+            warmup = undefined;
+            const start = performance.now();
+            while (centers.length < cameraFrameCount && deadline.timeRemaining() > 1 && performance.now() - start < 4)
+                prepareCameraCenters(centers.length);
+            if (centers.length < cameraFrameCount) warmCamera();
+        });
+    };
+    const dispose = () => {
+        disposed = true;
+        if (warmup !== undefined) cancelIdleCallback(warmup);
+        geometry.remove();
+        frameStates.clear();
+        appearances.clear();
+        stationTemplates.clear();
+    };
+    return {
+        duration: totalFrames / fps,
+        totalFrames,
+        cursorTimes,
+        renderFrame,
+        renderPreviewFrame,
+        setLabelTrack,
+        warmCamera,
+        dispose,
+    };
+};
+
+export interface VideoPreviewRenderer {
+    duration: number;
+    cursorTimes: number[];
+    renderFrame: (time: number) => Promise<SVGSVGElement>;
+    renderPreviewFrame: (time: number, options?: { force?: boolean }) => Promise<SVGSVGElement>;
+    setLabelTrack: (labels: readonly TimelineLabelEntry[]) => void;
+    dispose: () => void;
+}
+
+export const videoPreviewDefaultOptions: VideoExportOptions = {
+    format: 'mp4',
+    fps: 30,
+    quality: 95,
+    isTransparent: false,
+    speedMultiplier: 1,
+    autoChangeStationType: true,
+    resolution: '720p',
+    isSystemFontsOnly: false,
+    hideWatermark: false,
+};
+
+/** Prepare the export schedule and camera once, then seek to any real video time. */
+export const createVideoPreviewRenderer = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument,
+    languages: TextLanguage[],
+    options: VideoExportOptions = videoPreviewDefaultOptions,
+    environment: VideoExportEnvironment = DefaultVideoEnvironment
+): Promise<VideoPreviewRenderer> => {
+    const source = createVideoExportCanvas(
+        environment.mapEnabled,
+        environment.mapStyle,
+        { ...environment.svgViewBoxMin, zoom: environment.svgViewBoxZoom },
+        getVideoExportDimensions(options.resolution),
+        false
+    );
+    try {
+        const renderer = await createPreparedVideoRenderer(graph, timeline, languages, options, source, environment);
+        renderer.warmCamera();
+        return {
+            ...renderer,
+            dispose: () => {
+                renderer.dispose();
+                source.dispose();
+            },
+        };
+    } catch (error) {
+        source.dispose();
+        throw error;
+    }
+};
+
+const renderVideo = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument,
+    languages: TextLanguage[],
+    options: VideoExportOptions,
+    bgColor: string,
+    source: ReturnType<typeof createVideoExportCanvas>,
+    onProgress?: (progress: number) => void,
+    forceSoftware = false,
+    audioClips: { blob: Blob; entry: NonNullable<TimelineDocument['audioTrack']>[number] }[] = [],
+    environment: VideoExportEnvironment = DefaultVideoEnvironment
+): Promise<Blob> => {
+    const renderer = await createPreparedVideoRenderer(graph, timeline, languages, options, source, environment);
+    const { width, height } = getVideoExportDimensions(options.resolution);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let videoWriter: Awaited<ReturnType<typeof createVideoFrameWriter>> | undefined;
+    try {
+        const audioTracks = audioClips
+            .map(clip => ({
+                blob: clip.blob,
+                ...getTimelineAudioRange(clip.entry, renderer.cursorTimes, renderer.duration),
+            }))
+            .filter(clip => clip.end > clip.start);
+        videoWriter = await createVideoFrameWriter(canvas, { ...options, audioTracks }, forceSoftware);
+        for (let frame = 0; frame < renderer.totalFrames; frame++) {
+            const elem = await renderer.renderFrame(frame / options.fps);
             try {
-                await renderSVGToCanvas(elem, canvas, isTransparent && options.format === 'webm', bgColor);
+                await renderSVGToCanvas(elem, canvas, options.isTransparent && options.format === 'webm', bgColor);
                 await videoWriter.addFrame(frame);
             } finally {
                 elem.remove();
             }
-
-            if (onProgress) {
-                onProgress((frame + 1) / (totalFrames + 1));
-            }
-
-            previousVisibleEdges = new Set(visibleEdges);
+            onProgress?.((frame + 1) / (renderer.totalFrames + 1));
         }
-
         const blob = await videoWriter.complete();
         onProgress?.(1);
         return blob;
     } finally {
+        renderer.dispose();
         try {
             await videoWriter?.dispose();
         } finally {

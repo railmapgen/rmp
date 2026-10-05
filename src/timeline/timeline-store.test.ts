@@ -107,4 +107,28 @@ describe('Timeline session history', () => {
         store.dispatch(undo());
         expect(store.getState().project.future).toHaveLength(1);
     });
+
+    it('preserves playback settings through edits, undo, redo, and reopening a saved project', () => {
+        const store = createTimelineStore();
+        const project = makeProject();
+        const initialSettings = project.revision.timeline.settings;
+        const settings = {
+            cameraZoom: 8 as const,
+            speedMultiplier: 1.8,
+            autoChangeStationType: false,
+            showYear: true,
+            showLineName: true,
+        };
+        store.dispatch(openProject(project));
+        store.dispatch(replaceTimeline({ ...project.revision.timeline, settings }));
+        expect(store.getState().project.active?.revision.timeline.settings).toEqual(settings);
+        store.dispatch(undo());
+        expect(store.getState().project.active?.revision.timeline.settings).toEqual(initialSettings);
+        store.dispatch(redo());
+        expect(store.getState().project.active?.revision.timeline.settings).toEqual(settings);
+        const saved = JSON.parse(JSON.stringify(store.getState().project.active!)) as TimelineProjectRecord;
+        const reopenedStore = createTimelineStore();
+        reopenedStore.dispatch(openProject(saved));
+        expect(reopenedStore.getState().project.active?.revision.timeline.settings).toEqual(settings);
+    });
 });

@@ -30,9 +30,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdDelete, MdEdit, MdFolderOpen, MdUpload } from 'react-icons/md';
 import {
-    createTimelineProjectFromRmp,
+    createTimelineProjectFromParsedRmp,
     getOpenRmpProjectSource,
     importTimelineProjectFile,
+    ParsedRmpTimelineSource,
+    parseRmpTimelineSource,
 } from '../../timeline/timeline-project-io';
 import { timelineProjectDB } from '../../timeline/timeline-project-db';
 import {
@@ -44,6 +46,7 @@ import {
     useTimelineDispatch,
     useTimelineSelector,
 } from '../../timeline/timeline-store';
+import TimelineRmpImportModal from '../timeline/timeline-rmp-import-modal';
 
 const readText = (file: File) => file.text();
 
@@ -57,6 +60,7 @@ export default function TimelineProjectHome() {
     const renameInput = React.useRef<HTMLInputElement>(null);
     const deleteCancel = React.useRef<HTMLButtonElement>(null);
     const [busy, setBusy] = React.useState(false);
+    const [pendingRmp, setPendingRmp] = React.useState<ParsedRmpTimelineSource>();
     const [renameTarget, setRenameTarget] = React.useState<{ id: string; currentName: string }>();
     const [renameName, setRenameName] = React.useState('');
     const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string }>();
@@ -83,14 +87,31 @@ export default function TimelineProjectHome() {
         setBusy(true);
         dispatch(setError(undefined));
         try {
-            const record = await createTimelineProjectFromRmp(
-                await getOpenRmpProjectSource(),
-                t('header.timelinePage.newProjectName')
+            setPendingRmp(await parseRmpTimelineSource(await getOpenRmpProjectSource()));
+        } catch (cause) {
+            dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        } finally {
+            setBusy(false);
+        }
+    };
+
+    const confirmRmpImport = async (applyLineInformation: boolean) => {
+        if (!pendingRmp) return;
+        setBusy(true);
+        dispatch(setError(undefined));
+        try {
+            const record = await createTimelineProjectFromParsedRmp(
+                pendingRmp,
+                t('header.timelinePage.newProjectName'),
+                {
+                    applyLineInformation,
+                }
             );
             await refreshTimelineProjects();
             dispatch(clearRuntime());
             dispatch(setLastProjectId(record.id));
             dispatch(openProject(record));
+            setPendingRmp(undefined);
         } catch (cause) {
             dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
         } finally {
@@ -226,6 +247,12 @@ export default function TimelineProjectHome() {
                     </SimpleGrid>
                 </VStack>
             </Container>
+            <TimelineRmpImportModal
+                revision={pendingRmp?.revision}
+                isLoading={busy}
+                onClose={() => setPendingRmp(undefined)}
+                onImport={applyLineInformation => void confirmRmpImport(applyLineInformation)}
+            />
             <Modal
                 isOpen={renameTarget !== undefined}
                 onClose={() => setRenameTarget(undefined)}

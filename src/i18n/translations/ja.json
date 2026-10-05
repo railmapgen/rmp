@@ -13,7 +13,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -790,7 +789,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "路線情報設定",
@@ -879,11 +877,15 @@
             "insertExitAnimation": "選択項目の退出アニメーションを挿入",
             "insertFramePauseBefore": "フレーム前の停止",
             "insertFramePauseAfter": "フレーム後の停止",
+            "insertLabel": "Label",
+            "editLabel": "Label を編集",
+            "labelText": "ラベルのテキスト",
+            "saveLabel": "保存",
             "insertAudio": "音声",
             "audioTrack": "音声トラック",
             "noAudio": "音声がありません。「挿入 > 音声」から追加してください。",
-            "audioStart": "音声開始（秒）",
-            "audioEnd": "音声終了（秒）",
+            "audioStart": "開始時間（秒）",
+            "audioEnd": "終了時間（秒）",
             "audioMissing": "音声データがありません。復元するには再インポートしてください。",
             "framePauseBefore": "フレーム前の停止",
             "framePauseAfter": "フレーム後の停止",
@@ -941,7 +943,47 @@
                     "tip": "動画はトラックを左から右へ再生します。書き出す前に中央の再生ボタンでプレビューできます。",
                     "imageAlt": "ファイルメニュー内の動画エクスポート項目を強調した図"
                 }
-            }
+            },
+            "settings": {
+                "title": "タイムライン設定",
+                "description": "再生とラベルを調整します。変更はプレビューと書き出した動画に反映されます。",
+                "playback": "再生",
+                "overlays": "動画のラベル",
+                "lineInformation": "路線情報",
+                "showYear": "年を表示",
+                "showYearHint": "現在の路線の開業年を動画の左上に表示します。",
+                "showLineName": "路線名を表示",
+                "showLineNameHint": "年の下に路線色、中国語名、英語名を表示します。",
+                "savedWithProject": "タイムラインプロジェクトと一緒に保存",
+                "done": "完了",
+                "cameraZoom": "ズーム",
+                "cameraZoomFull": "全体（Full）"
+            },
+            "lineLabels": {
+                "title": "路線ラベル情報",
+                "description": "このタイムライン動画に表示する名前、色、開業日を設定します。ラベルはこのタイムラインプロジェクトにのみ保存されます。",
+                "empty": "路線情報がありません。路線情報を含む RMP プロジェクトを読み込むと、動画のラベルを設定できます。",
+                "color": "ラベルの色",
+                "invalidColor": "#1677ff のような有効な16進数の色を入力してください。",
+                "reset": "読み込んだ路線情報に戻す",
+                "resetHint": "この路線のラベルを、読み込み時の RMP 路線情報に戻します。",
+                "saved": "変更はこのタイムラインプロジェクトに保存され、プレビューと書き出しに反映されます。"
+            },
+            "rmpImport": {
+                "title": "RMP データを読み込む",
+                "applyLineInfo": "路線情報からタイムラインを自動作成",
+                "description": "開業日順に、設定した始点から終点へ路線を描画します。開業日がない路線は最後に配置します。",
+                "summary": "{{lines}} 路線 · {{nodes}} ノード · {{edges}} 区間",
+                "unavailable": "利用できる路線情報がありません。地図を読み込み、タイムラインを手動で編集できます。",
+                "replaceTrack": "映像トラックを作り直します。音声クリップと再生設定は保持されます。",
+                "syncSummary": "地図の変更：ノード +{{addedNodes}}/−{{removedNodes}}、区間 +{{addedEdges}}/−{{removedEdges}}。無効なタイムライン項目 {{removedEntries}} 件を削除します。"
+            },
+            "playbackPosition": "再生位置",
+            "preparingPreview": "動画プレビューを準備中…",
+            "previewFailed": "プレビューを読み込めません",
+            "audioDuration": "音声の長さ：{{duration}} 秒",
+            "audioTiming": "音声の時間を編集",
+            "retryPreview": "プレビューを再読み込み"
         },
         "mapToggle": {
             "show": "地理地図を表示",
@@ -996,7 +1038,6 @@
                 "title": "ビデオをエクスポート",
                 "groups": {
                     "output": "出力設定",
-                    "viewport": "ビュー設定",
                     "rendering": "レンダリング設定",
                     "sharing": "共有と利用規約"
                 },
@@ -1011,8 +1052,6 @@
                     "4k": "4K（3840×2160）"
                 },
                 "quality": "ビデオ品質",
-                "currentScale": "現在のビューの拡大率（全体表示 = 100%）",
-                "fullscreenScale": "全画面ビューの拡大率（全体表示 = 100%）",
                 "autoChangeStationType": "一般駅と乗換駅を自動的に切り替える",
                 "autoChangeStationTypeHint": "有効にすると、動画内で現在表示されている路線に基づいて、対応する以下の乗換駅が自動的に調整されます：{{stations}}。",
                 "autoChangeStationTypeWarning": "動画内の駅名位置や乗換情報が現在のマップと一致しない場合は、「一般駅と乗換駅を自動的に切り替える」をオフにすると、マップの現在の状態どおりに駅を描画できます。",
@@ -1247,7 +1286,6 @@
             "zulipContent": "Zulip でコミュニティに参加しましょう！"
         }
     },
-
     "contextMenu": {
         "refresh": "更新",
         "cut": "切り取り",
@@ -1266,7 +1304,6 @@
         "flipDiagonal135": "135° 線で反転",
         "reconcile": "統合"
     },
-
     "clipboard": {
         "errors": {
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
@@ -1274,7 +1311,6 @@
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
         }
     },
-
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
     "map": {
         "loading": "地図を読み込み中",

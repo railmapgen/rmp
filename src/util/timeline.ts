@@ -12,17 +12,22 @@ import {
 } from '../constants/constants';
 import {
     createEmptyTimelineDocument,
+    DEFAULT_TIMELINE_SETTINGS,
     isElementEntry,
     isNodeTimelineEntry,
     isPauseEntry,
+    isTimelineCameraZoom,
     TimelineDocument,
     TimelineAudioEntry,
+    TimelineLabelEntry,
+    TIMELINE_LABEL_DEFAULT_SECONDS,
     TimelineElementEntry,
     TimelineEntry,
     TimelineKeyframeEntry,
     TimelinePauseEntry,
     TimelinePausePosition,
     TimelinePhase,
+    TimelineSettings,
 } from '../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -56,6 +61,24 @@ export const createTimelineEntry = (refId: Id, phase: TimelinePhase = 'enter'): 
     return isNodeTimelineEntry(refId)
         ? { id: `timeline_${nanoid(10)}`, kind: 'node', refId, phase, showAnimation: true }
         : { id: `timeline_${nanoid(10)}`, kind: 'edge', refId, phase, showAnimation: true };
+};
+
+export const insertTimelineLabel = (doc: TimelineDocument, text: string, index: number): TimelineDocument => {
+    const startSlot = Math.max(0, Math.min(index, doc.track.length - 1));
+    return {
+        ...doc,
+        labelTrack: [
+            ...(doc.labelTrack ?? []),
+            {
+                id: `timeline_${nanoid(10)}`,
+                kind: 'label',
+                text,
+                startSlot,
+                endSlot: startSlot + 1,
+                duration: TIMELINE_LABEL_DEFAULT_SECONDS,
+            },
+        ],
+    };
 };
 
 export const insertTimelineExitEntry = (
@@ -269,6 +292,24 @@ export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): Ti
             .map(entry => normalizeTimelineEntry(entry))
             .filter((entry): entry is TimelineEntry => !!entry),
     };
+    if (doc.settings && typeof doc.settings === 'object') {
+        const settings = doc.settings as Partial<TimelineSettings>;
+        normalized.settings = {
+            cameraZoom: isTimelineCameraZoom(settings.cameraZoom)
+                ? settings.cameraZoom
+                : DEFAULT_TIMELINE_SETTINGS.cameraZoom,
+            speedMultiplier:
+                typeof settings.speedMultiplier === 'number' && Number.isFinite(settings.speedMultiplier)
+                    ? Math.max(0.5, Math.min(2, settings.speedMultiplier))
+                    : DEFAULT_TIMELINE_SETTINGS.speedMultiplier,
+            autoChangeStationType:
+                typeof settings.autoChangeStationType === 'boolean'
+                    ? settings.autoChangeStationType
+                    : DEFAULT_TIMELINE_SETTINGS.autoChangeStationType,
+            showYear: settings.showYear === true,
+            showLineName: settings.showLineName === true,
+        };
+    }
     const audioTrack = (doc as { audioTrack?: unknown }).audioTrack;
     if (Array.isArray(audioTrack)) {
         normalized.audioTrack = audioTrack
@@ -288,11 +329,57 @@ export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): Ti
                     candidate.endSlot >= candidate.startSlot
                 );
             })
-            .map(entry => ({
-                ...entry,
-                startSlot: Math.round(entry.startSlot),
-                endSlot: Math.round(entry.endSlot),
-            }));
+            .map(entry => {
+                const normalizedEntry = {
+                    ...entry,
+                    startSlot: Math.round(entry.startSlot),
+                    endSlot: Math.round(entry.endSlot),
+                };
+                if (typeof entry.startTime !== 'number' || !Number.isFinite(entry.startTime) || entry.startTime < 0) {
+                    delete normalizedEntry.startTime;
+                }
+                if (typeof entry.endTime !== 'number' || !Number.isFinite(entry.endTime) || entry.endTime < 0) {
+                    delete normalizedEntry.endTime;
+                } else if (normalizedEntry.startTime !== undefined) {
+                    normalizedEntry.endTime = Math.max(normalizedEntry.startTime, entry.endTime);
+                }
+                return normalizedEntry;
+            });
+    }
+    const labelTrack = (doc as { labelTrack?: unknown }).labelTrack;
+    if (Array.isArray(labelTrack)) {
+        normalized.labelTrack = labelTrack
+            .filter((entry): entry is TimelineLabelEntry => {
+                if (!entry || typeof entry !== 'object') return false;
+                const candidate = entry as Partial<TimelineLabelEntry>;
+                return (
+                    candidate.kind === 'label' &&
+                    typeof candidate.id === 'string' &&
+                    typeof candidate.text === 'string' &&
+                    typeof candidate.startSlot === 'number' &&
+                    Number.isFinite(candidate.startSlot) &&
+                    candidate.startSlot >= 0 &&
+                    typeof candidate.endSlot === 'number' &&
+                    Number.isFinite(candidate.endSlot) &&
+                    candidate.endSlot >= candidate.startSlot
+                );
+            })
+            .map(entry => {
+                const clip: TimelineLabelEntry = {
+                    id: entry.id,
+                    kind: 'label',
+                    text: entry.text,
+                    startSlot: Math.round(entry.startSlot),
+                    endSlot: Math.round(entry.endSlot),
+                };
+                if (typeof entry.startTime === 'number' && Number.isFinite(entry.startTime) && entry.startTime >= 0)
+                    clip.startTime = entry.startTime;
+                if (typeof entry.duration === 'number' && Number.isFinite(entry.duration) && entry.duration > 0)
+                    clip.duration = entry.duration;
+                if (typeof entry.endTime === 'number' && Number.isFinite(entry.endTime) && entry.endTime >= 0)
+                    clip.endTime = Math.max(clip.startTime ?? 0, entry.endTime);
+                return clip;
+            });
     }
     return normalized;
 };

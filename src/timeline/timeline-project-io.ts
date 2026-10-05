@@ -8,6 +8,7 @@ import { DEFAULT_MAP_STYLE, normalizeMapStyle } from '../map/map-style';
 import { blobToBase64 } from '../util/binary';
 import { RMPSave, upgradeWithoutBackup } from '../util/save';
 import { normalizeTimelineDocument } from '../util/timeline';
+import { populateTimelineFromLineInformation } from '../util/timeline-line-import';
 import { timelineProjectDB } from './timeline-project-db';
 import {
     TIMELINE_PROJECT_APP,
@@ -63,6 +64,10 @@ export interface ParsedRmpTimelineSource {
     assets: Omit<TimelineAssetRecord, 'key' | 'projectId'>[];
 }
 
+export interface RmpTimelineImportOptions {
+    applyLineInformation?: boolean;
+}
+
 /**
  * Build a self-contained RMP source from the project currently saved by the
  * painter. This bridge is only invoked by an explicit Timeline menu action;
@@ -114,8 +119,15 @@ export const parseRmpTimelineSource = async (source: string): Promise<ParsedRmpT
     };
 };
 
-export const createTimelineProjectFromRmp = async (source: string, name: string): Promise<TimelineProjectRecord> => {
-    const { revision, assets } = await parseRmpTimelineSource(source);
+export const createTimelineProjectFromParsedRmp = async (
+    parsed: ParsedRmpTimelineSource,
+    name: string,
+    options: RmpTimelineImportOptions = {}
+): Promise<TimelineProjectRecord> => {
+    const revision = structuredClone(parsed.revision);
+    if (options.applyLineInformation) {
+        revision.timeline = populateTimelineFromLineInformation(revision.graph, revision.timeline);
+    }
     const now = Date.now();
     const record: TimelineProjectRecord = {
         id: `timeline_project_${nanoid(12)}`,
@@ -125,9 +137,16 @@ export const createTimelineProjectFromRmp = async (source: string, name: string)
         updatedAt: now,
         revision,
     };
-    await timelineProjectDB.createProject(record, assets);
+    await timelineProjectDB.createProject(record, parsed.assets);
     return record;
 };
+
+export const createTimelineProjectFromRmp = async (
+    source: string,
+    name: string,
+    options: RmpTimelineImportOptions = {}
+): Promise<TimelineProjectRecord> =>
+    createTimelineProjectFromParsedRmp(await parseRmpTimelineSource(source), name, options);
 
 const normalizeTimelineProjectFile = (raw: unknown): TimelineProjectFile => {
     if (!raw || typeof raw !== 'object') throw new Error('Invalid Timeline project file');
@@ -215,7 +234,7 @@ export const exportTimelineProjectFile = async (record: TimelineProjectRecord): 
     return JSON.stringify(file);
 };
 
-/** Remove references absent from the replacement graph and rebase audio slots. */
+/** Remove missing map references and rebase independently placed clip anchors. */
 export const reconcileTimelineAfterRmpSync = (timeline: TimelineDocument, graph: TimelineGraph): TimelineDocument => {
     const retainedIndexes: number[] = [];
     const track = timeline.track.filter((entry, index) => {
@@ -233,18 +252,44 @@ export const reconcileTimelineAfterRmpSync = (timeline: TimelineDocument, graph:
         const endSlot = Math.min(track.length, Math.max(startSlot, mapSlot(Math.round(entry.endSlot))));
         return { ...entry, startSlot, endSlot };
     });
-    return { ...timeline, track, ...(audioTrack ? { audioTrack } : {}) };
+    const labelTrack = timeline.labelTrack?.map(entry => {
+        const startSlot = Math.min(track.length, mapSlot(Math.round(entry.startSlot)));
+        const endSlot = Math.min(track.length, Math.max(startSlot, mapSlot(Math.round(entry.endSlot))));
+        return { ...entry, startSlot, endSlot };
+    });
+    return { ...timeline, track, ...(audioTrack ? { audioTrack } : {}), ...(labelTrack ? { labelTrack } : {}) };
 };
 
-export const prepareTimelineProjectSync = async (source: string, current: TimelineProjectRevision) => {
+export const prepareTimelineProjectSync = async (
+    source: string,
+    current: TimelineProjectRevision,
+    options: RmpTimelineImportOptions = {}
+) => {
     const parsed = await parseRmpTimelineSource(source);
+    // Video labels belong to the Timeline project. Refresh the imported railway
+    // metadata while retaining overrides only for surviving, stable line IDs.
+    const labels = new Map(
+        (current.graph.attributes.lineDefinitions ?? [])
+            .filter(line => line.videoLabel)
+            .map(line => [line.id, line.videoLabel!] as const)
+    );
+    const definitions = parsed.revision.graph.attributes.lineDefinitions;
+    if (definitions) {
+        parsed.revision.graph.attributes.lineDefinitions = definitions.map(line => {
+            const videoLabel = labels.get(line.id);
+            return videoLabel ? { ...line, videoLabel: structuredClone(videoLabel) } : line;
+        });
+    }
     const graph = MultiDirectedGraph.from(parsed.revision.graph) as TimelineGraph;
     const currentGraph = MultiDirectedGraph.from(current.graph) as TimelineGraph;
-    const timeline = reconcileTimelineAfterRmpSync(current.timeline, graph);
+    const reconciled = reconcileTimelineAfterRmpSync(current.timeline, graph);
+    const timeline = options.applyLineInformation
+        ? populateTimelineFromLineInformation(parsed.revision.graph, reconciled)
+        : reconciled;
     return {
         revision: { ...parsed.revision, timeline },
         assets: parsed.assets,
-        removedEntries: current.timeline.track.length - timeline.track.length,
+        removedEntries: current.timeline.track.length - reconciled.track.length,
         nodeCount: graph.order,
         edgeCount: graph.size,
         changes: {

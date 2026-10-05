@@ -4,6 +4,7 @@ import type { VideoEncodingOptions } from './video-encoder';
 
 const mocks = vi.hoisted(() => ({
     load: vi.fn(),
+    on: vi.fn(),
     exec: vi.fn(),
     writeFile: vi.fn(),
     deleteFile: vi.fn(),
@@ -59,6 +60,7 @@ describe('software video encoding', () => {
             `file 'segment-0.mp4'\nduration ${30 / fps}\nfile 'segment-1.mp4'\nduration ${Math.round(1_000_000 / fps) / 1_000_000}\n`
         );
         expect([...mocks.files.keys()].some(name => name.endsWith('.png'))).toBe(false);
+        expect([...mocks.files.keys()].some(name => name.startsWith('segment-'))).toBe(false);
         expect(canvas.toBlob).toHaveBeenCalledWith(expect.any(Function), 'image/png');
         expect(canvas.toDataURL).not.toHaveBeenCalled();
         await writer.dispose();
@@ -114,6 +116,31 @@ describe('software video encoding', () => {
         await expect(writer.addFrame(0)).rejects.toThrow('Could not encode video frame');
         expect(mocks.writeFile).not.toHaveBeenCalled();
         await writer.dispose();
+    });
+
+    it('releases encoded batches before mixing audio without encoding the video again', async () => {
+        const audio = Object.assign(new Blob(['m4a'], { type: 'audio/mp4' }), {
+            arrayBuffer: async () => new Uint8Array([4, 5, 6]).buffer,
+        });
+        const writer = await createSoftwareVideoFrameWriter(canvas, {
+            ...options,
+            audioTracks: [{ blob: audio, start: 0.25, end: 1.25 }],
+        });
+        mocks.exec.mockImplementation(async args => {
+            if (args.includes('-filter_complex')) {
+                expect([...mocks.files.keys()].some(name => name.startsWith('segment-'))).toBe(false);
+                expect(args.slice(args.indexOf('-c:v'), args.indexOf('-c:v') + 2)).toEqual(['-c:v', 'copy']);
+            }
+            return 0;
+        });
+        await writer.addFrame(0);
+        expect((await writer.complete()).type).toBe('video/mp4');
+        expect(mocks.exec).toHaveBeenCalledTimes(3);
+        expect(mocks.files.has('output.mp4')).toBe(false);
+        expect(mocks.files.has('audio-0.m4a')).toBe(false);
+        expect(mocks.files.has('muxed.mp4')).toBe(false);
+        await writer.dispose();
+        expect(mocks.terminate).toHaveBeenCalledOnce();
     });
 
     it('terminates the worker when loading fails', async () => {

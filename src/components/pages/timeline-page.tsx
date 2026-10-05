@@ -2,7 +2,13 @@ import { Badge, Box, Divider, Flex, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Id } from '../../constants/constants';
-import { isElementEntry, isKeyframeEntry, TimelineEntry, TimelineKeyframeEntry } from '../../constants/timeline';
+import {
+    getTimelineSettings,
+    isElementEntry,
+    isKeyframeEntry,
+    TimelineEntry,
+    TimelineKeyframeEntry,
+} from '../../constants/timeline';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
 import {
     replaceTimeline,
@@ -18,10 +24,16 @@ import TimelinePreview from '../timeline/timeline-preview';
 import TimelineTrackPanel from '../timeline/timeline-track-panel';
 import { KEYFRAME_ROW_HEIGHT } from '../timeline/timeline-track';
 import TimelineSvgWrapper, { TimelineSvgHandle } from '../timeline/timeline-svg-wrapper';
+import { TimelinePlaybackTiming } from '../../util/timeline-playback';
+import { useTimelineAudioPlayback } from '../timeline/use-timeline-audio-playback';
+import { useSvgRenderContext } from '../svg-render-context';
+import { useTimelinePlaybackClock } from '../timeline/use-timeline-playback-clock';
+import { createTimelinePreviewOptions } from '../timeline/timeline-preview-options';
 
-const TRACK_PANEL_BASE_HEIGHT = 300;
+const TRACK_PANEL_BASE_HEIGHT = 324;
 const TRACK_PANEL_MIN_HEIGHT_RATIO = 0.3;
-const TRACK_PANEL_AUTO_MAX_HEIGHT_RATIO = 0.4;
+const TRACK_PANEL_AUTO_MAX_HEIGHT_RATIO = 0.48;
+const MemoTimelineSvgWrapper = React.memo(TimelineSvgWrapper);
 
 export default function TimelinePage() {
     const { t } = useTranslation();
@@ -30,7 +42,8 @@ export default function TimelinePage() {
     const timeline = active.revision.timeline;
     const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
     const selected = useTimelineSelector(state => state.runtime.selected);
-    const { graph } = useTimelineProjectContext();
+    const { graph, languages, getAudio } = useTimelineProjectContext();
+    const { getImage } = useSvgRenderContext();
     const { svgViewBoxMin, svgViewBoxZoom, mapEnabled, mapStyle } = active.revision;
     const { height: windowHeight } = useWindowSize();
     const borderColor = useColorModeValue('gray.200', 'whiteAlpha.300');
@@ -43,11 +56,63 @@ export default function TimelinePage() {
     const selectedId = selected.size === 1 ? [...selected][0] : undefined;
     const [selectedEntryId, setSelectedEntryId] = React.useState<string | undefined>(undefined);
     const [showMissingHighlight, setShowMissingHighlight] = React.useState(false);
-    const viewport = useTimelineSelector(state => state.runtime.viewport) ?? {
-        x: svgViewBoxMin.x,
-        y: svgViewBoxMin.y,
-        zoom: svgViewBoxZoom,
-    };
+    const [timing, setTiming] = React.useState<TimelinePlaybackTiming>();
+    const [playbackTime, setPlaybackTime] = React.useState(0);
+    const [isPlaying, setIsPlaying] = React.useState(false);
+    const playbackTimeRef = React.useRef(0);
+    playbackTimeRef.current = playbackTime;
+    const pendingCursorRef = React.useRef(timelineCursor);
+    pendingCursorRef.current = timelineCursor;
+    const settings = getTimelineSettings(timeline);
+    const previewOptions = React.useMemo(
+        () => createTimelinePreviewOptions(settings),
+        [
+            settings.cameraZoom,
+            settings.speedMultiplier,
+            settings.autoChangeStationType,
+            settings.showYear,
+            settings.showLineName,
+        ]
+    );
+    const handleTimingChange = React.useCallback((next: TimelinePlaybackTiming | undefined) => {
+        setTiming(next);
+        setIsPlaying(false);
+        if (next) setPlaybackTime(Math.min(next.duration, next.cursorTimes[pendingCursorRef.current] ?? 0));
+    }, []);
+    useTimelineAudioPlayback(timeline, timing, playbackTime, isPlaying, getAudio);
+    useTimelinePlaybackClock({
+        playing: isPlaying && !!timing,
+        duration: timing?.duration ?? 0,
+        startTime: playbackTimeRef.current,
+        onTick: setPlaybackTime,
+        onComplete: () => setIsPlaying(false),
+    });
+    const handleSeek = React.useCallback(
+        (time: number) => {
+            setIsPlaying(false);
+            if (!timing) return;
+            const next = Math.max(0, Math.min(timing.duration, time));
+            setPlaybackTime(next);
+        },
+        [timing]
+    );
+    const handleTogglePlayback = React.useCallback(() => {
+        if (!timing?.duration) return;
+        if (!isPlaying && playbackTimeRef.current >= timing.duration) {
+            setPlaybackTime(0);
+        }
+        setIsPlaying(value => !value);
+    }, [timing, isPlaying]);
+    const savedViewport = useTimelineSelector(state => state.runtime.viewport);
+    const viewport = React.useMemo(
+        () =>
+            savedViewport ?? {
+                x: svgViewBoxMin.x,
+                y: svgViewBoxMin.y,
+                zoom: svgViewBoxZoom,
+            },
+        [savedViewport, svgViewBoxMin.x, svgViewBoxMin.y, svgViewBoxZoom]
+    );
     const handleViewportChange = React.useCallback(
         (nextViewport: typeof viewport) => dispatch(setViewport(nextViewport)),
         [dispatch]
@@ -67,7 +132,7 @@ export default function TimelinePage() {
         return () => observer.disconnect();
     }, []);
 
-    // Grow automatically with keyframe lanes until the user chooses a height.
+    // Leave room for the time ruler and media lanes until the user chooses a height.
     const keyframeLaneCount = React.useMemo(
         () => new Set(timeline.track.filter(isKeyframeEntry).map(entry => entry.refId)).size,
         [timeline.track]
@@ -80,7 +145,10 @@ export default function TimelinePage() {
     const trackPanelHeight = clampTrackHeight(
         resizedTrackHeight ??
             Math.min(
-                TRACK_PANEL_BASE_HEIGHT + keyframeLaneCount * KEYFRAME_ROW_HEIGHT,
+                TRACK_PANEL_BASE_HEIGHT +
+                    keyframeLaneCount * KEYFRAME_ROW_HEIGHT +
+                    (timeline.audioTrack?.length ?? 0) * 28 +
+                    ((timeline.labelTrack?.length ?? 0) > 0 ? 28 + timeline.labelTrack!.length * 28 : 0),
                 viewportHeight * TRACK_PANEL_AUTO_MAX_HEIGHT_RATIO
             )
     );
@@ -139,10 +207,13 @@ export default function TimelinePage() {
 
     const handleCursorChange = React.useCallback(
         (nextCursor: number) => {
+            setIsPlaying(false);
+            pendingCursorRef.current = nextCursor;
+            if (timing) setPlaybackTime(timing.cursorTimes[nextCursor] ?? timing.duration);
             setSelectedEntryId(undefined);
             dispatch(setCursor(nextCursor));
         },
-        [dispatch]
+        [dispatch, timing]
     );
 
     const handleSelectEntry = React.useCallback(
@@ -215,7 +286,7 @@ export default function TimelinePage() {
             <Flex flex="1" minH="0">
                 <Box flex="1" minW="0" position="relative">
                     <Badge {...paneLabelProps}>{t('header.timelinePage.editorPane')}</Badge>
-                    <TimelineSvgWrapper
+                    <MemoTimelineSvgWrapper
                         ref={svgHandleRef}
                         selectedId={selectedId}
                         highlightedIds={highlightedIds}
@@ -233,15 +304,18 @@ export default function TimelinePage() {
                     <Badge {...paneLabelProps}>{t('header.timelinePage.previewPane')}</Badge>
                     <TimelinePreview
                         document={timeline}
-                        cursor={timelineCursor}
-                        viewport={viewport}
+                        time={playbackTime}
+                        options={previewOptions}
+                        languages={languages}
+                        svgViewBoxMin={svgViewBoxMin}
+                        svgViewBoxZoom={svgViewBoxZoom}
+                        onTimingChange={handleTimingChange}
+                        getImage={getImage}
                         editableKeyframe={editableKeyframe}
                         onKeyframeMove={handleKeyframeMove}
-                        onViewportChange={handleViewportChange}
                         graph={graph}
                         mapEnabled={mapEnabled}
                         mapStyle={mapStyle}
-                        isSubscriber={false}
                     />
                     {editableKeyframe && (
                         <Badge
@@ -305,6 +379,11 @@ export default function TimelinePage() {
                         onSelectEntry={handleSelectEntry}
                         onCursorChange={handleCursorChange}
                         onDocumentChange={handleTimelineChange}
+                        timing={timing}
+                        playbackTime={playbackTime}
+                        isPlaying={isPlaying}
+                        onSeek={handleSeek}
+                        onTogglePlayback={handleTogglePlayback}
                         graph={graph}
                         insertionIndex={timelineCursor}
                     />

@@ -11,7 +11,6 @@
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "显示更少",
@@ -787,7 +786,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "线路信息设置",
@@ -876,11 +874,15 @@
             "insertExitAnimation": "插入当前所选项的退出动画",
             "insertFramePauseBefore": "帧前停顿",
             "insertFramePauseAfter": "帧后停顿",
+            "insertLabel": "Label",
+            "editLabel": "编辑 Label",
+            "labelText": "标注文本",
+            "saveLabel": "保存",
             "insertAudio": "音频",
             "audioTrack": "音频轨道",
             "noAudio": "暂无音频。使用“插入 > 音频”添加。",
-            "audioStart": "音频开始（秒）",
-            "audioEnd": "音频结束（秒）",
+            "audioStart": "开始时间（秒）",
+            "audioEnd": "结束时间（秒）",
             "audioMissing": "音频数据丢失。请重新导入文件以恢复。",
             "framePauseBefore": "帧前停顿",
             "framePauseAfter": "帧后停顿",
@@ -938,7 +940,47 @@
                     "tip": "视频会按照轨道从左到右的顺序播放；导出前可先用中间的播放按钮预览。",
                     "imageAlt": "在文件菜单中高亮导出视频选项的示意图"
                 }
-            }
+            },
+            "settings": {
+                "title": "时间线设置",
+                "description": "调整播放效果和画面标注，预览与导出视频会同步更新。",
+                "playback": "播放效果",
+                "overlays": "画面标注",
+                "lineInformation": "线路信息",
+                "showYear": "显示年份",
+                "showYearHint": "在视频左上角显示当前线路的开通年份。",
+                "showLineName": "标注线路名称",
+                "showLineNameHint": "在年份下方显示线路标志色、中文名称和英文名称。",
+                "savedWithProject": "随时间线项目保存",
+                "done": "完成",
+                "cameraZoom": "放大倍率",
+                "cameraZoomFull": "全屏（Full）"
+            },
+            "lineLabels": {
+                "title": "线路标签信息",
+                "description": "设置此时间线视频中的线路名称、标志色与开通日期。这些标签信息仅保存在当前 Timeline 存档中。",
+                "empty": "暂无线路信息。导入包含线路信息的 RMP 存档后，即可设置视频线路标签。",
+                "color": "标签标志色",
+                "invalidColor": "请输入有效的十六进制颜色，例如 #1677ff。",
+                "reset": "恢复导入的线路信息",
+                "resetHint": "将此线路的标签恢复为导入时的 RMP 线路信息。",
+                "saved": "修改会保存在当前 Timeline 存档中，并同时应用于预览和导出。"
+            },
+            "rmpImport": {
+                "title": "导入 RMP 数据",
+                "applyLineInfo": "按线路信息自动填入时间线",
+                "description": "按开通日期排列线路，并从设定的起点向终点依次绘制。未填写开通日期的线路排在最后。",
+                "summary": "{{lines}} 条线路 · {{nodes}} 个节点 · {{edges}} 条线段",
+                "unavailable": "暂无可用的线路信息。你仍可导入地图并手动编辑时间线。",
+                "replaceTrack": "此操作会重新生成视觉轨道，保留音频片段和播放设置。",
+                "syncSummary": "地图变更：节点 +{{addedNodes}}/−{{removedNodes}}，线段 +{{addedEdges}}/−{{removedEdges}}。将移除 {{removedEntries}} 个失效时间线条目。"
+            },
+            "playbackPosition": "播放进度",
+            "preparingPreview": "正在准备视频预览…",
+            "previewFailed": "预览加载失败",
+            "audioDuration": "资源时长：{{duration}} 秒",
+            "audioTiming": "编辑音乐时间",
+            "retryPreview": "重新加载"
         },
         "mapToggle": {
             "show": "显示地理地图",
@@ -993,7 +1035,6 @@
                 "title": "导出视频",
                 "groups": {
                     "output": "输出设置",
-                    "viewport": "视角设置",
                     "rendering": "渲染设置",
                     "sharing": "分享与许可"
                 },
@@ -1008,8 +1049,6 @@
                     "4k": "4K（3840×2160）"
                 },
                 "quality": "视频质量",
-                "currentScale": "当前视角放大倍率（全图 = 100%）",
-                "fullscreenScale": "全屏视角放大倍率（全图 = 100%）",
                 "autoChangeStationType": "自动切换基本车站与换乘车站",
                 "autoChangeStationTypeHint": "开启后，将根据视频中当前已显示的线路自动调整以下受支持的换乘站：{{stations}}。",
                 "autoChangeStationTypeWarning": "如果视频中的站名位置或换乘信息与当前地图不一致，请关闭“自动切换基本车站与换乘车站”，以完全按照地图当前状态渲染车站。",
@@ -1245,7 +1284,6 @@
             "zulipContent": "加入我们的 Zulip 社区！"
         }
     },
-
     "contextMenu": {
         "refresh": "刷新",
         "cut": "剪切",
@@ -1264,7 +1302,6 @@
         "flipDiagonal135": "沿135°线翻转",
         "reconcile": "合并线段"
     },
-
     "clipboard": {
         "errors": {
             "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
@@ -1272,7 +1309,6 @@
             "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
         }
     },
-
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
     "map": {
         "loading": "正在加载地图",

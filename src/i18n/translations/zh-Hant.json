@@ -11,7 +11,6 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -787,7 +786,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "線路資訊設定",
@@ -876,11 +874,15 @@
             "insertExitAnimation": "插入目前所選項目的離開動畫",
             "insertFramePauseBefore": "幀前停頓",
             "insertFramePauseAfter": "幀後停頓",
+            "insertLabel": "Label",
+            "editLabel": "編輯 Label",
+            "labelText": "標註文字",
+            "saveLabel": "儲存",
             "insertAudio": "音訊",
             "audioTrack": "音訊軌道",
             "noAudio": "暫無音訊。使用「插入 > 音訊」新增。",
-            "audioStart": "音訊開始（秒）",
-            "audioEnd": "音訊結束（秒）",
+            "audioStart": "開始時間（秒）",
+            "audioEnd": "結束時間（秒）",
             "audioMissing": "音訊資料遺失。請重新匯入檔案以恢復。",
             "framePauseBefore": "幀前停頓",
             "framePauseAfter": "幀後停頓",
@@ -938,7 +940,47 @@
                     "tip": "影片會按照軌道從左到右的順序播放；匯出前可先用中間的播放按鈕預覽。",
                     "imageAlt": "在檔案選單中高亮匯出影片選項的示意圖"
                 }
-            }
+            },
+            "settings": {
+                "title": "時間線設定",
+                "description": "調整播放效果和畫面標註，預覽與匯出影片會同步更新。",
+                "playback": "播放效果",
+                "overlays": "畫面標註",
+                "lineInformation": "路線資訊",
+                "showYear": "顯示年份",
+                "showYearHint": "在影片左上角顯示目前路線的通車年份。",
+                "showLineName": "標註路線名稱",
+                "showLineNameHint": "在年份下方顯示路線標誌色、中文名稱和英文名稱。",
+                "savedWithProject": "隨時間線專案儲存",
+                "done": "完成",
+                "cameraZoom": "放大倍率",
+                "cameraZoomFull": "全螢幕（Full）"
+            },
+            "lineLabels": {
+                "title": "路線標籤資訊",
+                "description": "設定此時間線影片中的路線名稱、標誌色與通車日期。這些標籤資訊僅儲存在目前的 Timeline 專案中。",
+                "empty": "暫無路線資訊。匯入包含路線資訊的 RMP 存檔後，即可設定影片路線標籤。",
+                "color": "標籤標誌色",
+                "invalidColor": "請輸入有效的十六進位顏色，例如 #1677ff。",
+                "reset": "還原匯入的路線資訊",
+                "resetHint": "將此路線的標籤還原為匯入時的 RMP 路線資訊。",
+                "saved": "修改會儲存在目前的 Timeline 專案中，並同時套用於預覽與匯出。"
+            },
+            "rmpImport": {
+                "title": "匯入 RMP 資料",
+                "applyLineInfo": "依路線資訊自動填入時間線",
+                "description": "依通車日期排列路線，並從設定的起點向終點依序繪製。未填寫通車日期的路線排在最後。",
+                "summary": "{{lines}} 條路線 · {{nodes}} 個節點 · {{edges}} 條線段",
+                "unavailable": "暫無可用的路線資訊。你仍可匯入地圖並手動編輯時間線。",
+                "replaceTrack": "此操作會重新產生視覺軌道，保留音訊片段和播放設定。",
+                "syncSummary": "地圖變更：節點 +{{addedNodes}}/−{{removedNodes}}，線段 +{{addedEdges}}/−{{removedEdges}}。將移除 {{removedEntries}} 個失效時間線項目。"
+            },
+            "playbackPosition": "播放進度",
+            "preparingPreview": "正在準備影片預覽…",
+            "previewFailed": "預覽載入失敗",
+            "audioDuration": "資源時長：{{duration}} 秒",
+            "audioTiming": "編輯音樂時間",
+            "retryPreview": "重新載入"
         },
         "mapToggle": {
             "show": "顯示地理地圖",
@@ -993,7 +1035,6 @@
                 "title": "匯出影片",
                 "groups": {
                     "output": "輸出設定",
-                    "viewport": "視角設定",
                     "rendering": "渲染設定",
                     "sharing": "分享與授權"
                 },
@@ -1008,8 +1049,6 @@
                     "4k": "4K（3840×2160）"
                 },
                 "quality": "影片品質",
-                "currentScale": "目前視角放大倍率（全圖 = 100%）",
-                "fullscreenScale": "全螢幕視角放大倍率（全圖 = 100%）",
                 "autoChangeStationType": "自動切換基本車站與轉乘車站",
                 "autoChangeStationTypeHint": "開啟後，將根據影片中目前已顯示的線路自動調整以下支援的轉乘車站：{{stations}}。",
                 "autoChangeStationTypeWarning": "如果影片中的車站名稱位置或轉乘資訊與目前地圖不一致，請關閉「自動切換基本車站與轉乘車站」，以完全按照地圖目前狀態渲染車站。",
@@ -1245,7 +1284,6 @@
             "zulipContent": "加入我們的 Zulip 社群！"
         }
     },
-
     "contextMenu": {
         "refresh": "重新整理",
         "cut": "剪下",
@@ -1264,7 +1302,6 @@
         "flipDiagonal135": "沿135°線翻轉",
         "reconcile": "合併線段"
     },
-
     "clipboard": {
         "errors": {
             "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
@@ -1272,7 +1309,6 @@
             "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
         }
     },
-
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
     "map": {
         "loading": "正在載入地圖",

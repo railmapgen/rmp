@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import { describe, expect, it } from 'vitest';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes } from '../constants/constants';
+import { describe, expect, it, vi } from 'vitest';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
 import { StationType } from '../constants/stations';
 import { TimelineElementEntry, TimelineEntry } from '../constants/timeline';
 import { createVideoTimelinePlayback } from './video-export-timeline';
@@ -49,6 +49,94 @@ const playback = (track: TimelineEntry[], speed = 1) =>
     );
 
 describe('authored video timeline playback', () => {
+    it('queries focus independently with the same results for arbitrary forward and backward seeks', () => {
+        const animation = playback([
+            { ...node, id: 'absent-node-exit', refId: 'stn_c', phase: 'exit' },
+            { ...edge, id: 'absent-edge-exit', refId: 'line_bc', phase: 'exit', showAnimation: false },
+            node,
+            edge,
+            { ...node, id: 'node-b', refId: 'stn_b', showAnimation: false },
+            { id: 'pause-before-line', kind: 'pause', position: 'before', duration: 0.17 },
+            { ...edge, id: 'edge-bc', refId: 'line_bc' },
+            keyframe('moved-a', 140, 30),
+            { ...edge, id: 'edge-bc-exit', refId: 'line_bc', phase: 'exit' },
+            { ...edge, id: 'duplicate-exit', refId: 'line_bc', phase: 'exit' },
+            { ...node, id: 'node-b-exit', refId: 'stn_b', phase: 'exit', showAnimation: false },
+            { id: 'pause-after-exit', kind: 'pause', position: 'after', duration: 0.4 },
+            { ...node, id: 'node-b-reentry', refId: 'stn_b' },
+            { ...edge, id: 'edge-bc-reentry', refId: 'line_bc', showAnimation: false },
+            { ...edge, id: 'edge-bc-fast-exit', refId: 'line_bc', phase: 'exit', showAnimation: false },
+        ]);
+        let seed = 71;
+        const random = () => {
+            seed = (seed * 1664525 + 1013904223) >>> 0;
+            return seed / 0x100000000;
+        };
+        const times = [
+            -1,
+            0,
+            Infinity,
+            NaN,
+            ...animation.cursorTimes.flatMap(time => [time - 1e-8, time, time + 1e-8]),
+            ...Array.from({ length: 200 }, () => random() * (animation.duration + 2) - 1),
+        ];
+        for (const time of times) expect(animation.cameraFocusAt(time)).toEqual(animation.frameAt(time).focus);
+        // Pure queries cannot expose a mutable focus object retained by future calls.
+        const focus = animation.cameraFocusAt(animation.duration);
+        if (focus.kind === 'node') focus.id = 'stn_changed' as NodeId;
+        else if (focus.kind === 'edge') focus.id = 'line_changed';
+        expect(animation.cameraFocusAt(animation.duration)).toEqual(animation.frameAt(animation.duration).focus);
+    });
+
+    it('keeps absent and repeated exits from becoming a camera focus', () => {
+        const absent = playback([
+            { ...node, phase: 'exit' },
+            { ...edge, phase: 'exit', showAnimation: false },
+        ]);
+        expect(absent.cameraFocusAt(0)).toEqual({ kind: 'none' });
+        expect(absent.cameraFocusAt(absent.duration + 1)).toEqual({ kind: 'none' });
+        const repeated = playback([
+            edge,
+            { ...edge, id: 'valid-exit', phase: 'exit' },
+            { ...node, id: 'next-focus', refId: 'stn_b' },
+            { ...edge, id: 'ineligible-exit', phase: 'exit' },
+        ]);
+        expect(repeated.cameraFocusAt(repeated.duration)).toEqual({ kind: 'node', id: 'stn_b' });
+    });
+
+    it('binary-searches long position histories and preserves hold, same-time and origin behavior', () => {
+        const graph = makeGraph();
+        const track: TimelineEntry[] = [keyframe('zero', 0, 0), keyframe('same-zero', 10, -10)];
+        for (let index = 1; index <= 512; index++) {
+            track.push({ id: `pause-${index}`, kind: 'pause', position: 'after', duration: 1 });
+            track.push(keyframe(`move-${index}`, index * 10 + 10, -index * 10 - 10));
+        }
+        track.push({ id: 'final-hold', kind: 'pause', position: 'after', duration: 3 });
+        const animation = createVideoTimelinePlayback(graph, { version: 1, track }, new Map(), new Map(), {
+            fps: 30,
+            drawingSpeed: 100,
+            nodeSeconds: 0.2,
+        });
+        const readGraph = vi.spyOn(graph, 'getNodeAttributes');
+        const times = [500.75, 0, 20.5, 512, 100.125, -1, 515, 512.8, 300.1, 0.25, 700, NaN];
+        for (const time of times) {
+            const value = Number.isNaN(time) ? 512 : Math.max(0, Math.min(512, time));
+            expect(animation.positionAt('stn_a', time)).toEqual({
+                x: expect.closeTo(time < 0 ? 0 : value * 10 + 10),
+                y: expect.closeTo(time < 0 ? 0 : -value * 10 - 10),
+            });
+            expect(animation.positionAt('stn_a', time)).toEqual(animation.frameAt(time).positions.get('stn_a'));
+        }
+        expect(animation.positionAt('stn_c', 300)).toEqual({ x: 400, y: 0 });
+        const position = animation.positionAt('stn_a', 20);
+        position.x = -999;
+        expect(animation.positionAt('stn_a', 20).x).toBe(210);
+        // Camera endpoint queries use the captured origin, not graph lookups or copies.
+        expect(readGraph).not.toHaveBeenCalled();
+        readGraph.mockRestore();
+        expect(() => animation.positionAt('stn_missing', 0)).toThrow();
+    });
+
     it('reports the video time at every insertion cursor for audio placement', () => {
         const animation = playback([
             node,

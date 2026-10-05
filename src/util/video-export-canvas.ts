@@ -8,9 +8,10 @@ export const createVideoExportCanvas = (
     mapEnabled: boolean,
     mapStyle: MapStyle,
     viewport: LiveViewport,
-    size: { width: number; height: number }
+    size: { width: number; height: number },
+    preferEditorCanvas = true
 ) => {
-    const editorCanvas = document.querySelector<SVGSVGElement>('svg#canvas');
+    const editorCanvas = preferEditorCanvas ? document.querySelector<SVGSVGElement>('svg#canvas') : null;
     if (editorCanvas) return { canvas: editorCanvas, renderGeometry: false, dispose: () => {} };
 
     const namespace = 'http://www.w3.org/2000/svg';

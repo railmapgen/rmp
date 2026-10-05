@@ -10,13 +10,18 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdAudiotrack } from 'react-icons/md';
+import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdAudiotrack, MdLabel } from 'react-icons/md';
 import { nanoid } from 'nanoid';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry } from '../../constants/timeline';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
 import { replaceTimeline, setCursor, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
-import { insertKeyframeEntry, insertTimelineExitEntry, insertTimelinePause } from '../../util/timeline';
+import {
+    insertKeyframeEntry,
+    insertTimelineExitEntry,
+    insertTimelinePause,
+    insertTimelineLabel,
+} from '../../util/timeline';
 
 export default function TimelineActions() {
     const { t } = useTranslation();
@@ -131,6 +136,21 @@ export default function TimelineActions() {
                     <PopoverContent width="auto">
                         <PopoverBody p={1}>
                             <VStack align="stretch" spacing={0} minW="240px">
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdLabel />}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        dispatch(
+                                            replaceTimeline(insertTimelineLabel(timeline, 'Label', timelineCursor))
+                                        );
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertLabel')}
+                                </Button>
                                 <Button
                                     size="sm"
                                     justifyContent="flex-start"

@@ -1,163 +1,143 @@
-import { Alert, AlertIcon, Box, CloseButton, Text, Tooltip } from '@chakra-ui/react';
+import {
+    Alert,
+    AlertIcon,
+    Box,
+    CloseButton,
+    FormControl,
+    FormLabel,
+    HStack,
+    IconButton,
+    NumberInput,
+    NumberInputField,
+    Popover,
+    PopoverBody,
+    PopoverContent,
+    PopoverTrigger,
+    Portal,
+    Text,
+    Tooltip,
+} from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { MdTune } from 'react-icons/md';
+import { nanoid } from 'nanoid';
 import { TimelineAudioEntry, TimelineDocument } from '../../constants/timeline';
 import { useOptionalTimelineProjectContext } from '../../timeline/timeline-project-context';
+import { formatTimelineTime, getTimelineAudioRange, TimelinePlaybackTiming } from '../../util/timeline-playback';
+import { TimelineTrackTimeScale } from './timeline-track-layout';
+import { useTimelineClipDrag } from './use-timeline-clip-drag';
 
 interface TimelineAudioTrackProps {
     document: TimelineDocument;
     totalWidth: number;
+    timing?: TimelinePlaybackTiming;
+    timeScale?: TimelineTrackTimeScale;
     onChange: (document: TimelineDocument) => void;
 }
 
-const AUDIO_ROW_HEIGHT = 24;
-const AUDIO_HANDLE_WIDTH = 7;
-const AUDIO_COLOR = '#3182CE';
-const CURSOR_WIDTH = 32;
-const CLIP_WIDTH = 220;
-const KEYFRAME_SLOT_WIDTH = 24;
+const AUDIO_ROW_HEIGHT = 28;
+const AUDIO_HANDLE_WIDTH = 9;
 const getMissingAudio = async () => undefined;
 const ignoreAudioSave = async () => undefined;
-
-const getEntryWidth = (entry: TimelineDocument['track'][number]) =>
-    entry.kind === 'keyframe' ? KEYFRAME_SLOT_WIDTH : CLIP_WIDTH;
-
-/**
- * Centre of every insertion cursor in the shared timeline coordinate space.
- * Card edges snap to these points so an audio clip always starts/ends exactly
- * where a visual entry is about to enter the frame.
- */
-const getCursorCenters = (document: TimelineDocument) => {
-    const centers: number[] = [];
-    let left = 0;
-    for (let index = 0; index <= document.track.length; index++) {
-        centers.push(left + CURSOR_WIDTH / 2);
-        if (index < document.track.length) {
-            left += CURSOR_WIDTH + getEntryWidth(document.track[index]);
-        }
-    }
-    return centers;
-};
-
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
 
-export default function TimelineAudioTrack({ document, totalWidth, onChange }: TimelineAudioTrackProps) {
+export default function TimelineAudioTrack({
+    document,
+    totalWidth,
+    timing,
+    timeScale,
+    onChange,
+}: TimelineAudioTrackProps) {
     const { t } = useTranslation();
     const projectContext = useOptionalTimelineProjectContext();
     const getAudio = projectContext?.getAudio ?? getMissingAudio;
     const saveAudio = projectContext?.saveAudio ?? ignoreAudioSave;
     const entries = document.audioTrack ?? [];
     const [missing, setMissing] = React.useState<Set<string>>(new Set());
+    const [durations, setDurations] = React.useState<Record<string, number>>({});
     const inputRef = React.useRef<HTMLInputElement>(null);
     const restoreRef = React.useRef<TimelineAudioEntry | undefined>(undefined);
-    const dragRef = React.useRef<
-        | {
-              entryId: string;
-              mode: 'move' | 'start' | 'end';
-              pointerId: number;
-              originSlot: number;
-              originStart: number;
-              originEnd: number;
-          }
-        | undefined
-    >(undefined);
-    const laneRef = React.useRef<HTMLDivElement>(null);
-    const cursorCenters = React.useMemo(() => getCursorCenters(document), [document.track]);
-    const maxSlot = Math.max(0, cursorCenters.length - 1);
+    const duration = timing?.duration ?? 0;
+    const cursorTimes = timing?.cursorTimes ?? [0];
+    const resourceKey = JSON.stringify(entries.map(entry => [entry.id, entry.blobId]));
 
     React.useEffect(() => {
+        if (entries.length === 0) return;
         let active = true;
-        Promise.all(entries.map(async entry => [entry.id, !(await getAudio(entry.blobId))] as const)).then(
-            result => active && setMissing(new Set(result.filter(([, value]) => value).map(([id]) => id)))
-        );
+        const urls: string[] = [];
+        const players: HTMLAudioElement[] = [];
+        void Promise.allSettled(
+            entries.map(async entry => {
+                const blob = await getAudio(entry.blobId);
+                if (!active) return;
+                if (!blob) return entry.id;
+                const url = URL.createObjectURL(blob);
+                urls.push(url);
+                const audio = new Audio(url);
+                players.push(audio);
+                audio.preload = 'metadata';
+                audio.onloadedmetadata = () => {
+                    if (active && Number.isFinite(audio.duration))
+                        setDurations(current => ({ ...current, [entry.id]: audio.duration }));
+                };
+            })
+        )
+            .then(result => {
+                if (!active) return;
+                setMissing(
+                    new Set(
+                        result.flatMap((item, index) =>
+                            item.status === 'rejected' ? [entries[index].id] : item.value ? [item.value] : []
+                        )
+                    )
+                );
+            })
+            .catch(() => {});
         return () => {
             active = false;
+            players.forEach(audio => {
+                audio.removeAttribute('src');
+                audio.load();
+            });
+            urls.forEach(url => URL.revokeObjectURL(url));
         };
-    }, [document.audioTrack, getAudio]);
+    }, [resourceKey, getAudio]);
 
-    const updateEntry = (entryId: string, startSlot: number, endSlot: number) => {
+    const updateEntry = (entryId: string, start: number, end: number, precision = 2) => {
+        const factor = 10 ** precision;
+        const startTime = clamp(Math.round(start * factor) / factor, 0, duration);
+        const endTime = clamp(Math.round(end * factor) / factor, startTime, duration);
+        const entry = entries.find(item => item.id === entryId);
+        if (!entry) return;
+        const current = getTimelineAudioRange(entry, cursorTimes, duration);
+        if (current.start === startTime && current.end === endTime) return;
         onChange({
             ...document,
-            audioTrack: entries.map(item => (item.id === entryId ? { ...item, startSlot, endSlot } : item)),
+            audioTrack: entries.map(item => (item.id === entryId ? { ...item, startTime, endTime } : item)),
         });
     };
-
-    const getSlot = (clientX: number) => {
-        const bounds = laneRef.current?.getBoundingClientRect();
-        if (!bounds) return 0;
-        const x = clientX - bounds.left;
-        let closestSlot = 0;
-        let closestDistance = Math.abs(cursorCenters[0] - x);
-        cursorCenters.forEach((center, index) => {
-            const distance = Math.abs(center - x);
-            if (distance < closestDistance) {
-                closestSlot = index;
-                closestDistance = distance;
-            }
-        });
-        return closestSlot;
-    };
-
-    const handlePointerDown = (
-        e: React.PointerEvent<HTMLDivElement>,
-        entry: TimelineAudioEntry,
-        mode: 'move' | 'start' | 'end'
-    ) => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        e.currentTarget.setPointerCapture(e.pointerId);
-        dragRef.current = {
-            entryId: entry.id,
-            mode,
-            pointerId: e.pointerId,
-            originSlot: getSlot(e.clientX),
-            originStart: clamp(Math.round(entry.startSlot), 0, maxSlot),
-            originEnd: clamp(Math.round(entry.endSlot), 0, maxSlot),
-        };
-    };
-
-    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-        const drag = dragRef.current;
-        if (!drag || drag.pointerId !== e.pointerId) return;
-        const delta = getSlot(e.clientX) - drag.originSlot;
-        if (delta === 0) return;
-
-        if (drag.mode === 'move') {
-            const span = Math.max(1, drag.originEnd - drag.originStart);
-            const start = clamp(drag.originStart + delta, 0, maxSlot - span);
-            updateEntry(drag.entryId, start, start + span);
-            return;
-        }
-        if (drag.mode === 'start') {
-            const start = clamp(drag.originStart + delta, 0, drag.originEnd - 1);
-            updateEntry(drag.entryId, start, drag.originEnd);
-            return;
-        }
-        const end = clamp(drag.originEnd + delta, drag.originStart + 1, maxSlot);
-        updateEntry(drag.entryId, drag.originStart, end);
-    };
-
-    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-        if (dragRef.current?.pointerId !== e.pointerId) return;
-        dragRef.current = undefined;
-        if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
-    };
-
-    const remove = async (entry: TimelineAudioEntry) => {
-        onChange({ ...document, audioTrack: entries.filter(item => item.id !== entry.id) });
-    };
-
+    const { laneRef, draft, dragRef, handlePointerDown, handlePointerMove, finishDrag } = useTimelineClipDrag({
+        document,
+        totalWidth,
+        timing,
+        timeScale,
+        onCommit: (entryId, start, end) => updateEntry(entryId, start, end, 6),
+    });
     const restore = (entry: TimelineAudioEntry) => {
         restoreRef.current = entry;
         inputRef.current?.click();
     };
-
     const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         event.target.value = '';
         const entry = restoreRef.current;
         if (!file || !entry) return;
-        await saveAudio(entry.blobId, file, file.name);
+        const blobId = `audio_${nanoid(12)}`;
+        await saveAudio(blobId, file, file.name);
+        onChange({
+            ...document,
+            audioTrack: entries.map(item => (item.id === entry.id ? { ...item, blobId, name: file.name } : item)),
+        });
         setMissing(current => new Set([...current].filter(id => id !== entry.id)));
     };
 
@@ -167,103 +147,211 @@ export default function TimelineAudioTrack({ document, totalWidth, onChange }: T
             position="relative"
             width={`${totalWidth}px`}
             minW="100%"
-            minH={entries.length ? `${entries.length * AUDIO_ROW_HEIGHT + 28}px` : undefined}
+            minH={`${entries.length * AUDIO_ROW_HEIGHT + 28}px`}
             mt={2}
             borderTopWidth="1px"
-            borderColor="gray.200"
+            borderColor="chakra-border-color"
             data-audio-track
+            onPointerDown={event => event.stopPropagation()}
             onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
+            onPointerUp={event => finishDrag(event, true)}
+            onPointerCancel={event => finishDrag(event, false)}
+            onLostPointerCapture={event => finishDrag(event, false)}
         >
-            <Text fontSize="xs" color="gray.500" height="22px" px={2} pt={1}>
+            <Text fontSize="10px" color="gray.500" height="24px" px={2} pt={1}>
                 {t('header.timelinePage.audioTrack')}
             </Text>
-            {cursorCenters.map((center, index) => (
-                <Box
-                    key={`slot-guide-${index}`}
-                    position="absolute"
-                    left={`${center}px`}
-                    top="22px"
-                    bottom="0"
-                    width="1px"
-                    bg="gray.300"
-                    opacity={0.5}
-                    pointerEvents="none"
-                />
-            ))}
             {entries.map((entry, index) => {
-                const startSlot = clamp(Math.round(entry.startSlot), 0, maxSlot);
-                const endSlot = clamp(Math.round(entry.endSlot), startSlot, maxSlot);
-                const left = cursorCenters[startSlot] ?? CURSOR_WIDTH / 2;
-                const right = cursorCenters[endSlot] ?? left;
-                const width = Math.max(AUDIO_HANDLE_WIDTH * 2, right - left);
+                const { start, end } =
+                    draft?.entryId === entry.id ? draft : getTimelineAudioRange(entry, cursorTimes, duration);
                 const isMissing = missing.has(entry.id);
+                const startPosition = timeScale?.timeToPosition(start);
+                const endPosition = timeScale?.timeToPosition(end);
+                const isCompact =
+                    duration > 0 &&
+                    (endPosition !== undefined && startPosition !== undefined
+                        ? endPosition - startPosition
+                        : ((end - start) / duration) * totalWidth) < 80;
                 return (
-                    <Tooltip key={entry.id} label={isMissing ? t('header.timelinePage.audioMissing') : entry.name}>
+                    <Tooltip
+                        key={entry.id}
+                        label={`${entry.name} · ${formatTimelineTime(start)} – ${formatTimelineTime(end)}`}
+                        isDisabled={draft !== undefined}
+                    >
                         <Box
                             position="absolute"
-                            left={`${left}px`}
-                            top={`${22 + index * AUDIO_ROW_HEIGHT}px`}
-                            width={`${width}px`}
-                            height={`${AUDIO_ROW_HEIGHT - 4}px`}
-                            bg={isMissing ? 'gray.400' : AUDIO_COLOR}
-                            opacity={0.9}
-                            borderRadius="sm"
-                            cursor="grab"
-                            onPointerDown={e => handlePointerDown(e, entry, 'move')}
-                            onClick={() => isMissing && restore(entry)}
+                            left={
+                                startPosition !== undefined
+                                    ? `${startPosition}px`
+                                    : `${duration ? (start / duration) * 100 : 0}%`
+                            }
+                            top={`${24 + index * AUDIO_ROW_HEIGHT}px`}
+                            width={
+                                endPosition !== undefined && startPosition !== undefined
+                                    ? `${endPosition - startPosition}px`
+                                    : `${duration ? ((end - start) / duration) * 100 : 100}%`
+                            }
+                            minW={0}
+                            height="24px"
+                            bg={isMissing ? 'gray.400' : 'blue.500'}
+                            borderRadius="md"
+                            cursor={
+                                draft?.entryId === entry.id && dragRef.current?.mode === 'move' ? 'grabbing' : 'grab'
+                            }
+                            userSelect="none"
+                            style={{ touchAction: 'none' }}
+                            data-audio-clip={entry.id}
                             title={entry.name}
+                            role="group"
+                            onPointerDown={event => handlePointerDown(event, entry, 'move')}
+                            onClick={() => isMissing && restore(entry)}
                         >
                             <Box
                                 position="absolute"
                                 left={0}
                                 top={0}
                                 bottom={0}
-                                width={`${AUDIO_HANDLE_WIDTH}px`}
+                                width={`min(${AUDIO_HANDLE_WIDTH}px, 50%)`}
                                 cursor="ew-resize"
-                                onPointerDown={e => handlePointerDown(e, entry, 'start')}
+                                bg="whiteAlpha.400"
+                                borderLeftRadius="md"
+                                data-audio-handle="start"
+                                onPointerDown={event => handlePointerDown(event, entry, 'start')}
                             />
-                            <Text
-                                fontSize="xs"
-                                color="white"
-                                px={2}
-                                noOfLines={1}
-                                lineHeight={`${AUDIO_ROW_HEIGHT - 4}px`}
-                            >
-                                {entry.name}
-                            </Text>
-                            <CloseButton
+                            <Box width="100%" height="100%" overflow="hidden">
+                                <Text
+                                    fontSize="11px"
+                                    color="white"
+                                    height="100%"
+                                    lineHeight="24px"
+                                    px={3}
+                                    pr={isCompact ? 3 : '60px'}
+                                    overflow="hidden"
+                                    whiteSpace="nowrap"
+                                    textOverflow="ellipsis"
+                                >
+                                    {entry.name}
+                                </Text>
+                            </Box>
+                            <HStack
+                                spacing={0}
                                 position="absolute"
-                                right={0}
-                                top={0}
-                                size="xs"
-                                color="white"
-                                onClick={e => {
-                                    e.stopPropagation();
-                                    void remove(entry);
-                                }}
-                            />
+                                right={isCompact ? 0 : `${AUDIO_HANDLE_WIDTH}px`}
+                                top={isCompact ? '-22px' : 0}
+                                height="22px"
+                                borderRadius="sm"
+                                bg={isCompact ? 'blue.500' : undefined}
+                                opacity={isCompact ? 0 : 1}
+                                _groupHover={{ opacity: 1 }}
+                                _groupFocusWithin={{ opacity: 1 }}
+                            >
+                                <Popover placement="top">
+                                    <PopoverTrigger>
+                                        <IconButton
+                                            size="xs"
+                                            variant="ghost"
+                                            color="white"
+                                            minW="22px"
+                                            height="22px"
+                                            icon={<MdTune />}
+                                            aria-label={`${t('header.timelinePage.audioTiming')}: ${entry.name}`}
+                                            onClick={event => event.stopPropagation()}
+                                        />
+                                    </PopoverTrigger>
+                                    <Portal>
+                                        <PopoverContent
+                                            width="280px"
+                                            onPointerDown={event => event.stopPropagation()}
+                                            onClick={event => event.stopPropagation()}
+                                        >
+                                            <PopoverBody>
+                                                <Text fontSize="sm" fontWeight="semibold" mb={2} noOfLines={1}>
+                                                    {entry.name}
+                                                </Text>
+                                                <FormControl mb={2}>
+                                                    <FormLabel fontSize="xs">
+                                                        {t('header.timelinePage.audioStart')}
+                                                    </FormLabel>
+                                                    <NumberInput
+                                                        size="sm"
+                                                        value={start}
+                                                        min={0}
+                                                        max={end}
+                                                        step={0.1}
+                                                        precision={2}
+                                                        onChange={(_value, number) =>
+                                                            Number.isFinite(number) &&
+                                                            updateEntry(entry.id, number, end)
+                                                        }
+                                                    >
+                                                        <NumberInputField
+                                                            aria-label={`${t('header.timelinePage.audioStart')}: ${entry.name}`}
+                                                        />
+                                                    </NumberInput>
+                                                </FormControl>
+                                                <FormControl>
+                                                    <FormLabel fontSize="xs">
+                                                        {t('header.timelinePage.audioEnd')}
+                                                    </FormLabel>
+                                                    <NumberInput
+                                                        size="sm"
+                                                        value={end}
+                                                        min={start}
+                                                        max={duration}
+                                                        step={0.1}
+                                                        precision={2}
+                                                        onChange={(_value, number) =>
+                                                            Number.isFinite(number) &&
+                                                            updateEntry(entry.id, start, number)
+                                                        }
+                                                    >
+                                                        <NumberInputField
+                                                            aria-label={`${t('header.timelinePage.audioEnd')}: ${entry.name}`}
+                                                        />
+                                                    </NumberInput>
+                                                </FormControl>
+                                                {durations[entry.id] !== undefined && (
+                                                    <Text fontSize="xs" color="gray.500" mt={2}>
+                                                        {t('header.timelinePage.audioDuration', {
+                                                            duration: durations[entry.id].toFixed(2),
+                                                        })}
+                                                    </Text>
+                                                )}
+                                            </PopoverBody>
+                                        </PopoverContent>
+                                    </Portal>
+                                </Popover>
+                                <CloseButton
+                                    size="xs"
+                                    color="white"
+                                    aria-label={`${t('header.timelinePage.deleteEntry')}: ${entry.name}`}
+                                    onClick={event => {
+                                        event.stopPropagation();
+                                        onChange({
+                                            ...document,
+                                            audioTrack: entries.filter(item => item.id !== entry.id),
+                                        });
+                                    }}
+                                />
+                            </HStack>
                             <Box
                                 position="absolute"
                                 right={0}
                                 top={0}
                                 bottom={0}
-                                width={`${AUDIO_HANDLE_WIDTH}px`}
+                                width={`min(${AUDIO_HANDLE_WIDTH}px, 50%)`}
                                 cursor="ew-resize"
-                                onPointerDown={e => handlePointerDown(e, entry, 'end')}
+                                bg="whiteAlpha.400"
+                                borderRightRadius="md"
+                                data-audio-handle="end"
+                                onPointerDown={event => handlePointerDown(event, entry, 'end')}
                             />
                         </Box>
                     </Tooltip>
                 );
             })}
             {entries.some(entry => missing.has(entry.id)) && (
-                <Alert
-                    status="error"
-                    size="sm"
-                    position="absolute"
-                    left="16px"
-                    top={`${22 + entries.length * AUDIO_ROW_HEIGHT}px`}
-                >
+                <Alert status="error" mt={`${24 + entries.length * AUDIO_ROW_HEIGHT}px`}>
                     <AlertIcon />
                     {t('header.timelinePage.audioMissing')}
                 </Alert>

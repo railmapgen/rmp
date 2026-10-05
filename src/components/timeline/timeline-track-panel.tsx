@@ -1,7 +1,23 @@
-import { Badge, Box, Button, Flex, HStack, IconButton, Text, Tooltip, VStack, useToast } from '@chakra-ui/react';
+import {
+    Badge,
+    Box,
+    Button,
+    Flex,
+    HStack,
+    IconButton,
+    Slider,
+    SliderFilledTrack,
+    SliderThumb,
+    SliderTrack,
+    Text,
+    Tooltip,
+    VStack,
+    useToast,
+} from '@chakra-ui/react';
 import React from 'react';
+import useEvent from 'react-use-event-hook';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
+import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSettings, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry, isPauseEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
 import type { TimelineGraph } from '../../timeline/timeline-project-context';
@@ -16,7 +32,10 @@ import {
     moveTimelineEntry,
     removeTimelineEntry,
 } from '../../util/timeline';
+import { formatTimelineTime, TimelinePlaybackTiming } from '../../util/timeline-playback';
 import TimelineTrack from './timeline-track';
+import TimelineSettingsModal from './timeline-settings-modal';
+import TimelineLineInfoModal from './timeline-line-info-modal';
 
 const NARROW_SCREEN_QUERY = '@media (width < 600px)';
 
@@ -34,6 +53,11 @@ interface TimelineTrackPanelProps {
     onDocumentChange: (document: TimelineDocument) => void;
     graph?: TimelineGraph;
     insertionIndex?: number;
+    timing?: TimelinePlaybackTiming;
+    playbackTime?: number;
+    isPlaying?: boolean;
+    onSeek?: (time: number) => void;
+    onTogglePlayback?: () => void;
 }
 
 export default function TimelineTrackPanel({
@@ -44,13 +68,24 @@ export default function TimelineTrackPanel({
     missingEdgeCount,
     isCoverageComplete,
     isMissingHighlightShown,
-    onToggleMissingHighlight,
-    onSelectEntry,
-    onCursorChange,
-    onDocumentChange,
+    onToggleMissingHighlight: onToggleMissingHighlightProp,
+    onSelectEntry: onSelectEntryProp,
+    onCursorChange: onCursorChangeProp,
+    onDocumentChange: onDocumentChangeProp,
     graph: graphProp,
     insertionIndex = 0,
+    timing,
+    playbackTime = 0,
+    isPlaying = false,
+    onSeek: onSeekProp,
+    onTogglePlayback: onTogglePlaybackProp,
 }: TimelineTrackPanelProps) {
+    const onToggleMissingHighlight = useEvent(onToggleMissingHighlightProp);
+    const onSelectEntry = useEvent(onSelectEntryProp);
+    const onCursorChange = useEvent(onCursorChangeProp);
+    const onDocumentChange = useEvent(onDocumentChangeProp);
+    const onSeek = useEvent((time: number) => onSeekProp?.(time));
+    const onTogglePlayback = useEvent(() => onTogglePlaybackProp?.());
     const renderContext = useSvgRenderContext();
     const graph = graphProp ?? renderContext.graph;
     const { t } = useTranslation();
@@ -63,25 +98,11 @@ export default function TimelineTrackPanel({
         startNode: NodeId;
         themeStr: string;
     } | null>(null);
-    const [isPlaying, setIsPlaying] = React.useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [isLineInformationOpen, setIsLineInformationOpen] = React.useState(false);
     const [selectedEntryIds, setSelectedEntryIds] = React.useState<Set<string>>(() =>
         selectedEntryId ? new Set([selectedEntryId]) : new Set()
     );
-
-    React.useEffect(() => {
-        if (!isPlaying) return;
-
-        const timer = window.setInterval(() => {
-            const next = insertionIndex + 1;
-            if (next > draftDocument.track.length) {
-                setIsPlaying(false);
-                return;
-            }
-            onCursorChange(next);
-        }, 300);
-
-        return () => window.clearInterval(timer);
-    }, [draftDocument.track.length, insertionIndex, isPlaying, onCursorChange]);
 
     React.useEffect(() => {
         setDraftDocument(document);
@@ -169,9 +190,9 @@ export default function TimelineTrackPanel({
             return getAdjacentLineColors(graph, selectedEntry.refId as NodeId);
         }
         return [];
-    }, [graph, selectedEntry]);
+    }, [graph, renderContext.graphRefresh, selectedEntry]);
 
-    const handleAddSelected = () => {
+    const handleAddSelected = useEvent(() => {
         if (!selectedId) return;
         const nextDocument = insertTimelineEntry(draftDocument, selectedId, insertionIndex);
         if (nextDocument === draftDocument) return;
@@ -179,9 +200,9 @@ export default function TimelineTrackPanel({
         onCursorChange(Math.min(insertionIndex, draftDocument.track.length) + 1);
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
-    };
+    });
 
-    const handleRemoveEntries = (entryId: string) => {
+    const handleRemoveEntries = useEvent((entryId: string) => {
         const entryIds = selectedEntryIds.has(entryId) && selectedEntryIds.size > 1 ? [...selectedEntryIds] : [entryId];
         const nextDocument = entryIds.reduce((current, id) => removeTimelineEntry(current, id), draftDocument);
         if (nextDocument === draftDocument) return;
@@ -194,8 +215,8 @@ export default function TimelineTrackPanel({
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
         setSelectedEntryIds(new Set());
-    };
-    const handleToggleAnimation = (entryId: string) => {
+    });
+    const handleToggleAnimation = useEvent((entryId: string) => {
         const entryIds =
             selectedEntryIds.has(entryId) && selectedEntryIds.size > 1 ? selectedEntryIds : new Set([entryId]);
         const nextDocument: TimelineDocument = {
@@ -208,8 +229,8 @@ export default function TimelineTrackPanel({
         };
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
-    };
-    const handlePauseDurationChange = (entryId: string, duration: number) => {
+    });
+    const handlePauseDurationChange = useEvent((entryId: string, duration: number) => {
         const nextDocument: TimelineDocument = {
             ...draftDocument,
             track: draftDocument.track.map(entry =>
@@ -218,8 +239,8 @@ export default function TimelineTrackPanel({
         };
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
-    };
-    const handleReverseSelectedEntries = () => {
+    });
+    const handleReverseSelectedEntries = useEvent(() => {
         if (selectedEntryIds.size < 2) return;
         const selectedIndexes = draftDocument.track
             .map((entry, index) => (selectedEntryIds.has(entry.id) ? index : -1))
@@ -234,14 +255,14 @@ export default function TimelineTrackPanel({
         const nextDocument = { ...draftDocument, track };
         setDraftDocument(nextDocument);
         onDocumentChange(nextDocument);
-    };
+    });
 
-    const handleDragStart = (entryId: string) => {
+    const handleDragStart = useEvent((entryId: string) => {
         dragEntryIdRef.current = entryId;
         dragDocumentRef.current = draftDocument;
-    };
+    });
 
-    const handleDragOver = (index: number, e: React.DragEvent<HTMLDivElement>) => {
+    const handleDragOver = useEvent((index: number, e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         const dragEntryId = dragEntryIdRef.current;
         if (!dragEntryId) return;
@@ -252,18 +273,18 @@ export default function TimelineTrackPanel({
         const nextDocument = moveTimelineEntry(dragDocumentRef.current, fromIndex, index);
         dragDocumentRef.current = nextDocument;
         setDraftDocument(nextDocument);
-    };
+    });
 
-    const handleDragEnd = () => {
+    const handleDragEnd = useEvent(() => {
         dragEntryIdRef.current = null;
         if (dragDocumentRef.current !== document) {
             onDocumentChange(dragDocumentRef.current);
         }
-    };
+    });
 
-    return (
-        <Flex direction="column" height="100%" p={4} gap={4}>
-            {pathMode ? (
+    const toolbar = React.useMemo(
+        () =>
+            pathMode ? (
                 <Box p={3} bg="blue.50" borderWidth="1px" borderColor="blue.200" borderRadius="md">
                     <Flex justify="space-between" align="center" gap={3}>
                         <Flex align="center" gap={3} flex={1} wrap="wrap">
@@ -286,20 +307,22 @@ export default function TimelineTrackPanel({
                         sx={{ [NARROW_SCREEN_QUERY]: { flexBasis: '100%' } }}
                     >
                         <HStack spacing={2}>
-                            <Text fontWeight="bold">{t('header.timelinePage.trackTitle')}</Text>
+                            <Text fontSize="sm" fontWeight="bold">
+                                {t('header.timelinePage.trackTitle')}
+                            </Text>
                             <Badge>{draftDocument.track.length}</Badge>
                             <Text fontSize="xs" color="blue.600" noOfLines={1}>
                                 {insertionLabel}
                             </Text>
                         </HStack>
                         {hasSelectedEntry ? (
-                            <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
+                            <Text fontSize="xs" color="gray.500" noOfLines={1} w="full">
                                 {getTimelineEntryTitle(graph, selectedEntry)}
                                 {' · '}
                                 {getTimelineEntrySubtitle(graph, selectedEntry)}
                             </Text>
                         ) : (
-                            <Text fontSize="sm" color="gray.500" noOfLines={1} w="full">
+                            <Text fontSize="xs" color="gray.500" noOfLines={1} w="full">
                                 {t('header.timelinePage.selectHint')}
                             </Text>
                         )}
@@ -359,7 +382,15 @@ export default function TimelineTrackPanel({
                                 isPlaying ? t('header.timelinePage.pausePreview') : t('header.timelinePage.playPreview')
                             }
                             icon={isPlaying ? <MdPause size="1.5em" /> : <MdPlayArrow size="1.5em" />}
-                            onClick={() => setIsPlaying(value => !value)}
+                            isDisabled={!timing?.duration}
+                            onClick={onTogglePlayback}
+                        />
+                        <IconButton
+                            size="md"
+                            variant="ghost"
+                            aria-label={t('header.timelinePage.settings.title')}
+                            icon={<MdSettings size="1.3em" />}
+                            onClick={() => setIsSettingsOpen(true)}
                         />
                         <IconButton
                             size="md"
@@ -461,22 +492,83 @@ export default function TimelineTrackPanel({
                         </Tooltip>
                     </HStack>
                 </Flex>
-            )}
+            ),
+        [
+            pathMode,
+            draftDocument.track.length,
+            insertionLabel,
+            hasSelectedEntry,
+            selectedEntry,
+            graph,
+            renderContext.graphRefresh,
+            isCoverageComplete,
+            missingNodeCount,
+            missingEdgeCount,
+            isMissingHighlightShown,
+            isPlaying,
+            timing?.duration,
+            insertionIndex,
+            adjacentLineColors,
+            isDuplicate,
+            t,
+            onToggleMissingHighlight,
+            onCursorChange,
+            onTogglePlayback,
+            handleAddSelected,
+        ]
+    );
+
+    return (
+        <Flex direction="column" height="100%" p={3} gap={3}>
+            {toolbar}
+
+            <HStack spacing={4} flexShrink={0} px={2}>
+                <Text fontSize="xs" color="gray.500" sx={{ fontVariantNumeric: 'tabular-nums' }} minW="58px">
+                    {formatTimelineTime(playbackTime)}
+                </Text>
+                <Slider
+                    aria-label={t('header.timelinePage.playbackPosition')}
+                    value={playbackTime}
+                    min={0}
+                    max={timing?.duration || 1}
+                    step={0.01}
+                    isDisabled={!timing?.duration}
+                    onChange={onSeek}
+                    colorScheme="purple"
+                >
+                    <SliderTrack>
+                        <SliderFilledTrack />
+                    </SliderTrack>
+                    <SliderThumb boxSize={3} />
+                </Slider>
+                <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    sx={{ fontVariantNumeric: 'tabular-nums' }}
+                    minW="58px"
+                    textAlign="right"
+                >
+                    {formatTimelineTime(timing?.duration ?? 0)}
+                </Text>
+            </HStack>
 
             <Box
                 flex="1"
                 minH={0}
                 borderWidth="1px"
                 borderRadius="xl"
-                px={4}
-                py={4}
+                px={2}
+                py={2}
                 overflow="hidden"
                 bg="blackAlpha.50"
             >
-                {draftDocument.track.length > 0 || (draftDocument.audioTrack?.length ?? 0) > 0 ? (
+                {draftDocument.track.length > 0 ||
+                (draftDocument.audioTrack?.length ?? 0) > 0 ||
+                (draftDocument.labelTrack?.length ?? 0) > 0 ? (
                     <TimelineTrack
                         document={draftDocument}
                         graph={graph}
+                        graphRefresh={renderContext.graphRefresh}
                         insertionIndex={insertionIndex}
                         onSelectEntry={entry => {
                             setSelectedEntryIds(new Set([entry.id]));
@@ -498,6 +590,9 @@ export default function TimelineTrackPanel({
                             setDraftDocument(next);
                             onDocumentChange(next);
                         }}
+                        timing={timing}
+                        playbackTime={playbackTime}
+                        onSeek={onSeek}
                     />
                 ) : (
                     <Flex height="100%" align="center" justify="center" color="gray.500">
@@ -505,6 +600,16 @@ export default function TimelineTrackPanel({
                     </Flex>
                 )}
             </Box>
+            {isSettingsOpen && (
+                <TimelineSettingsModal
+                    document={document}
+                    onDocumentChange={onDocumentChange}
+                    isOpen={isSettingsOpen}
+                    onClose={() => setIsSettingsOpen(false)}
+                    onOpenLineInformation={() => setIsLineInformationOpen(true)}
+                />
+            )}
+            {isLineInformationOpen && <TimelineLineInfoModal isOpen onClose={() => setIsLineInformationOpen(false)} />}
         </Flex>
     );
 }

@@ -8,6 +8,7 @@ import { createEmptyTimelineDocument, TimelineDocument } from '../constants/time
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { blobToBase64 } from '../util/binary';
 import { CURRENT_VERSION } from '../util/save';
+import { createTestLineGraph } from '../test-utils';
 import { timelineProjectDB } from './timeline-project-db';
 import {
     createTimelineProjectFromRmp,
@@ -133,6 +134,29 @@ describe('Timeline project import and sync', () => {
         expect((await timelineProjectDB.listProjects()).some(project => project.name === 'Broken')).toBe(false);
     });
 
+    it('optionally persists a Timeline populated from the imported line information', async () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+        ]);
+        graph.getAttribute('lineDefinitions')![0].exportStartStationId = 'stn_C';
+        const source = makeRmpSave(graph);
+        const empty = await createTimelineProjectFromRmp(source, 'Manual Timeline');
+        const populated = await createTimelineProjectFromRmp(source, 'Automatic Timeline', {
+            applyLineInformation: true,
+        });
+
+        expect(empty.revision.timeline.track).toEqual([]);
+        expect(populated.revision.timeline.track.map(entry => entry.refId)).toEqual([
+            'stn_C',
+            'line_1',
+            'stn_B',
+            'line_0',
+            'stn_A',
+        ]);
+        expect(await timelineProjectDB.getProject(populated.id)).toEqual(populated);
+    });
+
     it('exports and imports a self-contained project with image and audio under a new local id', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('misc_node_image', {
@@ -151,6 +175,24 @@ describe('Timeline project import and sync', () => {
         } as NodeAttributes);
         const timeline: TimelineDocument = {
             ...createEmptyTimelineDocument(),
+            settings: {
+                cameraZoom: 8,
+                speedMultiplier: 1.7,
+                autoChangeStationType: false,
+                showYear: true,
+                showLineName: true,
+            },
+            labelTrack: [
+                {
+                    id: 'label',
+                    kind: 'label',
+                    text: '中文说明\nEnglish <caption>',
+                    startSlot: 0,
+                    endSlot: 1,
+                    startTime: 0.125,
+                    endTime: 8.75,
+                },
+            ],
             audioTrack: [
                 {
                     id: 'audio-entry',
@@ -159,6 +201,8 @@ describe('Timeline project import and sync', () => {
                     name: 'sound.txt',
                     startSlot: 0,
                     endSlot: 0,
+                    startTime: 0.125,
+                    endTime: 8.75,
                 },
             ],
         };
@@ -243,6 +287,17 @@ describe('Timeline project import and sync', () => {
                 { id: 'remove-keyframe', kind: 'keyframe', refId: 'stn_remove', x: 1, y: 2 },
                 { id: 'pause', kind: 'pause', position: 'after', duration: 1 },
             ],
+            labelTrack: [
+                {
+                    id: 'label',
+                    kind: 'label',
+                    text: 'Retained caption',
+                    startSlot: 1,
+                    endSlot: 5,
+                    startTime: 0.125,
+                    endTime: 8.75,
+                },
+            ],
             audioTrack: [
                 {
                     id: 'audio',
@@ -272,6 +327,68 @@ describe('Timeline project import and sync', () => {
         expect(result.revision.mapEnabled).toBe(true);
         expect(result.revision.timeline.track.map(entry => entry.id)).toEqual(['keep', 'pause']);
         expect(result.revision.timeline.audioTrack?.[0]).toMatchObject({ startSlot: 1, endSlot: 2 });
+        expect(result.revision.timeline.labelTrack?.[0]).toMatchObject({
+            startSlot: 1,
+            endSlot: 2,
+            text: 'Retained caption',
+            startTime: 0.125,
+            endTime: 8.75,
+        });
+    });
+
+    it('preserves portable Timeline label overrides only for stable line IDs that survive RMP sync', async () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['C', 'D'],
+            ['E', 'F'],
+        ]);
+        const definitions = graph.getAttribute('lineDefinitions')!;
+        definitions.forEach((line, index) => {
+            line.name = [`导入线路 ${index}`, `Imported ${index}`];
+            line.openingDate = '1990-01-01';
+            line.videoLabel = {
+                name: [`视频线路 ${index}`, `Video ${index}`],
+                lineNumber: `V${index}`,
+                openingDate: '2024-02-29',
+                color: '#0088cc',
+            };
+        });
+        const original = await createTimelineProjectFromRmp(makeRmpSave(graph), 'Custom labels');
+        const portable = await importTimelineProjectFile(await exportTimelineProjectFile(original));
+        expect(portable.revision.graph.attributes.lineDefinitions).toEqual(definitions);
+
+        const replacement = graph.copy();
+        const nextDefinitions = structuredClone(definitions);
+        nextDefinitions.forEach(line => delete line.videoLabel);
+        nextDefinitions[0].name = ['新的铁路名称', 'Updated railway name'];
+        nextDefinitions[0].openingDate = '2000-01-01';
+        // A visually identical line with a new ID must not inherit a Timeline label.
+        nextDefinitions[1].id = 'new-line-identity';
+        replacement.dropNode('stn_E');
+        replacement.dropNode('stn_F');
+        nextDefinitions.pop();
+        replacement.setAttribute('lineDefinitions', nextDefinitions);
+        const result = await prepareTimelineProjectSync(makeRmpSave(replacement), portable.revision, {
+            applyLineInformation: true,
+        });
+        const synchronized = result.revision.graph.attributes.lineDefinitions!;
+
+        expect(synchronized).toHaveLength(2);
+        expect(synchronized[0]).toMatchObject({
+            id: definitions[0].id,
+            name: ['新的铁路名称', 'Updated railway name'],
+            openingDate: '2000-01-01',
+            videoLabel: definitions[0].videoLabel,
+        });
+        expect(synchronized[0].videoLabel).not.toBe(definitions[0].videoLabel);
+        expect(synchronized[1].id).toBe('new-line-identity');
+        expect(synchronized[1].videoLabel).toBeUndefined();
+        expect(synchronized.some(line => line.id === definitions[2].id)).toBe(false);
+        expect(portable.revision.graph.attributes.lineDefinitions![0].name).toEqual(definitions[0].name);
+        expect(
+            JSON.parse(await exportTimelineProjectFile({ ...portable, revision: result.revision })).revision.graph
+                .attributes.lineDefinitions
+        ).toEqual(synchronized);
     });
 
     it('rejects unsupported Timeline file versions', async () => {

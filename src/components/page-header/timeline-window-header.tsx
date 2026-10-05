@@ -1,10 +1,4 @@
 import {
-    AlertDialog,
-    AlertDialogBody,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogOverlay,
     Box,
     Button,
     Flex,
@@ -53,6 +47,7 @@ import {
     MdZoomOut,
 } from 'react-icons/md';
 import { downloadAs } from '../../util/download';
+import { populateTimelineFromLineInformation } from '../../util/timeline-line-import';
 import {
     exportTimelineProjectFile,
     getTimelineRevisionAssetIds,
@@ -73,6 +68,7 @@ import {
     useTimelineDispatch,
     useTimelineSelector,
 } from '../../timeline/timeline-store';
+import TimelineRmpImportModal from '../timeline/timeline-rmp-import-modal';
 import AboutModal from './about-modal';
 import TimelineActions from './timeline-actions';
 import VideoExportModal from './video-export-modal';
@@ -88,7 +84,6 @@ export default function TimelineWindowHeader() {
     const runtimeViewport = useTimelineSelector(state => state.runtime.viewport);
     const syncInput = React.useRef<HTMLInputElement>(null);
     const renameInput = React.useRef<HTMLInputElement>(null);
-    const syncCancel = React.useRef<HTMLButtonElement>(null);
     const filesMenu = useDisclosure();
     const [filesMenuPage, setFilesMenuPage] = React.useState<'root' | 'importRmp'>('root');
     const [isVideoOpen, setIsVideoOpen] = React.useState(false);
@@ -96,6 +91,7 @@ export default function TimelineWindowHeader() {
     const [isRenameOpen, setIsRenameOpen] = React.useState(false);
     const [renameName, setRenameName] = React.useState('');
     const [pendingSync, setPendingSync] = React.useState<PendingTimelineSync>();
+    const [syncBusy, setSyncBusy] = React.useState(false);
 
     const closeFilesMenu = () => {
         setFilesMenuPage('root');
@@ -162,12 +158,19 @@ export default function TimelineWindowHeader() {
         }
     };
 
-    const confirmSync = async () => {
+    const confirmSync = async (applyLineInformation: boolean) => {
         if (!active || !pendingSync) return;
+        setSyncBusy(true);
         try {
-            const next = { ...active, revision: pendingSync.revision, updatedAt: Date.now() };
+            const revision = {
+                ...pendingSync.revision,
+                timeline: applyLineInformation
+                    ? populateTimelineFromLineInformation(pendingSync.revision.graph, pendingSync.revision.timeline)
+                    : pendingSync.revision.timeline,
+            };
+            const next = { ...active, revision, updatedAt: Date.now() };
             await timelineProjectDB.saveProjectWithAssets(next, pendingSync.assets);
-            dispatch(commitRevision(pendingSync.revision));
+            dispatch(commitRevision(revision));
             dispatch(
                 setViewport({
                     x: pendingSync.revision.svgViewBoxMin.x,
@@ -178,6 +181,8 @@ export default function TimelineWindowHeader() {
             setPendingSync(undefined);
         } catch (cause) {
             dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        } finally {
+            setSyncBusy(false);
         }
     };
 
@@ -264,19 +269,6 @@ export default function TimelineWindowHeader() {
                                                     >
                                                         {t('header.timelinePage.downloadProject')}
                                                     </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        justifyContent="flex-start"
-                                                        variant="ghost"
-                                                        fontWeight="normal"
-                                                        leftIcon={<MdVideoLibrary />}
-                                                        onClick={() => {
-                                                            closeFilesMenu();
-                                                            setIsVideoOpen(true);
-                                                        }}
-                                                    >
-                                                        {t('header.timelinePage.exportVideo')}
-                                                    </Button>
                                                 </VStack>
                                                 {filesMenuPage === 'importRmp' && (
                                                     <Box borderLeftWidth="1px" ml={1} pl={1} minW="240px">
@@ -331,7 +323,19 @@ export default function TimelineWindowHeader() {
                             />
                         </>
                     )}
-                    {active && <TimelineActions />}
+                    {active && (
+                        <>
+                            <TimelineActions />
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                leftIcon={<MdVideoLibrary />}
+                                onClick={() => setIsVideoOpen(true)}
+                            >
+                                {t('header.timelinePage.exportVideo')}
+                            </Button>
+                        </>
+                    )}
                 </HStack>
                 <HStack ml="auto">
                     {active && (
@@ -428,33 +432,21 @@ export default function TimelineWindowHeader() {
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            <AlertDialog
-                isOpen={pendingSync !== undefined}
-                leastDestructiveRef={syncCancel}
+            <TimelineRmpImportModal
+                revision={pendingSync?.revision}
+                summary={
+                    pendingSync
+                        ? t('header.timelinePage.rmpImport.syncSummary', {
+                              ...pendingSync.changes,
+                              removedEntries: pendingSync.removedEntries,
+                          })
+                        : undefined
+                }
+                replacesTrack={!!active?.revision.timeline.track.length}
+                isLoading={syncBusy}
                 onClose={() => setPendingSync(undefined)}
-                isCentered
-            >
-                <AlertDialogOverlay>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>{t('header.timelinePage.importRmpData')}</AlertDialogHeader>
-                        <AlertDialogBody>
-                            {pendingSync &&
-                                `Sync this RMP file (${pendingSync.nodeCount} nodes, ${pendingSync.edgeCount} edges)? ` +
-                                    `Map changes: +${pendingSync.changes.addedNodes}/-${pendingSync.changes.removedNodes} nodes, ` +
-                                    `+${pendingSync.changes.addedEdges}/-${pendingSync.changes.removedEdges} lines. ` +
-                                    `${pendingSync.removedEntries} invalid Timeline entries will be removed.`}
-                        </AlertDialogBody>
-                        <AlertDialogFooter>
-                            <Button ref={syncCancel} onClick={() => setPendingSync(undefined)}>
-                                {t('cancel')}
-                            </Button>
-                            <Button colorScheme="teal" ml={3} onClick={confirmSync}>
-                                {t('header.timelinePage.importRmpData')}
-                            </Button>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialogOverlay>
-            </AlertDialog>
+                onImport={applyLineInformation => void confirmSync(applyLineInformation)}
+            />
         </RmgWindowHeader>
     );
 }

@@ -15,7 +15,9 @@ export default defineConfig({
     plugins: [
         react(),
         svgr(),
-        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } }),
+        ...(process.env.VITEST
+            ? []
+            : [checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } })]),
         visualizer({ filename: 'dist/bundle-report.html', gzipSize: true }),
     ],
     build: {

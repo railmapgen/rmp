@@ -22,26 +22,21 @@ import {
     Text,
     Tooltip,
     useColorModeValue,
+    useToken,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdOpenInNew } from 'react-icons/md';
-import stations from '../svgs/stations/stations';
 import { Events } from '../../constants/constants';
-import { StationType } from '../../constants/stations';
+import { getTimelineSettings } from '../../constants/timeline';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
-import { setError, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
+import { setError, setVideoOptions, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
 import { downloadBlobAs } from '../../util/download';
-import {
-    BasicToIntStationTypeMap,
-    exportVideo,
-    VideoExportOptions,
-    VideoExportResolution,
-    videoExportSpeedRange,
-} from '../../util/video-export';
+import { exportVideo, VideoExportOptions, VideoExportResolution } from '../../util/video-export';
 import { getUnavailableLineIds } from '../../util/line-path-availability';
+import { useSvgRenderContext } from '../svg-render-context';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 interface VideoExportModalProps {
@@ -50,52 +45,51 @@ interface VideoExportModalProps {
 }
 
 export default function VideoExportModal({ isOpen, onClose }: VideoExportModalProps) {
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
+    const [lightBackground, darkBackground] = useToken('colors', ['white', 'gray.800']);
+    const bgColor = useColorModeValue(lightBackground, darkBackground);
     const sectionHeadingColor = useColorModeValue('gray.600', 'gray.300');
     const dispatch = useTimelineDispatch();
     const active = useTimelineSelector(state => state.project.active)!;
+    const savedVideoOptions = useTimelineSelector(state => state.runtime.videoOptions);
     const timeline = active.revision.timeline;
+    const settings = getTimelineSettings(timeline);
     const { graph, languages, getAudio } = useTimelineProjectContext();
+    const { getImage } = useSvgRenderContext();
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const mapEnabled = active.revision.mapEnabled;
     const isSubscriber = false;
     const unavailableLineCount = React.useMemo(
         () => getUnavailableLineIds(graph, mapEnabled, isSubscriber).size,
         [graph, mapEnabled, isSubscriber]
     );
-    const supportedInterchangeStations = new Intl.ListFormat(i18n.language, {
-        style: 'long',
-        type: 'conjunction',
-    }).format(
-        (Object.keys(BasicToIntStationTypeMap) as StationType[]).map(stationType =>
-            t(stations[stationType].metadata.displayName)
-        )
-    );
+    const [isTransparent, setIsTransparent] = React.useState(savedVideoOptions?.isTransparent ?? false);
+    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(savedVideoOptions?.isSystemFontsOnly ?? false);
 
-    const [scale, setScale] = React.useState(200);
-    const [fullscreenScale, setFullscreenScale] = React.useState(100);
-    const [isTransparent, setIsTransparent] = React.useState(false);
-    const [autoChangeStationType, setAutoChangeStationType] = React.useState(true);
-    const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(false);
-
-    const [videoFps, setVideoFps] = React.useState<30 | 60>(30);
-    const [videoSpeedMultiplier, setVideoSpeedMultiplier] = React.useState<number>(videoExportSpeedRange.default);
+    const [videoFps, setVideoFps] = React.useState<30 | 60>(savedVideoOptions?.fps === 60 ? 60 : 30);
     const [videoQuality, setVideoQuality] = React.useState(95);
-    const [videoFormat, setVideoFormat] = React.useState<'webm' | 'mp4'>('mp4');
-    const [videoResolution, setVideoResolution] = React.useState<VideoExportResolution>('720p');
+    const [videoFormat, setVideoFormat] = React.useState<'webm' | 'mp4'>(savedVideoOptions?.format ?? 'mp4');
+    const [videoResolution, setVideoResolution] = React.useState<VideoExportResolution>(
+        savedVideoOptions?.resolution ?? '720p'
+    );
     const [videoProgress, setVideoProgress] = React.useState(0);
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
-    const [isAttachSelected, setIsAttachSelected] = React.useState(false);
+    const [isAttachSelected, setIsAttachSelected] = React.useState(savedVideoOptions?.hideWatermark ?? false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
 
-    const validateAndSetScale = (value: string, setter: React.Dispatch<React.SetStateAction<number>>) => {
-        const num = Number(value);
-        if (!isNaN(num) && num >= 1 && num <= 2000) {
-            setter(num);
-        }
-    };
+    React.useEffect(() => {
+        dispatch(
+            setVideoOptions({
+                format: videoFormat,
+                resolution: videoResolution,
+                fps: videoFps,
+                isTransparent,
+                isSystemFontsOnly,
+                hideWatermark: isAttachSelected,
+            })
+        );
+    }, [dispatch, videoFormat, videoResolution, videoFps, isTransparent, isSystemFontsOnly, isAttachSelected]);
 
     const handleClose = () => {
         if (!isVideoGenerating) {
@@ -115,12 +109,12 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             const options: VideoExportOptions = {
                 format: videoFormat,
                 fps: videoFps,
-                speedMultiplier: videoSpeedMultiplier,
+                speedMultiplier: settings.speedMultiplier,
                 resolution: videoResolution,
                 isTransparent,
-                autoChangeStationType,
-                scale,
-                fullscreenScale,
+                autoChangeStationType: settings.autoChangeStationType,
+                showYear: settings.showYear,
+                showLineName: settings.showLineName,
                 isSystemFontsOnly,
                 quality: videoQuality,
                 hideWatermark: isAttachSelected,
@@ -140,6 +134,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     svgViewBoxZoom: active.revision.svgViewBoxZoom,
                     isSubscriber,
                     getAudio,
+                    getImage,
                 }
             );
 
@@ -181,17 +176,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             minW: 'full',
         },
         {
-            type: 'slider',
-            label: `${t('header.download.videoExport.speed')} (${videoSpeedMultiplier.toFixed(1)}×)`,
-            helper: t('header.download.videoExport.speedHint'),
-            value: videoSpeedMultiplier,
-            min: videoExportSpeedRange.min,
-            max: videoExportSpeedRange.max,
-            step: videoExportSpeedRange.step,
-            onChange: setVideoSpeedMultiplier,
-            minW: 'full',
-        },
-        {
             type: 'select',
             label: t('header.download.videoExport.resolution'),
             value: videoResolution,
@@ -216,25 +200,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         },
     ];
 
-    const viewportFields: RmgFieldsField[] = [
-        {
-            type: 'input',
-            label: t('header.download.videoExport.currentScale'),
-            value: scale.toString(),
-            onChange: value => validateAndSetScale(value, setScale),
-            debouncedDelay: 0,
-            minW: 'full',
-        },
-        {
-            type: 'input',
-            label: t('header.download.videoExport.fullscreenScale'),
-            value: fullscreenScale.toString(),
-            onChange: value => validateAndSetScale(value, setFullscreenScale),
-            debouncedDelay: 0,
-            minW: 'full',
-        },
-    ];
-
     const renderingField1: RmgFieldsField[] = [
         {
             type: 'switch',
@@ -244,16 +209,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             minW: 'full',
             oneLine: true,
             onChange: setIsTransparent,
-        },
-    ];
-    const renderingField2: RmgFieldsField[] = [
-        {
-            type: 'switch',
-            label: t('header.download.videoExport.autoChangeStationType'),
-            isChecked: autoChangeStationType,
-            minW: 'full',
-            oneLine: true,
-            onChange: setAutoChangeStationType,
         },
     ];
 
@@ -294,13 +249,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
                             <Box>
                                 <Text fontSize="sm" fontWeight="semibold" color={sectionHeadingColor} mb={2}>
-                                    {t('header.download.videoExport.groups.viewport')}
-                                </Text>
-                                <RmgFields fields={viewportFields} />
-                            </Box>
-
-                            <Box>
-                                <Text fontSize="sm" fontWeight="semibold" color={sectionHeadingColor} mb={2}>
                                     {t('header.download.videoExport.groups.rendering')}
                                 </Text>
                                 <RmgFields fields={renderingField1} />
@@ -309,22 +257,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                                         <AlertIcon />
                                         <AlertDescription>
                                             {t('header.download.videoExport.mp4Transparency')}
-                                        </AlertDescription>
-                                    </Alert>
-                                )}
-                                <RmgFields fields={renderingField2} />
-                                {autoChangeStationType && (
-                                    <Alert status="info" mb="3" py="2">
-                                        <AlertIcon />
-                                        <AlertDescription fontSize="sm">
-                                            <Text>
-                                                {t('header.download.videoExport.autoChangeStationTypeHint', {
-                                                    stations: supportedInterchangeStations,
-                                                })}
-                                            </Text>
-                                            <Text mt="1" fontWeight="bold">
-                                                {t('header.download.videoExport.autoChangeStationTypeWarning')}
-                                            </Text>
                                         </AlertDescription>
                                     </Alert>
                                 )}

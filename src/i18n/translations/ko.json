@@ -11,7 +11,6 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-
     "panel": {
         "tools": {
             "showLess": "적게 표시",
@@ -787,7 +786,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "노선 정보 설정",
@@ -876,11 +874,15 @@
             "insertExitAnimation": "현재 선택 항목의 퇴장 애니메이션 삽입",
             "insertFramePauseBefore": "프레임 전 일시 정지",
             "insertFramePauseAfter": "프레임 후 일시 정지",
+            "insertLabel": "Label",
+            "editLabel": "Label 편집",
+            "labelText": "라벨 텍스트",
+            "saveLabel": "저장",
             "insertAudio": "오디오",
             "audioTrack": "오디오 트랙",
             "noAudio": "오디오가 없습니다. '삽입 > 오디오'에서 추가하세요.",
-            "audioStart": "오디오 시작(초)",
-            "audioEnd": "오디오 종료(초)",
+            "audioStart": "시작 시간(초)",
+            "audioEnd": "종료 시간(초)",
             "audioMissing": "오디오 데이터가 없습니다. 복원하려면 파일을 다시 가져오세요.",
             "framePauseBefore": "프레임 전 일시 정지",
             "framePauseAfter": "프레임 후 일시 정지",
@@ -938,7 +940,47 @@
                     "tip": "동영상은 트랙을 왼쪽에서 오른쪽으로 재생합니다. 내보내기 전에 가운데 재생 버튼으로 미리 볼 수 있습니다.",
                     "imageAlt": "파일 메뉴 안의 동영상 내보내기 항목을 강조한 그림"
                 }
-            }
+            },
+            "settings": {
+                "title": "타임라인 설정",
+                "description": "재생과 표시를 조정합니다. 변경 사항은 미리보기와 내보낸 동영상에 반영됩니다.",
+                "playback": "재생",
+                "overlays": "동영상 표시",
+                "lineInformation": "노선 정보",
+                "showYear": "연도 표시",
+                "showYearHint": "현재 노선의 개통 연도를 동영상 왼쪽 위에 표시합니다.",
+                "showLineName": "노선 이름 표시",
+                "showLineNameHint": "연도 아래에 노선 색상과 중국어 및 영어 이름을 표시합니다.",
+                "savedWithProject": "타임라인 프로젝트에 함께 저장",
+                "done": "완료",
+                "cameraZoom": "확대 배율",
+                "cameraZoomFull": "전체 (Full)"
+            },
+            "lineLabels": {
+                "title": "노선 표시 정보",
+                "description": "이 타임라인 동영상에 표시할 이름, 색상, 개통일을 설정합니다. 이 정보는 현재 타임라인 프로젝트에만 저장됩니다.",
+                "empty": "노선 정보가 없습니다. 노선 정보가 있는 RMP 프로젝트를 가져오면 동영상 표시를 설정할 수 있습니다.",
+                "color": "표시 색상",
+                "invalidColor": "#1677ff와 같은 유효한 16진수 색상을 입력하세요.",
+                "reset": "가져온 노선 정보로 복원",
+                "resetHint": "이 노선의 표시를 가져온 RMP 노선 정보로 복원합니다.",
+                "saved": "변경 사항은 현재 타임라인 프로젝트에 저장되며 미리보기와 내보내기에 반영됩니다."
+            },
+            "rmpImport": {
+                "title": "RMP 데이터 가져오기",
+                "applyLineInfo": "노선 정보로 타임라인 자동 채우기",
+                "description": "개통 날짜순으로 설정된 출발역에서 종착역까지 노선을 그립니다. 날짜가 없는 노선은 마지막에 배치됩니다.",
+                "summary": "노선 {{lines}}개 · 노드 {{nodes}}개 · 구간 {{edges}}개",
+                "unavailable": "사용할 수 있는 노선 정보가 없습니다. 지도를 가져온 후 타임라인을 직접 편집할 수 있습니다.",
+                "replaceTrack": "영상 트랙을 다시 만듭니다. 오디오 클립과 재생 설정은 유지됩니다.",
+                "syncSummary": "지도 변경: 노드 +{{addedNodes}}/−{{removedNodes}}, 구간 +{{addedEdges}}/−{{removedEdges}}. 유효하지 않은 타임라인 항목 {{removedEntries}}개가 제거됩니다."
+            },
+            "playbackPosition": "재생 위치",
+            "preparingPreview": "동영상 미리보기 준비 중…",
+            "previewFailed": "미리보기를 불러올 수 없습니다",
+            "audioDuration": "원본 길이: {{duration}}초",
+            "audioTiming": "음악 시간 편집",
+            "retryPreview": "미리보기 다시 불러오기"
         },
         "mapToggle": {
             "show": "지리 지도 표시",
@@ -993,7 +1035,6 @@
                 "title": "비디오 내보내기",
                 "groups": {
                     "output": "출력 설정",
-                    "viewport": "보기 설정",
                     "rendering": "렌더링 설정",
                     "sharing": "공유 및 약관"
                 },
@@ -1008,8 +1049,6 @@
                     "4k": "4K (3840×2160)"
                 },
                 "quality": "비디오 품질",
-                "currentScale": "현재 보기 확대 배율(전체 맞춤 = 100%)",
-                "fullscreenScale": "전체 화면 보기 확대 배율(전체 맞춤 = 100%)",
                 "autoChangeStationType": "일반역과 환승역 자동 전환",
                 "autoChangeStationTypeHint": "활성화하면 비디오에 현재 표시된 노선을 기준으로 다음 지원 환승역이 자동으로 조정됩니다: {{stations}}.",
                 "autoChangeStationTypeWarning": "비디오의 역명 위치 또는 환승 정보가 현재 지도와 일치하지 않으면, 지도의 현재 상태 그대로 역을 렌더링할 수 있도록 ‘일반역과 환승역 자동 전환’을 끄세요.",
@@ -1245,7 +1284,6 @@
             "zulipContent": "Zulip에서 커뮤니티에 참여하세요!"
         }
     },
-
     "contextMenu": {
         "refresh": "새로 고침",
         "cut": "잘라내기",
@@ -1264,7 +1302,6 @@
         "flipDiagonal135": "135° 선을 기준으로 뒤집기",
         "reconcile": "통합"
     },
-
     "clipboard": {
         "errors": {
             "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
@@ -1272,7 +1309,6 @@
             "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
         }
     },
-
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다.",
     "map": {
         "loading": "지도 불러오는 중",

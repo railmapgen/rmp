@@ -1,19 +1,21 @@
 // eslint-disable-next-line import/no-unassigned-import
 import '@testing-library/jest-dom';
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
 import { Provider } from 'react-redux';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../../constants/constants';
 import { createEmptyTimelineDocument } from '../../constants/timeline';
 import i18n from '../../i18n/config';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
-import { createTimelineStore, openProject } from '../../timeline/timeline-store';
+import { createTimelineStore, openProject, setCursor } from '../../timeline/timeline-store';
+import { createTestLineGraph } from '../../test-utils';
+import { CURRENT_VERSION } from '../../util/save';
 import TimelineWindowHeader from './timeline-window-header';
 
 vi.mock('./video-export-modal', () => ({ default: () => null }));
@@ -36,6 +38,10 @@ beforeAll(() => {
 });
 
 afterAll(() => vi.unstubAllGlobals());
+afterEach(() => {
+    cleanup();
+    localStorage.removeItem(LocalStorageKey.PARAM);
+});
 
 const makeProject = (): TimelineProjectRecord => ({
     id: 'header-project',
@@ -55,6 +61,97 @@ const makeProject = (): TimelineProjectRecord => ({
 });
 
 describe('TimelineWindowHeader', () => {
+    it('inserts Label without a selected station and supports project undo and redo', async () => {
+        await i18n.changeLanguage('en');
+        const project = makeProject();
+        project.revision.timeline.track = [
+            { id: 'p1', kind: 'pause', position: 'after', duration: 1 },
+            { id: 'p2', kind: 'pause', position: 'after', duration: 2 },
+        ];
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const store = createTimelineStore();
+        store.dispatch(openProject(project));
+        store.dispatch(setCursor(1));
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+        fireEvent.click(screen.getByRole('button', { name: 'Insert' }));
+        fireEvent.click(await screen.findByText('Label'));
+        const timeline = store.getState().project.active!.revision.timeline;
+        expect(timeline.track).toEqual(project.revision.timeline.track);
+        expect(timeline.labelTrack).toHaveLength(1);
+        expect(timeline.labelTrack![0]).toMatchObject({
+            kind: 'label',
+            text: 'Label',
+            startSlot: 1,
+            endSlot: 2,
+            duration: 15,
+        });
+        expect(store.getState().runtime.cursor).toBe(1);
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
+        expect(store.getState().project.active!.revision.timeline.labelTrack).toBeUndefined();
+        fireEvent.click(screen.getByRole('button', { name: 'Redo' }));
+        expect(store.getState().project.active!.revision.timeline.labelTrack).toEqual(timeline.labelTrack);
+    });
+    it.each([true, false])('applies the import choice for painter and local RMP sources (apply=%s)', async apply => {
+        await i18n.changeLanguage('en');
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+        ]);
+        graph.getAttribute('lineDefinitions')![0].exportStartStationId = 'stn_C';
+        const project = makeProject();
+        project.id = `header-sync-${apply}`;
+        project.revision.graph = graph.export();
+        project.revision.timeline.track = [
+            { id: 'manual-entry', kind: 'node', refId: 'stn_A', phase: 'enter', showAnimation: false },
+        ];
+        const source = JSON.stringify({ version: CURRENT_VERSION, graph: graph.export() });
+        localStorage.setItem(LocalStorageKey.PARAM, source);
+        const store = createTimelineStore();
+        store.dispatch(openProject(project));
+        const { container } = render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Files' }));
+        fireEvent.click(screen.getByText('Import RMP data'));
+        if (apply) {
+            fireEvent.click(await screen.findByText('Project open in painter'));
+        } else {
+            fireEvent.click(await screen.findByText('Local configuration file'));
+            const file = new File([source], 'rmp.json', { type: 'application/json' });
+            Object.defineProperty(file, 'text', { value: async () => source });
+            fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } });
+        }
+        const dialog = await screen.findByRole('dialog', { name: 'Import RMP data' });
+        const choice = within(dialog).getByRole('checkbox', { name: 'Populate Timeline from line information' });
+        if (!apply) fireEvent.click(choice);
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Import RMP data' }));
+
+        await waitFor(() => expect(store.getState().project.past).toHaveLength(1));
+        expect(store.getState().project.active!.revision.timeline.track.map(entry => entry.refId)).toEqual(
+            apply ? ['stn_C', 'line_1', 'stn_B', 'line_0', 'stn_A'] : ['stn_A']
+        );
+        if (!apply) expect(store.getState().project.active!.revision.timeline.track[0].id).toBe('manual-entry');
+    });
+
     it('puts project file actions before Insert and keeps undo, redo and zoom controls on the right side', async () => {
         await i18n.changeLanguage('en');
         const store = createTimelineStore();

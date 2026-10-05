@@ -5,6 +5,7 @@ import { Id } from '../constants/constants';
 import { TimelineDocument } from '../constants/timeline';
 import { MAX_UNDO_SIZE } from '../redux/param/param-slice';
 import { normalizeTimelineDocument } from '../util/timeline';
+import type { VideoExportOptions } from '../util/video-export';
 import { timelineProjectDB } from './timeline-project-db';
 import { TimelineProjectRecord, TimelineProjectRevision, TimelineProjectSummary } from './timeline-project';
 
@@ -100,6 +101,10 @@ interface RuntimeState {
     cursor: number;
     selected: Set<Id>;
     viewport?: { x: number; y: number; zoom: number };
+    videoOptions?: Pick<
+        VideoExportOptions,
+        'format' | 'resolution' | 'fps' | 'isTransparent' | 'isSystemFontsOnly' | 'hideWatermark'
+    >;
 }
 const runtimeSlice = createSlice({
     name: 'timelineRuntime',
@@ -114,10 +119,14 @@ const runtimeSlice = createSlice({
         setViewport: (state, action: PayloadAction<{ x: number; y: number; zoom: number }>) => {
             state.viewport = action.payload;
         },
+        setVideoOptions: (state, action: PayloadAction<RuntimeState['videoOptions']>) => {
+            state.videoOptions = action.payload;
+        },
         clearRuntime: state => {
             state.cursor = 0;
             state.selected = new Set();
             state.viewport = undefined;
+            state.videoOptions = undefined;
         },
     },
 });
@@ -147,7 +156,7 @@ export const {
     redo,
     setError,
 } = projectSlice.actions;
-export const { setCursor, setSelected, setViewport, clearRuntime } = runtimeSlice.actions;
+export const { setCursor, setSelected, setViewport, setVideoOptions, clearRuntime } = runtimeSlice.actions;
 
 let unsubscribePersistence: (() => void) | undefined;
 export const initTimelineStore = async () => {

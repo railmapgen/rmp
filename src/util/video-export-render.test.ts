@@ -5,11 +5,25 @@ import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationType } from '../constants/stations';
-import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
+import { MiscNodeType } from '../constants/nodes';
+import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import {
+    createEmptyTimelineDocument,
+    TIMELINE_CAMERA_ZOOM_LEVELS,
+    TimelineDocument,
+    TimelineEntry,
+} from '../constants/timeline';
 import { makeRenderReadySVGElement } from './download';
 import * as videoExportCanvas from './video-export-canvas';
-import { exportVideo, VideoExportOptions } from './video-export';
+import {
+    createVideoPreviewRenderer,
+    exportVideo,
+    getCameraViewBox,
+    getOverviewZoom,
+    VideoExportOptions,
+} from './video-export';
 import { createVideoFrameWriter, NativeVideoEncodingError } from './video-encoder';
+import { calculateCanvasSize } from './helpers';
 
 const { addFrame, complete } = vi.hoisted(() => ({
     addFrame: vi.fn(),
@@ -30,8 +44,6 @@ const defaultOptions: VideoExportOptions = {
     resolution: '720p',
     isTransparent: false,
     autoChangeStationType: false,
-    scale: 200,
-    fullscreenScale: 100,
     isSystemFontsOnly: true,
     quality: 95,
     hideWatermark: true,
@@ -80,7 +92,8 @@ beforeEach(() => {
                         })
                 );
             });
-            renderedSVGs.push(elem);
+            // Keep the preparation geometry separately from the SVGs actually sent to the canvas.
+            if (!renderedSVGs.length) renderedSVGs.push(elem.cloneNode(true) as SVGSVGElement);
             return { elem, width: 1280, height: 720 };
         }
     );
@@ -93,7 +106,11 @@ beforeEach(() => {
         'Image',
         class {
             onload?: () => void;
-            set src(_value: string) {
+            set src(value: string) {
+                const encodedSVG = value.split(',', 2)[1];
+                const bytes = Uint8Array.from(atob(encodedSVG), character => character.charCodeAt(0));
+                const svg = new DOMParser().parseFromString(new TextDecoder().decode(bytes), 'text/html');
+                renderedSVGs.push(svg.querySelector('svg')!);
                 this.onload?.();
             }
         }
@@ -129,6 +146,40 @@ const makeGraph = (length: number) => {
     return graph;
 };
 
+const makeFillGraph = () => {
+    const graph = makeGraph(200);
+    const lineAttrs = structuredClone(graph.getEdgeAttributes('line_ab'));
+    graph.clear();
+    graph.addNode('misc_node_fill', {
+        visible: true,
+        zIndex: -1,
+        x: 0,
+        y: 0,
+        type: MiscNodeType.Fill,
+        [MiscNodeType.Fill]: {
+            color: structuredClone(lineAttrs[LineStyleType.SingleColor]!.color),
+            opacity: 0.5,
+            selectedPatterns: ['trees', 'water'],
+        },
+    });
+    for (const [id, x, y] of [
+        ['misc_node_corner_a', 200, 0],
+        ['misc_node_corner_b', 200, 200],
+    ] as const)
+        graph.addNode(id, { visible: true, zIndex: 0, x, y, type: MiscNodeType.Virtual, virtual: {} });
+    for (const [id, source, target] of [
+        ['line_fill_a', 'misc_node_fill', 'misc_node_corner_a'],
+        ['line_fill_b', 'misc_node_corner_a', 'misc_node_corner_b'],
+        ['line_fill_close', 'misc_node_corner_b', 'misc_node_fill'],
+    ] as const)
+        graph.addDirectedEdgeWithKey(id, source, target, {
+            ...structuredClone(lineAttrs),
+            type: LinePathType.Bezier,
+            [LinePathType.Bezier]: { ...linePaths[LinePathType.Bezier].defaultAttrs, normal: 0, along: 0.5 },
+        });
+    return graph;
+};
+
 describe('video export frame timing', () => {
     it('burns the fixed watermark into every exported frame', async () => {
         await exportVideo(
@@ -141,6 +192,7 @@ describe('video export frame timing', () => {
 
         const frames = renderedSVGs.slice(1);
         expect(frames).toHaveLength(91);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
         expect(frames.every(frame => frame.getElementById('rmp_info') !== null)).toBe(true);
         expect(frames.every(frame => frame.lastElementChild?.id === 'rmp_info')).toBe(true);
         const watermark = frames[0].getElementById('rmp_info')!;
@@ -164,9 +216,11 @@ describe('video export frame timing', () => {
     ])('derives frame timing from $length units at $speedMultiplier× and $fps FPS', async params => {
         const { length, speedMultiplier, fps, drawingSeconds } = params;
         const onProgress = vi.fn();
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings!.speedMultiplier = speedMultiplier;
         await exportVideo(
             makeGraph(length),
-            createEmptyTimelineDocument(),
+            timeline,
             [],
             { ...defaultOptions, speedMultiplier, fps },
             'white',
@@ -177,21 +231,19 @@ describe('video export frame timing', () => {
         expect(addFrame).toHaveBeenCalledTimes((drawingSeconds + 1) * fps + 1);
         // The first SVG only measures line length; later SVGs are the rendered frames.
         const halfwayFrame = renderedSVGs[1 + (drawingSeconds * fps) / 2];
-        expect(halfwayFrame.querySelector('path')?.getAttribute('stroke-dasharray')).toBe(`${length / 2} ${length}`);
+        expect(halfwayFrame.querySelector('path')?.getAttribute('stroke-dasharray')).toBe(
+            `${length / 2} ${length * 2}`
+        );
         expect(onProgress).toHaveBeenLastCalledWith(1);
         expect(complete).toHaveBeenCalledOnce();
     });
 
     it('preserves drawing speed when output resolution and zoom change', async () => {
-        await exportVideo(
-            makeGraph(200),
-            createEmptyTimelineDocument(),
-            [],
-            { ...defaultOptions, resolution: '4k', scale: 400 },
-            'white'
-        );
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings!.cameraZoom = 4;
+        await exportVideo(makeGraph(200), timeline, [], { ...defaultOptions, resolution: '4k' }, 'white');
         expect(addFrame).toHaveBeenCalledTimes(91);
-        expect(renderedSVGs[31].querySelector('path')?.getAttribute('stroke-dasharray')).toBe('100 200');
+        expect(renderedSVGs[31].querySelector('path')?.getAttribute('stroke-dasharray')).toBe('100 400');
     });
 
     it('keeps elapsed-time progress when the drawing duration ends between frames', async () => {
@@ -220,6 +272,8 @@ const edgeEntry: TimelineEntry = {
     phase: 'enter',
     showAnimation: true,
 };
+// Rasterization strips control characters before encoding the SVG, including CSS line breaks.
+const rasterizedMarkup = (svg: SVGSVGElement) => svg.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
 
 describe('authored video frames', () => {
     it.each([
@@ -280,7 +334,7 @@ describe('authored video frames', () => {
                                 }) as DOMPoint;
                         });
                 });
-                renderedSVGs.push(result.elem);
+                if (!renderedSVGs.length) renderedSVGs.push(result.elem.cloneNode(true) as SVGSVGElement);
                 return result;
             });
             const timeline =
@@ -422,7 +476,7 @@ describe('authored video frames', () => {
             'white'
         );
         const halfway = renderedSVGs[1 + 90].getElementById('line_ab')?.querySelector('path');
-        expect(halfway?.getAttribute('stroke-dasharray')).toBe('100 200');
+        expect(halfway?.getAttribute('stroke-dasharray')).toBe('100 400');
         expect(renderedSVGs.slice(1 + 120).every(svg => svg.getElementById('line_ab') === null)).toBe(true);
     });
 
@@ -458,9 +512,606 @@ describe('authored video frames', () => {
         );
         const halfway = renderedSVGs[1 + 90];
         expect(halfway.getElementById('line_ab.pre')?.querySelector('path')?.getAttribute('stroke-dasharray')).toBe(
-            '100 200'
+            '100 400'
         );
         expect(renderedSVGs.at(-1)?.getElementById('line_ab.pre')).toBeNull();
         expect(renderedSVGs.at(-1)?.getElementById('line_ab')).toBeNull();
     });
+});
+
+describe('shared real-time preview renderer', () => {
+    it.each(['empty', 'authored'] as const)(
+        'hides the first line until drawing starts in %s preview and export',
+        async scenario => {
+            const graph = makeGraph(200);
+            const timeline =
+                scenario === 'empty' ? createEmptyTimelineDocument() : authoredTimeline(nodeEntry, edgeEntry);
+            await exportVideo(graph, timeline, [], defaultOptions, 'white');
+            const exported = renderedSVGs.slice(1);
+            expect(exported[0].getElementById('line_ab')).toBeNull();
+            expect(exported[1].getElementById('line_ab')).not.toBeNull();
+
+            const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+            for (const time of [0, 1 / defaultOptions.fps, 1, 0, 1 / defaultOptions.fps]) {
+                const live = await renderer.renderPreviewFrame(time);
+                expect(live.getElementById('line_ab')!.getAttribute('display')).toBe(time === 0 ? 'none' : null);
+                const snapshot = await renderer.renderFrame(time);
+                expect(snapshot.getElementById('line_ab') === null).toBe(time === 0);
+            }
+            renderer.dispose();
+        }
+    );
+
+    it('keeps Full fitted to the whole map as keyframes move stations', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+            id: 'move',
+            kind: 'keyframe',
+            refId: 'stn_a',
+            x: 1000,
+            y: 300,
+        });
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, cameraZoom: 1 };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
+        for (const time of [1, renderer.duration, 0]) {
+            const frameGraph = graph.copy();
+            const progress = Math.min(1, time / 2);
+            frameGraph.mergeNodeAttributes('stn_a', { x: 1000 * progress, y: 300 * progress });
+            const bounds = calculateCanvasSize(frameGraph);
+            const box = getCameraViewBox(
+                { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 },
+                getOverviewZoom(frameGraph)
+            );
+            const expected = [box.x, box.y, box.width, box.height];
+            const frame = await renderer.renderFrame(time);
+            frame
+                .getAttribute('viewBox')!
+                .split(' ')
+                .map(Number)
+                .forEach((value, index) => expect(value).toBeCloseTo(expected[index], 9));
+        }
+        renderer.dispose();
+    });
+
+    it.each(TIMELINE_CAMERA_ZOOM_LEVELS)(
+        'uses project Zoom %sx in preview and export and ends at 100%%',
+        async cameraZoom => {
+            const graph = makeGraph(200);
+            const timeline = createEmptyTimelineDocument();
+            timeline.settings!.cameraZoom = cameraZoom;
+            const bounds = calculateCanvasSize(graph);
+            const wholeViewBox = getCameraViewBox(
+                {
+                    x: (bounds.xMin + bounds.xMax) / 2,
+                    y: (bounds.yMin + bounds.yMax) / 2,
+                },
+                getOverviewZoom(graph)
+            );
+            const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
+            const current = await preview.renderFrame(0.4);
+            const currentBox = current.getAttribute('viewBox')!.split(' ').map(Number);
+            expect(currentBox[2]).toBeCloseTo(wholeViewBox.width / cameraZoom, 9);
+            expect(currentBox[3]).toBeCloseTo(wholeViewBox.height / cameraZoom, 9);
+            const expectedFinal = [wholeViewBox.x, wholeViewBox.y, wholeViewBox.width, wholeViewBox.height];
+            const final = await preview.renderFrame(preview.duration);
+            final
+                .getAttribute('viewBox')!
+                .split(' ')
+                .map(Number)
+                .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
+            if (cameraZoom === 1) {
+                currentBox.forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
+            }
+            await exportVideo(graph, timeline, [], { ...defaultOptions, fps: 60, resolution: '1080p' }, 'white');
+            // First SVG is measurement geometry; subsequent SVGs are actual exported frames.
+            renderedSVGs[1 + 24]
+                .getAttribute('viewBox')!
+                .split(' ')
+                .map(Number)
+                .forEach((value, index) => expect(value).toBeCloseTo(currentBox[index], 9));
+            renderedSVGs
+                .at(-1)!
+                .getAttribute('viewBox')!
+                .split(' ')
+                .map(Number)
+                .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
+            preview.dispose();
+        }
+    );
+
+    it('keeps the same camera position at shared video times across preview and export FPS', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(
+            nodeEntry,
+            { id: 'origin', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 },
+            edgeEntry,
+            { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 }
+        );
+        const preview = await createVideoPreviewRenderer(graph, timeline, [], {
+            ...defaultOptions,
+            fps: 15,
+            resolution: '720p',
+        });
+        const exported = await createVideoPreviewRenderer(graph, timeline, [], {
+            ...defaultOptions,
+            fps: 60,
+            resolution: '4k',
+        });
+        for (const time of [0.4, 0.8, 1.2, 0.4, 1.2]) {
+            const a = await preview.renderPreviewFrame(time);
+            const b = await exported.renderPreviewFrame(time);
+            expect(a.getAttribute('width')).not.toBe(b.getAttribute('width'));
+            const [ax, ay, aw, ah] = a.getAttribute('viewBox')!.split(' ').map(Number);
+            const [bx, by, bw, bh] = b.getAttribute('viewBox')!.split(' ').map(Number);
+            expect(ax + aw / 2).toBeCloseTo(bx + bw / 2, 9);
+            expect(ay + ah / 2).toBeCloseTo(by + bh / 2, 9);
+            expect(aw).toBeCloseTo(bw, 9);
+            expect(ah).toBeCloseTo(bh, 9);
+        }
+        preview.dispose();
+        exported.dispose();
+    });
+
+    it('keeps short clips, disabled animations, pauses and keyframe cursors independent of preview and export FPS', async () => {
+        const graph = makeGraph(1);
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 201 });
+        graph.addDirectedEdgeWithKey('line_bc', 'stn_b', 'stn_c', structuredClone(graph.getEdgeAttributes('line_ab')));
+        const timeline = authoredTimeline(
+            { ...nodeEntry, showAnimation: false },
+            edgeEntry,
+            { id: 'pause', kind: 'pause', position: 'after', duration: 0.125 },
+            { id: 'origin_b', kind: 'keyframe', refId: 'stn_b', x: 1, y: 0 },
+            { ...nodeEntry, id: 'exit_a', phase: 'exit', showAnimation: false },
+            { ...edgeEntry, id: 'exit_ab', phase: 'exit', showAnimation: false },
+            { ...nodeEntry, id: 'enter_b', refId: 'stn_b', showAnimation: false },
+            { ...edgeEntry, id: 'enter_bc', refId: 'line_bc' },
+            { id: 'move_b', kind: 'keyframe', refId: 'stn_b', x: 1, y: 100 },
+            { ...nodeEntry, id: 'enter_c', refId: 'stn_c', showAnimation: false },
+            { id: 'move_c', kind: 'keyframe', refId: 'stn_c', x: 201, y: 20 }
+        );
+        const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
+        const exported = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 60 });
+        // The last cursor includes overview and output-frame rounding; authored event times do not.
+        expect(preview.cursorTimes.slice(0, -1)).toEqual(exported.cursorTimes.slice(0, -1));
+        for (const renderer of [preview, exported]) {
+            const cursors = renderer.cursorTimes;
+            expect(cursors[2]).toBeCloseTo(1 / 30);
+            expect(cursors[3] - cursors[2]).toBeCloseTo(0.125);
+            expect(cursors[4]).toBe(cursors[3]);
+            expect(cursors[5] - cursors[4]).toBeCloseTo(1 / 30);
+            expect(cursors[6] - cursors[5]).toBeCloseTo(1 / 30);
+            expect(cursors[8] - cursors[7]).toBeCloseTo(2);
+            expect(cursors[9]).toBe(cursors[8]);
+            expect(cursors[10] - cursors[9]).toBeCloseTo(1 / 30);
+            renderer.dispose();
+        }
+    });
+
+    it.each([0.5, 1, 2])(
+        'preserves physical drawing speed at %s× for 15 FPS preview and 60 FPS export',
+        async speedMultiplier => {
+            const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+                id: 'end',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 0,
+            });
+            timeline.settings = {
+                cameraZoom: 2,
+                speedMultiplier,
+                autoChangeStationType: false,
+                showYear: false,
+                showLineName: false,
+            };
+            const drawingSeconds = 2 / speedMultiplier;
+            for (const fps of [15, 60]) {
+                const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], {
+                    ...defaultOptions,
+                    fps,
+                });
+                expect(renderer.cursorTimes[2] - renderer.cursorTimes[1]).toBeCloseTo(drawingSeconds);
+                const frame = await renderer.renderFrame(drawingSeconds * 0.4);
+                const dash = frame.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray');
+                expect(Number(dash?.split(' ')[0])).toBeCloseTo(80);
+                expect(Number(dash?.split(' ')[1])).toBeCloseTo(400);
+                renderer.dispose();
+            }
+        }
+    );
+
+    it('updates fill geometry with moving polygon corners and restores it on backwards seek', async () => {
+        const graph = makeFillGraph();
+        const original = structuredClone(graph.export());
+        const renderer = await createVideoPreviewRenderer(
+            graph,
+            authoredTimeline(
+                { ...nodeEntry, refId: 'misc_node_fill', showAnimation: false },
+                { id: 'origin', kind: 'keyframe', refId: 'misc_node_corner_a', x: 200, y: 0 },
+                { ...edgeEntry, refId: 'line_fill_a' },
+                { id: 'move', kind: 'keyframe', refId: 'misc_node_corner_a', x: 300, y: 0 }
+            ),
+            [],
+            defaultOptions
+        );
+        const live = await renderer.renderPreviewFrame(0);
+        const fill = live.getElementById('misc_node_fill')!;
+        const originalPaths = Array.from(fill.querySelectorAll('path[fill-opacity]'), path => path.getAttribute('d'));
+        expect(originalPaths).toHaveLength(3);
+        expect(originalPaths.every(path => path?.includes('200 0'))).toBe(true);
+
+        const pathsAt = async (time: number) => {
+            expect(await renderer.renderPreviewFrame(time)).toBe(live);
+            expect(live.getElementById('misc_node_fill')).toBe(fill);
+            return Array.from(fill.querySelectorAll('path[fill-opacity]'), path => path.getAttribute('d'));
+        };
+        const middle = await pathsAt(1);
+        expect(middle).not.toEqual(originalPaths);
+        expect(middle.every(path => path?.includes('250 0'))).toBe(true);
+        const end = await pathsAt(2);
+        expect(end).not.toEqual(middle);
+        expect(end.every(path => path?.includes('300 0'))).toBe(true);
+        expect(await pathsAt(1)).toEqual(middle);
+        expect(await pathsAt(0)).toEqual(originalPaths);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        expect(graph.export()).toEqual(original);
+        renderer.dispose();
+    });
+
+    it('uses entered-edge topology for fill regions when automatic station switching is enabled', async () => {
+        const graph = makeFillGraph();
+        const timeline = authoredTimeline(
+            { ...nodeEntry, refId: 'misc_node_fill', showAnimation: false },
+            { ...edgeEntry, id: 'first_edge', refId: 'line_fill_a' },
+            { ...edgeEntry, id: 'second_edge', refId: 'line_fill_b' },
+            { ...edgeEntry, id: 'closing_edge', refId: 'line_fill_close' }
+        );
+        timeline.settings = {
+            cameraZoom: 2,
+            speedMultiplier: 1,
+            autoChangeStationType: true,
+            showYear: false,
+            showLineName: false,
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const beforeClosing = renderer.cursorTimes[3] - 1 / defaultOptions.fps;
+        const fillPaths = (svg: SVGSVGElement) =>
+            svg.getElementById('misc_node_fill')?.querySelectorAll('path[fill-opacity]');
+        for (const time of [0.1, 1, beforeClosing]) {
+            const snapshot = await renderer.renderFrame(time);
+            expect(snapshot.getElementById('misc_node_fill')).not.toBeNull();
+            expect(snapshot.getElementById('line_fill_close')).toBeNull();
+            expect(fillPaths(snapshot)).toHaveLength(0);
+        }
+        const closed = await renderer.renderFrame(renderer.duration);
+        expect(fillPaths(closed)).toHaveLength(3);
+        const closedPaths = Array.from(fillPaths(closed)!, path => path.getAttribute('d'));
+        expect(fillPaths(await renderer.renderFrame(beforeClosing))).toHaveLength(0);
+        expect(
+            Array.from(fillPaths(await renderer.renderFrame(renderer.duration))!, path => path.getAttribute('d'))
+        ).toEqual(closedPaths);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
+    it('restores a timeline transform after external dragging when the same frame is forced', async () => {
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            authoredTimeline(nodeEntry, edgeEntry, { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 }),
+            [],
+            defaultOptions
+        );
+        const live = await renderer.renderPreviewFrame(1);
+        const station = live.getElementById('stn_a')!;
+        const expectedTransform = station.getAttribute('transform');
+        expect(expectedTransform).toContain('translate(0, 50)');
+        station.setAttribute('transform', 'translate(999, 888)');
+        expect(await renderer.renderPreviewFrame(1, { force: true })).toBe(live);
+        expect(live.getElementById('stn_a')).toBe(station);
+        expect(station.getAttribute('transform')).toBe(expectedTransform);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
+    it('prepares resources once and keeps the live SVG, station and line paths across moving frames', async () => {
+        const graph = makeGraph(200);
+        graph.mergeEdgeAttributes('line_ab', {
+            style: LineStyleType.JREastSingleColor,
+            [LineStyleType.JREastSingleColor]: structuredClone(
+                lineStyles[LineStyleType.JREastSingleColor].defaultAttrs
+            ),
+        });
+        const renderer = await createVideoPreviewRenderer(
+            graph,
+            authoredTimeline(nodeEntry, { id: 'origin', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 }, edgeEntry, {
+                id: 'move',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 100,
+            }),
+            [],
+            defaultOptions
+        );
+        const live = await renderer.renderPreviewFrame(0);
+        const station = live.getElementById('stn_a');
+        const line = live.getElementById('line_ab');
+        const path = line?.querySelector('path');
+        const underlay = live.getElementById('line_ab.pre');
+        const underlayPath = underlay?.querySelector('path');
+        expect(station).not.toBeNull();
+        expect(path).not.toBeNull();
+        expect(underlayPath).not.toBeNull();
+        const originalPath = path!.getAttribute('d');
+        const geometry = new Set<string | null>();
+        for (const time of [0.1, 0.5, 1, 1.5, 2, 0.5, 0]) {
+            const next = await renderer.renderPreviewFrame(time);
+            expect(next).toBe(live);
+            expect(next.getElementById('stn_a')).toBe(station);
+            expect(next.getElementById('line_ab')).toBe(line);
+            expect(next.getElementById('line_ab')?.querySelector('path')).toBe(path);
+            expect(next.getElementById('line_ab.pre')).toBe(underlay);
+            expect(next.getElementById('line_ab.pre')?.querySelector('path')).toBe(underlayPath);
+            geometry.add(path!.getAttribute('d'));
+        }
+        expect(geometry.size).toBeGreaterThan(3);
+        expect(path!.getAttribute('d')).toBe(originalPath);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        // Live preview updates do not rasterize or serialize another SVG image.
+        expect(renderedSVGs).toHaveLength(1);
+        renderer.dispose();
+    });
+
+    it('returns independent snapshots matching export after live updates and snapshot edits', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 },
+            { ...edgeEntry, id: 'exit_ab', phase: 'exit' }
+        );
+        timeline.labelTrack = [
+            {
+                id: 'label',
+                kind: 'label',
+                text: '通车纪念\nOpening day',
+                startSlot: 0,
+                endSlot: 1,
+                startTime: 0.3,
+                endTime: 2.5,
+            },
+        ];
+        await exportVideo(graph, timeline, [], defaultOptions, 'white');
+        const exported = renderedSVGs.slice(1).map(rasterizedMarkup);
+        vi.mocked(makeRenderReadySVGElement).mockClear();
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const live = await renderer.renderPreviewFrame(0.3);
+        const first = await renderer.renderFrame(0.3);
+        const firstMarkup = first.outerHTML;
+        expect(first).not.toBe(live);
+        expect(first.getElementById('line_ab')).not.toBe(live.getElementById('line_ab'));
+        expect(rasterizedMarkup(first)).toBe(exported[9]);
+
+        await renderer.renderPreviewFrame(renderer.duration);
+        expect(first.outerHTML).toBe(firstMarkup);
+        first.setAttribute('data-snapshot-edit', 'detached');
+        first.getElementById('line_ab')?.remove();
+        for (const frame of [60, exported.length - 1, 9, 0, 90]) {
+            expect(await renderer.renderPreviewFrame(frame / defaultOptions.fps)).toBe(live);
+            const snapshot = await renderer.renderFrame(frame / defaultOptions.fps);
+            expect(snapshot).not.toBe(live);
+            expect(snapshot).not.toBe(first);
+            expect(rasterizedMarkup(snapshot)).toBe(exported[frame]);
+            expect(snapshot.hasAttribute('data-snapshot-edit')).toBe(false);
+        }
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
+    it('restores hidden groups, fades, line progress and camera when seeking backwards', async () => {
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            authoredTimeline(
+                nodeEntry,
+                edgeEntry,
+                { ...nodeEntry, id: 'exit_a', phase: 'exit' },
+                { ...edgeEntry, id: 'exit_ab', phase: 'exit' }
+            ),
+            [],
+            defaultOptions
+        );
+        const live = await renderer.renderPreviewFrame(0.1);
+        const station = live.getElementById('stn_a')!;
+        const line = live.getElementById('line_ab')!;
+        const path = line.querySelector('path')!;
+        const earlyMarkup = live.outerHTML;
+        expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.5);
+        expect(path.getAttribute('stroke-dasharray')).toBe('10 400');
+
+        const end = await renderer.renderPreviewFrame(renderer.duration);
+        expect(end).toBe(live);
+        expect(station.getAttribute('display')).toBe('none');
+        expect(line.getAttribute('display')).toBe('none');
+        const endSnapshot = await renderer.renderFrame(renderer.duration);
+        expect(endSnapshot.getElementById('stn_a')).toBeNull();
+        expect(endSnapshot.getElementById('line_ab')).toBeNull();
+
+        for (const time of [0.1, 2.5, renderer.duration, 0.1]) {
+            expect(await renderer.renderPreviewFrame(time)).toBe(live);
+            expect(live.getElementById('stn_a')).toBe(station);
+            expect(live.getElementById('line_ab')?.querySelector('path')).toBe(path);
+        }
+        expect(live.outerHTML).toBe(earlyMarkup);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
+    it('seeks in either direction with the exact same graph, animation and camera as export', async () => {
+        const graph = makeGraph(200);
+        const original = structuredClone(graph.export());
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 },
+            { ...edgeEntry, id: 'exit_ab', phase: 'exit' }
+        );
+        await exportVideo(graph, timeline, [], defaultOptions, 'white');
+        const exported = renderedSVGs.slice(1).map(rasterizedMarkup);
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        expect(renderer.duration).toBe(exported.length / defaultOptions.fps);
+        expect(renderer.cursorTimes.at(-1)).toBe(renderer.duration);
+        for (const frame of [90, 9, exported.length - 1, 60, 9, 0, 90]) {
+            const svg = await renderer.renderFrame(frame / defaultOptions.fps);
+            expect(rasterizedMarkup(svg)).toBe(exported[frame]);
+            svg.remove();
+        }
+        expect(graph.export()).toEqual(original);
+        renderer.dispose();
+    });
+
+    it('shows labels during their exact time span without year, line metadata or matching slots', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.labelTrack = [
+            { id: 'label', kind: 'label', text: '通车纪念', startSlot: 1, endSlot: 2, startTime: 1, endTime: 2 },
+        ];
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const duration = renderer.duration;
+        const times = [...renderer.cursorTimes];
+        for (const [time, text] of [
+            [0.5, null],
+            [1, '通车纪念'],
+            [1.9, '通车纪念'],
+            [2, null],
+            [1, '通车纪念'],
+        ] as const) {
+            const svg = await renderer.renderPreviewFrame(time);
+            expect(svg.querySelector('[data-video-label]')?.textContent ?? null).toBe(text);
+        }
+        renderer.setLabelTrack([{ ...timeline.labelTrack[0], text: 'Updated', startTime: 0, endTime: duration }]);
+        expect((await renderer.renderPreviewFrame(1)).querySelector('[data-video-label]')?.textContent).toBe('Updated');
+        renderer.setLabelTrack([]);
+        expect((await renderer.renderPreviewFrame(1)).querySelector('[data-video-label]')).toBeNull();
+        expect(renderer.duration).toBe(duration);
+        expect(renderer.cursorTimes).toEqual(times);
+        renderer.dispose();
+    });
+
+    it('uses saved drawing speed and shows the current line opening year and bilingual label', async () => {
+        const graph = makeGraph(200);
+        graph.setAttribute('lineDefinitions', [
+            {
+                id: 'metro',
+                edgeIds: ['line_ab'],
+                name: ['地铁一号线', 'Metro Line 1'],
+                lineNumber: '1',
+                openingDate: '1999-10-01',
+                operator: '',
+                status: 'operating',
+                notes: '',
+                exportStartStationId: 'stn_a',
+            },
+        ]);
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings = {
+            cameraZoom: 2,
+            speedMultiplier: 2,
+            autoChangeStationType: false,
+            showYear: true,
+            showLineName: true,
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        expect(renderer.duration).toBeCloseTo(2 + 1 / 30);
+        const svg = await renderer.renderFrame(0.5);
+        expect(svg.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('100 400');
+        const overlay = svg.getElementById('rmp_video_line_overlay')!;
+        expect(overlay.textContent).toBe('199910-01地铁一号线Metro Line 1');
+        const labels = overlay.querySelectorAll('text');
+        expect(labels[1].textContent).toBe('10-01');
+        expect(Number(labels[1].getAttribute('y'))).toBeGreaterThan(Number(labels[0].getAttribute('y')));
+        expect(Number(labels[2].getAttribute('y'))).toBeGreaterThan(Number(labels[1].getAttribute('y')));
+        expect(Number(labels[2].getAttribute('font-size'))).toBeGreaterThan(
+            Number(labels[3].getAttribute('font-size'))
+        );
+        expect(overlay.querySelector('rect[width="7"]')?.getAttribute('fill')).toBe(
+            graph.getEdgeAttribute('line_ab', LineStyleType.SingleColor)!.color[2]
+        );
+        renderer.dispose();
+    });
+
+    it('resolves audio placements in real seconds instead of their original slots', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        const audio = new Blob(['audio']);
+        timeline.audioTrack = [
+            {
+                id: 'music',
+                kind: 'audio',
+                blobId: 'music-asset',
+                name: 'Music',
+                startSlot: 0,
+                endSlot: 2,
+                startTime: 0.35,
+                endTime: 1.2,
+            },
+        ];
+        await exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white', undefined, {
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+            svgViewBoxMin: { x: 0, y: 0 },
+            svgViewBoxZoom: 100,
+            getAudio: async () => audio,
+        });
+        expect(vi.mocked(createVideoFrameWriter).mock.calls[0][1].audioTracks).toEqual([
+            { blob: audio, start: 0.35, end: 1.2 },
+        ]);
+    });
+});
+
+it('renders only the entered segment of a reconciled group and preserves its source graph', async () => {
+    const graph = makeGraph(200);
+    graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+    graph.addDirectedEdgeWithKey('line_bc', 'stn_b', 'stn_c', structuredClone(graph.getEdgeAttributes('line_ab')));
+    graph.setEdgeAttribute('line_ab', 'reconcileId', 'reconciled');
+    graph.setEdgeAttribute('line_bc', 'reconcileId', 'reconciled');
+    const original = structuredClone(graph.export());
+    const renderer = await createVideoPreviewRenderer(
+        graph,
+        authoredTimeline(nodeEntry, edgeEntry),
+        [],
+        defaultOptions
+    );
+    const svg = await renderer.renderFrame(0.5);
+    expect(svg.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray')).toBe('50 400');
+    expect(svg.getElementById('line_bc')).toBeNull();
+    expect(graph.export()).toEqual(original);
+    renderer.dispose();
+});
+
+it('preloads project images and includes them in every rendered frame', async () => {
+    const graph = makeGraph(200);
+    graph.addNode('misc_node_image', {
+        visible: true,
+        zIndex: 0,
+        x: 20,
+        y: 20,
+        type: MiscNodeType.Image,
+        [MiscNodeType.Image]: { type: 'local', href: 'image', scale: 2, rotate: 15, opacity: 0.8 },
+    });
+    const getImage = vi.fn(async () => 'data:image/png;base64,aW1hZ2U=');
+    const renderer = await createVideoPreviewRenderer(graph, createEmptyTimelineDocument(), [], defaultOptions, {
+        mapEnabled: false,
+        mapStyle: DEFAULT_MAP_STYLE,
+        svgViewBoxMin: { x: 0, y: 0 },
+        svgViewBoxZoom: 100,
+        getImage,
+    });
+    for (const time of [0.5, 1.5, 0.5]) {
+        const image = (await renderer.renderFrame(time)).getElementById('misc_node_image')?.querySelector('image');
+        expect(image?.getAttribute('href')).toBe('data:image/png;base64,aW1hZ2U=');
+        expect(image?.getAttribute('opacity')).toBe('0.8');
+        expect(image?.parentElement?.getAttribute('transform')).toBe('rotate(15) scale(2)');
+    }
+    expect(getImage).toHaveBeenCalledExactlyOnceWith('image');
+    expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+    renderer.dispose();
 });

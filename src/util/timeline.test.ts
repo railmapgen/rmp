@@ -2,7 +2,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
-import { TimelineDocument } from '../constants/timeline';
+import { createEmptyTimelineDocument, DEFAULT_TIMELINE_SETTINGS, TimelineDocument } from '../constants/timeline';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     appendTimelineEntry,
@@ -17,6 +17,7 @@ import {
     insertKeyframeEntry,
     moveTimelineEntry,
     normalizeTimelineDocument,
+    insertTimelineLabel,
     removeTimelineEntry,
     updateKeyframePosition,
 } from './timeline';
@@ -209,12 +210,101 @@ describe('timeline utilities', () => {
         expect(moveTimelineEntry(withExit, 1, 0)).toBe(withExit);
     });
 
+    it('inserts an independent label at the cursor and normalizes portable label data', () => {
+        const initial = appendTimelineEntry(appendTimelineEntry(emptyDocument(), 'stn_a'), 'line_ab');
+        const doc = insertTimelineLabel(initial, '中文\nEnglish <&>', 1);
+        expect(doc.track).toBe(initial.track);
+        expect(doc.labelTrack![0]).toMatchObject({
+            kind: 'label',
+            text: '中文\nEnglish <&>',
+            startSlot: 1,
+            endSlot: 2,
+        });
+        const label = { ...doc.labelTrack![0], startTime: 0.123456, endTime: 4.75 };
+        const normalized = normalizeTimelineDocument({
+            ...doc,
+            labelTrack: [label, { ...label, text: null }, { ...label, startSlot: -1 }],
+        } as never);
+        expect(normalized.labelTrack).toEqual([label]);
+        expect(
+            normalizeTimelineDocument({ ...doc, labelTrack: [{ ...label, startTime: -1, endTime: Infinity }] })
+                .labelTrack![0]
+        ).not.toHaveProperty('startTime');
+        expect(
+            normalizeTimelineDocument({ ...doc, labelTrack: [{ ...label, startTime: 4, endTime: 1 }] }).labelTrack![0]
+                .endTime
+        ).toBe(4);
+    });
+
     it('normalizeTimelineDocument should fallback to an empty document', () => {
-        expect(normalizeTimelineDocument(undefined)).toEqual({ version: 1, track: [] });
+        expect(normalizeTimelineDocument(undefined)).toEqual(createEmptyTimelineDocument());
         expect(normalizeTimelineDocument({ version: 1, track: [{} as never] })).toEqual({
             version: 1,
             track: [],
         });
+    });
+
+    it('preserves project settings and normalizes invalid playback values', () => {
+        const settings = {
+            cameraZoom: 8 as const,
+            speedMultiplier: 1.7,
+            autoChangeStationType: false,
+            showYear: true,
+            showLineName: true,
+        };
+        expect(normalizeTimelineDocument({ version: 1, track: [], settings }).settings).toEqual(settings);
+        expect(
+            normalizeTimelineDocument({
+                version: 1,
+                track: [],
+                settings: { speedMultiplier: Number.NaN, autoChangeStationType: undefined } as never,
+            }).settings
+        ).toEqual(DEFAULT_TIMELINE_SETTINGS);
+        expect(
+            normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, speedMultiplier: 10 } })
+                .settings?.speedMultiplier
+        ).toBe(2);
+        for (const cameraZoom of [1, 2, 4, 8, 16]) {
+            expect(
+                normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, cameraZoom } } as never)
+                    .settings?.cameraZoom
+            ).toBe(cameraZoom);
+        }
+        for (const cameraZoom of [0, 3, 100, '4', Number.NaN]) {
+            expect(
+                normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, cameraZoom } } as never)
+                    .settings?.cameraZoom
+            ).toBe(DEFAULT_TIMELINE_SETTINGS.cameraZoom);
+        }
+    });
+
+    it('keeps precise audio times and falls back to slots when times are invalid', () => {
+        const clip = {
+            id: 'audio',
+            kind: 'audio' as const,
+            blobId: 'blob',
+            name: 'Music',
+            startSlot: 1,
+            endSlot: 3,
+            startTime: 0.125,
+            endTime: 4.75,
+        };
+        expect(normalizeTimelineDocument({ version: 1, track: [], audioTrack: [clip] }).audioTrack).toEqual([clip]);
+        const invalid = normalizeTimelineDocument({
+            version: 1,
+            track: [],
+            audioTrack: [{ ...clip, startTime: -1, endTime: Number.POSITIVE_INFINITY }],
+        }).audioTrack![0];
+        expect(invalid).not.toHaveProperty('startTime');
+        expect(invalid).not.toHaveProperty('endTime');
+        expect(invalid).toMatchObject({ startSlot: 1, endSlot: 3 });
+        expect(
+            normalizeTimelineDocument({
+                version: 1,
+                track: [],
+                audioTrack: [{ ...clip, startTime: 5, endTime: 2 }],
+            }).audioTrack![0].endTime
+        ).toBe(5);
     });
 
     it('normalizeTimelineDocument should fill advanced entry defaults and discard legacy mode', () => {

@@ -12,7 +12,6 @@ import {
 } from '../constants/timeline';
 import {
     applyNodeRevealAnimation,
-    applyZoomScale,
     createFrameStationGraph,
     embedVideoExportStyles,
     generateAnimationSequence,
@@ -649,18 +648,12 @@ describe('embedVideoExportStyles', () => {
 });
 
 describe('interpolateCameraZoom', () => {
-    it('treats fit-to-elements as 100%', () => {
-        expect(applyZoomScale(8, 100)).toBe(8);
-        expect(applyZoomScale(8, 200)).toBe(16);
-        expect(applyZoomScale(8, 50)).toBe(4);
-    });
-
-    it('uses the configured current and fullscreen scales at the transition endpoints', () => {
+    it('uses the current zoom and whole-map fit at the transition endpoints', () => {
         expect(interpolateCameraZoom(200, 25, 0)).toBe(200);
         expect(interpolateCameraZoom(200, 25, 1)).toBe(25);
     });
 
-    it('smoothly interpolates between independently configured scales', () => {
+    it('smoothly interpolates from the camera zoom to the whole-map fit', () => {
         expect(interpolateCameraZoom(300, 40, 0.5)).toBe(170);
     });
 

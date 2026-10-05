@@ -24,12 +24,7 @@ export const createVideoFrameWriter = async (
     options: VideoEncodingOptions,
     forceSoftware = false
 ): Promise<VideoFrameWriter> => {
-    if (
-        !forceSoftware &&
-        !options.audioTracks?.length &&
-        typeof VideoEncoder !== 'undefined' &&
-        typeof VideoFrame !== 'undefined'
-    ) {
+    if (!forceSoftware && typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
         const { BufferTarget, CanvasSource, Mp4OutputFormat, Output, WebMOutputFormat, canEncodeVideo, Quality } =
             await import('mediabunny');
         const codecs = options.format === 'mp4' ? (['avc'] as const) : (['vp9', 'vp8'] as const);
@@ -66,13 +61,19 @@ export const createVideoFrameWriter = async (
                         }
                     },
                     async complete() {
+                        let video: Blob;
                         try {
                             await activeOutput.finalize();
                             if (!target.buffer) throw new Error('Video encoder returned no output');
-                            return new Blob([target.buffer], { type: `video/${options.format}` });
+                            video = new Blob([target.buffer], { type: `video/${options.format}` });
                         } catch (error) {
                             throw new NativeVideoEncodingError(error);
                         }
+                        // Audio should not force all video frames through the slower WASM encoder.
+                        // Copy the encoded picture into the final container when adding the soundtrack.
+                        if (!options.audioTracks?.length) return video;
+                        const { muxVideoAudio } = await import('./video-audio-mux');
+                        return muxVideoAudio(video, options);
                     },
                     async dispose() {
                         if (activeOutput.state !== 'finalized') await activeOutput.cancel();

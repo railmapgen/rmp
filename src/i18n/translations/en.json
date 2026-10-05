@@ -11,7 +11,6 @@
     "close": "Close",
     "noShowAgain": "Don't show me again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
-
     "panel": {
         "tools": {
             "showLess": "Show less",
@@ -788,7 +787,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "Line information settings",
@@ -873,11 +871,15 @@
             "downloadProject": "Download Timeline project",
             "exportVideo": "Export video",
             "insert": "Insert",
+            "insertLabel": "Label",
+            "editLabel": "Edit label",
+            "labelText": "Label text",
+            "saveLabel": "Save",
             "insertAudio": "Audio",
             "audioTrack": "Audio track",
             "noAudio": "No audio clips. Use Insert > Audio to add one.",
-            "audioStart": "Audio start (seconds)",
-            "audioEnd": "Audio end (seconds)",
+            "audioStart": "Start time (seconds)",
+            "audioEnd": "End time (seconds)",
             "audioMissing": "Audio data is missing. Re-import this file to restore it.",
             "insertKeyframe": "Keyframe",
             "insertExitAnimation": "Insert exit animation for selected item",
@@ -939,7 +941,47 @@
                     "tip": "The video plays the track from left to right. Use the Play button for a quick preview before exporting.",
                     "imageAlt": "Illustration highlighting the Export video item inside the Files menu"
                 }
-            }
+            },
+            "settings": {
+                "title": "Timeline settings",
+                "description": "Adjust playback and labels. Changes appear in the preview and exported video.",
+                "playback": "Playback",
+                "overlays": "Video labels",
+                "lineInformation": "Line information",
+                "showYear": "Show year",
+                "showYearHint": "Display the current opening year in the upper-left corner.",
+                "showLineName": "Label line names",
+                "showLineNameHint": "Display the line color, Chinese name, and English name below the year.",
+                "savedWithProject": "Saved with this Timeline project",
+                "done": "Done",
+                "cameraZoom": "Zoom",
+                "cameraZoomFull": "Full"
+            },
+            "lineLabels": {
+                "title": "Line label information",
+                "description": "Customize the names, color and opening date shown in this Timeline video. These labels are saved only in this Timeline project.",
+                "empty": "No line information is available. Import an RMP project with line definitions to customize its video labels.",
+                "color": "Label color",
+                "invalidColor": "Enter a valid hexadecimal color, such as #1677ff.",
+                "reset": "Use imported line information",
+                "resetHint": "Restore this line’s labels from the imported RMP information.",
+                "saved": "Changes are saved in this Timeline project and appear in preview and export."
+            },
+            "rmpImport": {
+                "title": "Import RMP data",
+                "applyLineInfo": "Populate Timeline from line information",
+                "description": "Draw lines by opening date, from each configured start station to its endpoints. Lines without a date follow last.",
+                "summary": "{{lines}} lines · {{nodes}} nodes · {{edges}} edges",
+                "unavailable": "No line information is available. You can still import the map and edit Timeline manually.",
+                "replaceTrack": "This replaces the visual track. Audio clips and playback settings are kept.",
+                "syncSummary": "Map changes: +{{addedNodes}}/−{{removedNodes}} nodes, +{{addedEdges}}/−{{removedEdges}} edges. {{removedEntries}} invalid Timeline entries will be removed."
+            },
+            "playbackPosition": "Playback position",
+            "preparingPreview": "Preparing video preview…",
+            "previewFailed": "Unable to load preview",
+            "audioDuration": "Source duration: {{duration}} seconds",
+            "audioTiming": "Edit audio timing",
+            "retryPreview": "Reload preview"
         },
         "mapToggle": {
             "show": "Show geographic map",
@@ -994,7 +1036,6 @@
                 "title": "Export Video",
                 "groups": {
                     "output": "Output settings",
-                    "viewport": "Viewport settings",
                     "rendering": "Rendering settings",
                     "sharing": "Sharing and permissions"
                 },
@@ -1009,8 +1050,6 @@
                     "4k": "4K (3840×2160)"
                 },
                 "quality": "Video quality",
-                "currentScale": "Current viewport zoom (fit all = 100%)",
-                "fullscreenScale": "Fullscreen viewport zoom (fit all = 100%)",
                 "autoChangeStationType": "Automatically switch basic and interchange stations",
                 "autoChangeStationTypeHint": "When enabled, the following supported interchange stations are updated automatically based on the lines currently visible in the video: {{stations}}.",
                 "autoChangeStationTypeWarning": "If station-name positioning or interchange information in the video differs from the current map, turn off “Automatically switch basic and interchange stations” to render stations exactly as they appear on the map.",
@@ -1246,7 +1285,6 @@
             "zulipContent": "Join our community on Zulip!"
         }
     },
-
     "contextMenu": {
         "refresh": "Refresh",
         "cut": "Cut",
@@ -1265,7 +1303,6 @@
         "flipDiagonal135": "Flip across 135° line",
         "reconcile": "Reconcile"
     },
-
     "clipboard": {
         "errors": {
             "readText": "Failed to read the clipboard. Check browser permissions and try again.",
@@ -1273,7 +1310,6 @@
             "cannotPasteSpecificAttrs": "Unable to paste specific attributes. Make sure compatible targets are selected and the clipboard contains valid specific-attribute data."
         }
     },
-
     "localStorageQuotaExceeded": "Local storage limit reached. Unable to save new changes.",
     "map": {
         "loading": "Loading map",

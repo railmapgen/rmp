@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
     cancel: vi.fn(),
     addVideoTrack: vi.fn(),
     software: vi.fn(),
+    muxVideoAudio: vi.fn(),
 }));
 
 vi.mock('mediabunny', () => ({
@@ -35,6 +36,7 @@ vi.mock('mediabunny', () => ({
     },
 }));
 vi.mock('./video-encoder-software', () => ({ createSoftwareVideoFrameWriter: mocks.software }));
+vi.mock('./video-audio-mux', () => ({ muxVideoAudio: mocks.muxVideoAudio }));
 
 const options: VideoEncodingOptions = { format: 'mp4', fps: 30, quality: 95, isTransparent: false };
 let canvas: HTMLCanvasElement;
@@ -44,6 +46,7 @@ beforeEach(() => {
     vi.stubGlobal('VideoEncoder', class {});
     vi.stubGlobal('VideoFrame', class {});
     mocks.canEncodeVideo.mockResolvedValue(true);
+    mocks.muxVideoAudio.mockResolvedValue(new Blob(['video with soundtrack'], { type: 'video/mp4' }));
     canvas = document.createElement('canvas');
     canvas.width = 1920;
     canvas.height = 1080;
@@ -86,6 +89,62 @@ describe('browser video encoding', () => {
         expect((await writer.complete()).type).toBe('video/webm');
         expect(mocks.software).not.toHaveBeenCalled();
     });
+
+    it.each(['mp4', 'webm'] as const)(
+        'keeps native %s video encoding when an M4A soundtrack is present',
+        async format => {
+            const requested = {
+                ...options,
+                format,
+                audioTracks: [{ blob: new Blob(['m4a'], { type: 'audio/mp4' }), start: 0.35, end: 3.2 }],
+            };
+            const soundtrack = new Blob(['muxed video'], { type: `video/${format}` });
+            mocks.muxVideoAudio.mockResolvedValueOnce(soundtrack);
+            const writer = await createVideoFrameWriter(canvas, requested);
+            await writer.addFrame(0);
+            await writer.addFrame(1);
+            expect(mocks.muxVideoAudio).not.toHaveBeenCalled();
+            expect(await writer.complete()).toBe(soundtrack);
+            expect(mocks.finalize).toHaveBeenCalledOnce();
+            expect(mocks.muxVideoAudio).toHaveBeenCalledExactlyOnceWith(
+                expect.objectContaining({ type: `video/${format}` }),
+                requested
+            );
+            expect(mocks.add.mock.calls).toEqual([
+                [0, 1 / 30],
+                [1 / 30, 1 / 30],
+            ]);
+            expect(mocks.software).not.toHaveBeenCalled();
+            await writer.dispose();
+        }
+    );
+
+    it('does not retry rendering the video when audio muxing fails', async () => {
+        const requested = { ...options, audioTracks: [{ blob: new Blob(['broken']), start: 0, end: 1 }] };
+        const error = new Error('Audio stream could not be decoded');
+        mocks.muxVideoAudio.mockRejectedValueOnce(error);
+        const writer = await createVideoFrameWriter(canvas, requested);
+        await writer.addFrame(0);
+        await expect(writer.complete()).rejects.toBe(error);
+        expect(mocks.software).not.toHaveBeenCalled();
+        await writer.dispose();
+        expect(mocks.cancel).not.toHaveBeenCalled();
+    });
+
+    it.each(['missing-api', 'unsupported', 'retry'])(
+        'retains the M4A soundtrack in the %s software fallback',
+        async reason => {
+            const requested = {
+                ...options,
+                audioTracks: [{ blob: new Blob(['m4a'], { type: 'audio/mp4' }), start: 0.2, end: 1.5 }],
+            };
+            if (reason === 'missing-api') vi.stubGlobal('VideoEncoder', undefined);
+            if (reason === 'unsupported') mocks.canEncodeVideo.mockResolvedValue(false);
+            await createVideoFrameWriter(canvas, requested, reason === 'retry');
+            expect(mocks.software).toHaveBeenCalledExactlyOnceWith(canvas, requested);
+            expect(mocks.muxVideoAudio).not.toHaveBeenCalled();
+        }
+    );
 
     it.each(['missing-api', 'unsupported', 'probe-error', 'retry'])(
         'uses software encoding for %s without changing the requested settings',

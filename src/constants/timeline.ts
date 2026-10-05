@@ -40,25 +40,76 @@ export type TimelineEntry = TimelineElementEntry | TimelineKeyframeEntry | Timel
  * Audio is deliberately kept out of the visual track so clips may overlap.
  * `startSlot`/`endSlot` are discrete cursor indices (0 = before the first entry,
  * track.length = after the last one), snapped to the centre of each insertion cursor.
+ * `startTime`/`endTime`, when set, place clips at exact video times in seconds.
  */
-export interface TimelineAudioEntry {
+export interface TimelineTimedEntry {
     id: string;
+    kind: 'audio' | 'label';
+    startSlot: number;
+    endSlot: number;
+    startTime?: number;
+    endTime?: number;
+    /** Initial label span in seconds, until its end is placed explicitly. */
+    duration?: number;
+}
+
+export const TIMELINE_LABEL_DEFAULT_SECONDS = 15;
+
+export interface TimelineAudioEntry extends TimelineTimedEntry {
     kind: 'audio';
     blobId: string;
     name: string;
-    startSlot: number;
-    endSlot: number;
 }
+
+/** Text overlays occupy their own lane and never change the map animation schedule. */
+export interface TimelineLabelEntry extends TimelineTimedEntry {
+    kind: 'label';
+    text: string;
+}
+
+export const TIMELINE_CAMERA_ZOOM_LEVELS = [1, 2, 4, 8, 16] as const;
+export type TimelineCameraZoom = (typeof TIMELINE_CAMERA_ZOOM_LEVELS)[number];
+export const isTimelineCameraZoom = (value: unknown): value is TimelineCameraZoom =>
+    typeof value === 'number' && TIMELINE_CAMERA_ZOOM_LEVELS.includes(value as TimelineCameraZoom);
+
+export interface TimelineSettings {
+    speedMultiplier: number;
+    cameraZoom: TimelineCameraZoom;
+    autoChangeStationType: boolean;
+    showYear: boolean;
+    showLineName: boolean;
+}
+
+export const DEFAULT_TIMELINE_SETTINGS: TimelineSettings = {
+    speedMultiplier: 1,
+    cameraZoom: 2,
+    autoChangeStationType: true,
+    showYear: false,
+    showLineName: false,
+};
 
 export interface TimelineDocument {
     version: typeof TIMELINE_DOCUMENT_VERSION;
     track: TimelineEntry[];
     audioTrack?: TimelineAudioEntry[];
+    labelTrack?: TimelineLabelEntry[];
+    settings?: TimelineSettings;
 }
+
+export const getTimelineSettings = (document: TimelineDocument): TimelineSettings => {
+    const settings = { ...DEFAULT_TIMELINE_SETTINGS, ...document.settings };
+    return {
+        ...settings,
+        cameraZoom: isTimelineCameraZoom(settings.cameraZoom)
+            ? settings.cameraZoom
+            : DEFAULT_TIMELINE_SETTINGS.cameraZoom,
+    };
+};
 
 export const createEmptyTimelineDocument = (): TimelineDocument => ({
     version: TIMELINE_DOCUMENT_VERSION,
     track: [],
+    settings: { ...DEFAULT_TIMELINE_SETTINGS },
 });
 
 export const isNodeTimelineEntry = (id: Id): id is NodeId => !id.startsWith('line_');
