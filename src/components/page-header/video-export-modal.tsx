@@ -22,7 +22,6 @@ import {
     Text,
     Tooltip,
     useColorModeValue,
-    useToken,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import rmgRuntime from '@railmapgen/rmg-runtime';
@@ -45,8 +44,6 @@ interface VideoExportModalProps {
 }
 
 export default function VideoExportModal({ isOpen, onClose }: VideoExportModalProps) {
-    const [lightBackground, darkBackground] = useToken('colors', ['white', 'gray.800']);
-    const bgColor = useColorModeValue(lightBackground, darkBackground);
     const sectionHeadingColor = useColorModeValue('gray.600', 'gray.300');
     const dispatch = useTimelineDispatch();
     const active = useTimelineSelector(state => state.project.active)!;
@@ -125,7 +122,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 timeline,
                 languages,
                 options,
-                bgColor,
+                'white',
                 progress => setVideoProgress(progress * 100),
                 {
                     mapEnabled: active.revision.mapEnabled,

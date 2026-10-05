@@ -548,7 +548,7 @@ describe('renderBasicStationMarkup', () => {
         const markup = renderStationMarkup(graph, 'stn_suzhou')!;
         const container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         container.innerHTML = markup;
-        applyNodeRevealAnimation(container, 1, 1, undefined, true);
+        applyNodeRevealAnimation(container, 1, 1, true);
 
         expect(container.getAttribute('opacity')).toBe('1');
         expect(container.querySelector('#stn_core_stn_suzhou')?.getAttribute('opacity')).toBe('0');
@@ -561,7 +561,7 @@ describe('renderBasicStationMarkup', () => {
         const container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         container.innerHTML = '<g class="rmp-name-outline"><text>Interchange</text></g>';
 
-        applyNodeRevealAnimation(container, 0.5, 0.25, undefined, true);
+        applyNodeRevealAnimation(container, 0.5, 0.25, true);
 
         expect(container.getAttribute('opacity')).toBe('0.5');
         expect(container.querySelector('text')?.textContent).toBe('Interchange');
@@ -573,7 +573,7 @@ describe('renderBasicStationMarkup', () => {
         container.innerHTML =
             '<circle id="station-core" opacity="0.4"></circle><g class="rmp-name-outline"><text>Station</text></g>';
 
-        applyNodeRevealAnimation(container, 0.5, 0.5, undefined, true);
+        applyNodeRevealAnimation(container, 0.5, 0.5, true);
 
         expect(container.getAttribute('opacity')).toBe('0.5');
         expect(container.querySelector('#station-core')?.getAttribute('opacity')).toBe('0.4');
@@ -691,16 +691,25 @@ describe('getStationActivationProgress', () => {
 });
 
 describe('getNodeRevealProgressForFrame', () => {
-    it('fades stations and their names in together over 0.2 seconds', () => {
+    it.each([5, 10, 15, 24, 30, 60])('finishes the short station fade by 0.4 seconds at %s FPS', fps => {
+        const endFrame = Math.ceil(fps * 0.4);
+        expect(getNodeRevealProgressForFrame('stn_station', endFrame, 0, fps)).toEqual({
+            nodeProgress: 1,
+            textProgress: 1,
+        });
+        expect(getNodeRevealProgressForFrame('stn_station', endFrame - 1, 0, fps).nodeProgress).toBeLessThan(1);
+    });
+
+    it('fades stations and their names in together over 0.4 seconds', () => {
         expect(getNodeRevealProgressForFrame('stn_station', 10, 10, 30)).toEqual({
             nodeProgress: 0,
             textProgress: 0,
         });
-        expect(getNodeRevealProgressForFrame('stn_station', 13, 10, 30)).toEqual({
+        expect(getNodeRevealProgressForFrame('stn_station', 16, 10, 30)).toEqual({
             nodeProgress: 0.5,
             textProgress: 0.5,
         });
-        expect(getNodeRevealProgressForFrame('stn_station', 16, 10, 30)).toEqual({
+        expect(getNodeRevealProgressForFrame('stn_station', 22, 10, 30)).toEqual({
             nodeProgress: 1,
             textProgress: 1,
         });

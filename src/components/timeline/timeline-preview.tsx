@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, Box, Button, Flex, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Button, Flex, Spinner, Text } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TimelineDocument, TimelineKeyframeEntry, TimelineLabelEntry } from '../../constants/timeline';
@@ -42,8 +42,6 @@ export default function TimelinePreview({
     onKeyframeMove,
 }: TimelinePreviewProps) {
     const { t } = useTranslation();
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
-    const transparent = options.isTransparent && options.format === 'webm';
     const containerRef = React.useRef<HTMLDivElement>(null);
     const latestTime = React.useRef(time);
     latestTime.current = time;
@@ -283,11 +281,7 @@ export default function TimelinePreview({
                 flexShrink={0}
                 aspectRatio={16 / 9}
                 overflow="hidden"
-                bg={transparent ? 'transparent' : bgColor}
-                backgroundImage={
-                    transparent ? 'conic-gradient(#d1d5db 25%, #f3f4f6 0 50%, #d1d5db 0 75%, #f3f4f6 0)' : undefined
-                }
-                backgroundSize="16px 16px"
+                bg="white"
                 data-video-preview
             >
                 <Box

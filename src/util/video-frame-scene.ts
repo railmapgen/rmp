@@ -1,7 +1,6 @@
 import { Id, LineId, NodeId } from '../constants/constants';
 
 export const VIDEO_FRAME_BASE_VARIANT = 'base';
-const StationTransitionScale = 0.96;
 
 export interface VideoFrameSceneOptions {
     nodeIds: Iterable<NodeId>;
@@ -15,8 +14,6 @@ export interface VideoSceneNodeState {
     progress?: number;
     /** Retained for the shared frame-state contract; the current animation fades names with their node. */
     textProgress?: number;
-    transitionProgress?: number;
-    transitionOpacity?: number;
     transform?: string;
 }
 
@@ -33,8 +30,6 @@ export interface VideoFrameSceneState {
     textProgress?: ReadonlyMap<NodeId, number>;
     edgeProgress: ReadonlyMap<LineId, number>;
     edgeDirections: ReadonlyMap<LineId, boolean>;
-    nodeTransitionProgress?: ReadonlyMap<NodeId, number>;
-    nodeTransitionOpacity?: ReadonlyMap<NodeId, number>;
     nodeTransforms?: ReadonlyMap<NodeId, string>;
     viewBox?: string | { x: number; y: number; width: number; height: number };
 }
@@ -142,11 +137,7 @@ const captureBaselines = (record: GroupRecord) => {
 };
 
 const sameNodeState = (a: VideoSceneNodeState | undefined, b: VideoSceneNodeState) =>
-    a?.visible === b.visible &&
-    a.progress === b.progress &&
-    a.transitionProgress === b.transitionProgress &&
-    a.transitionOpacity === b.transitionOpacity &&
-    a.transform === b.transform;
+    a?.visible === b.visible && a.progress === b.progress && a.transform === b.transform;
 
 const sameEdgeState = (a: VideoSceneEdgeState | undefined, b: VideoSceneEdgeState) =>
     a?.visible === b.visible && a.progress === b.progress && a.reverse === b.reverse;
@@ -220,26 +211,15 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
         const state: VideoSceneNodeState = {
             visible: input.visible,
             progress: clamp01(input.progress),
-            transitionProgress: input.transitionProgress === undefined ? undefined : clamp01(input.transitionProgress),
-            transitionOpacity: clamp01(input.transitionOpacity),
             transform: input.transform,
         };
         if (!dirty.has(id) && sameNodeState(nodeStates.get(id), state)) return;
         for (const record of ownerGroups.get(id) ?? []) {
             writeAttribute(record.element, 'display', state.visible ? record.display : 'none');
             if (!state.visible) continue;
-            const transform = state.transform ?? record.transform;
-            const scaled =
-                state.transitionProgress !== undefined && !(transform ?? '').includes('scale(')
-                    ? `${transform ?? ''} scale(${StationTransitionScale + (1 - StationTransitionScale) * state.transitionProgress})`
-                    : transform;
-            writeAttribute(record.element, 'transform', scaled);
+            writeAttribute(record.element, 'transform', state.transform ?? record.transform);
             if (id.startsWith('stn_')) {
-                writeAttribute(
-                    record.element,
-                    'opacity',
-                    String(record.opacity * state.progress! * state.transitionOpacity!)
-                );
+                writeAttribute(record.element, 'opacity', String(record.opacity * state.progress!));
             } else {
                 for (const target of record.opacityTargets) {
                     writeAttribute(
@@ -366,8 +346,6 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
                 visible: true,
                 progress: state.nodeProgress.get(id),
                 textProgress: state.textProgress?.get(id),
-                transitionProgress: state.nodeTransitionProgress?.get(id),
-                transitionOpacity: state.nodeTransitionOpacity?.get(id),
                 transform: state.nodeTransforms?.get(id),
             });
         }

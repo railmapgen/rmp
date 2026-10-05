@@ -69,25 +69,25 @@ describe('persistent video frame scene', () => {
         observer.disconnect();
     });
 
-    it('fades stations and transitions from clean baselines in either seek direction', () => {
+    it('fades stations at their original size from clean baselines in either seek direction', () => {
         const { scene } = makeScene();
         const station = scene.getGroup('stn_a')!;
         const hitRegion = station.querySelector('.hit')!;
-        scene.applyNode('stn_a', { visible: true, progress: 0.5, transitionProgress: 0.25, transitionOpacity: 0.94 });
-        expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.376);
-        expect(station.getAttribute('transform')).toBe('translate(10, 20) scale(0.97)');
+        scene.applyNode('stn_a', { visible: true, progress: 0.5 });
+        expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.4);
+        expect(station.getAttribute('transform')).toBe('translate(10, 20)');
         expect(hitRegion.getAttribute('opacity')).toBe('0');
 
-        scene.applyNode('stn_a', { visible: true, progress: 0.2, transitionProgress: 0 });
+        scene.applyNode('stn_a', { visible: true, progress: 0.2 });
         expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.16);
-        expect(station.getAttribute('transform')).toBe('translate(10, 20) scale(0.96)');
+        expect(station.getAttribute('transform')).toBe('translate(10, 20)');
         scene.applyNode('stn_a', { visible: true });
         expect(station.getAttribute('opacity')).toBe('0.8');
         expect(station.getAttribute('transform')).toBe('translate(10, 20)');
         expect(scene.getGroup('stn_a.post')!.getAttribute('opacity')).toBe('1');
     });
 
-    it('restores explicit node positions, avoids doubling an existing scale, and can force a same-time refresh', () => {
+    it('restores explicit node positions, preserves an existing scale, and can force a same-time refresh', () => {
         const { scene } = makeScene();
         const station = scene.getGroup('stn_a')!;
         scene.applyNode('stn_a', { visible: true, transform: 'translate(50, 60)' });
@@ -99,7 +99,7 @@ describe('persistent video frame scene', () => {
         scene.applyNode('stn_a', { visible: true });
         expect(station.getAttribute('transform')).toBe('translate(10, 20)');
 
-        scene.applyNode('stn_b', { visible: true, transitionProgress: 0.5 });
+        scene.applyNode('stn_b', { visible: true, progress: 0.5 });
         expect(scene.getGroup('stn_b')!.getAttribute('transform')).toBe('translate(30, 40) scale(2)');
     });
 
@@ -210,7 +210,6 @@ describe('persistent video frame scene', () => {
                 ]),
                 edgeProgress: new Map([['line_ab', 0.3]]),
                 edgeDirections: new Map([['line_ab', true]]),
-                nodeTransitionProgress: new Map([['stn_a', 0.2]]),
             })
         );
         scene.applyFrame(frame());

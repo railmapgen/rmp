@@ -460,10 +460,10 @@ describe('authored video frames', () => {
             defaultOptions,
             'white'
         );
-        // Node entrance takes 0.2s, followed by a 0.2s exit: at 0.3s it is half transparent.
-        const halfway = renderedSVGs[1 + 9].getElementById('stn_a');
+        // Node entrance takes 0.4s, followed by a 0.4s exit: at 0.6s it is half transparent.
+        const halfway = renderedSVGs[1 + 18].getElementById('stn_a');
         expect(Number(halfway?.getAttribute('opacity'))).toBeCloseTo(0.5);
-        expect(renderedSVGs.slice(1 + 12).every(svg => svg.getElementById('stn_a') === null)).toBe(true);
+        expect(renderedSVGs.slice(1 + 24).every(svg => svg.getElementById('stn_a') === null)).toBe(true);
         expect(renderedSVGs.at(-1)?.getElementById('line_ab')).toBeNull();
     });
 
@@ -520,6 +520,44 @@ describe('authored video frames', () => {
 });
 
 describe('shared real-time preview renderer', () => {
+    it.each([false, true])(
+        'keeps station names at a fixed size after their fade across adjacent lines (authored=%s)',
+        async authored => {
+            const graph = makeGraph(200);
+            graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+            graph.addDirectedEdgeWithKey(
+                'line_bc',
+                'stn_b',
+                'stn_c',
+                structuredClone(graph.getEdgeAttributes('line_ab'))
+            );
+            const timeline = authoredTimeline(
+                nodeEntry,
+                edgeEntry,
+                { ...nodeEntry, id: 'enter_b', refId: 'stn_b' },
+                { ...edgeEntry, id: 'enter_bc', refId: 'line_bc' }
+            );
+            if (authored) timeline.track.push({ id: 'pause', kind: 'pause', position: 'after', duration: 0.2 });
+            const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+            const secondStart = renderer.cursorTimes[2];
+            const early = await renderer.renderPreviewFrame(0.2);
+            expect(Number(early.getElementById('stn_a')?.getAttribute('opacity'))).toBeCloseTo(0.5);
+            for (const time of [0.4, 1, secondStart, secondStart + 0.2, secondStart + 0.4, 3.5, secondStart]) {
+                const preview = await renderer.renderPreviewFrame(time);
+                const snapshot = await renderer.renderFrame(time);
+                for (const svg of [preview, snapshot]) {
+                    expect(svg.getElementById('stn_a')?.getAttribute('transform')).toBe('translate(0, 0)');
+                    expect(svg.getElementById('stn_a')?.getAttribute('opacity')).toBe('1');
+                    const station = svg.getElementById('stn_b');
+                    if (station) expect(station.getAttribute('transform')).toBe('translate(200, 0)');
+                }
+                if (time >= secondStart + 0.4)
+                    expect(preview.getElementById('stn_b')?.getAttribute('opacity')).toBe('1');
+            }
+            renderer.dispose();
+        }
+    );
+
     it.each(['empty', 'authored'] as const)(
         'hides the first line until drawing starts in %s preview and export',
         async scenario => {
@@ -925,7 +963,7 @@ describe('shared real-time preview renderer', () => {
         const line = live.getElementById('line_ab')!;
         const path = line.querySelector('path')!;
         const earlyMarkup = live.outerHTML;
-        expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.5);
+        expect(Number(station.getAttribute('opacity'))).toBeCloseTo(0.25);
         expect(path.getAttribute('stroke-dasharray')).toBe('10 400');
 
         const end = await renderer.renderPreviewFrame(renderer.duration);

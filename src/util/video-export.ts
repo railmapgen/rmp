@@ -108,12 +108,11 @@ const BaseDrawingSpeed = 100;
 // Encoding and preview frame rates sample the same authored timing and camera path.
 const VideoTimelineTimingFps = 30;
 export const videoExportSpeedRange = { min: 0.5, max: 2, step: 0.1, default: 1 } as const;
-const NodeRevealSeconds = 0.2;
+const NodeRevealSeconds = 0.4;
 const NodeTextDelaySeconds = 0.05;
 const NodeTextRevealSeconds = 0.8;
 const CameraRepositionPauseSeconds = 1;
 const OverviewSeconds = 1;
-const StationTransitionScale = 0.96;
 const HorizontalGroupingThreshold = 50;
 const CameraViewportZoom = 40;
 const CameraViewportAspectRatio = 16 / 9;
@@ -147,7 +146,7 @@ const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 export const getVideoExportDimensions = (resolution: VideoExportResolution) => videoExportResolutions[resolution];
 
 const getNodeRevealProgress = (frame: number, startFrame: number, fps: number): number => {
-    const revealFrames = Math.max(6, Math.round(fps * NodeRevealSeconds));
+    const revealFrames = Math.max(1, fps * NodeRevealSeconds);
     return clamp01((frame - startFrame) / revealFrames);
 };
 
@@ -501,21 +500,6 @@ export const renderStationMarkup = (
     );
 };
 
-const getStationTransitionProgress = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    focus: CameraFocus,
-    stationId: StnId
-): number => {
-    if (focus.kind === 'edge' && focus.progress < 1 && graph.hasEdge(focus.id)) {
-        const [source, target] = graph.extremities(focus.id);
-        if (source === stationId || target === stationId) {
-            return focus.progress;
-        }
-    }
-
-    return 1;
-};
-
 export const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): number => {
     const bounds = calculateCanvasSize(graph);
     const graphWidth = Math.max(bounds.xMax - bounds.xMin, 1);
@@ -583,19 +567,8 @@ export const applyNodeRevealAnimation = (
     nodeGroup: SVGElement,
     nodeProgress: number,
     _textProgress: number,
-    transitionProgress: number | undefined,
     isStationNode: boolean
 ) => {
-    if (transitionProgress !== undefined) {
-        const baseTransform = nodeGroup.getAttribute('transform') ?? '';
-        const scale = StationTransitionScale + (1 - StationTransitionScale) * transitionProgress;
-        if (baseTransform.includes('scale(')) {
-            nodeGroup.setAttribute('transform', baseTransform);
-        } else {
-            nodeGroup.setAttribute('transform', `${baseTransform} scale(${scale})`);
-        }
-    }
-
     if (isStationNode) {
         const originalOpacity = Number(nodeGroup.getAttribute('opacity') ?? 1);
         nodeGroup.setAttribute('opacity', `${(Number.isFinite(originalOpacity) ? originalOpacity : 1) * nodeProgress}`);
@@ -721,20 +694,6 @@ export const createFrameStationGraph = (
     });
 
     return analysisGraph;
-};
-
-const getBasicStations = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Set<StnId> => {
-    const basicStations = new Set<StnId>();
-    graph.forEachNode(node => {
-        const nodeId = node as Id;
-        if (!isStationNodeId(nodeId)) return;
-
-        const nodeType = graph.getNodeAttribute(nodeId, 'type') as string | undefined;
-        if (typeof nodeType === 'string' && nodeType.endsWith('-basic')) {
-            basicStations.add(nodeId);
-        }
-    });
-    return basicStations;
 };
 
 export const embedVideoExportStyles = (elem: SVGSVGElement) => {
@@ -1090,12 +1049,10 @@ const createPreparedVideoRenderer = async (
         let focus: CameraFocus = { kind: 'none' };
         let nextZoom = currentZoom;
         let frameGraph = graph;
-        let disabledNodeAnimations = new Set<NodeId>();
 
         if (authoredPlayback) {
             const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
-            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections, disabledNodeAnimations } =
-                state);
+            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections } = state);
             textProgress = nodeProgress;
             focus = state.focus;
             if (
@@ -1232,7 +1189,6 @@ const createPreparedVideoRenderer = async (
             edgeDirections,
             focus,
             nextZoom,
-            disabledNodeAnimations,
         };
     };
 
@@ -1455,14 +1411,14 @@ const createPreparedVideoRenderer = async (
         if (isStationNodeId(id as Id))
             baseStationKeys.set(id as StnId, JSON.stringify([attrs.type, attrs[attrs.type]]));
     });
-    type Appearance = { basic: Set<StnId>; stations: Map<StnId, { key: string; attrs: NodeAttributes }> };
+    type Appearance = { stations: Map<StnId, { key: string; attrs: NodeAttributes }> };
     const appearances = new Map<string, Appearance>();
     const stationAppearanceAt = (visibleEdges: Set<LineId>): Appearance => {
         const key = autoChangeStationType ? [...visibleEdges].join('|') : '';
         let appearance = appearances.get(key);
         if (appearance) return appearance;
         const analysis = autoChangeStationType ? createFrameStationGraph(graph, visibleEdges) : graph;
-        appearance = { basic: getBasicStations(analysis), stations: new Map() };
+        appearance = { stations: new Map() };
         analysis.forEachNode((id, attrs) => {
             const stationId = id as StnId;
             if (!baseStationKeys.has(stationId)) return;
@@ -1598,26 +1554,18 @@ const createPreparedVideoRenderer = async (
         if (request.force) scene.invalidate();
         const state = frameAt(frame);
         const appearance = stationAppearanceAt(state.visibleEdges);
-        const previous = stationAppearanceAt(frame > 0 ? frameAt(frame - 1).visibleEdges : new Set());
         updateGeometry(state.frameGraph);
         updateStationAppearance(appearance);
         updateFills(state.frameGraph, state.visibleEdges);
-        const nodeTransitionProgress = new Map<NodeId, number>();
-        const nodeTransitionOpacity = new Map<NodeId, number>();
         const nodeTransforms = new Map<NodeId, string>();
         for (const id of state.visibleNodes) {
             if (movingNodes.has(id)) {
                 const attrs = state.frameGraph.getNodeAttributes(id);
                 nodeTransforms.set(id, `translate(${attrs.x}, ${attrs.y})`);
             }
-            if (!isStationNodeId(id) || state.disabledNodeAnimations.has(id)) continue;
-            const progress = getStationTransitionProgress(state.frameGraph, state.focus, id);
-            nodeTransitionProgress.set(id, progress);
-            if (appearance.basic.has(id) !== previous.basic.has(id))
-                nodeTransitionOpacity.set(id, clamp01(0.92 + progress * 0.08));
         }
         const viewBox = getCameraViewBox(cameraCenterAt(frame), state.nextZoom);
-        scene.applyFrame({ ...state, nodeTransitionProgress, nodeTransitionOpacity, nodeTransforms, viewBox });
+        scene.applyFrame({ ...state, nodeTransforms, viewBox });
         if (mapAttribution) {
             const unit = viewBox.width / outputWidth;
             positionMapAttribution(mapAttribution, viewBox.x + 8 * unit, viewBox.y + viewBox.height - 8 * unit, unit);
