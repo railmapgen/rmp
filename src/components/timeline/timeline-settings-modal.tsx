@@ -11,7 +11,9 @@ import {
     ModalHeader,
     ModalOverlay,
     Stack,
+    Switch,
     Text,
+    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
@@ -27,6 +29,7 @@ import { videoExportSpeedRange } from '../../util/video-export';
 
 interface TimelineSettingsModalProps {
     document: TimelineDocument;
+    mapEnabled?: boolean;
     onDocumentChange: (document: TimelineDocument) => void;
     isOpen: boolean;
     onClose: () => void;
@@ -35,6 +38,7 @@ interface TimelineSettingsModalProps {
 
 export default function TimelineSettingsModal({
     document,
+    mapEnabled = false,
     onDocumentChange,
     isOpen,
     onClose,
@@ -100,6 +104,36 @@ export default function TimelineSettingsModal({
             minW: 'full',
             oneLine: true,
             onChange: showLineName => updateSettings({ showLineName }),
+        },
+        {
+            type: 'custom',
+            label: t('header.timelinePage.settings.showLineLength'),
+            minW: 'full',
+            oneLine: true,
+            component: (
+                <Tooltip
+                    label={t('header.timelinePage.settings.showLineLengthMapOnly')}
+                    isDisabled={mapEnabled}
+                    hasArrow
+                >
+                    <Box as="span" display="inline-flex" tabIndex={mapEnabled ? undefined : 0}>
+                        <Switch
+                            isChecked={mapEnabled && settings.showLineLength}
+                            isDisabled={!mapEnabled}
+                            onChange={({ target: { checked } }) => updateSettings({ showLineLength: checked })}
+                        />
+                    </Box>
+                </Tooltip>
+            ),
+        },
+        {
+            type: 'select',
+            label: t('header.timelinePage.settings.lineLengthUnit'),
+            value: settings.lineLengthUnit,
+            options: { km: 'km', mi: 'mi' },
+            isDisabled: !mapEnabled || !settings.showLineLength,
+            minW: 'full',
+            onChange: value => updateSettings({ lineLengthUnit: value === 'mi' ? 'mi' : 'km' }),
         },
     ];
 

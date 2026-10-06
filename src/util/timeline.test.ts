@@ -251,8 +251,30 @@ describe('timeline utilities', () => {
             autoChangeStationType: false,
             showYear: true,
             showLineName: true,
+            showLineLength: false,
+            lineLengthUnit: 'km' as const,
         };
         expect(normalizeTimelineDocument({ version: 1, track: [], settings }).settings).toEqual(settings);
+        expect(
+            normalizeTimelineDocument({
+                version: 1,
+                track: [],
+                settings: { ...settings, showLineLength: true, lineLengthUnit: 'mi' },
+            }).settings
+        ).toMatchObject({ showLineLength: true, lineLengthUnit: 'mi' });
+        expect(
+            normalizeTimelineDocument({
+                version: 1,
+                track: [],
+                settings: { ...settings, lineLengthUnit: 'invalid' } as never,
+            }).settings?.lineLengthUnit
+        ).toBe('km');
+        const legacySettings = { ...settings } as Partial<typeof settings>;
+        delete legacySettings.showLineLength;
+        delete legacySettings.lineLengthUnit;
+        expect(
+            normalizeTimelineDocument({ version: 1, track: [], settings: legacySettings as never }).settings
+        ).toEqual(settings);
         expect(
             normalizeTimelineDocument({
                 version: 1,

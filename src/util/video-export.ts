@@ -25,7 +25,9 @@ import {
     TimelineDocument,
     TimelineEntry,
     TimelineLabelEntry,
+    TimelineLengthUnit,
 } from '../constants/timeline';
+import { createGeographicLengthProfile } from '../map/geographic-length';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../map/map-style';
 import { renderMapLayerForExport } from '../map/map-tile-controller';
 import { positionMapAttribution } from '../map/map-attribution';
@@ -79,6 +81,8 @@ export interface VideoExportOptions extends VideoEncodingOptions {
     hideWatermark: boolean;
     showYear?: boolean;
     showLineName?: boolean;
+    showLineLength?: boolean;
+    lineLengthUnit?: TimelineLengthUnit;
 }
 
 export interface VideoExportEnvironment {
@@ -899,7 +903,14 @@ const createPreparedVideoRenderer = async (
         ...timeline.settings,
     };
     const { cameraZoom } = getTimelineSettings(timeline);
-    const { showYear = false, showLineName = false } = { ...options, ...timeline.settings };
+    const {
+        showYear = false,
+        showLineName = false,
+        showLineLength: showLength = false,
+        lineLengthUnit: lengthUnit = 'km',
+    } = { ...options, ...timeline.settings };
+    const lineLengthUnit = lengthUnit === 'mi' ? 'mi' : 'km';
+    const showLineLength = environment.mapEnabled && showLength;
     const imageAssets = new Map<string, string>();
     const imageIds = new Set<string>();
     graph.forEachNode((_node, attrs) => {
@@ -921,7 +932,7 @@ const createPreparedVideoRenderer = async (
             (isElementEntry(entry) && entry.phase === 'exit') ||
             (isElementEntry(entry) && entry.showAnimation === false)
     );
-    const renderGeometry = usesAuthoredPlayback || source.renderGeometry;
+    const renderGeometry = usesAuthoredPlayback || source.renderGeometry || showLineLength;
     if (renderGeometry) {
         // Keep the editor graph untouched, and render each authored line independently so
         // one reconciled segment can enter/exit without affecting the rest of its group.
@@ -1369,8 +1380,9 @@ const createPreparedVideoRenderer = async (
         const ratio = clamp01(position - before);
         return { x: a.x + (b.x - a.x) * ratio, y: a.y + (b.y - a.y) * ratio };
     };
-    // Map resources cover the keyframe travel area once, instead of fetching/cloning tiles every frame.
-    if (environment.mapEnabled && movingNodes.size) {
+    // The final 16:9 camera includes margins beyond graph bounds, even without keyframes.
+    // Load that entire camera travel area once, instead of fetching/cloning tiles every frame.
+    if (environment.mapEnabled) {
         const bounds = { ...baseBounds };
         for (const entry of timeline.track) {
             if (entry.kind !== 'keyframe' || !graph.hasNode(entry.refId)) continue;
@@ -1379,7 +1391,11 @@ const createPreparedVideoRenderer = async (
             bounds.yMin = Math.min(bounds.yMin, entry.y);
             bounds.yMax = Math.max(bounds.yMax, entry.y);
         }
-        const viewport = getCameraViewBox(baseCenter, Math.min(currentZoom, finalFullscreenZoom));
+        const boundsZoom = Math.min(
+            (CameraViewportWidth / (Math.max(1, bounds.xMax - bounds.xMin) * 1.12)) * 100,
+            (CameraViewportHeight / (Math.max(1, bounds.yMax - bounds.yMin) * 1.12)) * 100
+        );
+        const viewport = getCameraViewBox(baseCenter, Math.min(currentZoom, finalFullscreenZoom, boundsZoom));
         const sourceMap = source.canvas.querySelector<SVGGElement>('[data-map-layer]');
         const targetMap = geometry.querySelector<SVGGElement>('[data-map-layer]');
         if (sourceMap && targetMap)
@@ -1440,6 +1456,19 @@ const createPreparedVideoRenderer = async (
         return new Map(Array.from(root.children).map(child => [child.id, child as SVGElement]));
     };
     const baselineLineKeys = new Map<Id, string>();
+    const geographicLengths = new Map<LineId, ReturnType<typeof createGeographicLengthProfile>>();
+    const updateGeographicLength = (element: RenderElement) => {
+        if (
+            !showLineLength ||
+            !element.line ||
+            element.line.attr.visible === false ||
+            !scene.getGroup(element.id) ||
+            !isOpenPath(element.line.path)
+        )
+            return;
+        geographicLengths.set(element.id as LineId, createGeographicLengthProfile(element.line.path));
+    };
+    if (showLineLength) getLines(graph, { showReconcileWarnings: false }).forEach(updateGeographicLength);
     let currentLineKeys = new Map<Id, string>();
     let lastGeometryGraph = graph;
     if (movingNodes.size) {
@@ -1454,6 +1483,7 @@ const createPreparedVideoRenderer = async (
             const key = JSON.stringify(line.line?.path);
             if (currentLineKeys.get(line.id) === key) continue;
             currentLineKeys.set(line.id, key);
+            updateGeographicLength(line);
             if (key === baselineLineKeys.get(line.id)) {
                 for (const suffix of ['', '.pre', '.post']) {
                     const id = line.id + suffix;
@@ -1577,13 +1607,30 @@ const createPreparedVideoRenderer = async (
         const markerIndex = lastStartedIndex(markerTimes, frame / fps);
         const edgeId = lineMarkers[Math.max(0, markerIndex)]?.edgeId;
         const annotation = edgeId && getVideoLineAnnotation(graph, edgeId);
+        let totalLength = '';
+        if (showLineLength) {
+            let totalKm = 0;
+            for (const id of state.visibleEdges)
+                totalKm +=
+                    geographicLengths
+                        .get(id)
+                        ?.lengthAt(state.edgeProgress.get(id) ?? 1, state.edgeDirections.get(id)) ?? 0;
+            const distance = lineLengthUnit === 'mi' ? totalKm / 1.609344 : totalKm;
+            totalLength = `${distance.toFixed(1)}${lineLengthUnit}`;
+        }
         const labels = placedLabels
             .filter(label => frame / fps >= label.start && frame / fps < label.end)
             .map(label => label.entry);
-        const key = JSON.stringify([annotation, labels.map(label => [label.id, label.text])]);
+        const key = JSON.stringify([annotation, totalLength, labels.map(label => [label.id, label.text])]);
         if (key !== annotationKey) {
             overlay?.remove();
-            overlay = createVideoLineOverlay(annotation || undefined, { showYear, showLineName }, viewBox, labels);
+            overlay = createVideoLineOverlay(
+                annotation || undefined,
+                { showYear, showLineName },
+                viewBox,
+                labels,
+                totalLength
+            );
             if (overlay) geometry.append(overlay);
             annotationKey = key;
         } else

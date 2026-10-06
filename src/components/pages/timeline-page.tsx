@@ -72,6 +72,8 @@ export default function TimelinePage() {
             settings.autoChangeStationType,
             settings.showYear,
             settings.showLineName,
+            settings.showLineLength,
+            settings.lineLengthUnit,
         ]
     );
     const handleTimingChange = React.useCallback((next: TimelinePlaybackTiming | undefined) => {
@@ -369,6 +371,7 @@ export default function TimelinePage() {
                 <Box id={trackPanelId} flex="1" minH={0} overflow="auto">
                     <TimelineTrackPanel
                         document={timeline}
+                        mapEnabled={mapEnabled}
                         selectedId={selectedId}
                         selectedEntryId={selectedEntryId}
                         missingNodeCount={coverage.missingNodeCount}

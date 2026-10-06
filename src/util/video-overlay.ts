@@ -49,13 +49,14 @@ export const createVideoLineOverlay = (
     annotation: VideoLineAnnotation | undefined,
     settings: { showYear: boolean; showLineName: boolean },
     viewBox: { x: number; y: number; width: number; height: number },
-    labels: readonly Pick<TimelineLabelEntry, 'id' | 'text'>[] = []
+    labels: readonly Pick<TimelineLabelEntry, 'id' | 'text'>[] = [],
+    totalLength = ''
 ): SVGGElement | undefined => {
     const year = settings.showYear ? (annotation?.year ?? '') : '';
     const monthDay = year ? (annotation?.monthDay ?? '') : '';
     const names = settings.showLineName ? (annotation?.name ?? ['', '']) : ['', ''];
     const visibleLabels = labels.filter(label => label.text.trim());
-    if (!year && !names.some(Boolean) && !visibleLabels.length) return;
+    if (!year && !names.some(Boolean) && !visibleLabels.length && !totalLength) return;
     const ns = 'http://www.w3.org/2000/svg';
     const create = (tag: string, attrs: Record<string, string | number>) => {
         const elem = document.createElementNS(ns, tag);
@@ -64,7 +65,9 @@ export const createVideoLineOverlay = (
     };
     const panel = create('g', {
         id: 'rmp_video_line_overlay',
-        'aria-label': [year, monthDay, ...names, ...visibleLabels.map(label => label.text)].filter(Boolean).join(' · '),
+        'aria-label': [year, monthDay, ...names, totalLength, ...visibleLabels.map(label => label.text)]
+            .filter(Boolean)
+            .join(' · '),
         'pointer-events': 'none',
         transform: `translate(${viewBox.x}, ${viewBox.y}) scale(${viewBox.width / 1280})`,
         'font-family': "Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif",
@@ -83,11 +86,14 @@ export const createVideoLineOverlay = (
         Math.max(
             visibleLabels.length ? 220 : 160,
             metadataWidth,
+            textWidth(totalLength, 24) + 40,
             ...visibleLabels.flatMap(label => label.text.split(/\r?\n/).map(line => textWidth(line, 20) + 40))
         )
     );
-    const hasMetadata = !!year || !!mainName;
-    const baseHeight = year && mainName ? 169 + dateHeight : year ? 86 + dateHeight : mainName ? nameHeight + 30 : 0;
+    const hasMetadata = !!year || !!mainName || !!totalLength;
+    const metadataHeight =
+        year && mainName ? 169 + dateHeight : year ? 86 + dateHeight : mainName ? nameHeight + 30 : 0;
+    const baseHeight = metadataHeight + (totalLength ? (metadataHeight ? 40 : 56) : 0);
     const wrap = (line: string) => {
         const rows: string[] = [];
         let row = '';
@@ -188,6 +194,19 @@ export const createVideoLineOverlay = (
             }
             panel.append(secondary);
         }
+    }
+    if (totalLength) {
+        const length = create('text', {
+            x: 50,
+            y: 27 + metadataHeight + (metadataHeight ? 25 : 36),
+            fill: '#334155',
+            'font-size': 24,
+            'font-weight': 600,
+            'font-variant-numeric': 'tabular-nums',
+            'data-video-total-length': '',
+        });
+        length.textContent = totalLength;
+        panel.append(length);
     }
     if (rows.length) {
         if (hasMetadata)

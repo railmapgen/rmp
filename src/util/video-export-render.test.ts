@@ -7,6 +7,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import * as mapTileController from '../map/map-tile-controller';
 import {
     createEmptyTimelineDocument,
     TIMELINE_CAMERA_ZOOM_LEVELS,
@@ -56,8 +57,12 @@ beforeEach(() => {
     editorCanvas.id = 'canvas';
     document.body.append(editorCanvas);
     vi.mocked(makeRenderReadySVGElement).mockImplementation(
-        async (graph, _map, _info, _fonts, _languages, _force, _version, renderGraph) => {
+        async (graph, mapEnabled, _info, _fonts, _languages, _force, _version, renderGraph, sourceCanvas) => {
             const elem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            if (mapEnabled) {
+                const sourceMap = sourceCanvas?.querySelector('[data-map-layer]');
+                if (sourceMap) elem.append(sourceMap.cloneNode(true));
+            }
             const layer = document.createElementNS(elem.namespaceURI, 'g');
             layer.setAttribute('data-editor-layer', '');
             elem.append(layer);
@@ -272,6 +277,160 @@ const edgeEntry: TimelineEntry = {
     phase: 'enter',
     showAnimation: true,
 };
+
+const geographicEnvironment = {
+    mapEnabled: true,
+    isSubscriber: true,
+    mapStyle: DEFAULT_MAP_STYLE,
+    svgViewBoxMin: { x: 0, y: 0 },
+    svgViewBoxZoom: 100,
+};
+
+const mockGeographicMap = () => {
+    const layer = document.createElementNS(editorCanvas.namespaceURI, 'g');
+    layer.setAttribute('data-map-layer', '');
+    editorCanvas.append(layer);
+    vi.spyOn(videoExportCanvas, 'createVideoExportCanvas').mockReturnValue({
+        canvas: editorCanvas,
+        renderGeometry: true,
+        dispose: vi.fn(),
+    });
+    return vi
+        .spyOn(mapTileController, 'renderMapLayerForExport')
+        .mockImplementation(async (_source, target, bounds) => {
+            const background = document.createElementNS(editorCanvas.namespaceURI, 'rect');
+            background.setAttribute('data-test-map-coverage', '');
+            background.setAttribute('x', String(bounds.xMin));
+            background.setAttribute('y', String(bounds.yMin));
+            background.setAttribute('width', String(bounds.xMax - bounds.xMin));
+            background.setAttribute('height', String(bounds.yMax - bounds.yMin));
+            target.replaceChildren(background);
+        });
+};
+
+describe('geographic timeline overlays and frame coverage', () => {
+    it.each(['hidden', 'unavailable'])(
+        'does not count %s lines that are omitted from the rendered map',
+        async reason => {
+            mockGeographicMap();
+            const graph = makeGraph(200);
+            if (reason === 'hidden') graph.setEdgeAttribute('line_ab', 'visible', false);
+            const timeline = authoredTimeline(nodeEntry, edgeEntry);
+            timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+            const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, {
+                ...geographicEnvironment,
+                isSubscriber: reason !== 'unavailable',
+            });
+            const svg = await renderer.renderFrame(renderer.duration);
+            expect(svg.getElementById('line_ab')).toBeNull();
+            expect(svg.querySelector('[data-video-total-length]')?.textContent).toBe('0.0km');
+            renderer.dispose();
+        }
+    );
+
+    it.each(['km', 'mi'] as const)('totals revealed edges in %s and restores totals on backwards seeks', async unit => {
+        mockGeographicMap();
+        const graph = makeGraph(200);
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+        graph.addDirectedEdgeWithKey('line_bc', 'stn_b', 'stn_c', structuredClone(graph.getEdgeAttributes('line_ab')));
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { ...edgeEntry, id: 'enter_bc', refId: 'line_bc' },
+            { ...edgeEntry, id: 'exit_ab', phase: 'exit' }
+        );
+        timeline.settings = {
+            ...createEmptyTimelineDocument().settings!,
+            autoChangeStationType: false,
+            showLineLength: true,
+            lineLengthUnit: unit,
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, geographicEnvironment);
+        const readLength = async (time: number) => {
+            const svg = await renderer.renderPreviewFrame(time);
+            const text = svg.querySelector('[data-video-total-length]')!.textContent!;
+            expect(text).toMatch(new RegExp(`^\\d+\\.\\d${unit}$`));
+            return parseFloat(text);
+        };
+        const multiplier = unit === 'km' ? 1 : 1 / 1.609344;
+        const half = await readLength(1);
+        expect(half).toBeCloseTo(1.8 * multiplier, 0);
+        const full = await readLength(renderer.cursorTimes[3]);
+        expect(full).toBeGreaterThan(half * 3);
+        const final = await readLength(renderer.duration);
+        expect(final).toBeCloseTo(full / 2, 0);
+        expect(await readLength(1)).toBe(half);
+        expect(await readLength(0)).toBe(0);
+        renderer.dispose();
+    });
+
+    it('omits geographic length from ordinary map videos despite an enabled saved setting', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
+        expect((await renderer.renderFrame(renderer.duration)).querySelector('[data-video-total-length]')).toBeNull();
+        renderer.dispose();
+    });
+
+    it('updates geographic length with station keyframes and restores original measurements on backwards seek', async () => {
+        mockGeographicMap();
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { id: 'origin', kind: 'keyframe', refId: 'stn_b', x: 200, y: 0 },
+            { id: 'wait', kind: 'pause', position: 'after', duration: 2 },
+            { id: 'move', kind: 'keyframe', refId: 'stn_b', x: 400, y: 0 }
+        );
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            timeline,
+            [],
+            defaultOptions,
+            geographicEnvironment
+        );
+        const read = async (time: number) =>
+            parseFloat((await renderer.renderFrame(time)).querySelector('[data-video-total-length]')!.textContent!);
+        const initial = await read(renderer.cursorTimes[2]);
+        expect(await read(renderer.duration)).toBeCloseTo(initial * 2, 0);
+        expect(await read(renderer.cursorTimes[2])).toBe(initial);
+        renderer.dispose();
+    });
+
+    it.each([false, true])('loads map coverage for the full final video frame (keyframe=%s)', async moving => {
+        const load = mockGeographicMap();
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            ...(moving ? [{ id: 'move', kind: 'keyframe', refId: 'stn_b', x: 800, y: 600 } as TimelineEntry] : [])
+        );
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            timeline,
+            [],
+            defaultOptions,
+            geographicEnvironment
+        );
+        expect(load).toHaveBeenCalledOnce();
+        const coversFrame = async (time: number) => {
+            const svg = await renderer.renderFrame(time);
+            const coverage = svg.querySelector('[data-test-map-coverage]')!;
+            const [x, y, width, height] = svg.getAttribute('viewBox')!.split(' ').map(Number);
+            expect(Number(coverage.getAttribute('x'))).toBeLessThanOrEqual(x);
+            expect(Number(coverage.getAttribute('y'))).toBeLessThanOrEqual(y);
+            expect(Number(coverage.getAttribute('x')) + Number(coverage.getAttribute('width'))).toBeGreaterThanOrEqual(
+                x + width
+            );
+            expect(Number(coverage.getAttribute('y')) + Number(coverage.getAttribute('height'))).toBeGreaterThanOrEqual(
+                y + height
+            );
+        };
+        await coversFrame(0);
+        await coversFrame(renderer.duration / 2);
+        await coversFrame(renderer.duration);
+        renderer.dispose();
+    });
+});
 // Rasterization strips control characters before encoding the SVG, including CSS line breaks.
 const rasterizedMarkup = (svg: SVGSVGElement) => svg.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
 
@@ -741,6 +900,8 @@ describe('shared real-time preview renderer', () => {
                 autoChangeStationType: false,
                 showYear: false,
                 showLineName: false,
+                showLineLength: false,
+                lineLengthUnit: 'km' as const,
             };
             const drawingSeconds = 2 / speedMultiplier;
             for (const fps of [15, 60]) {
@@ -810,6 +971,8 @@ describe('shared real-time preview renderer', () => {
             autoChangeStationType: true,
             showYear: false,
             showLineName: false,
+            showLineLength: false,
+            lineLengthUnit: 'km' as const,
         };
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
         const beforeClosing = renderer.cursorTimes[3] - 1 / defaultOptions.fps;
@@ -1057,6 +1220,8 @@ describe('shared real-time preview renderer', () => {
             autoChangeStationType: false,
             showYear: true,
             showLineName: true,
+            showLineLength: false,
+            lineLengthUnit: 'km' as const,
         };
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
         expect(renderer.duration).toBeCloseTo(2 + 1 / 30);

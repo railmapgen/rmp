@@ -112,6 +112,8 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 autoChangeStationType: settings.autoChangeStationType,
                 showYear: settings.showYear,
                 showLineName: settings.showLineName,
+                showLineLength: settings.showLineLength,
+                lineLengthUnit: settings.lineLengthUnit,
                 isSystemFontsOnly,
                 quality: videoQuality,
                 hideWatermark: isAttachSelected,

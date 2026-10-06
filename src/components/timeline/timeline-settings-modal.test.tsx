@@ -7,6 +7,67 @@ import { render } from '../../test-utils';
 import TimelineSettingsModal from './timeline-settings-modal';
 
 describe('Timeline settings', () => {
+    it('disables geographic length settings on an ordinary map and explains availability in a tooltip', async () => {
+        const document = createEmptyTimelineDocument();
+        document.settings!.showLineLength = true;
+        const onDocumentChange = vi.fn();
+        render(
+            <ChakraProvider>
+                <TimelineSettingsModal
+                    document={document}
+                    onDocumentChange={onDocumentChange}
+                    isOpen
+                    onClose={() => {}}
+                />
+            </ChakraProvider>
+        );
+        const toggle = screen.getByRole('checkbox', { name: 'Label line length' });
+        expect(toggle).toBeDisabled();
+        expect(toggle).not.toBeChecked();
+        expect(screen.getByRole('combobox', { name: 'Length unit' })).toBeDisabled();
+        expect(screen.queryByText('Available with the geographic map enabled.')).not.toBeInTheDocument();
+        fireEvent.pointerOver(toggle.closest('label')!.parentElement!);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent('Available with the geographic map enabled.');
+        fireEvent.click(toggle);
+        expect(onDocumentChange).not.toHaveBeenCalled();
+    });
+
+    it('saves the length toggle and km/mi unit when the geographic map is enabled', () => {
+        const onDocumentChange = vi.fn();
+        function Harness() {
+            const [document, setDocument] = React.useState(createEmptyTimelineDocument);
+            return (
+                <ChakraProvider>
+                    <TimelineSettingsModal
+                        document={document}
+                        mapEnabled
+                        onDocumentChange={next => {
+                            setDocument(next);
+                            onDocumentChange(next);
+                        }}
+                        isOpen
+                        onClose={() => {}}
+                    />
+                </ChakraProvider>
+            );
+        }
+        render(<Harness />);
+        const toggle = screen.getByRole('checkbox', { name: 'Label line length' });
+        const unit = screen.getByRole('combobox', { name: 'Length unit' });
+        expect(toggle).toBeEnabled();
+        fireEvent.pointerOver(toggle.closest('label')!.parentElement!);
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+        expect(unit).toBeDisabled();
+        expect(unit).toHaveValue('km');
+        fireEvent.click(toggle);
+        expect(unit).toBeEnabled();
+        fireEvent.change(unit, { target: { value: 'mi' } });
+        expect(onDocumentChange.mock.lastCall?.[0].settings).toMatchObject({
+            showLineLength: true,
+            lineLengthUnit: 'mi',
+        });
+    });
+
     it('updates saved drawing speed, station conversion, and both video labels', async () => {
         const onDocumentChange = vi.fn();
         const onClose = vi.fn();
@@ -61,6 +122,8 @@ describe('Timeline settings', () => {
                 autoChangeStationType: false,
                 showYear: true,
                 showLineName: true,
+                showLineLength: false,
+                lineLengthUnit: 'km' as const,
             },
         });
         fireEvent.click(screen.getByRole('button', { name: 'Done' }));

@@ -72,12 +72,16 @@ export type TimelineCameraZoom = (typeof TIMELINE_CAMERA_ZOOM_LEVELS)[number];
 export const isTimelineCameraZoom = (value: unknown): value is TimelineCameraZoom =>
     typeof value === 'number' && TIMELINE_CAMERA_ZOOM_LEVELS.includes(value as TimelineCameraZoom);
 
+export type TimelineLengthUnit = 'km' | 'mi';
+
 export interface TimelineSettings {
     speedMultiplier: number;
     cameraZoom: TimelineCameraZoom;
     autoChangeStationType: boolean;
     showYear: boolean;
     showLineName: boolean;
+    showLineLength: boolean;
+    lineLengthUnit: TimelineLengthUnit;
 }
 
 export const DEFAULT_TIMELINE_SETTINGS: TimelineSettings = {
@@ -86,6 +90,8 @@ export const DEFAULT_TIMELINE_SETTINGS: TimelineSettings = {
     autoChangeStationType: true,
     showYear: false,
     showLineName: false,
+    showLineLength: false,
+    lineLengthUnit: 'km',
 };
 
 export interface TimelineDocument {
@@ -103,6 +109,7 @@ export const getTimelineSettings = (document: TimelineDocument): TimelineSetting
         cameraZoom: isTimelineCameraZoom(settings.cameraZoom)
             ? settings.cameraZoom
             : DEFAULT_TIMELINE_SETTINGS.cameraZoom,
+        lineLengthUnit: settings.lineLengthUnit === 'mi' ? 'mi' : 'km',
     };
 };
 

@@ -11,6 +11,36 @@ const annotation = {
 const viewBox = { x: -200, y: -100, width: 640, height: 360 };
 
 describe('video year and line annotation', () => {
+    it('places total length below line metadata and above labels, with or without metadata', () => {
+        for (const showLineName of [true, false]) {
+            const overlay = createVideoLineOverlay(
+                annotation,
+                { showYear: false, showLineName },
+                viewBox,
+                [{ id: 'caption', text: 'Caption' }],
+                '123.4km'
+            )!;
+            const length = overlay.querySelector('[data-video-total-length]')!;
+            const caption = overlay.querySelector('[data-video-label]')!;
+            expect(length.textContent).toBe('123.4km');
+            expect(Number(caption.getAttribute('y'))).toBeGreaterThan(Number(length.getAttribute('y')));
+            if (showLineName) {
+                const names = [...overlay.querySelectorAll('text')].filter(
+                    text => !text.hasAttribute('data-video-total-length') && !text.hasAttribute('data-video-label')
+                );
+                expect(Number(length.getAttribute('y'))).toBeGreaterThan(Number(names.at(-1)!.getAttribute('y')));
+            }
+        }
+        const standalone = createVideoLineOverlay(
+            undefined,
+            { showYear: false, showLineName: false },
+            viewBox,
+            [],
+            '0.0mi'
+        )!;
+        expect(standalone.textContent).toBe('0.0mi');
+        expect(Number(standalone.querySelector('rect')!.getAttribute('height'))).toBeGreaterThan(0);
+    });
     it('keeps year and month-day positions unchanged when labels enlarge the panel', () => {
         const settings = { showYear: true, showLineName: true };
         const original = createVideoLineOverlay(annotation, settings, viewBox)!;

@@ -308,6 +308,8 @@ export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): Ti
                     : DEFAULT_TIMELINE_SETTINGS.autoChangeStationType,
             showYear: settings.showYear === true,
             showLineName: settings.showLineName === true,
+            showLineLength: settings.showLineLength === true,
+            lineLengthUnit: settings.lineLengthUnit === 'mi' ? 'mi' : 'km',
         };
     }
     const audioTrack = (doc as { audioTrack?: unknown }).audioTrack;

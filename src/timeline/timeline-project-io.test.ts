@@ -181,6 +181,8 @@ describe('Timeline project import and sync', () => {
                 autoChangeStationType: false,
                 showYear: true,
                 showLineName: true,
+                showLineLength: true,
+                lineLengthUnit: 'mi' as const,
             },
             labelTrack: [
                 {

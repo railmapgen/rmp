@@ -41,6 +41,7 @@ const NARROW_SCREEN_QUERY = '@media (width < 600px)';
 
 interface TimelineTrackPanelProps {
     document: TimelineDocument;
+    mapEnabled?: boolean;
     selectedId?: Id;
     selectedEntryId?: string;
     missingNodeCount: number;
@@ -62,6 +63,7 @@ interface TimelineTrackPanelProps {
 
 export default function TimelineTrackPanel({
     document,
+    mapEnabled = false,
     selectedId,
     selectedEntryId,
     missingNodeCount,
@@ -603,6 +605,7 @@ export default function TimelineTrackPanel({
             {isSettingsOpen && (
                 <TimelineSettingsModal
                     document={document}
+                    mapEnabled={mapEnabled}
                     onDocumentChange={onDocumentChange}
                     isOpen={isSettingsOpen}
                     onClose={() => setIsSettingsOpen(false)}

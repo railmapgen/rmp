@@ -44,6 +44,8 @@ describe('VideoExportModal Timeline settings', () => {
                         autoChangeStationType: false,
                         showYear: true,
                         showLineName: true,
+                        showLineLength: true,
+                        lineLengthUnit: 'mi',
                     },
                 },
             },
@@ -101,6 +103,8 @@ describe('VideoExportModal Timeline settings', () => {
         expect(options.autoChangeStationType).toBe(false);
         expect(options.showYear).toBe(true);
         expect(options.showLineName).toBe(true);
+        expect(options.showLineLength).toBe(true);
+        expect(options.lineLengthUnit).toBe('mi');
         expect(vi.mocked(exportVideo).mock.calls[0][1].settings?.cameraZoom).toBe(8);
         expect(options).not.toHaveProperty('scale');
         expect(options).not.toHaveProperty('fullscreenScale');

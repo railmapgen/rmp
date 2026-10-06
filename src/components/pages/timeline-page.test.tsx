@@ -228,6 +228,8 @@ describe('TimelinePage preview and export isolation', () => {
             autoChangeStationType: false,
             showYear: true,
             showLineName: true,
+            showLineLength: true,
+            lineLengthUnit: 'mi' as const,
         };
         act(() => store.dispatch(replaceTimeline({ ...store.getState().project.active!.revision.timeline, settings })));
         expect(latestPreviewOptions()).not.toBe(initialOptions);

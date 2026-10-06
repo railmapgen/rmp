@@ -118,6 +118,8 @@ describe('Timeline session history', () => {
             autoChangeStationType: false,
             showYear: true,
             showLineName: true,
+            showLineLength: true,
+            lineLengthUnit: 'mi' as const,
         };
         store.dispatch(openProject(project));
         store.dispatch(replaceTimeline({ ...project.revision.timeline, settings }));
