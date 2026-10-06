@@ -1,4 +1,3 @@
-import { useColorModeValue } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
@@ -12,18 +11,32 @@ import {
     LineStyleComponentProps,
     LineStyleType,
 } from '../../../../constants/lines';
+import { buildClosedBezierChainPathD, buildSymmetricOutlineSideChains } from '../../../../util/bezier-outline-sides';
+import { getOpenPathPrimitives } from '../../../../util/open-path-primitives';
+import { isOpenPath } from '../../../../util/path';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultBjsubwayDottedAttributes.color } = styleAttrs ?? defaultBjsubwayDottedAttributes;
+    const clipId = `bjsubway-dotted-hollow-${React.useId()}`;
+
+    // Reuse Shinkansen's reduced Bezier outlines, so inflected curves also remain safe to offset.
+    // Clip the original dashes to a hollow vector outline without rasterizing a mask for every edge.
+    // Graph refreshes can recreate an identical Path; cache by geometry so unchanged edges stay cheap.
+    const clipPathD = React.useMemo(() => {
+        if (!isOpenPath(path)) return '';
+        const primitives = getOpenPathPrimitives(path);
+        const outer = buildSymmetricOutlineSideChains(primitives, LINE_WIDTH / 2);
+        const inner = buildSymmetricOutlineSideChains(primitives, 1.7);
+        if (!outer.left.length || !inner.left.length) return '';
+        return `${buildClosedBezierChainPathD(outer.left, outer.right)} ${buildClosedBezierChainPathD(inner.left, inner.right)}`;
+    }, [path.kind, path.d]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
         [id, handlePointerDown]
     );
-
-    const bgColor = useColorModeValue('white', 'var(--chakra-colors-gray-800)');
 
     return (
         <g
@@ -31,8 +44,19 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
             cursor="pointer"
             pointerEvents={newLine ? 'none' : undefined}
         >
-            <path d={path.d} fill="none" stroke={color[2]} strokeWidth={LINE_WIDTH} strokeDasharray="2 2" />
-            <path d={path.d} fill="none" stroke={bgColor} strokeWidth="3.4" />
+            <path
+                d={path.d}
+                fill="none"
+                stroke={color[2]}
+                strokeWidth={LINE_WIDTH}
+                strokeDasharray="2 2"
+                clipPath={`url(#${clipId})`}
+            />
+            <defs>
+                <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+                    <path d={clipPathD} clipRule="evenodd" />
+                </clipPath>
+            </defs>
         </g>
     );
 };

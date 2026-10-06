@@ -50,8 +50,16 @@ export const getSymmetricOutlineSides = (
     startHalfWidth: number,
     endHalfWidth = startHalfWidth
 ): OutlineSideChain => {
+    // Coincident endpoint handles give bezier-js a zero tangent and an undefined outline normal.
+    // Trim a tiny parameter interval to use the limiting tangent without visibly moving the stroke.
+    const collapsedStart = arePointsEqual(curve.points[0], curve.points[1]);
+    const collapsedEnd = arePointsEqual(curve.points.at(-1)!, curve.points.at(-2)!);
+    if (collapsedStart || collapsedEnd) {
+        curve = curve.split(collapsedStart ? 1e-4 : 0, collapsedEnd ? 1 - 1e-4 : 1);
+    }
     const outline = curve.outline(startHalfWidth, startHalfWidth, endHalfWidth, endHalfWidth);
-    const forwardCount = curve.order === 1 ? 1 : curve.reduce().length;
+    // outline() already reduces the curve and returns two caps plus paired forward/backward sides.
+    const forwardCount = (outline.curves.length - 2) / 2;
 
     return {
         left: outline.curves.slice(1, 1 + forwardCount).map(normalizeCurve),
