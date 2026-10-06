@@ -5,7 +5,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { StationType } from '../../../constants/stations';
-import store, { createStore } from '../../../redux';
+import { createStore } from '../../../redux';
+import store from '../../../redux/store';
 import { render } from '../../../test-utils';
 import NodePositionSection from './node-position-section';
 

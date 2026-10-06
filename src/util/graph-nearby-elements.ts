@@ -9,46 +9,21 @@ import {
     StnId,
 } from '../constants/constants';
 import { StationAttributes } from '../constants/stations';
+import {
+    emptyMenuLayerData,
+    MenuCategory,
+    type MenuItemData,
+    type MenuLayerData,
+    TOUCH_RADIUS,
+} from '../constants/touch';
 import i18n from '../i18n/config';
-import { RootDispatch } from '../redux';
+import type { RootDispatch } from '../redux';
 import { setSelected } from '../redux/runtime/runtime-slice';
 import { importSelectedNodesAndEdges } from './clipboard';
 import { toCamelCase } from './helpers';
 
-/** Radius in SVG units to search for nearby elements */
-export const TOUCH_RADIUS = 30;
-
-export enum MenuCategory {
-    STATION = 'station',
-    MISC_NODE = 'misc-node',
-    LINE = 'line',
-    OPERATION = 'operation',
-}
-
-export interface MenuLayerData {
-    [MenuCategory.STATION]: MenuItemData[];
-    [MenuCategory.MISC_NODE]: MenuItemData[];
-    [MenuCategory.LINE]: MenuItemData[];
-    [MenuCategory.OPERATION]: MenuItemData[];
-}
-
-export interface MenuItemData {
-    label: string;
-    icon?: React.ReactNode;
-    action: () => void;
-    /**
-     * The ID of the element this item represents (station ID, line ID, etc.)
-     * Optional, as operations do not correspond to a specific element.
-     */
-    elementId: string;
-}
-
-export const emptyMenuLayerData: MenuLayerData = {
-    [MenuCategory.STATION]: [],
-    [MenuCategory.MISC_NODE]: [],
-    [MenuCategory.LINE]: [],
-    [MenuCategory.OPERATION]: [],
-};
+export { emptyMenuLayerData, MenuCategory, TOUCH_RADIUS } from '../constants/touch';
+export type { MenuItemData, MenuLayerData } from '../constants/touch';
 
 /**
  * Custom hook for finding elements near a touch point and organizing them into layers

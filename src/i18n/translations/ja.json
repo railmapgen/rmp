@@ -13,7 +13,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -790,7 +789,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "路線情報設定",
@@ -843,6 +841,153 @@
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "edit": "編集",
+        "undo": "元に戻す",
+        "redo": "やり直す",
+        "timelinePage": {
+            "open": "$t(Rail Map Chronicle)を開く",
+            "backToEditor": "エディターに戻る",
+            "trackTitle": "タイムライントラック",
+            "resizeTrack": "タイムライントラックの高さを変更",
+            "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
+            "alreadyAdded": "追加済み",
+            "addSelected": "選択項目を追加",
+            "addPathByColor": "色で路線を追加",
+            "homeDescription": "描画ツールで現在開いている RMP プロジェクトから編年器プロジェクトを作成するか、既存の編年器プロジェクトファイルを読み込みます。",
+            "continueEditing": "編集を続ける",
+            "startFromCurrentRmp": "現在の RMP プロジェクトから開始",
+            "importTimelineProject": "編年器プロジェクトを読み込む",
+            "newProjectName": "編年器プロジェクト",
+            "recentProject": "最近のプロジェクト",
+            "updatedAt": "更新日時：",
+            "openProject": "開く",
+            "deleteProject": "編年器プロジェクトを削除",
+            "deleteProjectConfirm": "編年器プロジェクト「{{name}}」を削除しますか？",
+            "files": "ファイル",
+            "backToMainMenu": "メインメニューに戻る",
+            "importRmpData": "RMP データをインポート",
+            "importOpenPainterProject": "描画ツールで開いているプロジェクト",
+            "importLocalConfig": "ローカル設定ファイル",
+            "renameProject": "プロジェクト名を変更",
+            "renameProjectPrompt": "編年器プロジェクト名",
+            "downloadProject": "編年器プロジェクトをダウンロード",
+            "exportVideo": "動画をエクスポート",
+            "insert": "挿入",
+            "insertKeyframe": "キーフレーム",
+            "insertExitAnimation": "選択項目の退出アニメーションを挿入",
+            "insertFramePauseBefore": "フレーム前の停止",
+            "insertFramePauseAfter": "フレーム後の停止",
+            "insertLabel": "ラベル",
+            "editLabel": "ラベルを編集",
+            "labelText": "ラベルのテキスト",
+            "saveLabel": "保存",
+            "insertAudio": "音声",
+            "audioTrack": "音声トラック",
+            "noAudio": "音声がありません。「挿入 > 音声」から追加してください。",
+            "audioStart": "開始時間（秒）",
+            "audioEnd": "終了時間（秒）",
+            "audioMissing": "音声データがありません。復元するには再インポートしてください。",
+            "framePauseBefore": "フレーム前の停止",
+            "framePauseAfter": "フレーム後の停止",
+            "pauseDuration": "停止時間",
+            "seconds": "秒",
+            "keyframe": "キーフレーム",
+            "enterPhase": "登場",
+            "exitPhase": "退場",
+            "showAnimation": "アニメーションを表示",
+            "toggleAnimation": "アニメーションの表示/非表示",
+            "deleteEntry": "削除",
+            "invertSelection": "選択範囲の順序を反転",
+            "editorPane": "編集",
+            "previewPane": "プレビュー",
+            "keyframeHint": "駅をドラッグしてキーフレームの位置を設定",
+            "selectLineColor": "線の色を選択",
+            "selectDestNode": "キャンバスで終点駅を選択",
+            "noPathFound": "選択した色のパスが見つかりません。",
+            "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
+            "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
+            "cursorBefore": "新しい内容を {{position}} 番目の項目の前に挿入",
+            "cursorEnd": "新しい内容をトラックの末尾に挿入",
+            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。",
+            "missingCoverage": "{{nodeCount}} 個のノードと {{edgeCount}} 本の線分がタイムラインに未追加です。",
+            "highlightMissing": "未追加を強調",
+            "clearMissingHighlight": "強調を解除",
+            "coverageComplete": "すべてのノードと線分がタイムラインに追加されています。",
+            "previousFrame": "前のフレーム",
+            "playPreview": "プレビューを再生",
+            "pausePreview": "プレビューを一時停止",
+            "nextFrame": "次のフレーム",
+            "playbackControls": "再生コントロール",
+            "onboarding": {
+                "title": "$t(Rail Map Chronicle)クイックガイド",
+                "stepCount": "{{current}} / {{total}} ページ",
+                "previous": "戻る",
+                "next": "次へ",
+                "done": "わかりました",
+                "tipLabel": "ヒント：",
+                "addLine": {
+                    "title": "路線区間をまとめて挿入",
+                    "description": "始点と終点の駅を選ぶと、その間の経路全体が順番にタイムラインへ追加されます。",
+                    "step1": "上の編集キャンバスで始点となる駅を選択します。",
+                    "step2": "トラックパネル右側の「色で路線を追加」で、使用する路線の色をクリックします。",
+                    "step3": "キャンバスで終点の駅を選択すると、経路全体がタイムラインの現在の位置に挿入されます。",
+                    "tip": "挿入位置を変えるには、先にトラック上の項目と項目の間をクリックしてください。",
+                    "imageAlt": "始点の駅、路線色、終点の駅を選んで経路をタイムラインに追加する3ステップの図"
+                },
+                "exportVideo": {
+                    "title": "編年器動画を書き出す",
+                    "description": "順序とタイミングを確認したら、「ファイル」メニューから動画の書き出しを開きます。",
+                    "step1": "左上の「ファイル」をクリックします。",
+                    "step2": "「動画をエクスポート」を選びます。",
+                    "step3": "形式、解像度、フレームレートを設定して、動画の生成を開始します。",
+                    "tip": "動画はトラックを左から右へ再生します。書き出す前に中央の再生ボタンでプレビューできます。",
+                    "imageAlt": "ファイルメニュー内の動画エクスポート項目を強調した図"
+                }
+            },
+            "settings": {
+                "title": "編年器設定",
+                "description": "再生とラベルを調整します。変更はプレビューと書き出した動画に反映されます。",
+                "playback": "再生",
+                "overlays": "動画のラベル",
+                "lineInformation": "路線情報",
+                "showYear": "年を表示",
+                "showYearHint": "現在の路線の開業年を動画の左上に表示します。",
+                "showLineName": "路線名を表示",
+                "showLineNameHint": "年の下に路線色、中国語名、英語名を表示します。",
+                "showLineLength": "路線の長さを表示",
+                "showLineLengthMapOnly": "地理地図を有効にした場合のみ利用できます。",
+                "lineLengthUnit": "長さの単位",
+                "savedWithProject": "この編年器プロジェクトに保存",
+                "done": "完了",
+                "cameraZoom": "ズーム",
+                "cameraZoomFull": "全体（Full）"
+            },
+            "lineLabels": {
+                "title": "路線ラベル情報",
+                "description": "動画に表示する路線名、色、開業日を設定します。ラベルはこの編年器プロジェクトにのみ保存されます。",
+                "empty": "路線情報がありません。路線情報を含む RMP プロジェクトを読み込むと、動画のラベルを設定できます。",
+                "color": "ラベルの色",
+                "invalidColor": "#1677ff のような有効な16進数の色を入力してください。",
+                "reset": "読み込んだ路線情報に戻す",
+                "resetHint": "この路線のラベルを、読み込み時の RMP 路線情報に戻します。",
+                "saved": "変更はこの編年器プロジェクトに保存され、プレビューと書き出しに反映されます。"
+            },
+            "rmpImport": {
+                "title": "RMP データを読み込む",
+                "applyLineInfo": "路線情報からタイムラインを自動作成",
+                "description": "開業日順に、設定した始点から終点へ路線を描画します。開業日がない路線は最後に配置します。",
+                "summary": "{{lines}} 路線 · {{nodes}} ノード · {{edges}} 区間",
+                "unavailable": "利用できる路線情報がありません。地図を読み込み、タイムラインを手動で編集できます。",
+                "replaceTrack": "映像トラックを作り直します。音声クリップと再生設定は保持されます。",
+                "syncSummary": "地図の変更：ノード +{{addedNodes}}/−{{removedNodes}}、区間 +{{addedEdges}}/−{{removedEdges}}。無効なタイムライン項目 {{removedEntries}} 件を削除します。"
+            },
+            "playbackPosition": "再生位置",
+            "preparingPreview": "動画プレビューを準備中…",
+            "previewFailed": "プレビューを読み込めません",
+            "audioDuration": "音声の長さ：{{duration}} 秒",
+            "audioTiming": "音声の時間を編集",
+            "retryPreview": "プレビューを再読み込み"
+        },
         "mapToggle": {
             "show": "地理地図を表示",
             "hide": "地理地図を非表示"
@@ -891,6 +1036,45 @@
         "download": {
             "config": "作品をエクスポート",
             "image": "画像をエクスポート",
+            "video": "ビデオをエクスポート",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "groups": {
+                    "output": "出力設定",
+                    "rendering": "レンダリング設定",
+                    "sharing": "共有と利用規約"
+                },
+                "fps": "フレームレート（FPS）",
+                "speed": "描画速度",
+                "speedHint": "動画の長さは路線の長さと描画速度に応じて自動的に計算されます。",
+                "resolution": "ビデオ解像度",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
+                "quality": "ビデオ品質",
+                "autoChangeStationType": "一般駅と乗換駅を自動的に切り替える",
+                "autoChangeStationTypeHint": "有効にすると、動画内で現在表示されている路線に基づいて、対応する以下の乗換駅が自動的に調整されます：{{stations}}。",
+                "autoChangeStationTypeWarning": "動画内の駅名位置や乗換情報が現在のマップと一致しない場合は、「一般駅と乗換駅を自動的に切り替える」をオフにすると、マップの現在の状態どおりに駅を描画できます。",
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "timelineGuide": "駅と路線はタイムラインに設定された順序で描画されます。タイムラインが未設定の場合は、既定の順序が使用されます。",
+                "editTimeline": "タイムラインを編集",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "ビデオ形式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4は透過背景に対応していないため、現在の画面背景色を使用します。",
+                "error": "ビデオの書き出しに失敗しました。再試行するか、解像度やフレームレートを下げてください。",
+                "noNodes": "ビデオを書き出せません: グラフにノードがありません。",
+                "unavailableLines": "現在の地図または通常モードでは表示できない路線があります。修正するまでビデオを書き出せません。"
+            },
             "2rmg": {
                 "title": "RMG作品へエクスポート",
                 "type": {
@@ -1105,7 +1289,6 @@
             "zulipContent": "Zulip でコミュニティに参加しましょう！"
         }
     },
-
     "contextMenu": {
         "refresh": "更新",
         "cut": "切り取り",
@@ -1124,7 +1307,6 @@
         "flipDiagonal135": "135° 線で反転",
         "reconcile": "統合"
     },
-
     "clipboard": {
         "errors": {
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
@@ -1132,7 +1314,6 @@
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
         }
     },
-
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
     "map": {
         "loading": "地図を読み込み中",

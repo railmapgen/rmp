@@ -16,6 +16,7 @@ import { generateClosedPath } from '../../../util/generate-closed-path';
 import { findShortestClosedPath } from '../../../util/graph-find-shortest-closed-path';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { linePaths } from '../lines/lines';
+import { useSvgRenderContext } from '../../svg-render-context';
 
 const Fill = (props: NodeComponentProps<FillAttributes>) => {
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
@@ -25,8 +26,7 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         selectedPatterns = defaultFillAttributes.selectedPatterns,
     } = attrs ?? defaultFillAttributes;
 
-    const { refresh } = useRootSelector(state => state.runtime);
-    const graph = window.graph!;
+    const { graph, graphRefresh } = useSvgRenderContext();
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -41,11 +41,11 @@ const Fill = (props: NodeComponentProps<FillAttributes>) => {
         [id, handlePointerUp]
     );
 
-    const closedPath = React.useMemo(() => findShortestClosedPath(graph, id), [graph, id, refresh]);
+    const closedPath = React.useMemo(() => findShortestClosedPath(graph, id), [graph, id, graphRefresh]);
     const fillPath = React.useMemo(() => {
         if (!closedPath) return undefined;
         return generateClosedPath(graph, closedPath.nodes, closedPath.edges);
-    }, [closedPath]);
+    }, [closedPath, graph]);
 
     const pattern = { width: 60, height: 60 };
     const patternColor = getDynamicContrastColor(color[2], opacity);

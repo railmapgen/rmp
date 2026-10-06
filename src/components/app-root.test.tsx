@@ -35,6 +35,7 @@ afterAll(() => vi.unstubAllGlobals());
 
 describe('AppRoot', () => {
     it('unmounts the tools panel while the map is in overview mode', async () => {
+        window.history.replaceState({}, '', import.meta.env.BASE_URL);
         const store = createStore();
         render(<AppRoot />, { store });
 

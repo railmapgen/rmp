@@ -7,7 +7,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { StationAttributes, StationType } from '../../../constants/stations';
 import i18n from '../../../i18n/config';
-import store, { createStore } from '../../../redux';
+import { createStore } from '../../../redux';
+import store from '../../../redux/store';
 import { render } from '../../../test-utils';
 import StationNameTranslateButton from './station-name-translate-button';
 

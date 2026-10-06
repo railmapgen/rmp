@@ -35,6 +35,7 @@ export const Node2Font: {
     [StationType.OsakaMetro]: [TextLanguage.tokyo_ja, TextLanguage.berlin],
     [StationType.LondonTubeBasic]: [TextLanguage.tube],
     [StationType.LondonTubeInt]: [TextLanguage.tube],
+    [StationType.LondonRiverServicesInt]: [TextLanguage.tube],
     [MiscNodeType.BerlinSBahnLineBadge]: [TextLanguage.berlin],
     [MiscNodeType.BerlinUBahnLineBadge]: [TextLanguage.berlin],
     [MiscNodeType.JREastLineBadge]: [TextLanguage.jreast_ja],
@@ -162,16 +163,24 @@ type FontFaceConfig = {
     descriptors?: FontFaceDescriptors;
 };
 
+const getBundledFontSource = (fileName: string) => `url("${import.meta.env.BASE_URL}fonts/${fileName}")`;
+
 const LTAIdentity: FontFaceConfig = {
-    source: 'url("./fonts/LTAIdentity-Medium.ttf")',
+    source: getBundledFontSource('LTAIdentity-Medium.ttf'),
     descriptors: { display: 'swap' },
 };
-const MPLUS2: FontFaceConfig = { source: 'url("./fonts/Mplus2-Medium.otf")', descriptors: { display: 'swap' } };
-const Roboto: FontFaceConfig = { source: 'url("./fonts/Roboto-Bold.ttf")', descriptors: { display: 'swap' } };
-const MontaguSlab: FontFaceConfig = { source: 'url("./fonts/MontaguSlab.ttf")', descriptors: { display: 'swap' } };
-const Railway: FontFaceConfig = { source: 'url("./fonts/Railway-PlyE.otf")', descriptors: { display: 'swap' } };
+const MPLUS2: FontFaceConfig = {
+    source: getBundledFontSource('Mplus2-Medium.otf'),
+    descriptors: { display: 'swap' },
+};
+const Roboto: FontFaceConfig = { source: getBundledFontSource('Roboto-Bold.ttf'), descriptors: { display: 'swap' } };
+const MontaguSlab: FontFaceConfig = {
+    source: getBundledFontSource('MontaguSlab.ttf'),
+    descriptors: { display: 'swap' },
+};
+const Railway: FontFaceConfig = { source: getBundledFontSource('Railway-PlyE.otf'), descriptors: { display: 'swap' } };
 const TaipeiSansTC: FontFaceConfig = {
-    source: 'url("./fonts/TaipeiSansTCBeta-Regular.ttf")',
+    source: getBundledFontSource('TaipeiSansTCBeta-Regular.ttf'),
     descriptors: { display: 'swap' },
 };
 

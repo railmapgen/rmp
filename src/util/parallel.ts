@@ -6,20 +6,18 @@ import { ExternalLinePathAttributes, LinePathType } from '../constants/lines';
 import { OpenPath, makeLinearPath, makePoint } from '../constants/path';
 import { makeOpenPathParallel } from './bezier-parallel';
 import { isOpenPath, isShortOpenPath } from './path';
+import { supportsParallelLinePath, type ParallelLinePathType } from './parallel-line-policy';
 
-type ParallelLinePathType = Exclude<
-    LinePathType,
-    LinePathType.Simple | LinePathType.RayGuided | LinePathType.Freeform | LinePathType.Bezier
->;
+export {
+    countParallelLines,
+    MAX_PARALLEL_LINES_FREE,
+    MAX_PARALLEL_LINES_PRO,
+    supportsParallelLinePath,
+} from './parallel-line-policy';
+
 export type ParallelLinePathAttributes = NonNullable<ExternalLinePathAttributes[ParallelLinePathType]>;
 
 const MIN_ROUND_CORNER_FACTOR = 1;
-
-export const supportsParallelLinePath = (type: LinePathType): type is ParallelLinePathType =>
-    type !== LinePathType.Simple &&
-    type !== LinePathType.RayGuided &&
-    type !== LinePathType.Freeform &&
-    type !== LinePathType.Bezier;
 
 /**
  * Classify all the lines between source and target of the provided line
@@ -238,17 +236,4 @@ export const getBaseParallelLineID = (
         }
     }
     return minLineID;
-};
-
-export const MAX_PARALLEL_LINES_FREE = 5;
-export const MAX_PARALLEL_LINES_PRO = Infinity;
-
-export const countParallelLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>) => {
-    let parallelLinesCount = 0;
-    for (const lineEntry of graph.edgeEntries()) {
-        if (supportsParallelLinePath(lineEntry.attributes.type) && lineEntry.attributes.parallelIndex >= 0) {
-            parallelLinesCount += 1;
-        }
-    }
-    return parallelLinesCount;
 };

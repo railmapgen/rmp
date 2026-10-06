@@ -4,7 +4,7 @@ import {
     applyRedoAction,
     applyUndoAction,
     ParamGraph,
-    ProjectSnapshot,
+    ProjectReplacement,
     replaceProjectState,
 } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
@@ -34,7 +34,7 @@ const refreshGraphState = (dispatch: RootDispatch) => {
  * Replaces the live graph before committing project history so a malformed
  * graph cannot leave Redux pointing at a project that failed to open.
  */
-export const replaceProject = (project: ProjectSnapshot) => (dispatch: RootDispatch) => {
+export const replaceProject = (project: ProjectReplacement) => (dispatch: RootDispatch, getState: () => RootState) => {
     replaceWindowGraph(project.graph);
     dispatch(replaceProjectState(project));
     return refreshGraphState(dispatch);

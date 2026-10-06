@@ -116,7 +116,7 @@ export default function DownloadActions() {
             value: scale,
             options: scaleOptions,
             onChange: value => {
-                setScale(value as number);
+                setScale(Number(value));
                 setIsCanvasSizeSupported(undefined);
             },
         },
@@ -185,8 +185,7 @@ export default function DownloadActions() {
                 images.push({ id: attr.href, base64: (await imageStoreIndexedDB.get(attr.href))! });
             }
         }
-        const data = { ...param, images };
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(data));
+        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param, images));
     };
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f

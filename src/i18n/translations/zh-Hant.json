@@ -11,7 +11,6 @@
     "close": "關閉",
     "noShowAgain": "不要再顯示",
     "rmtPromotion": "絕對不想錯過的多功能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "顯示更少",
@@ -787,7 +786,6 @@
             }
         }
     },
-
     "header": {
         "lineInfo": {
             "title": "線路資訊設定",
@@ -840,6 +838,153 @@
         "popoverHeader": "你正在瀏覽<1>{{environment}}</1>環境！",
         "popoverBody": "我們正在測試最新的RMP。如果妳有任何建議，歡迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜尋車站",
+        "edit": "編輯",
+        "undo": "撤銷",
+        "redo": "重做",
+        "timelinePage": {
+            "open": "開啟$t(Rail Map Chronicle)",
+            "backToEditor": "返回編輯器",
+            "trackTitle": "時間線軌道",
+            "resizeTrack": "調整時間線軌道高度",
+            "selectHint": "先在上方選擇一個節點或線段，再將其加入軌道。",
+            "alreadyAdded": "已加入",
+            "addSelected": "加入已選項",
+            "addPathByColor": "按顏色加入一條線路",
+            "homeDescription": "從繪製器目前開啟的 RMP 專案建立編年器專案，或匯入既有的編年器專案檔案。",
+            "continueEditing": "繼續編輯",
+            "startFromCurrentRmp": "從目前的 RMP 專案開始",
+            "importTimelineProject": "匯入編年器專案",
+            "newProjectName": "編年器專案",
+            "recentProject": "最近專案",
+            "updatedAt": "更新於",
+            "openProject": "開啟",
+            "deleteProject": "刪除編年器專案",
+            "deleteProjectConfirm": "確定刪除編年器專案「{{name}}」嗎？",
+            "files": "檔案",
+            "backToMainMenu": "返回主選單",
+            "importRmpData": "匯入 RMP 資料",
+            "importOpenPainterProject": "繪製器開啟的專案",
+            "importLocalConfig": "本機設定檔",
+            "renameProject": "重新命名專案",
+            "renameProjectPrompt": "編年器專案名稱",
+            "downloadProject": "下載編年器專案",
+            "exportVideo": "匯出影片",
+            "insert": "插入",
+            "insertKeyframe": "關鍵幀",
+            "insertExitAnimation": "插入目前所選項目的離開動畫",
+            "insertFramePauseBefore": "幀前停頓",
+            "insertFramePauseAfter": "幀後停頓",
+            "insertLabel": "標註",
+            "editLabel": "編輯標註",
+            "labelText": "標註文字",
+            "saveLabel": "儲存",
+            "insertAudio": "音訊",
+            "audioTrack": "音訊軌道",
+            "noAudio": "暫無音訊。使用「插入 > 音訊」新增。",
+            "audioStart": "開始時間（秒）",
+            "audioEnd": "結束時間（秒）",
+            "audioMissing": "音訊資料遺失。請重新匯入檔案以恢復。",
+            "framePauseBefore": "幀前停頓",
+            "framePauseAfter": "幀後停頓",
+            "pauseDuration": "停頓時長",
+            "seconds": "秒",
+            "keyframe": "關鍵幀",
+            "enterPhase": "進入",
+            "exitPhase": "離開",
+            "showAnimation": "顯示動畫",
+            "toggleAnimation": "顯示/隱藏動畫",
+            "deleteEntry": "刪除",
+            "invertSelection": "反轉多選區域順序",
+            "editorPane": "編輯",
+            "previewPane": "預覽",
+            "keyframeHint": "拖曳車站以設定關鍵幀位置",
+            "selectLineColor": "選擇線路顏色",
+            "selectDestNode": "在畫布中選擇終點車站",
+            "noPathFound": "所選顏色在這兩站之間沒有找到路徑。",
+            "pathAdded": "成功將 {{count}} 個元素添加進軌道。",
+            "pathAlreadyAdded": "此路徑中的所有元素都已存在於軌道中。",
+            "cursorBefore": "將新增內容插入第 {{position}} 項之前",
+            "cursorEnd": "將新增內容插入軌道末尾",
+            "empty": "軌道仍是空的。先在上方選擇元素，再開始建立時間線。",
+            "missingCoverage": "還有 {{nodeCount}} 個節點、{{edgeCount}} 條線段未加入時間線。",
+            "highlightMissing": "高亮遺漏",
+            "clearMissingHighlight": "取消高亮",
+            "coverageComplete": "所有節點和線段都已加入時間線。",
+            "previousFrame": "上一幀",
+            "playPreview": "播放預覽",
+            "pausePreview": "暫停預覽",
+            "nextFrame": "下一幀",
+            "playbackControls": "播放控制",
+            "onboarding": {
+                "title": "$t(Rail Map Chronicle)快速上手",
+                "stepCount": "第 {{current}} / {{total}} 頁",
+                "previous": "上一步",
+                "next": "下一步",
+                "done": "知道了",
+                "tipLabel": "小提示：",
+                "addLine": {
+                    "title": "插入一整段路線",
+                    "description": "選擇起點站與終點站，兩站之間的完整路徑就會依序加入時間線。",
+                    "step1": "在上方的編輯畫布中點擊起點站。",
+                    "step2": "在軌道區右側的「按顏色加入一條線路」中，點擊要使用的路線顏色。",
+                    "step3": "回到畫布點擊終點站，整段路徑會插入目前的時間線位置。",
+                    "tip": "想調整插入位置？先在軌道中點擊兩個片段之間的插入點。",
+                    "imageAlt": "三步示意圖：選擇起點站、選擇路線顏色，再選擇終點站，將整段路線加入時間線"
+                },
+                "exportVideo": {
+                    "title": "匯出編年影片",
+                    "description": "確認順序與節奏後，從「檔案」選單進入影片匯出。",
+                    "step1": "點擊左上角的「檔案」。",
+                    "step2": "選擇「匯出影片」。",
+                    "step3": "設定格式、解析度和幀率，然後開始產生影片。",
+                    "tip": "影片會按照軌道從左到右的順序播放；匯出前可先用中間的播放按鈕預覽。",
+                    "imageAlt": "在檔案選單中高亮匯出影片選項的示意圖"
+                }
+            },
+            "settings": {
+                "title": "編年器設定",
+                "description": "調整播放效果和畫面標註，預覽與匯出影片會同步更新。",
+                "playback": "播放效果",
+                "overlays": "畫面標註",
+                "lineInformation": "路線資訊",
+                "showYear": "顯示年份",
+                "showYearHint": "在影片左上角顯示目前路線的通車年份。",
+                "showLineName": "標註路線名稱",
+                "showLineNameHint": "在年份下方顯示路線標誌色、中文名稱和英文名稱。",
+                "showLineLength": "標註路線長度",
+                "showLineLengthMapOnly": "僅開啟真實地理地圖時可用。",
+                "lineLengthUnit": "長度單位",
+                "savedWithProject": "隨目前的編年器專案儲存",
+                "done": "完成",
+                "cameraZoom": "放大倍率",
+                "cameraZoomFull": "全螢幕（Full）"
+            },
+            "lineLabels": {
+                "title": "路線標籤資訊",
+                "description": "設定影片中顯示的路線名稱、標誌色與通車日期。這些標註資訊僅儲存在目前的編年器專案中。",
+                "empty": "暫無路線資訊。匯入包含路線資訊的 RMP 存檔後，即可設定影片路線標籤。",
+                "color": "標籤標誌色",
+                "invalidColor": "請輸入有效的十六進位顏色，例如 #1677ff。",
+                "reset": "還原匯入的路線資訊",
+                "resetHint": "將此路線的標籤還原為匯入時的 RMP 路線資訊。",
+                "saved": "修改會儲存在目前的編年器專案中，並同時套用於預覽與匯出。"
+            },
+            "rmpImport": {
+                "title": "匯入 RMP 資料",
+                "applyLineInfo": "依路線資訊自動填入時間線",
+                "description": "依通車日期排列路線，並從設定的起點向終點依序繪製。未填寫通車日期的路線排在最後。",
+                "summary": "{{lines}} 條路線 · {{nodes}} 個節點 · {{edges}} 條線段",
+                "unavailable": "暫無可用的路線資訊。你仍可匯入地圖並手動編輯時間線。",
+                "replaceTrack": "此操作會重新產生視覺軌道，保留音訊片段和播放設定。",
+                "syncSummary": "地圖變更：節點 +{{addedNodes}}/−{{removedNodes}}，線段 +{{addedEdges}}/−{{removedEdges}}。將移除 {{removedEntries}} 個失效時間線項目。"
+            },
+            "playbackPosition": "播放進度",
+            "preparingPreview": "正在準備影片預覽…",
+            "previewFailed": "預覽載入失敗",
+            "audioDuration": "資源時長：{{duration}} 秒",
+            "audioTiming": "編輯音樂時間",
+            "retryPreview": "重新載入"
+        },
         "mapToggle": {
             "show": "顯示地理地圖",
             "hide": "隱藏地理地圖"
@@ -888,6 +1033,45 @@
         "download": {
             "config": "導出項目",
             "image": "導出圖片",
+            "video": "匯出影片",
+            "videoExport": {
+                "title": "匯出影片",
+                "groups": {
+                    "output": "輸出設定",
+                    "rendering": "渲染設定",
+                    "sharing": "分享與授權"
+                },
+                "fps": "每秒影格數 (FPS)",
+                "speed": "繪製速度",
+                "speedHint": "影片時長將根據路線長度和繪製速度自動計算。",
+                "resolution": "影片解析度",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
+                "quality": "影片品質",
+                "autoChangeStationType": "自動切換基本車站與轉乘車站",
+                "autoChangeStationTypeHint": "開啟後，將根據影片中目前已顯示的線路自動調整以下支援的轉乘車站：{{stations}}。",
+                "autoChangeStationTypeWarning": "如果影片中的車站名稱位置或轉乘資訊與目前地圖不一致，請關閉「自動切換基本車站與轉乘車站」，以完全按照地圖目前狀態渲染車站。",
+                "generating": "正在產生影片...",
+                "progress": "進度：{{progress}}%",
+                "description": "此功能會匯出一段動畫影片，展示節點和線路逐步繪製的過程。",
+                "timelineGuide": "影片會按照時間線中設定的順序依次渲染車站和線路；如果尚未設定時間線，則使用預設順序。",
+                "editTimeline": "修改時間線",
+                "shareInfo1": "當我分享此影片時我會附上",
+                "shareInfo2": "和它的連結。",
+                "format": "影片格式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4 不支援透明背景，將使用目前介面背景色。",
+                "error": "影片匯出失敗，請重試或降低解析度、影格率。",
+                "noNodes": "無法匯出影片：圖中沒有節點。",
+                "unavailableLines": "目前地圖或普通模式下有些線段無法顯示。請修復這些線段後再匯出影片。"
+            },
             "2rmg": {
                 "title": "導出RMG項目",
                 "type": {
@@ -1103,7 +1287,6 @@
             "zulipContent": "加入我們的 Zulip 社群！"
         }
     },
-
     "contextMenu": {
         "refresh": "重新整理",
         "cut": "剪下",
@@ -1122,7 +1305,6 @@
         "flipDiagonal135": "沿135°線翻轉",
         "reconcile": "合併線段"
     },
-
     "clipboard": {
         "errors": {
             "readText": "無法讀取剪貼簿。請檢查瀏覽器權限後再試一次。",
@@ -1130,7 +1312,6 @@
             "cannotPasteSpecificAttrs": "無法貼上獨特屬性。請確認已選取相容的物件，且剪貼簿中包含有效的獨特屬性資料。"
         }
     },
-
     "localStorageQuotaExceeded": "本機儲存空間已達上限。無法儲存新的變更。",
     "map": {
         "loading": "正在載入地圖",

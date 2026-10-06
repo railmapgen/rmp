@@ -82,7 +82,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Undo"
+                        aria-label={t('header.undo')}
                         icon={<MdUndo />}
                         isDisabled={past.length === 0}
                         onClick={handleUndo}
@@ -90,7 +90,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Redo"
+                        aria-label={t('header.redo')}
                         icon={<MdRedo />}
                         isDisabled={future.length === 0}
                         onClick={handleRedo}

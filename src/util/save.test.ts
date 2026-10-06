@@ -1,8 +1,10 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '../redux';
+import { createTestLineGraph } from '../test-utils';
 import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
@@ -138,6 +140,70 @@ describe('Unit tests for param upgrade function', () => {
         expect(allKeys.reduce((acc, cur) => acc + cur, 0)).toEqual(((CURRENT_VERSION - 1) * CURRENT_VERSION) / 2);
         // Maximum of allKeys equals CURRENT_VERSION - 1.
         expect(Math.max(...allKeys) + 1).toEqual(CURRENT_VERSION);
+    });
+
+    it('stringifyParam should not export legacy timeline data', () => {
+        const paramState = createStore().getState().param;
+        const save = JSON.parse(stringifyParam(paramState));
+
+        expect(save.timeline).toBeUndefined();
+        expect(save.graph).toBeDefined();
+    });
+
+    it('77 -> 78', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"timeline":{"version":1,"track":[]},"version":77}';
+        const newParam = UPGRADE_COLLECTION[77](oldParam);
+        const upgraded = JSON.parse(newParam);
+
+        expect(upgraded.version).toBe(78);
+        // Timeline structure is normalized when a save is loaded, not during parameter upgrades.
+        expect(upgraded.timeline).toEqual({ version: 1, track: [] });
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it('78 -> 79 reconciles saves from the timeline and real-map branches', () => {
+        const timelineSave = JSON.stringify({
+            graph: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline: createEmptyTimelineDocument(),
+            version: 78,
+        });
+        const upgraded = JSON.parse(UPGRADE_COLLECTION[78](timelineSave));
+
+        expect(upgraded.version).toBe(79);
+        expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it.each([false, true])('upgrades v78 map and line data together (mapEnabled=%s)', async mapEnabled => {
+        const graph = createTestLineGraph([['A', 'B']]).export();
+        delete graph.attributes.lineDefinitions;
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.arterial.color = '#123456';
+        const timeline = createEmptyTimelineDocument();
+        const save = JSON.stringify({
+            version: 78,
+            graph,
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline,
+            ...(mapEnabled ? { mapEnabled, mapStyle } : {}),
+        });
+        const upgraded = JSON.parse(await upgrade(save));
+
+        expect(upgraded.version).toBe(CURRENT_VERSION);
+        expect(upgraded.mapEnabled).toBe(mapEnabled);
+        expect(upgraded.mapStyle).toEqual(mapEnabled ? mapStyle : DEFAULT_MAP_STYLE);
+        expect(upgraded.timeline).toEqual(timeline);
+        expect(upgraded.graph.nodes).toEqual(graph.nodes);
+        expect(upgraded.graph.edges).toEqual(graph.edges);
+        expect(upgraded.graph.attributes.lineDefinitions).toEqual([
+            expect.objectContaining({ edgeIds: ['line_0'], status: 'operating', exportStartStationId: 'stn_A' }),
+        ]);
     });
 
     it('1 -> 2', () => {
@@ -1116,6 +1182,10 @@ describe('Unit tests for param upgrade function', () => {
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":79}';
-        expect(newParam).toEqual(expectParam);
+        expect(JSON.parse(newParam)).toEqual({
+            ...JSON.parse(expectParam),
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        });
     });
 });

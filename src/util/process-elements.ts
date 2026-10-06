@@ -38,7 +38,10 @@ export interface LineRenderElement {
 
 type NonNullableExternalLinePathAttribute = NonNullable<ExternalLinePathAttributes[keyof ExternalLinePathAttributes]>;
 
-export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): Element[] => {
+export const getLines = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    { showReconcileWarnings = true }: { showReconcileWarnings?: boolean } = {}
+): Element[] => {
     const resolvedLines: Element[] = [];
     const reconciledLines: Element[] = [];
     const danglingLines: Element[] = [];
@@ -185,20 +188,26 @@ export const getLines = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttribute
             id: danglingLine,
             type: 'line',
             line: {
-                attr: {
-                    ...attr,
-                    // Dangling reconciled lines will have a visual warning (unknown style).
-                    // Mark only this render-time copy as unknown so the graph data stays unchanged.
-                    style: LineStyleType.Unknown,
-                    [LineStyleType.Unknown]: {},
-                },
-                path: linePaths[LinePathType.Simple].generatePath(
-                    sourceAttr.x,
-                    targetAttr.x,
-                    sourceAttr.y,
-                    targetAttr.y,
-                    linePaths[LinePathType.Simple].defaultAttrs
-                ),
+                attr: showReconcileWarnings
+                    ? {
+                          ...attr,
+                          // Dangling reconciled lines will have a visual warning (unknown style).
+                          // Mark only this render-time copy as unknown so the graph data stays unchanged.
+                          style: LineStyleType.Unknown,
+                          [LineStyleType.Unknown]: {},
+                      }
+                    : attr,
+                // A timeline may show only one segment of a valid chain. Keep its authored geometry and style.
+                path:
+                    !showReconcileWarnings && cachedGeneratedPaths[danglingLine]
+                        ? cachedGeneratedPaths[danglingLine]!
+                        : linePaths[LinePathType.Simple].generatePath(
+                              sourceAttr.x,
+                              targetAttr.x,
+                              sourceAttr.y,
+                              targetAttr.y,
+                              linePaths[LinePathType.Simple].defaultAttrs
+                          ),
             },
         });
     }
