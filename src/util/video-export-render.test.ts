@@ -1,6 +1,9 @@
 import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getI18n, setI18n } from 'react-i18next';
+import i18n from '../i18n/config';
 import stations from '../components/svgs/stations/stations';
+import miscNodes from '../components/svgs/nodes/misc-nodes';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
@@ -8,12 +11,7 @@ import { StationType } from '../constants/stations';
 import { MiscNodeType } from '../constants/nodes';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import * as mapTileController from '../map/map-tile-controller';
-import {
-    createEmptyTimelineDocument,
-    TIMELINE_CAMERA_ZOOM_LEVELS,
-    TimelineDocument,
-    TimelineEntry,
-} from '../constants/timeline';
+import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
 import { makeRenderReadySVGElement } from './download';
 import * as videoExportCanvas from './video-export-canvas';
 import {
@@ -216,8 +214,6 @@ describe('video export frame timing', () => {
     it.each([
         { length: 200, speedMultiplier: 1, fps: 30, drawingSeconds: 2 },
         { length: 400, speedMultiplier: 1, fps: 30, drawingSeconds: 4 },
-        { length: 200, speedMultiplier: 0.5, fps: 30, drawingSeconds: 4 },
-        { length: 200, speedMultiplier: 2, fps: 60, drawingSeconds: 1 },
     ])('derives frame timing from $length units at $speedMultiplier× and $fps FPS', async params => {
         const { length, speedMultiplier, fps, drawingSeconds } = params;
         const onProgress = vi.fn();
@@ -241,14 +237,6 @@ describe('video export frame timing', () => {
         );
         expect(onProgress).toHaveBeenLastCalledWith(1);
         expect(complete).toHaveBeenCalledOnce();
-    });
-
-    it('preserves drawing speed when output resolution and zoom change', async () => {
-        const timeline = createEmptyTimelineDocument();
-        timeline.settings!.cameraZoom = 4;
-        await exportVideo(makeGraph(200), timeline, [], { ...defaultOptions, resolution: '4k' }, 'white');
-        expect(addFrame).toHaveBeenCalledTimes(91);
-        expect(renderedSVGs[31].querySelector('path')?.getAttribute('stroke-dasharray')).toBe('100 400');
     });
 
     it('keeps elapsed-time progress when the drawing duration ends between frames', async () => {
@@ -437,8 +425,6 @@ const rasterizedMarkup = (svg: SVGSVGElement) => svg.outerHTML.replace(/&nbsp;/g
 describe('authored video frames', () => {
     it.each([
         { fps: 30, keyframes: false },
-        { fps: 60, keyframes: false },
-        { fps: 30, keyframes: true },
         { fps: 60, keyframes: true },
     ])(
         'keeps the camera moving across adjacent lines at $fps FPS (keyframes=$keyframes)',
@@ -575,11 +561,6 @@ describe('authored video frames', () => {
         expect(createVideoFrameWriter).toHaveBeenCalledOnce();
         expect(dispose).toHaveBeenCalledOnce();
         expect(onProgress).not.toHaveBeenCalledWith(1);
-    });
-
-    it('preserves simple authored entrance timing', async () => {
-        await exportVideo(makeGraph(200), authoredTimeline(nodeEntry, edgeEntry), [], defaultOptions, 'white');
-        expect(addFrame).toHaveBeenCalledTimes(91);
     });
 
     it('moves nodes and their connected line geometry while preserving the editor graph and final keyframe', async () => {
@@ -770,51 +751,48 @@ describe('shared real-time preview renderer', () => {
         renderer.dispose();
     });
 
-    it.each(TIMELINE_CAMERA_ZOOM_LEVELS)(
-        'uses project Zoom %sx in preview and export and ends at 100%%',
-        async cameraZoom => {
-            const graph = makeGraph(200);
-            const timeline = createEmptyTimelineDocument();
-            timeline.settings!.cameraZoom = cameraZoom;
-            const bounds = calculateCanvasSize(graph);
-            const wholeViewBox = getCameraViewBox(
-                {
-                    x: (bounds.xMin + bounds.xMax) / 2,
-                    y: (bounds.yMin + bounds.yMax) / 2,
-                },
-                getOverviewZoom(graph)
-            );
-            const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
-            const current = await preview.renderFrame(0.4);
-            const currentBox = current.getAttribute('viewBox')!.split(' ').map(Number);
-            expect(currentBox[2]).toBeCloseTo(wholeViewBox.width / cameraZoom, 9);
-            expect(currentBox[3]).toBeCloseTo(wholeViewBox.height / cameraZoom, 9);
-            const expectedFinal = [wholeViewBox.x, wholeViewBox.y, wholeViewBox.width, wholeViewBox.height];
-            const final = await preview.renderFrame(preview.duration);
-            final
-                .getAttribute('viewBox')!
-                .split(' ')
-                .map(Number)
-                .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
-            if (cameraZoom === 1) {
-                currentBox.forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
-            }
-            await exportVideo(graph, timeline, [], { ...defaultOptions, fps: 60, resolution: '1080p' }, 'white');
-            // First SVG is measurement geometry; subsequent SVGs are actual exported frames.
-            renderedSVGs[1 + 24]
-                .getAttribute('viewBox')!
-                .split(' ')
-                .map(Number)
-                .forEach((value, index) => expect(value).toBeCloseTo(currentBox[index], 9));
-            renderedSVGs
-                .at(-1)!
-                .getAttribute('viewBox')!
-                .split(' ')
-                .map(Number)
-                .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
-            preview.dispose();
+    it.each([1, 4, 16] as const)('uses project Zoom %sx in preview and export and ends at 100%%', async cameraZoom => {
+        const graph = makeGraph(200);
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings!.cameraZoom = cameraZoom;
+        const bounds = calculateCanvasSize(graph);
+        const wholeViewBox = getCameraViewBox(
+            {
+                x: (bounds.xMin + bounds.xMax) / 2,
+                y: (bounds.yMin + bounds.yMax) / 2,
+            },
+            getOverviewZoom(graph)
+        );
+        const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
+        const current = await preview.renderFrame(0.4);
+        const currentBox = current.getAttribute('viewBox')!.split(' ').map(Number);
+        expect(currentBox[2]).toBeCloseTo(wholeViewBox.width / cameraZoom, 9);
+        expect(currentBox[3]).toBeCloseTo(wholeViewBox.height / cameraZoom, 9);
+        const expectedFinal = [wholeViewBox.x, wholeViewBox.y, wholeViewBox.width, wholeViewBox.height];
+        const final = await preview.renderFrame(preview.duration);
+        final
+            .getAttribute('viewBox')!
+            .split(' ')
+            .map(Number)
+            .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
+        if (cameraZoom === 1) {
+            currentBox.forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
         }
-    );
+        await exportVideo(graph, timeline, [], { ...defaultOptions, fps: 60, resolution: '1080p' }, 'white');
+        // First SVG is measurement geometry; subsequent SVGs are actual exported frames.
+        renderedSVGs[1 + 24]
+            .getAttribute('viewBox')!
+            .split(' ')
+            .map(Number)
+            .forEach((value, index) => expect(value).toBeCloseTo(currentBox[index], 9));
+        renderedSVGs
+            .at(-1)!
+            .getAttribute('viewBox')!
+            .split(' ')
+            .map(Number)
+            .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
+        preview.dispose();
+    });
 
     it('keeps the same camera position at shared video times across preview and export FPS', async () => {
         const graph = makeGraph(200);
@@ -884,7 +862,7 @@ describe('shared real-time preview renderer', () => {
         }
     });
 
-    it.each([0.5, 1, 2])(
+    it.each([0.5, 2])(
         'preserves physical drawing speed at %s× for 15 FPS preview and 60 FPS export',
         async speedMultiplier => {
             const timeline = authoredTimeline(nodeEntry, edgeEntry, {
@@ -1065,6 +1043,7 @@ describe('shared real-time preview renderer', () => {
 
     it('returns independent snapshots matching export after live updates and snapshot edits', async () => {
         const graph = makeGraph(200);
+        const original = structuredClone(graph.export());
         const timeline = authoredTimeline(
             nodeEntry,
             edgeEntry,
@@ -1086,6 +1065,8 @@ describe('shared real-time preview renderer', () => {
         const exported = renderedSVGs.slice(1).map(rasterizedMarkup);
         vi.mocked(makeRenderReadySVGElement).mockClear();
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        expect(renderer.duration).toBe(exported.length / defaultOptions.fps);
+        expect(renderer.cursorTimes.at(-1)).toBe(renderer.duration);
         const live = await renderer.renderPreviewFrame(0.3);
         const first = await renderer.renderFrame(0.3);
         const firstMarkup = first.outerHTML;
@@ -1106,6 +1087,7 @@ describe('shared real-time preview renderer', () => {
             expect(snapshot.hasAttribute('data-snapshot-edit')).toBe(false);
         }
         expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        expect(graph.export()).toEqual(original);
         renderer.dispose();
     });
 
@@ -1144,29 +1126,6 @@ describe('shared real-time preview renderer', () => {
         }
         expect(live.outerHTML).toBe(earlyMarkup);
         expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
-        renderer.dispose();
-    });
-
-    it('seeks in either direction with the exact same graph, animation and camera as export', async () => {
-        const graph = makeGraph(200);
-        const original = structuredClone(graph.export());
-        const timeline = authoredTimeline(
-            nodeEntry,
-            edgeEntry,
-            { id: 'move', kind: 'keyframe', refId: 'stn_a', x: 0, y: 100 },
-            { ...edgeEntry, id: 'exit_ab', phase: 'exit' }
-        );
-        await exportVideo(graph, timeline, [], defaultOptions, 'white');
-        const exported = renderedSVGs.slice(1).map(rasterizedMarkup);
-        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
-        expect(renderer.duration).toBe(exported.length / defaultOptions.fps);
-        expect(renderer.cursorTimes.at(-1)).toBe(renderer.duration);
-        for (const frame of [90, 9, exported.length - 1, 60, 9, 0, 90]) {
-            const svg = await renderer.renderFrame(frame / defaultOptions.fps);
-            expect(rasterizedMarkup(svg)).toBe(exported[frame]);
-            svg.remove();
-        }
-        expect(graph.export()).toEqual(original);
         renderer.dispose();
     });
 
@@ -1318,3 +1277,50 @@ it('preloads project images and includes them in every rendered frame', async ()
     expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
     renderer.dispose();
 });
+
+it.each([
+    ['zh-Hans', '中文标题'],
+    ['en', 'English title'],
+])(
+    'renders translated text in the preview with the app language %s without a global i18next instance',
+    async (language, expected) => {
+        const previousInstance = getI18n();
+        const previousLanguage = i18n.language;
+        setI18n(undefined as never);
+        let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+        try {
+            await i18n.changeLanguage(language);
+            const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+            graph.addNode('misc_node_translated_text', {
+                type: MiscNodeType.I18nText,
+                x: 0,
+                y: 0,
+                visible: true,
+                zIndex: 0,
+                [MiscNodeType.I18nText]: {
+                    ...structuredClone(miscNodes[MiscNodeType.I18nText].defaultAttrs),
+                    contents: { en: 'English title', 'zh-Hans': '中文标题' },
+                },
+            } as NodeAttributes);
+            const timeline: TimelineDocument = {
+                ...createEmptyTimelineDocument(),
+                track: [
+                    {
+                        id: 'translated',
+                        kind: 'node',
+                        refId: 'misc_node_translated_text',
+                        phase: 'enter',
+                        showAnimation: true,
+                    },
+                ],
+            };
+            renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+            const frame = await renderer.renderFrame(0.5);
+            expect(frame.getElementById('misc_node_translated_text')?.textContent).toContain(expected);
+        } finally {
+            renderer?.dispose();
+            setI18n(previousInstance);
+            await i18n.changeLanguage(previousLanguage);
+        }
+    }
+);

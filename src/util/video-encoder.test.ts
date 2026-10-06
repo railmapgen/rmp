@@ -46,14 +46,56 @@ beforeEach(() => {
     vi.stubGlobal('VideoEncoder', class {});
     vi.stubGlobal('VideoFrame', class {});
     mocks.canEncodeVideo.mockResolvedValue(true);
+    mocks.add.mockResolvedValue(undefined);
     mocks.muxVideoAudio.mockResolvedValue(new Blob(['video with soundtrack'], { type: 'video/mp4' }));
     canvas = document.createElement('canvas');
     canvas.width = 1920;
     canvas.height = 1080;
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+});
 
 describe('browser video encoding', () => {
+    it.each([
+        [1280, 720, 30, 'avc1.42001f'],
+        [1280, 720, 60, 'avc1.420020'],
+        [1920, 1080, 30, 'avc1.420028'],
+        [1920, 1080, 60, 'avc1.42002a'],
+        [2560, 1440, 30, 'avc1.420032'],
+        [2560, 1440, 60, 'avc1.420033'],
+        [3840, 2160, 30, 'avc1.420033'],
+        [3840, 2160, 60, 'avc1.420034'],
+    ] as const)(
+        'uses a compatible AVC baseline level for %ix%i at %i FPS',
+        async (width, height, fps, fullCodecString) => {
+            canvas.width = width;
+            canvas.height = height;
+            const writer = await createVideoFrameWriter(canvas, { ...options, fps });
+            expect(mocks.canEncodeVideo).toHaveBeenCalledWith(
+                'avc',
+                expect.objectContaining({
+                    fullCodecString,
+                    latencyMode: 'quality',
+                })
+            );
+            await writer.dispose();
+        }
+    );
+
+    it('turns a stalled native frame into a retryable failure and releases the encoder', async () => {
+        vi.useFakeTimers();
+        mocks.add.mockImplementation(() => new Promise(() => {}));
+        const writer = await createVideoFrameWriter(canvas, options);
+        const assertion = expect(writer.addFrame(0)).rejects.toBeInstanceOf(NativeVideoEncodingError);
+        await vi.advanceTimersByTimeAsync(30_000);
+        await assertion;
+        await writer.dispose();
+        expect(mocks.cancel).toHaveBeenCalledOnce();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
     it.each([30, 60])('writes MP4 directly with the frame clock at %i FPS', async fps => {
         const writer = await createVideoFrameWriter(canvas, { ...options, fps });
         await writer.addFrame(0);

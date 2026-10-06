@@ -19,6 +19,40 @@ export class NativeVideoEncodingError extends Error {
     }
 }
 
+// AVC limits in macroblocks per frame and per second, covering the supported export sizes.
+const AvcLevels = [
+    [0x1f, 3600, 108000],
+    [0x20, 5120, 216000],
+    [0x28, 8192, 245760],
+    [0x2a, 8704, 522240],
+    [0x32, 22080, 589824],
+    [0x33, 36864, 983040],
+    [0x34, 36864, 2073600],
+] as const;
+
+const getAvcBaselineCodec = (width: number, height: number, fps: number) => {
+    const blocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+    const level = AvcLevels.find(
+        ([, maxBlocks, maxBlocksPerSecond]) => blocks <= maxBlocks && blocks * fps <= maxBlocksPerSecond
+    );
+    return level ? `avc1.4200${level[0].toString(16)}` : undefined;
+};
+
+const waitForNativeFrame = (operation: Promise<void>) =>
+    new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Video frame encoding timed out')), 30_000);
+        operation.then(
+            () => {
+                clearTimeout(timer);
+                resolve();
+            },
+            error => {
+                clearTimeout(timer);
+                reject(error);
+            }
+        );
+    });
+
 export const createVideoFrameWriter = async (
     canvas: HTMLCanvasElement,
     options: VideoEncodingOptions,
@@ -34,11 +68,21 @@ export const createVideoFrameWriter = async (
                 codec,
                 quality,
                 latencyMode: 'quality' as const,
+                // Baseline avoids WebKit's High-profile frame-reordering stall while preserving every frame.
+                fullCodecString:
+                    codec === 'avc' ? getAvcBaselineCodec(canvas.width, canvas.height, options.fps) : undefined,
                 alpha: options.format === 'webm' && options.isTransparent ? ('keep' as const) : ('discard' as const),
             };
             let output: InstanceType<typeof Output> | undefined;
             try {
-                if (!(await canEncodeVideo(codec, { ...config, width: canvas.width, height: canvas.height }))) continue;
+                if (
+                    !(await canEncodeVideo(codec, {
+                        ...config,
+                        width: canvas.width,
+                        height: canvas.height,
+                    }))
+                )
+                    continue;
                 const target = new BufferTarget();
                 output = new Output({
                     format:
@@ -55,7 +99,7 @@ export const createVideoFrameWriter = async (
                 return {
                     async addFrame(frame) {
                         try {
-                            await source.add(frame / options.fps, 1 / options.fps);
+                            await waitForNativeFrame(source.add(frame / options.fps, 1 / options.fps));
                         } catch (error) {
                             throw new NativeVideoEncodingError(error);
                         }

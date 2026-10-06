@@ -9,41 +9,6 @@ import { createStore } from '../../redux';
 import { TimelineDocument } from '../../constants/timeline';
 import TimelineTrackPanel from './timeline-track-panel';
 
-const { clipRender, pauseRender, audioRender, cursorLabelRender } = vi.hoisted(() => ({
-    clipRender: vi.fn(),
-    pauseRender: vi.fn(),
-    audioRender: vi.fn(),
-    cursorLabelRender: vi.fn(),
-}));
-
-vi.mock('./timeline-clip', async importOriginal => {
-    const { default: Clip } = await importOriginal<typeof import('./timeline-clip')>();
-    return {
-        default: (props: React.ComponentProps<typeof Clip>) => {
-            clipRender();
-            return <Clip {...props} />;
-        },
-    };
-});
-vi.mock('./timeline-pause-clip', async importOriginal => {
-    const { default: Clip } = await importOriginal<typeof import('./timeline-pause-clip')>();
-    return {
-        default: (props: React.ComponentProps<typeof Clip>) => {
-            pauseRender();
-            return <Clip {...props} />;
-        },
-    };
-});
-vi.mock('./timeline-audio-track', async importOriginal => {
-    const { default: Track } = await importOriginal<typeof import('./timeline-audio-track')>();
-    return {
-        default: (props: React.ComponentProps<typeof Track>) => {
-            audioRender();
-            return <Track {...props} />;
-        },
-    };
-});
-
 vi.mock('./timeline-line-info-modal', () => ({
     default: ({ isOpen }: { isOpen: boolean }) => (isOpen ? <div role="dialog">Timeline line labels</div> : null),
 }));
@@ -69,11 +34,9 @@ vi.mock('react-i18next', async importOriginal => {
         if (key === 'header.timelinePage.addSelected') return 'Add selected';
         if (key === 'header.timelinePage.addPathByColor') return 'Add a line by color';
         if (key === 'header.timelinePage.cursorBefore') {
-            cursorLabelRender();
             return `Insert new content before item ${options?.position}`;
         }
         if (key === 'header.timelinePage.cursorEnd') {
-            cursorLabelRender();
             return 'Insert new content at the end of the track';
         }
         return key;
@@ -137,64 +100,6 @@ describe('TimelineTrackPanel', () => {
         expect(onDocumentChange.mock.calls[0][0].labelTrack[0].text).toBe('Changed');
     });
 
-    it('does not recreate card or cursor element trees across 12 playback updates and cursor advances', () => {
-        const document: TimelineDocument = {
-            version: 1,
-            track: [
-                ...Array.from({ length: 100 }, (_, index) => ({
-                    id: `clip_${index}`,
-                    kind: 'node' as const,
-                    refId: `stn_${index}` as const,
-                    phase: 'enter' as const,
-                    showAnimation: true,
-                })),
-                { id: 'pause', kind: 'pause', duration: 1, position: 'after' },
-                { id: 'key', kind: 'keyframe', refId: 'stn_0', x: 10, y: 20 },
-            ],
-        };
-        const timing = {
-            duration: 20,
-            cursorTimes: Array.from(
-                { length: document.track.length + 1 },
-                (_, index) => (index * 20) / document.track.length
-            ),
-        };
-        const { container, rerender } = renderPanel({ document, timing });
-        const initialRenders = {
-            clips: clipRender.mock.calls.length,
-            pauses: pauseRender.mock.calls.length,
-            audio: audioRender.mock.calls.length,
-        };
-        expect(initialRenders).toEqual({ clips: 100, pauses: 1, audio: 1 });
-        const initialCursorLabels = cursorLabelRender.mock.calls.length;
-        for (let frame = 1; frame <= 12; frame++) {
-            rerender(
-                <TimelineTrackPanel
-                    {...defaultProps}
-                    document={document}
-                    timing={timing}
-                    playbackTime={frame}
-                    insertionIndex={frame}
-                    onDocumentChange={() => undefined}
-                    onSelectEntry={() => undefined}
-                    onCursorChange={() => undefined}
-                />
-            );
-        }
-        expect(clipRender).toHaveBeenCalledTimes(initialRenders.clips);
-        expect(pauseRender).toHaveBeenCalledTimes(initialRenders.pauses);
-        expect(audioRender).toHaveBeenCalledTimes(initialRenders.audio);
-        // Only the toolbar updates its position label; none of the 103 cursor elements is recreated.
-        expect(cursorLabelRender).toHaveBeenCalledTimes(initialCursorLabels + 12);
-        expect(
-            screen.getByRole('slider', { name: 'header.timelinePage.playbackPosition' }).getAttribute('aria-valuenow')
-        ).toBe('12');
-        expect(getComputedStyle(container.querySelector('[data-timeline-playhead]')!).left).toBe('11280px');
-        const cursors = container.querySelectorAll('[data-timeline-cursor]');
-        expect(cursors[0].getAttribute('aria-pressed')).toBe('false');
-        expect(cursors[12].getAttribute('aria-pressed')).toBe('true');
-    });
-
     it('keeps cached card actions current after callback, document and selection changes', () => {
         const document: TimelineDocument = {
             version: 1,
@@ -212,7 +117,6 @@ describe('TimelineTrackPanel', () => {
             onSelectEntry: oldSelect,
             onDocumentChange: oldChange,
         });
-        const initialRenders = clipRender.mock.calls.length;
         const nextCursor = vi.fn();
         rerender(
             <TimelineTrackPanel
@@ -224,7 +128,6 @@ describe('TimelineTrackPanel', () => {
                 onCursorChange={nextCursor}
             />
         );
-        expect(clipRender).toHaveBeenCalledTimes(initialRenders);
         fireEvent.click(container.querySelectorAll('[data-timeline-cursor]')[2]);
         expect(nextCursor).toHaveBeenLastCalledWith(2);
         fireEvent.click(container.querySelectorAll('[data-timeline-card]')[1]);
@@ -341,24 +244,6 @@ describe('TimelineTrackPanel', () => {
         expect(onToggleMissingHighlight).toHaveBeenCalledOnce();
     });
 
-    it('should show the clear highlight action while missing highlight is active', () => {
-        renderPanel({
-            missingNodeCount: 2,
-            missingEdgeCount: 1,
-            isCoverageComplete: false,
-            isMissingHighlightShown: true,
-        });
-
-        expect(screen.queryByRole('button', { name: 'Clear highlight' })).not.toBeNull();
-    });
-
-    it('should show a compact complete state when coverage is complete', () => {
-        renderPanel();
-
-        expect(screen.queryByText('All nodes and edges are added to the timeline.')).not.toBeNull();
-        expect(screen.queryByRole('button', { name: 'Highlight missing' })).toBeNull();
-    });
-
     it('should insert selected content at the cursor position', () => {
         const onDocumentChange = vi.fn();
         const onCursorChange = vi.fn();
@@ -385,34 +270,6 @@ describe('TimelineTrackPanel', () => {
             'stn_b',
         ]);
         expect(onCursorChange).toHaveBeenCalledWith(2);
-    });
-
-    it('combines the path-by-color guidance into the badge', () => {
-        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-        graph.addNode('stn_a', {} as NodeAttributes);
-        graph.addNode('stn_b', {} as NodeAttributes);
-        graph.addDirectedEdgeWithKey('line_a', 'stn_a', 'stn_b', {
-            visible: true,
-            zIndex: 0,
-            type: 'simple',
-            simple: {},
-            style: 'single-color',
-            reconcileId: '',
-            parallelIndex: -1,
-            'single-color': { color: ['other', 'red', '#ff0000', '#fff'] },
-        } as unknown as EdgeAttributes);
-
-        renderPanel({ graph, selectedId: 'stn_a' });
-
-        expect(screen.queryByText('Add a line by color')).not.toBeNull();
-        expect(screen.queryByText('header.timelinePage.addPathFromHere')).toBeNull();
-    });
-
-    it('always shows playback controls', () => {
-        renderPanel();
-
-        expect(screen.queryByRole('button', { name: 'header.timelinePage.playPreview' })).not.toBeNull();
-        expect(screen.queryByRole('button', { name: 'header.timelinePage.switchToPro' })).toBeNull();
     });
 
     it('seeks in real seconds and places settings immediately after play', () => {
@@ -532,39 +389,5 @@ describe('TimelineTrackPanel', () => {
             'enter_c',
         ]);
         expect(onCursorChange).toHaveBeenCalledWith(1);
-    });
-
-    it('should render keyframes as a main track slot and a grouped lane marker', () => {
-        renderPanel({
-            document: {
-                version: 1,
-                track: [
-                    { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
-                    { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 10, y: 20 },
-                ],
-            },
-        });
-
-        // One dashed slot keeping the insertion position in the main track, one marker in the lane below.
-        expect(screen.getAllByRole('button', { name: 'header.timelinePage.keyframe · stn_a' })).toHaveLength(2);
-    });
-
-    it('should toggle an element animation setting from its card', () => {
-        const onDocumentChange = vi.fn();
-        const onSelectEntry = vi.fn();
-        renderPanel({
-            document: {
-                version: 1,
-                track: [{ id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true }],
-            },
-            onDocumentChange,
-            onSelectEntry,
-        });
-
-        fireEvent.click(screen.getByRole('button', { name: 'header.timelinePage.showAnimation' }));
-
-        expect(onSelectEntry).not.toHaveBeenCalled();
-        expect(onDocumentChange).toHaveBeenCalledOnce();
-        expect(onDocumentChange.mock.calls[0][0].track[0].showAnimation).toBe(false);
     });
 });

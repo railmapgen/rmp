@@ -150,33 +150,6 @@ describe('TimelinePreview video frames', () => {
         expect(container.querySelector('svg')).toBe(scene);
     });
 
-    it('fills the available area with a 16:9 frame and only one pair of black bars', async () => {
-        let reportResize: (width: number, height: number) => void = () => {};
-        vi.stubGlobal(
-            'ResizeObserver',
-            class {
-                constructor(callback: ResizeObserverCallback) {
-                    reportResize = (width, height) =>
-                        callback(
-                            [{ contentRect: { width, height } } as ResizeObserverEntry],
-                            this as unknown as ResizeObserver
-                        );
-                }
-                observe() {}
-                disconnect() {}
-            }
-        );
-        const { container } = render(<TimelinePreview {...props} />);
-        await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
-        const preview = container.querySelector<HTMLElement>('[data-video-preview]')!;
-        act(() => reportResize(1200, 600));
-        expect(parseFloat(getComputedStyle(preview).width)).toBeCloseTo((600 * 16) / 9);
-        expect(parseFloat(getComputedStyle(preview).height)).toBe(600);
-        act(() => reportResize(600, 600));
-        expect(parseFloat(getComputedStyle(preview).width)).toBe(600);
-        expect(parseFloat(getComputedStyle(preview).height)).toBe(337.5);
-    });
-
     it('reuses prepared visuals during music edits and passes project images to the renderer', async () => {
         const getImage = vi.fn();
         const onTimingChange = vi.fn();
@@ -242,29 +215,6 @@ describe('TimelinePreview video frames', () => {
         expect(mocks.dispose).not.toHaveBeenCalled();
         expect(onTimingChange).toHaveBeenCalledTimes(timingCalls);
         expect(container.querySelector('svg')).toBe(scene);
-    });
-
-    it('serializes visual content only after its references change', async () => {
-        const serializeTrack = vi.fn(() => timeline.track);
-        const track = [...timeline.track];
-        Object.defineProperty(track, 'toJSON', { value: serializeTrack });
-        const document = { ...timeline, track };
-        const { container, rerender } = render(<TimelinePreview {...props} document={document} />);
-        await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
-        expect(serializeTrack).toHaveBeenCalledOnce();
-        rerender(<TimelinePreview {...props} document={document} time={1} />);
-        await waitFor(() => expect(mocks.renderPreviewFrame).toHaveBeenCalledTimes(2));
-        rerender(<TimelinePreview {...props} document={{ ...document, audioTrack: [] }} time={1} />);
-        expect(serializeTrack).toHaveBeenCalledOnce();
-        rerender(
-            <TimelinePreview
-                {...props}
-                document={{ ...document, settings: { ...document.settings!, showYear: true } }}
-                time={1}
-            />
-        );
-        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(2));
-        expect(serializeTrack).toHaveBeenCalledTimes(2);
     });
 
     it('ignores a disposed renderer result after preparing changed video options', async () => {

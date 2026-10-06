@@ -67,18 +67,8 @@ describe('video audio muxing', () => {
         expect(mocks.writeFile).toHaveBeenCalledWith('audio-0.m4a', new Uint8Array([4, 5, 6]));
         expect(mocks.writeFile).toHaveBeenCalledWith('audio-1.wav', new Uint8Array([7, 8]));
         const args = mocks.exec.mock.calls[0][0] as string[];
-        expect(args.slice(0, 10)).toEqual([
-            '-i',
-            `video.${format}`,
-            '-stream_loop',
-            '-1',
-            '-i',
-            'audio-0.m4a',
-            '-stream_loop',
-            '-1',
-            '-i',
-            'audio-1.wav',
-        ]);
+        expect(args.slice(0, 6)).toEqual(['-i', `video.${format}`, '-i', 'audio-0.m4a', '-i', 'audio-1.wav']);
+        expect(args).not.toContain('-stream_loop');
         const filter = args[args.indexOf('-filter_complex') + 1];
         expect(filter).toContain('[1:a]atrim=0:3,asetpts=PTS-STARTPTS,afade=t=out:st=2.5:d=0.5,adelay=1234:all=1[a0]');
         expect(filter).toContain('[2:a]atrim=0:0.25,asetpts=PTS-STARTPTS,afade=t=out:st=0:d=0.25,adelay=0:all=1[a1]');

@@ -64,8 +64,8 @@ export const mixVideoAudio = async (
             await ffmpeg.writeFile(name, new Uint8Array(await track.blob.arrayBuffer()));
         }
         if (tracks.length) {
-            // Loop each source so clips shorter than their selected span keep playing.
-            const audioInputs = tracks.map((_, index) => ['-stream_loop', '-1', '-i', audioNames[index]]).flat();
+            // Play each source once, trimming it to its authored span. The final pad keeps the video duration intact.
+            const audioInputs = tracks.map((_, index) => ['-i', audioNames[index]]).flat();
             const filters = tracks.map((track, index) => {
                 const length = Math.max(0, track.end - track.start);
                 const fadeDuration = Math.min(AudioFadeOutSeconds, length);

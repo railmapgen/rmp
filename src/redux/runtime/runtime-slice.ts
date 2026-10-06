@@ -6,51 +6,17 @@ import type { Draft } from 'immer';
 import type { RootState } from '..';
 import { CityCode, Id, NodeId, NodeType, RuntimeMode, StationCity, Theme } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
-import { LinePathType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE, MAX_MASTER_NODE_PRO } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
+import { defaultRadialTouchMenuState, type RadialTouchMenuState } from '../../constants/touch';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
-import type { MenuLayerData } from '../../util/graph-nearby-elements';
 import { isPortraitClient } from '../../util/helpers';
+import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel-line-policy';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
 import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
-
-interface RadialTouchMenuState {
-    visible: boolean;
-    position: { x: number; y: number };
-    data: MenuLayerData;
-}
-
-const defaultRadialTouchMenuState: RadialTouchMenuState = {
-    visible: false,
-    position: { x: 0, y: 0 },
-    data: {
-        station: [],
-        'misc-node': [],
-        line: [],
-        operation: [],
-    },
-};
-
-const MAX_PARALLEL_LINES_FREE = 5;
-const MAX_PARALLEL_LINES_PRO = Infinity;
-const supportsParallelLinePath = (type: LinePathType) =>
-    type !== LinePathType.Simple &&
-    type !== LinePathType.RayGuided &&
-    type !== LinePathType.Freeform &&
-    type !== LinePathType.Bezier;
-const countParallelLines = () => {
-    let parallelLinesCount = 0;
-    for (const lineEntry of window.graph.edgeEntries()) {
-        if (supportsParallelLinePath(lineEntry.attributes.type) && lineEntry.attributes.parallelIndex >= 0) {
-            parallelLinesCount += 1;
-        }
-    }
-    return parallelLinesCount;
-};
 
 /**
  * RuntimeState contains all the data that do not require any persistence.
@@ -226,7 +192,7 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
 
     const lines = window.graph.size;
 
-    const parallelLinesCount = countParallelLines();
+    const parallelLinesCount = countParallelLines(window.graph);
     dispatch(setEdgesCount({ lines, parallel: parallelLinesCount }));
     const maximumParallelLines = state.account.activeSubscriptions.RMP_CLOUD
         ? MAX_PARALLEL_LINES_PRO

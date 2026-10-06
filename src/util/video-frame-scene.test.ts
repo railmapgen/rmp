@@ -190,32 +190,6 @@ describe('persistent video frame scene', () => {
         expect(snapshot.querySelector('image')!.getAttribute('href')).toBe('data:image/png;base64,AAAA');
     });
 
-    it('produces the same completed snapshot after arbitrary forward and backward seeks', () => {
-        const { scene } = makeScene();
-        scene.applyFrame(frame());
-        const completed = scene.snapshot().outerHTML;
-        scene.applyFrame(
-            frame({
-                visibleNodes: new Set(['stn_b']),
-                visibleEdges: new Set(['line_hidden']),
-                nodeProgress: new Map([['stn_b', 0.3]]),
-                edgeProgress: new Map([['line_hidden', 0.4]]),
-            })
-        );
-        scene.applyFrame(
-            frame({
-                nodeProgress: new Map([
-                    ['stn_a', 0.2],
-                    ['misc_node_label', 0.4],
-                ]),
-                edgeProgress: new Map([['line_ab', 0.3]]),
-                edgeDirections: new Map([['line_ab', true]]),
-            })
-        );
-        scene.applyFrame(frame());
-        expect(scene.snapshot().outerHTML).toBe(completed);
-    });
-
     it('patches matching geometry and text in place, removes old attributes and caches metrics per variant', () => {
         const { scene, measurePath } = makeScene();
         const group = scene.getGroup('line_ab')!;

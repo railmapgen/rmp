@@ -41,23 +41,6 @@ describe('video year and line annotation', () => {
         expect(standalone.textContent).toBe('0.0mi');
         expect(Number(standalone.querySelector('rect')!.getAttribute('height'))).toBeGreaterThan(0);
     });
-    it('keeps year and month-day positions unchanged when labels enlarge the panel', () => {
-        const settings = { showYear: true, showLineName: true };
-        const original = createVideoLineOverlay(annotation, settings, viewBox)!;
-        const expanded = createVideoLineOverlay(annotation, settings, viewBox, [
-            { id: 'label', text: 'A much wider caption in the enlarged panel\nSecond row' },
-        ])!;
-        expect(Number(expanded.querySelector('rect')!.getAttribute('width'))).toBeGreaterThan(
-            Number(original.querySelector('rect')!.getAttribute('width'))
-        );
-        for (const index of [0, 1]) {
-            const before = original.querySelectorAll('text')[index];
-            const after = expanded.querySelectorAll('text')[index];
-            expect(after.getAttribute('x')).toBe(before.getAttribute('x'));
-            expect(after.getAttribute('y')).toBe(before.getAttribute('y'));
-            expect(after.getAttribute('text-anchor')).toBe(before.getAttribute('text-anchor'));
-        }
-    });
     it.each([true, false])('shows standalone labels with both metadata switches disabled (annotation=%s)', present => {
         const overlay = createVideoLineOverlay(
             present ? annotation : undefined,

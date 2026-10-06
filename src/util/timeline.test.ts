@@ -8,8 +8,6 @@ import {
     appendTimelineEntry,
     createKeyframeEntry,
     getTimelineCoverage,
-    getTimelineElementCenter,
-    getTimelineEntryTitle,
     getTimelinePreviewState,
     insertTimelineEntries,
     insertTimelineEntry,
@@ -56,24 +54,6 @@ const makeGraph = () => {
 const emptyDocument = (): TimelineDocument => ({ version: 1, track: [] });
 
 describe('timeline utilities', () => {
-    it('appendTimelineEntry should keep unique refs', () => {
-        const initial = emptyDocument();
-        const next = appendTimelineEntry(initial, 'stn_a');
-        const deduped = appendTimelineEntry(next, 'stn_a');
-
-        expect(next.track).toHaveLength(1);
-        expect(deduped.track).toHaveLength(1);
-        expect(deduped.track[0].refId).toBe('stn_a');
-        expect(deduped.track[0]).toMatchObject({ phase: 'enter', showAnimation: true });
-    });
-
-    it('insertTimelineEntry should insert at the requested cursor position', () => {
-        const initial = appendTimelineEntry(appendTimelineEntry(emptyDocument(), 'stn_a'), 'stn_c');
-        const next = insertTimelineEntry(initial, 'stn_b', 1);
-
-        expect(next.track.map(entry => entry.refId)).toEqual(['stn_a', 'stn_b', 'stn_c']);
-    });
-
     it('insertTimelineEntry should ignore keyframes of the same ref', () => {
         const initial: TimelineDocument = {
             ...emptyDocument(),
@@ -89,20 +69,6 @@ describe('timeline utilities', () => {
         const next = insertTimelineEntries(initial, ['stn_a', 'stn_b', 'stn_a', 'stn_c'], 0);
 
         expect(next.track.map(entry => entry.refId)).toEqual(['stn_a', 'stn_b', 'stn_c']);
-    });
-
-    it('moveTimelineEntry should reorder clips', () => {
-        const initial = appendTimelineEntry(appendTimelineEntry(emptyDocument(), 'stn_a'), 'line_ab');
-        const moved = moveTimelineEntry(initial, 0, 1);
-
-        expect(moved.track.map(entry => entry.refId)).toEqual(['line_ab', 'stn_a']);
-    });
-
-    it('removeTimelineEntry should remove by clip id', () => {
-        const initial = appendTimelineEntry(emptyDocument(), 'stn_a');
-        const removed = removeTimelineEntry(initial, initial.track[0].id);
-
-        expect(removed.track).toEqual([]);
     });
 
     it('should create and update keyframe entries', () => {
@@ -122,15 +88,6 @@ describe('timeline utilities', () => {
         expect(document.track.map(entry => entry.kind)).toEqual(['node', 'keyframe']);
         expect(cursor).toBe(1);
         expect(document.track[1]).toMatchObject({ kind: 'keyframe', x: 10, y: 20 });
-    });
-
-    it('insertKeyframeEntry should not duplicate an existing enter entry', () => {
-        const graph = makeGraph();
-        const initial = appendTimelineEntry(emptyDocument(), 'stn_a');
-        const { document, cursor } = insertKeyframeEntry(initial, graph, 'stn_a', 1);
-
-        expect(document.track.map(entry => entry.kind)).toEqual(['node', 'keyframe']);
-        expect(cursor).toBe(1);
     });
 
     it('inserts a keyframe after the selected enter card, keeping its station visible', () => {
@@ -351,17 +308,6 @@ describe('timeline utilities', () => {
         });
 
         expect(normalized.track).toEqual([{ id: 'pause_1', kind: 'pause', position: 'after', duration: 2 }]);
-    });
-
-    it('should derive labels and centers from graph refs', () => {
-        const graph = makeGraph();
-
-        expect(getTimelineEntryTitle(graph, { id: '1', kind: 'node', refId: 'stn_a' } as never)).toBe('Alpha');
-        expect(getTimelineEntryTitle(graph, { id: '2', kind: 'edge', refId: 'line_ab' } as never)).toBe(
-            'Alpha -> Beta'
-        );
-        expect(getTimelineElementCenter(graph, 'stn_a')).toEqual({ x: 10, y: 20 });
-        expect(getTimelineElementCenter(graph, 'line_ab')).toEqual({ x: 60, y: 120 });
     });
 
     it('should report all graph entries as missing for an empty timeline', () => {

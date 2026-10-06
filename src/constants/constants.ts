@@ -191,5 +191,3 @@ export enum StationCity {
     Shmetro = 'shmetro',
     Bjsubway = 'bjsubway',
 }
-
-export type { ExternalStationAttributes };

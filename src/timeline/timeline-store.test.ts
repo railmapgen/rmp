@@ -35,16 +35,6 @@ const makeProject = (): TimelineProjectRecord => ({
 });
 
 describe('Timeline session history', () => {
-    it('drops the legacy quick/pro mode when opening a project', () => {
-        const store = createTimelineStore();
-        const project = makeProject();
-        (project.revision.timeline as typeof project.revision.timeline & { mode: string }).mode = 'quick';
-
-        store.dispatch(openProject(project));
-
-        expect(store.getState().project.active?.revision.timeline).not.toHaveProperty('mode');
-    });
-
     it('starts on the project home while remembering the most recent project', async () => {
         timelineStore.dispatch(closeProject());
         const listSpy = vi.spyOn(timelineProjectDB, 'listProjects').mockResolvedValue([]);

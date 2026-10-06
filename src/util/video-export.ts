@@ -1,19 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { I18nextProvider } from 'react-i18next';
 import { utils } from '@railmapgen/svg-assets';
+import i18n from '../i18n/config';
 import videoWatermarkSVG from '../assets/rmp-video-watermark.svg?raw';
-import {
-    EdgeAttributes,
-    ExternalStationAttributes,
-    GraphAttributes,
-    Id,
-    LineId,
-    NodeAttributes,
-    NodeId,
-    StnId,
-} from '../constants/constants';
-import stations from '../components/svgs/stations/stations';
+import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId, StnId } from '../constants/constants';
 import SvgLayer from '../components/svg-layer';
 import { SvgRenderProvider } from '../components/svg-render-context';
 import { StationType } from '../constants/stations';
@@ -460,50 +452,6 @@ const buildTimelineSequence = (
     return { steps, nodes, edges };
 };
 
-export const renderBasicStationMarkup = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    stationId: StnId
-): string | undefined => {
-    const stationType = graph.getNodeAttribute(stationId, 'type') as StationType;
-    const basicType = BasicToIntStationTypeMap[stationType];
-    if (!basicType) return undefined;
-
-    const basicStation = stations[basicType];
-    if (!basicStation) return undefined;
-
-    const basicGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-    basicGraph.import(structuredClone(graph.export()));
-    changeStationType(basicGraph, stationId, basicType);
-
-    return renderStationMarkup(basicGraph, stationId);
-};
-
-export const renderStationMarkup = (
-    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
-    stationId: StnId
-): string | undefined => {
-    const stationType = graph.getNodeAttribute(stationId, 'type') as StationType;
-    const station = stations[stationType];
-    if (!station) return undefined;
-
-    const stationAttrs = graph.getNodeAttribute(stationId, stationType) as ExternalStationAttributes | undefined;
-    const attrs = stationAttrs
-        ? ({ [stationType]: structuredClone(stationAttrs) } as ExternalStationAttributes)
-        : ({} as ExternalStationAttributes);
-
-    return renderToStaticMarkup(
-        React.createElement(station.component, {
-            id: stationId,
-            attrs,
-            x: 0,
-            y: 0,
-            handlePointerDown: () => {},
-            handlePointerMove: () => {},
-            handlePointerUp: () => {},
-        })
-    );
-};
-
 export const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): number => {
     const bounds = calculateCanvasSize(graph);
     const graphWidth = Math.max(bounds.xMax - bounds.xMin, 1);
@@ -565,30 +513,6 @@ const createVideoWatermarkElement = (
     Array.from(videoWatermarkGraphic.children).forEach(child => info.appendChild(document.importNode(child, true)));
 
     return info;
-};
-
-export const applyNodeRevealAnimation = (
-    nodeGroup: SVGElement,
-    nodeProgress: number,
-    _textProgress: number,
-    isStationNode: boolean
-) => {
-    if (isStationNode) {
-        const originalOpacity = Number(nodeGroup.getAttribute('opacity') ?? 1);
-        nodeGroup.setAttribute('opacity', `${(Number.isFinite(originalOpacity) ? originalOpacity : 1) * nodeProgress}`);
-        return;
-    }
-
-    nodeGroup.querySelectorAll<SVGElement>('*').forEach(el => {
-        const tagName = el.tagName.toLowerCase();
-        if (tagName === 'text' || tagName === 'tspan') return;
-        const originalOpacity = Number(el.getAttribute('opacity') ?? 1);
-        el.setAttribute('opacity', `${(Number.isFinite(originalOpacity) ? originalOpacity : 1) * nodeProgress}`);
-    });
-
-    nodeGroup.querySelectorAll<SVGTextElement>('text').forEach(textEl => {
-        textEl.setAttribute('opacity', `${nodeProgress}`);
-    });
 };
 
 const buildFallbackSequence = (
@@ -758,30 +682,34 @@ const renderVideoElementsGeometry = (
 ) =>
     renderToStaticMarkup(
         React.createElement(
-            SvgRenderProvider,
-            {
-                value: {
-                    graph,
-                    graphRefresh: graph,
-                    imageRefresh: graph,
-                    getImage: async () => undefined,
-                    ensureFont: language => void loadFont(language),
-                },
-            },
+            I18nextProvider,
+            { i18n },
             React.createElement(
-                utils.SvgAssetsContextProvider,
-                null,
-                React.createElement(SvgLayer, {
-                    elements,
-                    selected: new Set<Id>(),
-                    mapEnabled,
-                    isSubscriber,
-                    handlePointerDown: () => {},
-                    handlePointerMove: () => {},
-                    handlePointerUp: () => {},
-                    handleEdgePointerDown: () => {},
-                    handleEdgeDoubleClick: () => {},
-                })
+                SvgRenderProvider,
+                {
+                    value: {
+                        graph,
+                        graphRefresh: graph,
+                        imageRefresh: graph,
+                        getImage: async () => undefined,
+                        ensureFont: language => void loadFont(language),
+                    },
+                },
+                React.createElement(
+                    utils.SvgAssetsContextProvider,
+                    null,
+                    React.createElement(SvgLayer, {
+                        elements,
+                        selected: new Set<Id>(),
+                        mapEnabled,
+                        isSubscriber,
+                        handlePointerDown: () => {},
+                        handlePointerMove: () => {},
+                        handlePointerUp: () => {},
+                        handleEdgePointerDown: () => {},
+                        handleEdgeDoubleClick: () => {},
+                    })
+                )
             )
         )
     );

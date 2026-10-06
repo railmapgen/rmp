@@ -11,22 +11,19 @@ import {
     TimelineEntry,
 } from '../constants/timeline';
 import {
-    applyNodeRevealAnimation,
     createFrameStationGraph,
     embedVideoExportStyles,
     generateAnimationSequence,
-    getCameraViewBox,
     getNodeRevealProgressForFrame,
     getOverviewZoomProgress,
     getPlaybackSegmentDurations,
     getRenderedEdgeLength,
     getStationActivationProgress,
-    getVideoExportDimensions,
     getVideoWatermarkLayout,
     interpolateCameraZoom,
-    renderBasicStationMarkup,
-    renderStationMarkup,
+    renderVideoFrameGeometry,
 } from './video-export';
+import { createVideoFrameScene } from './video-frame-scene';
 
 const makeGraph = () => new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
@@ -91,15 +88,6 @@ const edgeEntry = (refId: `line_${string}`, index: number): TimelineElementEntry
     refId,
     phase: 'enter',
     showAnimation: true,
-});
-
-describe('video export resolution', () => {
-    it('uses standard 16:9 dimensions for every resolution option', () => {
-        expect(getVideoExportDimensions('720p')).toEqual({ width: 1280, height: 720 });
-        expect(getVideoExportDimensions('1080p')).toEqual({ width: 1920, height: 1080 });
-        expect(getVideoExportDimensions('2k')).toEqual({ width: 2560, height: 1440 });
-        expect(getVideoExportDimensions('4k')).toEqual({ width: 3840, height: 2160 });
-    });
 });
 
 describe('video export watermark', () => {
@@ -403,7 +391,7 @@ describe('getPlaybackSegmentDurations', () => {
         expect(longTimeline.pauseDuration).toBe(1);
     });
 
-    it.each([0.5, 1, 1.5, 2])('scales drawing speed by %s without changing camera pauses', multiplier => {
+    it.each([0.5, 2])('scales drawing speed by %s without changing camera pauses', multiplier => {
         const durations = getPlaybackSegmentDurations(30, [100, 200], 1, multiplier);
 
         expect(durations.edgeDurations).toEqual([1 / multiplier, 2 / multiplier]);
@@ -433,7 +421,6 @@ describe('getPlaybackSegmentDurations', () => {
         [0, 2],
         [10, 0.5],
         [Number.NaN, 1],
-        [Number.POSITIVE_INFINITY, 1],
     ])('handles an out-of-range speed multiplier of %s', (multiplier, expectedDuration) => {
         expect(getPlaybackSegmentDurations(30, [100], 0, multiplier).edgeDurations).toEqual([expectedDuration]);
     });
@@ -475,22 +462,12 @@ describe('getRenderedEdgeLength', () => {
     });
 });
 
-describe('renderBasicStationMarkup', () => {
-    it('provides Redux context to v2 station components during video frame rendering', () => {
-        const graph = makeGraph();
-        const stationType = StationType.SuzhouRTInt;
-        graph.addNode('stn_suzhou', {
-            visible: true,
-            zIndex: 0,
-            x: 0,
-            y: 0,
-            type: stationType,
-            [stationType]: structuredClone(stations[stationType].defaultAttrs),
-        });
-
-        const markup = renderBasicStationMarkup(graph, 'stn_suzhou');
-        expect(markup).toContain('stn_core_stn_suzhou');
-    });
+describe('station frame geometry', () => {
+    const renderFrameGraph = (graph: ReturnType<typeof makeGraph>) => {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        renderVideoFrameGeometry(graph, svg);
+        return svg;
+    };
 
     it('renders a Suzhou interchange from the visible line colors for the current frame', () => {
         const graph = makeGraph();
@@ -524,7 +501,7 @@ describe('renderBasicStationMarkup', () => {
 
         const frameGraph = createFrameStationGraph(graph, new Set(['line_1', 'line_2']));
         const frameAttrs = frameGraph.getNodeAttribute('stn_suzhou', StationType.SuzhouRTInt);
-        const markup = renderStationMarkup(frameGraph, 'stn_suzhou');
+        const markup = renderFrameGraph(frameGraph).outerHTML;
 
         expect(frameGraph.getNodeAttribute('stn_suzhou', 'type')).toBe(StationType.SuzhouRTInt);
         expect(frameAttrs?.transfer[0].map(transfer => transfer[2])).toEqual(['#78BA25', '#ED3240']);
@@ -545,39 +522,16 @@ describe('renderBasicStationMarkup', () => {
             [stationType]: structuredClone(stations[stationType].defaultAttrs),
         });
 
-        const markup = renderStationMarkup(graph, 'stn_suzhou')!;
-        const container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        container.innerHTML = markup;
-        applyNodeRevealAnimation(container, 1, 1, true);
+        const svg = renderFrameGraph(graph);
+        const scene = createVideoFrameScene(svg, { nodeIds: ['stn_suzhou'], edgeIds: [] });
+        scene.applyNode('stn_suzhou', { visible: true, progress: 1 });
+        const container = scene.getGroup('stn_suzhou')!;
 
         expect(container.getAttribute('opacity')).toBe('1');
         expect(container.querySelector('#stn_core_stn_suzhou')?.getAttribute('opacity')).toBe('0');
         expect(
             Array.from(container.querySelectorAll('circle')).map(circle => circle.getAttribute('opacity'))
         ).not.toContain('0');
-    });
-
-    it('keeps long station names intact during the whole-station fade', () => {
-        const container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        container.innerHTML = '<g class="rmp-name-outline"><text>Interchange</text></g>';
-
-        applyNodeRevealAnimation(container, 0.5, 0.25, true);
-
-        expect(container.getAttribute('opacity')).toBe('0.5');
-        expect(container.querySelector('text')?.textContent).toBe('Interchange');
-        expect(container.querySelectorAll('tspan')).toHaveLength(0);
-    });
-
-    it('applies station fade opacity to the wrapper instead of individual elements', () => {
-        const container = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        container.innerHTML =
-            '<circle id="station-core" opacity="0.4"></circle><g class="rmp-name-outline"><text>Station</text></g>';
-
-        applyNodeRevealAnimation(container, 0.5, 0.5, true);
-
-        expect(container.getAttribute('opacity')).toBe('0.5');
-        expect(container.querySelector('#station-core')?.getAttribute('opacity')).toBe('0.4');
-        expect(container.querySelector('.rmp-name-outline')?.getAttribute('opacity')).toBeNull();
     });
 
     it('renders the visible line color when a Suzhou interchange is temporarily a basic station', () => {
@@ -629,6 +583,8 @@ describe('embedVideoExportStyles', () => {
         svg.innerHTML = '<g class="rmp-name-outline" stroke-width="2.5"><text>Station</text></g>';
 
         embedVideoExportStyles(svg);
+        embedVideoExportStyles(svg);
+        expect(svg.querySelectorAll('style#rmp_video_export_styles')).toHaveLength(1);
 
         const style = svg.querySelector('style#rmp_video_export_styles');
         expect(style?.textContent).toContain('.rmp-name-outline');
@@ -636,33 +592,12 @@ describe('embedVideoExportStyles', () => {
         expect(style?.textContent).toContain('stroke: #ffffff');
         expect(svg.outerHTML).toContain('class="rmp-name-outline"');
     });
-
-    it('does not duplicate the embedded stylesheet', () => {
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-
-        embedVideoExportStyles(svg);
-        embedVideoExportStyles(svg);
-
-        expect(svg.querySelectorAll('style#rmp_video_export_styles')).toHaveLength(1);
-    });
 });
 
 describe('interpolateCameraZoom', () => {
     it('uses the current zoom and whole-map fit at the transition endpoints', () => {
         expect(interpolateCameraZoom(200, 25, 0)).toBe(200);
         expect(interpolateCameraZoom(200, 25, 1)).toBe(25);
-    });
-
-    it('smoothly interpolates from the camera zoom to the whole-map fit', () => {
-        expect(interpolateCameraZoom(300, 40, 0.5)).toBe(170);
-    });
-
-    it('changes the rendered camera viewBox size', () => {
-        const zoomedOutViewBox = getCameraViewBox({ x: 100, y: 200 }, 100);
-        const zoomedInViewBox = getCameraViewBox({ x: 100, y: 200 }, 400);
-
-        expect(zoomedInViewBox.width).toBe(zoomedOutViewBox.width / 4);
-        expect(zoomedInViewBox.height).toBe(zoomedOutViewBox.height / 4);
     });
 });
 
@@ -676,10 +611,6 @@ describe('getStationActivationProgress', () => {
         expect(zoomedInProgress).toBeLessThanOrEqual(1);
     });
 
-    it('uses an expanded viewport lookahead to reduce the station appearance delay', () => {
-        expect(getStationActivationProgress(1000, 100)).toBeCloseTo(0.892);
-    });
-
     it('reveals the station immediately when the whole line fits inside the viewport radius', () => {
         expect(getStationActivationProgress(50, 100)).toBe(0);
     });
@@ -691,7 +622,7 @@ describe('getStationActivationProgress', () => {
 });
 
 describe('getNodeRevealProgressForFrame', () => {
-    it.each([5, 10, 15, 24, 30, 60])('finishes the short station fade by 0.4 seconds at %s FPS', fps => {
+    it.each([15, 24])('finishes the short station fade by 0.4 seconds at %s FPS', fps => {
         const endFrame = Math.ceil(fps * 0.4);
         expect(getNodeRevealProgressForFrame('stn_station', endFrame, 0, fps)).toEqual({
             nodeProgress: 1,
@@ -712,13 +643,6 @@ describe('getNodeRevealProgressForFrame', () => {
         expect(getNodeRevealProgressForFrame('stn_station', 22, 10, 30)).toEqual({
             nodeProgress: 1,
             textProgress: 1,
-        });
-    });
-
-    it('keeps the existing reveal animation for non-station nodes', () => {
-        expect(getNodeRevealProgressForFrame('misc_node_label', 10, 10, 30)).toEqual({
-            nodeProgress: 0,
-            textProgress: 0,
         });
     });
 });

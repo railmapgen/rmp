@@ -1,30 +1,15 @@
 import React from 'react';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { closeRadialTouchMenu } from '../../redux/runtime/runtime-slice';
-import {
-    emptyMenuLayerData,
-    MenuCategory,
-    MenuItemData,
-    MenuLayerData,
-    TOUCH_RADIUS,
-} from '../../util/graph-nearby-elements';
+import { MenuCategory, type MenuItemData, TOUCH_RADIUS } from '../../constants/touch';
+
+export { defaultRadialTouchMenuState } from '../../constants/touch';
+export type { RadialTouchMenuState } from '../../constants/touch';
 
 // Menu configuration
 const LAYER_SIZE = 5; // Maximum number of layers supported
 const CENTER_RADIUS = TOUCH_RADIUS;
 const QUADRANT_RADIUS = 40;
-
-export interface RadialTouchMenuState {
-    visible: boolean;
-    position: { x: number; y: number };
-    data: MenuLayerData;
-}
-
-export const defaultRadialTouchMenuState: RadialTouchMenuState = {
-    visible: false,
-    position: { x: 0, y: 0 },
-    data: emptyMenuLayerData,
-};
 
 /**
  * Quadrant-based radial touch menu component.
