@@ -61,7 +61,7 @@ describe('TimelineProjectHome', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Start from current RMP project' }));
         const dialog = await screen.findByRole('dialog', { name: 'Import RMP data' });
         expect(store.getState().project.active).toBeUndefined();
-        const choice = within(dialog).getByRole('checkbox', { name: 'Populate Timeline from line information' });
+        const choice = within(dialog).getByRole('checkbox', { name: 'Populate timeline from line information' });
         expect(choice).toBeChecked();
         if (!apply) fireEvent.click(choice);
         fireEvent.click(within(dialog).getByRole('button', { name: 'Import RMP data' }));
@@ -101,7 +101,7 @@ describe('TimelineProjectHome', () => {
         const continueEditing = screen.getByRole('button', { name: 'Continue editing' });
         const startFromRmp = screen.getByRole('button', { name: 'Start from current RMP project' });
         expect(continueEditing.compareDocumentPosition(startFromRmp) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'Import Timeline project' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Import Chronicle project' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Import RMP' })).not.toBeInTheDocument();
         const updatedAt = screen.getByText(/^Updated /);
         expect(updatedAt).not.toHaveTextContent('&#x2F;');
@@ -109,13 +109,13 @@ describe('TimelineProjectHome', () => {
 
         fireEvent.click(screen.getByRole('button', { name: 'Rename project' }));
         const renameDialog = screen.getByRole('dialog', { name: 'Rename project' });
-        expect(within(renameDialog).getByRole('textbox', { name: 'Timeline project name' })).toHaveValue(
+        expect(within(renameDialog).getByRole('textbox', { name: 'Chronicle project name' })).toHaveValue(
             'Test project'
         );
         fireEvent.click(within(renameDialog).getByRole('button', { name: 'Cancel' }));
 
-        fireEvent.click(screen.getByRole('button', { name: 'Delete Timeline project' }));
-        const deleteDialog = screen.getByRole('alertdialog', { name: 'Delete Timeline project' });
-        expect(within(deleteDialog).getByText('Delete Timeline project “Test project”?')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Delete Chronicle project' }));
+        const deleteDialog = screen.getByRole('alertdialog', { name: 'Delete Chronicle project' });
+        expect(within(deleteDialog).getByText('Delete Chronicle project “Test project”?')).toBeInTheDocument();
     });
 });

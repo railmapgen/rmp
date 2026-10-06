@@ -141,7 +141,7 @@ describe('TimelineWindowHeader', () => {
             fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } });
         }
         const dialog = await screen.findByRole('dialog', { name: 'Import RMP data' });
-        const choice = within(dialog).getByRole('checkbox', { name: 'Populate Timeline from line information' });
+        const choice = within(dialog).getByRole('checkbox', { name: 'Populate timeline from line information' });
         if (!apply) fireEvent.click(choice);
         fireEvent.click(within(dialog).getByRole('button', { name: 'Import RMP data' }));
 
@@ -182,13 +182,13 @@ describe('TimelineWindowHeader', () => {
         fireEvent.click(files);
         expect(screen.getByText('Back to main menu')).toBeInTheDocument();
         expect(screen.getByText('Rename project')).toBeInTheDocument();
-        expect(screen.getByText('Download Timeline project')).toBeInTheDocument();
+        expect(screen.getByText('Download Chronicle project')).toBeInTheDocument();
         expect(screen.getByText('Export video')).toBeInTheDocument();
         expect(screen.queryByText('Project open in painter')).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Rename project'));
         const renameDialog = screen.getByRole('dialog', { name: 'Rename project' });
-        expect(within(renameDialog).getByRole('textbox', { name: 'Timeline project name' })).toHaveValue(
+        expect(within(renameDialog).getByRole('textbox', { name: 'Chronicle project name' })).toHaveValue(
             'Header project'
         );
         fireEvent.click(within(renameDialog).getByRole('button', { name: 'Cancel' }));
@@ -215,7 +215,7 @@ describe('TimelineWindowHeader', () => {
 
         expect(screen.queryByRole('button', { name: 'Timeline projects' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Sync from RMP' })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: 'Download Timeline project' })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Download Chronicle project' })).not.toBeInTheDocument();
         const undo = screen.getByRole('button', { name: 'Undo' });
         const redo = screen.getByRole('button', { name: 'Redo' });
         expect(edit.compareDocumentPosition(undo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

@@ -45,7 +45,7 @@ describe('TimelineOnboardingModal', () => {
     it('shows both tutorial pages when entering a Timeline project', async () => {
         renderModal();
 
-        const dialog = await screen.findByRole('dialog', { name: /Timeline quick start/ });
+        const dialog = await screen.findByRole('dialog', { name: /Rail Map Chronicle quick start/ });
         expect(within(dialog).getByText('Insert a complete line section')).toBeInTheDocument();
         expect(within(dialog).getByText('Step 1 of 2')).toBeInTheDocument();
         expect(
@@ -56,7 +56,7 @@ describe('TimelineOnboardingModal', () => {
 
         fireEvent.click(within(dialog).getByRole('button', { name: 'Next' }));
 
-        expect(within(dialog).getByText('Export your Timeline video')).toBeInTheDocument();
+        expect(within(dialog).getByText('Export your Chronicle video')).toBeInTheDocument();
         expect(within(dialog).getByText('Step 2 of 2')).toBeInTheDocument();
         expect(within(dialog).getByText('Choose “Export video”.')).toBeInTheDocument();
 
@@ -66,7 +66,7 @@ describe('TimelineOnboardingModal', () => {
 
     it('persists the opt-out choice after the tutorial is completed', async () => {
         const firstRender = renderModal('first-project');
-        const dialog = await screen.findByRole('dialog', { name: /Timeline quick start/ });
+        const dialog = await screen.findByRole('dialog', { name: /Rail Map Chronicle quick start/ });
 
         fireEvent.click(within(dialog).getByRole('checkbox', { name: "Don't show me again" }));
         fireEvent.click(within(dialog).getByRole('button', { name: 'Next' }));
@@ -74,25 +74,25 @@ describe('TimelineOnboardingModal', () => {
 
         expect(window.localStorage.getItem(LocalStorageKey.TIMELINE_ONBOARDING_DISMISSED)).toBe('true');
         await waitFor(() =>
-            expect(screen.queryByRole('dialog', { name: /Timeline quick start/ })).not.toBeInTheDocument()
+            expect(screen.queryByRole('dialog', { name: /Rail Map Chronicle quick start/ })).not.toBeInTheDocument()
         );
 
         firstRender.unmount();
         renderModal('second-project');
         await waitFor(() =>
-            expect(screen.queryByRole('dialog', { name: /Timeline quick start/ })).not.toBeInTheDocument()
+            expect(screen.queryByRole('dialog', { name: /Rail Map Chronicle quick start/ })).not.toBeInTheDocument()
         );
     });
 
     it('shows the tutorial again on the next project entry when opt-out is not selected', async () => {
         const firstRender = renderModal('first-project');
-        const dialog = await screen.findByRole('dialog', { name: /Timeline quick start/ });
+        const dialog = await screen.findByRole('dialog', { name: /Rail Map Chronicle quick start/ });
         fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
 
         expect(window.localStorage.getItem(LocalStorageKey.TIMELINE_ONBOARDING_DISMISSED)).toBeNull();
         firstRender.unmount();
         renderModal('second-project');
 
-        expect(await screen.findByRole('dialog', { name: /Timeline quick start/ })).toBeInTheDocument();
+        expect(await screen.findByRole('dialog', { name: /Rail Map Chronicle quick start/ })).toBeInTheDocument();
     });
 });
