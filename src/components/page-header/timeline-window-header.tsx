@@ -191,7 +191,7 @@ export default function TimelineWindowHeader() {
             <Flex width="100%" align="center">
                 <HStack minW={0}>
                     <Heading as="h4" size="md" whiteSpace="nowrap">
-                        Timeline
+                        {t('RMP Timeline')}
                     </Heading>
                     {active && (
                         <>

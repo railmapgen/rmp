@@ -156,7 +156,7 @@ export default function TimelineProjectHome() {
             <Container maxW="6xl">
                 <VStack align="stretch" spacing={6}>
                     <Box>
-                        <Heading size="lg">Timeline</Heading>
+                        <Heading size="lg">{t('RMP Timeline')}</Heading>
                         <Text color="gray.500" mt={2}>
                             {t('header.timelinePage.homeDescription')}
                         </Text>
