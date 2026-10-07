@@ -188,8 +188,14 @@ export default function TimelineWindowHeader() {
 
     return (
         <RmgWindowHeader>
-            <Flex width="100%" align="center">
-                <HStack minW={0}>
+            <Flex
+                data-testid="timeline-header-layout"
+                direction={{ base: 'column', md: 'row' }}
+                width="100%"
+                align={{ base: 'stretch', md: 'center' }}
+                gap={1}
+            >
+                <HStack minW={0} overflowX="auto" maxW="100%">
                     <Heading as="h4" size="md" whiteSpace="nowrap">
                         {t('Rail Map Chronicle')}
                     </Heading>
@@ -337,7 +343,12 @@ export default function TimelineWindowHeader() {
                         </>
                     )}
                 </HStack>
-                <HStack ml="auto">
+                <HStack
+                    ml={{ base: 0, md: 'auto' }}
+                    overflowX="auto"
+                    maxW="100%"
+                    justifyContent={{ base: 'flex-end', md: 'flex-start' }}
+                >
                     {active && (
                         <>
                             <IconButton

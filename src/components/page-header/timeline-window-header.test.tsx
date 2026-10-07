@@ -224,4 +224,31 @@ describe('TimelineWindowHeader', () => {
         expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
     });
+
+    it('stacks the timeline header sections for narrow viewports', async () => {
+        await i18n.changeLanguage('en');
+        const store = createTimelineStore();
+        const project = makeProject();
+        const graph = MultiDirectedGraph.from(project.revision.graph) as MultiDirectedGraph<
+            NodeAttributes,
+            EdgeAttributes,
+            GraphAttributes
+        >;
+        store.dispatch(openProject(project));
+
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'column' });
+        expect(screen.getByRole('button', { name: 'Export video' })).toBeInTheDocument();
+    });
 });
