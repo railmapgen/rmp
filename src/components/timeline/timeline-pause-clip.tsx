@@ -10,9 +10,7 @@ interface TimelinePauseClipProps {
     onSelect: () => void;
     onDurationChange: (duration: number) => void;
     onRemove: () => void;
-    onDragStart: () => void;
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    onDragEnd: () => void;
+    onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
 }
 
@@ -22,9 +20,7 @@ export default function TimelinePauseClip({
     onSelect,
     onDurationChange,
     onRemove,
-    onDragStart,
-    onDragOver,
-    onDragEnd,
+    onPointerDown,
     onContextMenu,
 }: TimelinePauseClipProps) {
     const { t } = useTranslation();
@@ -36,10 +32,7 @@ export default function TimelinePauseClip({
     return (
         <Box
             data-timeline-card="true"
-            draggable
-            onDragStart={onDragStart}
-            onDragOver={onDragOver}
-            onDragEnd={onDragEnd}
+            onPointerDown={onPointerDown}
             onClick={onSelect}
             onContextMenu={onContextMenu}
             minW={`${TIMELINE_CLIP_WIDTH}px`}
@@ -53,6 +46,8 @@ export default function TimelinePauseClip({
             boxShadow={isSelected ? 'md' : 'sm'}
             cursor="pointer"
             position="relative"
+            sx={{ touchAction: 'pan-y' }}
+            userSelect="none"
         >
             <Box position="absolute" top="0" left="0" bottom="0" width="4px" bg="purple.500" borderLeftRadius="md" />
             <CloseButton

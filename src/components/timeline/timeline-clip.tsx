@@ -15,9 +15,7 @@ interface TimelineClipProps {
     onSelect: () => void;
     onToggleAnimation: () => void;
     onRemove: () => void;
-    onDragStart: () => void;
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    onDragEnd: () => void;
+    onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
 }
 
@@ -28,9 +26,7 @@ export default function TimelineClip({
     onSelect,
     onToggleAnimation,
     onRemove,
-    onDragStart,
-    onDragOver,
-    onDragEnd,
+    onPointerDown,
     onContextMenu,
 }: TimelineClipProps) {
     const { t } = useTranslation();
@@ -43,10 +39,7 @@ export default function TimelineClip({
     return (
         <Box
             data-timeline-card="true"
-            draggable
-            onDragStart={onDragStart}
-            onDragOver={onDragOver}
-            onDragEnd={onDragEnd}
+            onPointerDown={onPointerDown}
             onClick={onSelect}
             onContextMenu={onContextMenu}
             minW={`${TIMELINE_CLIP_WIDTH}px`}
@@ -62,6 +55,8 @@ export default function TimelineClip({
             position="relative"
             _hover={{ borderColor: borderColor }}
             overflow="hidden"
+            sx={{ touchAction: 'pan-y' }}
+            userSelect="none"
         >
             {isMultiColor ? (
                 <Box

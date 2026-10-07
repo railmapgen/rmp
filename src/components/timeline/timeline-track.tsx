@@ -35,8 +35,8 @@ interface TimelineTrackProps {
     onPauseDurationChange: (entryId: string, duration: number) => void;
     onInsertionIndexChange: (index: number) => void;
     onRemoveEntry: (entryId: string) => void;
-    onDragStart: (entryId: string) => void;
-    onDragOver: (index: number, e: React.DragEvent<HTMLDivElement>) => void;
+    onDragStart: (entryId: string, entryIds?: string[]) => void;
+    onDragOver: (contentX: number) => void;
     onDragEnd: () => void;
     onSelectionChange: (entryIds: string[]) => void;
     onToggleSelectedAnimation: (entryId: string) => void;
@@ -127,6 +127,17 @@ export default function TimelineTrack({
     const [cursorStore] = React.useState(() => createInsertionCursorStore(insertionIndex));
     React.useLayoutEffect(() => cursorStore.setIndex(insertionIndex), [cursorStore, insertionIndex]);
     const trackRef = React.useRef<HTMLDivElement>(null);
+    const cardDragRef = React.useRef<
+        | {
+              pointerId: number;
+              startX: number;
+              startY: number;
+              active: boolean;
+              target: HTMLElement;
+          }
+        | undefined
+    >(undefined);
+    const suppressNextClickRef = React.useRef(false);
     const [selection, setSelection] = React.useState<{ start: number; current: number } | null>(null);
     const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; entry: TimelineEntry } | null>(null);
 
@@ -183,6 +194,51 @@ export default function TimelineTrack({
         setSelection(null);
         if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
     };
+    const handleCardPointerDown = useEvent((event: React.PointerEvent<HTMLElement>, entry: TimelineEntry) => {
+        if (event.button !== 0 || cardDragRef.current) return;
+        suppressNextClickRef.current = false;
+        const target = event.target as Element;
+        const interactiveButton = target.closest('button');
+        if (
+            target.closest('input, textarea, select, [contenteditable="true"]') ||
+            (interactiveButton && interactiveButton !== event.currentTarget)
+        )
+            return;
+        event.stopPropagation();
+        const entryIds = selectedEntryIds.has(entry.id) ? [...selectedEntryIds] : [entry.id];
+        if (!selectedEntryIds.has(entry.id)) onSelectionChange([entry.id]);
+        cardDragRef.current = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            active: false,
+            target: event.currentTarget,
+        };
+        onDragStart(entry.id, entryIds);
+    });
+    const handleCardPointerMove = useEvent((event: React.PointerEvent<HTMLDivElement>) => {
+        const drag = cardDragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        if (!drag.active) {
+            const dx = event.clientX - drag.startX;
+            const dy = event.clientY - drag.startY;
+            // Ignore vertical intent so the panel can still scroll on touch.
+            if (Math.abs(dx) < 6 || Math.abs(dx) <= Math.abs(dy)) return;
+            drag.active = true;
+            // Capture only once a horizontal drag is confirmed, leaving touch scrolling intact.
+            drag.target.setPointerCapture(event.pointerId);
+        }
+        event.stopPropagation();
+        onDragOver(getContentX(event.clientX));
+    });
+    const finishCardDrag = useEvent((event: React.PointerEvent<HTMLDivElement>) => {
+        const drag = cardDragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        cardDragRef.current = undefined;
+        if (drag.target.hasPointerCapture(event.pointerId)) drag.target.releasePointerCapture(event.pointerId);
+        if (drag.active) suppressNextClickRef.current = true;
+        onDragEnd();
+    });
     const handleContextMenu = useEvent((e: React.MouseEvent, entry: TimelineEntry) => {
         e.preventDefault();
         if (!selectedEntryIds.has(entry.id)) {
@@ -299,15 +355,12 @@ export default function TimelineTrack({
                         {renderInsertionCursor(index)}
                         <TrackCard
                             entry={entry}
-                            index={index}
                             graph={graph}
                             graphRefresh={graphRefresh}
                             isSelected={selectedEntryIds.has(entry.id)}
                             onSelectEntry={onSelectEntry}
                             onContextMenu={handleContextMenu}
-                            onDragStart={onDragStart}
-                            onDragOver={onDragOver}
-                            onDragEnd={onDragEnd}
+                            onCardPointerDown={handleCardPointerDown}
                             onPauseDurationChange={onPauseDurationChange}
                             onRemoveEntry={onRemoveEntry}
                             onToggleAnimation={onToggleAnimation}
@@ -326,9 +379,7 @@ export default function TimelineTrack({
             t,
             onSelectEntry,
             handleContextMenu,
-            onDragStart,
-            onDragOver,
-            onDragEnd,
+            handleCardPointerDown,
             onPauseDurationChange,
             onRemoveEntry,
             onToggleAnimation,
@@ -480,6 +531,13 @@ export default function TimelineTrack({
             onPointerMove={handleSelectionMove}
             onPointerUp={handleSelectionEnd}
             onContextMenu={e => e.preventDefault()}
+            onClickCapture={e => {
+                if (suppressNextClickRef.current && (e.target as Element).closest('[data-timeline-card="true"]')) {
+                    suppressNextClickRef.current = false;
+                    e.stopPropagation();
+                    e.preventDefault();
+                }
+            }}
             onClick={() => setContextMenu(null)}
         >
             <Flex
@@ -490,6 +548,10 @@ export default function TimelineTrack({
                 minW="100%"
                 overflowX="clip"
                 data-timeline-track-content
+                onPointerMove={handleCardPointerMove}
+                onPointerUp={finishCardDrag}
+                onPointerCancel={finishCardDrag}
+                onLostPointerCapture={finishCardDrag}
             >
                 {ruler}
                 {duration > 0 && (
@@ -614,47 +676,35 @@ export default function TimelineTrack({
 interface TrackCardProps
     extends Pick<
         TimelineTrackProps,
-        | 'graph'
-        | 'graphRefresh'
-        | 'onSelectEntry'
-        | 'onDragStart'
-        | 'onDragOver'
-        | 'onDragEnd'
-        | 'onPauseDurationChange'
-        | 'onRemoveEntry'
-        | 'onToggleAnimation'
+        'graph' | 'graphRefresh' | 'onSelectEntry' | 'onPauseDurationChange' | 'onRemoveEntry' | 'onToggleAnimation'
     > {
     entry: TimelineEntry;
-    index: number;
     isSelected: boolean;
     onContextMenu: (event: React.MouseEvent, entry: TimelineEntry) => void;
+    onCardPointerDown: (event: React.PointerEvent<HTMLElement>, entry: TimelineEntry) => void;
 }
 
 // Card content changes independently of playback and insertion cursor subscriptions.
 const TrackCard = React.memo(function TrackCard({
     entry,
-    index,
     graph,
     isSelected,
     onSelectEntry,
     onContextMenu,
-    onDragStart,
-    onDragOver,
-    onDragEnd,
+    onCardPointerDown,
     onPauseDurationChange,
     onRemoveEntry,
     onToggleAnimation,
 }: TrackCardProps) {
     const { t } = useTranslation();
+    const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => onCardPointerDown(event, entry);
     return entry.kind === 'keyframe' ? (
         <KeyframeSlot
             label={`${t('header.timelinePage.keyframe')} · ${getTimelineEntryTitle(graph, entry)}`}
             isSelected={isSelected}
             onSelect={() => onSelectEntry(entry)}
             onContextMenu={e => onContextMenu(e, entry)}
-            onDragStart={() => onDragStart(entry.id)}
-            onDragOver={e => onDragOver(index, e)}
-            onDragEnd={onDragEnd}
+            onPointerDown={handlePointerDown}
         />
     ) : isPauseEntry(entry) ? (
         <TimelinePauseClip
@@ -664,9 +714,7 @@ const TrackCard = React.memo(function TrackCard({
             onContextMenu={e => onContextMenu(e, entry)}
             onDurationChange={duration => onPauseDurationChange(entry.id, duration)}
             onRemove={() => onRemoveEntry(entry.id)}
-            onDragStart={() => onDragStart(entry.id)}
-            onDragOver={onDragOver.bind(null, index)}
-            onDragEnd={onDragEnd}
+            onPointerDown={handlePointerDown}
         />
     ) : (
         <TimelineClip
@@ -677,9 +725,7 @@ const TrackCard = React.memo(function TrackCard({
             onContextMenu={e => onContextMenu(e, entry)}
             onToggleAnimation={() => onToggleAnimation(entry.id)}
             onRemove={() => onRemoveEntry(entry.id)}
-            onDragStart={() => onDragStart(entry.id)}
-            onDragOver={e => onDragOver(index, e)}
-            onDragEnd={onDragEnd}
+            onPointerDown={handlePointerDown}
         />
     );
 });
@@ -758,31 +804,18 @@ interface KeyframeSlotProps {
     label: string;
     isSelected: boolean;
     onSelect: () => void;
-    onDragStart: () => void;
-    onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
-    onDragEnd: () => void;
+    onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
     onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-function KeyframeSlot({
-    label,
-    isSelected,
-    onSelect,
-    onDragStart,
-    onDragOver,
-    onDragEnd,
-    onContextMenu,
-}: KeyframeSlotProps) {
+function KeyframeSlot({ label, isSelected, onSelect, onPointerDown, onContextMenu }: KeyframeSlotProps) {
     return (
         <Tooltip label={label} placement="top" openDelay={300}>
             <Flex
                 data-timeline-card="true"
                 as="button"
                 type="button"
-                draggable
-                onDragStart={onDragStart}
-                onDragOver={onDragOver}
-                onDragEnd={onDragEnd}
+                onPointerDown={onPointerDown}
                 onContextMenu={onContextMenu}
                 onClick={onSelect}
                 flex={`0 0 ${KEYFRAME_SLOT_WIDTH}px`}
@@ -797,6 +830,8 @@ function KeyframeSlot({
                 _hover={{ borderColor: 'purple.400' }}
                 aria-label={label}
                 aria-pressed={isSelected}
+                sx={{ touchAction: 'pan-y' }}
+                userSelect="none"
             >
                 <Box
                     width="8px"

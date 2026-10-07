@@ -13,6 +13,7 @@ import {
     insertTimelineEntry,
     insertTimelineExitEntry,
     insertKeyframeEntry,
+    moveTimelineEntries,
     moveTimelineEntry,
     normalizeTimelineDocument,
     insertTimelineLabel,
@@ -165,6 +166,31 @@ describe('timeline utilities', () => {
         const withExit = insertTimelineExitEntry(initial, 'stn_a', 1).document;
 
         expect(moveTimelineEntry(withExit, 1, 0)).toBe(withExit);
+    });
+
+    it('moves a block of selected entries together while preserving their order', () => {
+        const document = ['a', 'b', 'c', 'd'].reduce(
+            (doc, refId) => appendTimelineEntry(doc, refId as `stn_${string}`),
+            emptyDocument()
+        );
+        const ids = document.track.map(entry => entry.id);
+        const order = (doc: TimelineDocument) => doc.track.map(entry => entry.id);
+
+        expect(order(moveTimelineEntries(document, [ids[0], ids[2]], 0))).toEqual([ids[0], ids[2], ids[1], ids[3]]);
+        expect(order(moveTimelineEntries(document, [ids[0], ids[2]], 1))).toEqual([ids[1], ids[0], ids[2], ids[3]]);
+        expect(order(moveTimelineEntries(document, [ids[0], ids[2]], 2))).toEqual([ids[1], ids[3], ids[0], ids[2]]);
+        expect(order(moveTimelineEntries(document, [ids[1], ids[2]], 0))).toEqual([ids[1], ids[2], ids[0], ids[3]]);
+        expect(order(moveTimelineEntries(document, [ids[3]], 1))).toEqual([ids[0], ids[3], ids[1], ids[2]]);
+        expect(moveTimelineEntries(document, [], 0)).toBe(document);
+        expect(moveTimelineEntries(document, ['missing'], 0)).toBe(document);
+    });
+
+    it('rejects a block move that would split a station lifetime', () => {
+        const withExit = insertTimelineExitEntry(appendTimelineEntry(emptyDocument(), 'stn_a'), 'stn_a', 1).document;
+        const appended = appendTimelineEntry(withExit, 'stn_b');
+        const exitId = withExit.track[1].id;
+
+        expect(moveTimelineEntries(appended, [exitId], 0)).toBe(appended);
     });
 
     it('inserts an independent label at the cursor and normalizes portable label data', () => {

@@ -29,11 +29,12 @@ import {
     getTimelineEntryTitle,
     insertTimelineEntries,
     insertTimelineEntry,
-    moveTimelineEntry,
+    moveTimelineEntries,
     removeTimelineEntry,
 } from '../../util/timeline';
 import { formatTimelineTime, TimelinePlaybackTiming } from '../../util/timeline-playback';
 import TimelineTrack from './timeline-track';
+import { getTimelineTrackLayout } from './timeline-track-layout';
 import TimelineSettingsModal from './timeline-settings-modal';
 import TimelineLineInfoModal from './timeline-line-info-modal';
 
@@ -94,6 +95,7 @@ export default function TimelineTrackPanel({
     const toast = useToast();
     const [draftDocument, setDraftDocument] = React.useState(document);
     const dragEntryIdRef = React.useRef<string | null>(null);
+    const dragEntryIdsRef = React.useRef<string[]>([]);
     const dragDocumentRef = React.useRef(document);
 
     const [pathMode, setPathMode] = React.useState<{
@@ -259,26 +261,45 @@ export default function TimelineTrackPanel({
         onDocumentChange(nextDocument);
     });
 
-    const handleDragStart = useEvent((entryId: string) => {
+    const handleDragStart = useEvent((entryId: string, entryIds?: string[]) => {
         dragEntryIdRef.current = entryId;
+        dragEntryIdsRef.current = entryIds?.length ? entryIds : [entryId];
         dragDocumentRef.current = draftDocument;
     });
 
-    const handleDragOver = useEvent((index: number, e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        const dragEntryId = dragEntryIdRef.current;
-        if (!dragEntryId) return;
+    // `contentX` is the pointer position in track content coordinates. The whole
+    // selected block lands at the gap nearest the pointer while keeping its order.
+    const handleDragOver = useEvent((contentX: number) => {
+        const entryIds = dragEntryIdsRef.current;
+        if (!dragEntryIdRef.current || !entryIds.length) return;
 
-        const fromIndex = dragDocumentRef.current.track.findIndex(entry => entry.id === dragEntryId);
-        if (fromIndex === -1 || fromIndex === index) return;
+        const current = dragDocumentRef.current;
+        const selected = new Set(entryIds);
+        const layout = getTimelineTrackLayout(current.track).entries;
+        let insertAt = 0;
+        let count = 0;
+        let placed = false;
+        for (const item of layout) {
+            if (selected.has(item.entry.id)) continue;
+            if (contentX < item.center) {
+                insertAt = count;
+                placed = true;
+                break;
+            }
+            count++;
+        }
+        if (!placed) insertAt = count;
 
-        const nextDocument = moveTimelineEntry(dragDocumentRef.current, fromIndex, index);
+        const nextDocument = moveTimelineEntries(current, entryIds, insertAt);
+        if (nextDocument === current) return;
+
         dragDocumentRef.current = nextDocument;
         setDraftDocument(nextDocument);
     });
 
     const handleDragEnd = useEvent(() => {
         dragEntryIdRef.current = null;
+        dragEntryIdsRef.current = [];
         if (dragDocumentRef.current !== document) {
             onDocumentChange(dragDocumentRef.current);
         }
