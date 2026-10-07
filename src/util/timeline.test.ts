@@ -1,12 +1,15 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { createEmptyTimelineDocument, DEFAULT_TIMELINE_SETTINGS, TimelineDocument } from '../constants/timeline';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     appendTimelineEntry,
     createKeyframeEntry,
+    findShortestPathByLine,
+    getAdjacentLineColors,
+    getEdgeThemeString,
     getTimelineCoverage,
     getTimelinePreviewState,
     insertTimelineEntries,
@@ -53,6 +56,94 @@ const makeGraph = () => {
 };
 
 const emptyDocument = (): TimelineDocument => ({ version: 1, track: [] });
+
+describe('timeline colour identity', () => {
+    const makeColoredPath = (first: Theme, second: Theme) => {
+        const graph = makeGraph();
+        graph.setEdgeAttribute('line_ab', LineStyleType.SingleColor, { color: first });
+        graph.addNode('stn_c', { ...graph.getNodeAttributes('stn_b'), x: 210 });
+        graph.addDirectedEdgeWithKey('line_bc', 'stn_b', 'stn_c', {
+            ...graph.getEdgeAttributes('line_ab'),
+            [LineStyleType.SingleColor]: { color: second },
+        });
+        return graph;
+    };
+    const palette: Theme = [CityCode.Shanghai, 'sh1', '#E3002B', MonoColour.white];
+    const custom: Theme = [CityCode.Other, 'first', '#abcdef', MonoColour.white];
+
+    it.each<{ name: string; first: Theme; second: Theme }>([
+        {
+            name: 'palette colours with the same city and line despite different display colours',
+            first: palette,
+            second: [CityCode.Shanghai, 'sh1', '#123456', MonoColour.black],
+        },
+        {
+            name: 'custom colours with identical background and foreground despite different labels',
+            first: custom,
+            second: [CityCode.Other, 'second', '#abcdef', MonoColour.white],
+        },
+    ])('joins $name into one selectable path', ({ first, second }) => {
+        const graph = makeColoredPath(first, second);
+        const theme = getEdgeThemeString(graph, 'line_ab');
+
+        expect(getEdgeThemeString(graph, 'line_bc')).toBe(theme);
+        expect(getAdjacentLineColors(graph, 'stn_b')).toHaveLength(1);
+        expect(findShortestPathByLine(graph, 'stn_a', 'stn_c', theme)).toEqual([
+            'stn_a',
+            'line_ab',
+            'stn_b',
+            'line_bc',
+            'stn_c',
+        ]);
+    });
+
+    it.each<{ name: string; first: Theme; second: Theme }>([
+        { name: 'custom background', first: custom, second: [CityCode.Other, 'first', '#abcdee', MonoColour.white] },
+        { name: 'custom foreground', first: custom, second: [CityCode.Other, 'first', '#abcdef', MonoColour.black] },
+        { name: 'custom hex case', first: custom, second: [CityCode.Other, 'first', '#ABCDEF', MonoColour.white] },
+        { name: 'palette city', first: palette, second: [CityCode.Beijing, 'sh1', '#E3002B', MonoColour.white] },
+        { name: 'palette line', first: palette, second: [CityCode.Shanghai, 'sh2', '#E3002B', MonoColour.white] },
+        {
+            name: 'palette and custom colour source',
+            first: palette,
+            second: [CityCode.Other, 'sh1', '#E3002B', MonoColour.white],
+        },
+    ])('keeps colours differing in $name as separate paths', ({ first, second }) => {
+        const graph = makeColoredPath(first, second);
+        const theme = getEdgeThemeString(graph, 'line_ab');
+
+        expect(getEdgeThemeString(graph, 'line_bc')).not.toBe(theme);
+        expect(getAdjacentLineColors(graph, 'stn_b')).toHaveLength(2);
+        expect(findShortestPathByLine(graph, 'stn_a', 'stn_c', theme)).toBeNull();
+    });
+
+    it.each([
+        { style: LineStyleType.DualColor, unordered: true },
+        { style: LineStyleType.MRTTapeOut, unordered: true },
+        { style: LineStyleType.LondonRail, unordered: false },
+        { style: LineStyleType.Generic, unordered: false },
+    ])('preserves the component order semantics of $style', ({ style, unordered }) => {
+        const graph = makeColoredPath(palette, custom);
+        const attributes = (first: Theme, second: Theme) =>
+            style === LineStyleType.LondonRail
+                ? { colorBackground: first, colorForeground: second }
+                : style === LineStyleType.Generic
+                  ? { layers: [{ color: first }, { color: second }] }
+                  : { colorA: first, colorB: second };
+        graph.updateEdgeAttributes('line_ab', attrs => ({
+            ...attrs,
+            style,
+            [style]: attributes(palette, custom),
+        }));
+        graph.updateEdgeAttributes('line_bc', attrs => ({
+            ...attrs,
+            style,
+            [style]: attributes(custom, palette),
+        }));
+
+        expect(getEdgeThemeString(graph, 'line_ab') === getEdgeThemeString(graph, 'line_bc')).toBe(unordered);
+    });
+});
 
 describe('timeline utilities', () => {
     it('insertTimelineEntry should ignore keyframes of the same ref', () => {

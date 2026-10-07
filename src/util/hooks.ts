@@ -1,13 +1,72 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
 import type { RefObject } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Theme } from '../constants/constants';
-import { useRootSelector } from '../redux';
+import { LineDefinition } from '../constants/line-definitions';
+import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
+import { ParamGraph, refreshLineDefinitions } from '../redux/param/param-slice';
 import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
 import { loadFont } from './fonts';
+import { getLineTopology, getUnassignedLineSections, reconcileLineDefinitions } from './line-definitions';
+import { getLineExportsAsync, LineExport, yieldLineCalculation } from './line-export';
+
+/** Request a fresh projection on open, and discard work for closed panels or superseded graphs. */
+export const useLineInformation = (isOpen: boolean) => {
+    const source = useRootSelector(state => state.param.present.graph);
+    const dispatch = useRootDispatch();
+    const store = useRootStore();
+    const calculated = useRef<ParamGraph | undefined>(undefined);
+    const [result, setResult] = useState<{
+        graph: ParamGraph;
+        entries: LineExport[];
+        unassigned: LineDefinition[];
+        error?: string;
+    }>();
+
+    useEffect(() => {
+        if (!isOpen) {
+            calculated.current = undefined;
+            setResult(undefined);
+            return;
+        }
+        if (calculated.current === source) return;
+        const controller = new AbortController();
+        const calculate = async () => {
+            try {
+                await yieldLineCalculation(controller.signal);
+                if (controller.signal.aborted) return;
+                const graph = reconcileLineDefinitions(source);
+                const entries = await getLineExportsAsync(graph, controller.signal);
+                if (controller.signal.aborted || store.getState().param.present.graph !== source) return;
+                dispatch(refreshLineDefinitions({ source, attributes: graph.attributes }));
+                const current = store.getState().param.present.graph;
+                const unassigned = getUnassignedLineSections(current).filter(
+                    line => getLineTopology(current, line).stationIds.length >= 2
+                );
+                calculated.current = current;
+                setResult({ graph: current, entries, unassigned });
+            } catch (cause) {
+                if (controller.signal.aborted) return;
+                calculated.current = source;
+                setResult({ graph: source, entries: [], unassigned: [], error: String(cause) });
+            }
+        };
+        void calculate();
+        return () => controller.abort();
+    }, [isOpen, source, dispatch, store]);
+
+    const isLoading = isOpen && (!result || result.graph !== source);
+    return {
+        graph: result?.graph ?? source,
+        entries: result?.entries ?? [],
+        unassigned: result?.unassigned ?? [],
+        isLoading,
+        error: result?.error,
+    };
+};
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {

@@ -30,8 +30,8 @@ export const populateTimelineFromLineInformation = (
 ): TimelineDocument => {
     const track: TimelineElementEntry[] = [];
     const added = new Set<string>();
-    const nodes = new Set(graph.nodes.map(node => node.key));
-    const edges = new Map(graph.edges.map(edge => [edge.key!, edge]));
+    const nodes = new Map(graph.nodes.map(node => [node.key, node]));
+    const edges = new Map(graph.edges.map((edge, index) => [edge.key!, { edge, index }]));
     const add = (id: string) => {
         if (added.has(id)) return;
         if (!nodes.has(id) && !edges.has(id)) return;
@@ -40,7 +40,7 @@ export const populateTimelineFromLineInformation = (
     };
 
     for (const line of getTimelineImportLines(graph)) {
-        const lineEdges = line.edgeIds.map(id => edges.get(id)!);
+        const lineEdges = line.edgeIds.map(id => edges.get(id)!.edge);
         const neighbours = new Map<string, Map<string, Edge[]>>();
         for (const edge of lineEdges) {
             for (const [from, to] of [
@@ -49,32 +49,45 @@ export const populateTimelineFromLineInformation = (
             ]) {
                 if (!neighbours.has(from)) neighbours.set(from, new Map());
                 const next = neighbours.get(from)!;
-                next.set(to, [...(next.get(to) ?? []), edge]);
+                if (!next.has(to)) next.set(to, []);
+                next.get(to)!.push(edge);
             }
         }
-        const topology = getLineTopology(graph, line);
+        const ownedGraph: Graph = {
+            options: graph.options,
+            attributes: graph.attributes,
+            nodes: [...neighbours.keys()]
+                .map(id => nodes.get(id))
+                .filter((node): node is Graph['nodes'][number] => !!node),
+            // Route order around a loop follows the original drawing edge order.
+            edges: [...lineEdges].sort((a, b) => edges.get(a.key!)!.index - edges.get(b.key!)!.index),
+        };
+        const topology = getLineTopology(ownedGraph, line);
         const start = neighbours.has(line.exportStartStationId)
             ? line.exportStartStationId
             : (topology.startCandidates[0] ?? neighbours.keys().next().value);
         if (!start) continue;
         add(start);
 
-        const shortestRoute = (to: string): string[] => {
-            const previous = new Map<string, string | undefined>([[start, undefined]]);
+        // All terminal routes share one breadth-first tree. Keeping its drawn
+        // prefix avoids repeatedly visiting a long trunk for every branch.
+        const previous = new Map<string, string | undefined>([[start, undefined]]);
+        if (topology.type === 'BRANCH') {
             const pending = [start];
             for (let index = 0; index < pending.length; index++) {
-                const node = pending[index];
-                if (node === to) break;
-                for (const next of neighbours.get(node)?.keys() ?? []) {
+                for (const next of neighbours.get(pending[index])?.keys() ?? []) {
                     if (previous.has(next)) continue;
-                    previous.set(next, node);
+                    previous.set(next, pending[index]);
                     pending.push(next);
                 }
             }
+        }
+        const routed = new Set([start]);
+        const shortestRoute = (to: string): string[] => {
             if (!previous.has(to)) return [];
             const path = [to];
-            while (path[0] !== start) path.unshift(previous.get(path[0])!);
-            return path;
+            while (!routed.has(path[path.length - 1])) path.push(previous.get(path[path.length - 1])!);
+            return path.reverse();
         };
         const endpoints = topology.type === 'LOOP' ? [start] : topology.terminalIds.filter(id => id !== start);
         for (const endpoint of endpoints) {
@@ -83,7 +96,7 @@ export const populateTimelineFromLineInformation = (
             const routes =
                 topology.type === 'BRANCH'
                     ? [shortestRoute(endpoint)]
-                    : getLineRoutes(graph, line, start, endpoint)
+                    : getLineRoutes(ownedGraph, line, start, endpoint)
                           .slice(0, 1)
                           .map(route => route.nodeIds);
             for (const route of routes) {
@@ -95,6 +108,7 @@ export const populateTimelineFromLineInformation = (
                             ?.forEach(edge => add(edge.key!));
                     }
                     add(node);
+                    routed.add(node);
                 });
             }
         }
@@ -106,10 +120,19 @@ export const populateTimelineFromLineInformation = (
             if (visited.has(node)) return;
             visited.add(node);
             add(node);
-            for (const [next, bundle] of neighbours.get(node) ?? []) {
+            const pending: Iterator<[string, Edge[]]>[] = [(neighbours.get(node) ?? new Map()).entries()];
+            while (pending.length > 0) {
+                const entry = pending[pending.length - 1].next();
+                if (entry.done) {
+                    pending.pop();
+                    continue;
+                }
+                const [next, bundle] = entry.value;
                 bundle.forEach(edge => add(edge.key!));
                 add(next);
-                walk(next);
+                if (visited.has(next)) continue;
+                visited.add(next);
+                pending.push((neighbours.get(next) ?? new Map()).entries());
             }
         };
         walk(start);

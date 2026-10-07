@@ -1,6 +1,6 @@
 import { SerializedGraph } from 'graphology-types';
 import { nanoid } from 'nanoid';
-import { EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
 import { LineDefinition } from '../constants/line-definitions';
 import i18n from '../i18n/config';
 
@@ -29,8 +29,51 @@ export const getLineTheme = (edge: Edge | undefined): Theme | undefined => {
         return color;
 };
 
-const themeKey = (edge: Edge) => JSON.stringify(getLineTheme(edge));
+/** Palette colours share their city/line identity; custom colours require exact background/foreground values. */
+export const getThemeKey = (theme: Theme): string =>
+    JSON.stringify(theme[0] === CityCode.Other ? ['custom', theme[2], theme[3]] : ['palette', theme[0], theme[1]]);
+
+const themeKey = (edge: Edge) => {
+    const theme = getLineTheme(edge);
+    return theme ? getThemeKey(theme) : JSON.stringify(theme);
+};
 const station = (id: string) => id.startsWith('stn_');
+
+interface LineGraphIndex {
+    edges: Map<string, Edge>;
+    edgeOrder: Map<string, number>;
+    nodes: Map<string, NodeAttributes | undefined>;
+    unassignedComponents?: Map<string, string[]>;
+}
+
+const graphIndexes = new WeakMap<Graph, LineGraphIndex>();
+
+/** Redux snapshots are immutable; mutable exports must always reflect in-place edits. */
+const getFrozenGraphIndex = (graph: Graph): LineGraphIndex | undefined => {
+    const cached = graphIndexes.get(graph);
+    if (cached) return cached;
+    if (
+        !Object.isFrozen(graph) ||
+        !Object.isFrozen(graph.edges) ||
+        !Object.isFrozen(graph.nodes) ||
+        !graph.edges.every(Object.isFrozen) ||
+        !graph.nodes.every(Object.isFrozen)
+    )
+        return;
+    const index: LineGraphIndex = {
+        edges: new Map(graph.edges.map(edge => [edge.key!, edge])),
+        edgeOrder: new Map(graph.edges.map((edge, position) => [edge.key!, position])),
+        nodes: new Map(graph.nodes.map(node => [node.key, node.attributes])),
+    };
+    graphIndexes.set(graph, index);
+    return index;
+};
+
+const indexedEdges = (index: LineGraphIndex, ids: Iterable<string>): Edge[] =>
+    [...new Set(ids)]
+        .map(id => index.edges.get(id))
+        .filter((edge): edge is Edge => !!edge)
+        .sort((a, b) => index.edgeOrder.get(a.key!)! - index.edgeOrder.get(b.key!)!);
 
 const adjacency = (edges: Edge[]): Adjacency => {
     const result: Adjacency = new Map();
@@ -41,7 +84,9 @@ const adjacency = (edges: Edge[]): Adjacency => {
         ]) {
             if (!result.has(a)) result.set(a, new Map());
             const neighbours = result.get(a)!;
-            neighbours.set(b, [...(neighbours.get(b) ?? []), edge.key!]);
+            const bundle = neighbours.get(b);
+            if (bundle) bundle.push(edge.key!);
+            else neighbours.set(b, [edge.key!]);
         }
     }
     return result;
@@ -74,7 +119,9 @@ const themedComponents = (edges: Edge[]) => {
     const groups = new Map<string, Edge[]>();
     for (const edge of edges) {
         const key = themeKey(edge);
-        groups.set(key, [...(groups.get(key) ?? []), edge]);
+        const group = groups.get(key);
+        if (group) group.push(edge);
+        else groups.set(key, [edge]);
     }
     return [...groups.values()].flatMap(lineEdgeComponents);
 };
@@ -88,11 +135,8 @@ export interface LineTopology {
     type: 'LINE' | 'BRANCH' | 'LOOP';
 }
 
-export const getLineTopology = (graph: Graph, line: LineDefinition): LineTopology => {
-    const owned = new Set(line.edgeIds);
-    const edges = graph.edges.filter(edge => owned.has(edge.key!));
+const topologyFromEdges = (edges: Edge[], nodes: Map<string, NodeAttributes | undefined>): LineTopology => {
     const adj = adjacency(edges);
-    const nodes = new Map(graph.nodes.map(node => [node.key, node.attributes]));
     const compare = (a: string, b: string) => {
         const aa = nodes.get(a),
             bb = nodes.get(b);
@@ -101,27 +145,45 @@ export const getLineTopology = (graph: Graph, line: LineDefinition): LineTopolog
     const stationIds = [...adj.keys()].filter(station).sort(compare);
     const terminals = new Set<string>();
     const branchStations = new Set<string>();
+    const virtualStations = new Map<string, Set<string>>();
     const nearestStations = (start: string) => {
+        if (station(start)) return new Set([start]);
+        const cached = virtualStations.get(start);
+        if (cached) return cached;
         const found = new Set<string>();
         const visited = new Set<string>();
+        const virtualNodes: string[] = [];
         const pending = [start];
         while (pending.length) {
             const node = pending.pop()!;
             if (visited.has(node)) continue;
             visited.add(node);
             if (station(node)) found.add(node);
-            else for (const next of adj.get(node)?.keys() ?? []) pending.push(next);
+            else {
+                virtualNodes.push(node);
+                for (const next of adj.get(node)?.keys() ?? []) pending.push(next);
+            }
         }
+        // Every node in a virtual-only component reaches the same boundary stations.
+        virtualNodes.forEach(node => virtualStations.set(node, found));
         return found;
+    };
+    const terminalComponents = new Set<Set<string>>();
+    const branchComponents = new Set<Set<string>>();
+    const collectStations = (node: string, target: Set<string>, components: Set<Set<string>>) => {
+        const found = nearestStations(node);
+        if (components.has(found)) return;
+        components.add(found);
+        found.forEach(id => target.add(id));
     };
     let branching = false;
     let cycle = adj.size > 0;
     for (const [node, neighbours] of adj) {
         cycle &&= neighbours.size === 2;
-        if (neighbours.size === 1) nearestStations(node).forEach(id => terminals.add(id));
+        if (neighbours.size === 1) collectStations(node, terminals, terminalComponents);
         if (neighbours.size > 2) {
             branching = true;
-            nearestStations(node).forEach(id => branchStations.add(id));
+            collectStations(node, branchStations, branchComponents);
         }
     }
     const terminalIds = [...terminals].sort(compare);
@@ -135,10 +197,21 @@ export const getLineTopology = (graph: Graph, line: LineDefinition): LineTopolog
     };
 };
 
-/** Repairs ownership at the commit boundary. Existing definitions never merge with each other. */
+export const getLineTopology = (graph: Graph, line: LineDefinition): LineTopology => {
+    const index = getFrozenGraphIndex(graph);
+    if (index) return topologyFromEdges(indexedEdges(index, line.edgeIds), index.nodes);
+    const owned = new Set(line.edgeIds);
+    return topologyFromEdges(
+        graph.edges.filter(edge => owned.has(edge.key!)),
+        new Map(graph.nodes.map(node => [node.key, node.attributes]))
+    );
+};
+
+/** Repairs ownership when line data is requested or edited. Existing definitions never merge with each other. */
 export const reconcileLineDefinitions = (graph: Graph): Graph => {
     const edges = graph.edges.filter(edge => getLineTheme(edge));
     const available = new Map(edges.map(edge => [edge.key!, edge]));
+    const nodes = new Map(graph.nodes.map(node => [node.key, node.attributes]));
     const unassigned = new Set((graph.attributes?.unassignedLineEdgeIds ?? []).filter(id => available.has(id)));
     const claimed = new Set<string>();
     const definitions: LineDefinition[] = [];
@@ -146,14 +219,18 @@ export const reconcileLineDefinitions = (graph: Graph): Graph => {
     for (const line of original) {
         const valid = line.edgeIds.filter(id => available.has(id) && !claimed.has(id) && !unassigned.has(id));
         const components = themedComponents(valid.map(id => available.get(id)!));
-        components.sort((a, b) => {
-            const hasStart = (ids: string[]) =>
+        const withStart = new Set(
+            components.filter(ids =>
                 ids.some(id => {
                     const edge = available.get(id)!;
                     return edge.source === line.exportStartStationId || edge.target === line.exportStartStationId;
-                });
-            return Number(hasStart(b)) - Number(hasStart(a)) || b.length - a.length || a[0].localeCompare(b[0]);
-        });
+                })
+            )
+        );
+        components.sort(
+            (a, b) =>
+                Number(withStart.has(b)) - Number(withStart.has(a)) || b.length - a.length || a[0].localeCompare(b[0])
+        );
         components.forEach((edgeIds, index) => {
             edgeIds.forEach(id => claimed.add(id));
             definitions.push(
@@ -161,20 +238,44 @@ export const reconcileLineDefinitions = (graph: Graph): Graph => {
             );
         });
     }
+    const touchingByTheme = new Map<string, Map<string, Set<LineDefinition>>>();
+    const indexLine = (line: LineDefinition, ids = line.edgeIds) => {
+        for (const id of ids) {
+            const edge = available.get(id)!;
+            const key = themeKey(edge);
+            if (!touchingByTheme.has(key)) touchingByTheme.set(key, new Map());
+            const touching = touchingByTheme.get(key)!;
+            for (const node of [edge.source, edge.target]) {
+                if (!touching.has(node)) touching.set(node, new Set());
+                touching.get(node)!.add(line);
+            }
+        }
+    };
+    definitions.forEach(line => indexLine(line));
     for (const ids of themedComponents(edges.filter(edge => !claimed.has(edge.key!) && !unassigned.has(edge.key!)))) {
         const newEdges = ids.map(id => available.get(id)!);
-        const nodes = new Set(newEdges.flatMap(edge => [edge.source, edge.target]));
-        const touching = definitions.filter(line =>
-            line.edgeIds.some(id => {
-                const edge = available.get(id)!;
-                return themeKey(edge) === themeKey(newEdges[0]) && (nodes.has(edge.source) || nodes.has(edge.target));
-            })
-        );
-        if (touching.length === 1) touching[0].edgeIds = [...touching[0].edgeIds, ...ids].sort();
-        else definitions.push(emptyLineDefinition(ids));
+        const touching = new Set<LineDefinition>();
+        const neighbours = touchingByTheme.get(themeKey(newEdges[0]));
+        for (const edge of newEdges) {
+            for (const node of [edge.source, edge.target]) {
+                neighbours?.get(node)?.forEach(line => touching.add(line));
+            }
+        }
+        if (touching.size === 1) {
+            const line = touching.values().next().value!;
+            line.edgeIds = [...line.edgeIds, ...ids].sort();
+            indexLine(line, ids);
+        } else {
+            const line = emptyLineDefinition(ids);
+            definitions.push(line);
+            indexLine(line);
+        }
     }
     for (const line of definitions) {
-        const candidates = getLineTopology(graph, line).startCandidates;
+        const candidates = topologyFromEdges(
+            line.edgeIds.map(id => available.get(id)!),
+            nodes
+        ).startCandidates;
         if (!candidates.includes(line.exportStartStationId)) line.exportStartStationId = candidates[0] ?? '';
     }
     if (definitions.length === 0 && !graph.attributes?.lineDefinitions && !graph.attributes?.unassignedLineEdgeIds)
@@ -189,28 +290,58 @@ export const reconcileLineDefinitions = (graph: Graph): Graph => {
     };
 };
 
+const unassignedComponents = (graph: Graph, index = getFrozenGraphIndex(graph)): Map<string, string[]> => {
+    if (index?.unassignedComponents) return index.unassignedComponents;
+    const unassigned = new Set(graph.attributes?.unassignedLineEdgeIds ?? []);
+    const candidates = index ? indexedEdges(index, unassigned) : graph.edges.filter(edge => unassigned.has(edge.key!));
+    const edges = candidates.filter(edge => getLineTheme(edge));
+    const components = new Map(themedComponents(edges).map(ids => [`unassigned:${ids[0]}`, ids]));
+    if (
+        index &&
+        Object.isFrozen(graph.attributes) &&
+        (!graph.attributes?.unassignedLineEdgeIds || Object.isFrozen(graph.attributes.unassignedLineEdgeIds)) &&
+        candidates.every(edge => {
+            const attrs = edge.attributes;
+            const style = attrs?.[attrs.style] as { color?: Theme } | undefined;
+            return Object.isFrozen(attrs) && Object.isFrozen(style) && Object.isFrozen(style?.color);
+        })
+    )
+        index.unassignedComponents = components;
+    return components;
+};
+
 /** Temporary display records for removed sections. They are never exported as railway lines. */
 export const getUnassignedLineSections = (graph: Graph): LineDefinition[] => {
-    const unassigned = new Set(graph.attributes?.unassignedLineEdgeIds ?? []);
-    return themedComponents(graph.edges.filter(edge => unassigned.has(edge.key!) && getLineTheme(edge))).map(
-        edgeIds => {
-            const line = { ...emptyLineDefinition(edgeIds), id: `unassigned:${edgeIds[0]}` };
-            line.exportStartStationId = getLineTopology(graph, line).startCandidates[0] ?? '';
-            return line;
-        }
-    );
+    const index = getFrozenGraphIndex(graph);
+    const components = unassignedComponents(graph, index);
+    if (!components.size) return [];
+    const available = index?.edges ?? new Map(graph.edges.map(edge => [edge.key!, edge]));
+    const nodes = index?.nodes ?? new Map(graph.nodes.map(node => [node.key, node.attributes]));
+    return [...components].map(([id, edgeIds]) => {
+        const line = { ...emptyLineDefinition([...edgeIds]), id };
+        line.exportStartStationId =
+            topologyFromEdges(
+                edgeIds.map(id => available.get(id)!),
+                nodes
+            ).startCandidates[0] ?? '';
+        return line;
+    });
 };
 
 export const getStationLabel = (graph: Graph, id: string): string => {
-    const attrs = graph.nodes.find(node => node.key === id)?.attributes;
+    const index = getFrozenGraphIndex(graph);
+    const attrs = index ? index.nodes.get(id) : graph.nodes.find(node => node.key === id)?.attributes;
     const names = (attrs?.[attrs.type] as { names?: string[] } | undefined)?.names;
     return (
         names?.find(name => name.trim())?.replaceAll('\n', ' ') ?? (id ? i18n.t('header.lineInfo.unnamedStation') : '—')
     );
 };
 
-export const getLineEndpointsLabel = (graph: Graph, line: LineDefinition): string => {
-    const topology = getLineTopology(graph, line);
+export const getLineEndpointsLabel = (
+    graph: Graph,
+    line: LineDefinition,
+    topology = getLineTopology(graph, line)
+): string => {
     const start = line.exportStartStationId;
     const ends = topology.type === 'LOOP' ? [start] : topology.terminalIds.filter(id => id !== start);
     return `${getStationLabel(graph, start)} — ${ends.map(id => getStationLabel(graph, id)).join(' / ')}`;
@@ -230,28 +361,43 @@ export const getLineRoutes = (graph: Graph, line: LineDefinition, from: string, 
     const owned = new Set(line.edgeIds);
     const adj = adjacency(graph.edges.filter(edge => owned.has(edge.key!)));
     const routes: LineRoute[] = [];
-    const walk = (node: string, path: string[], bundles: string[][]) => {
-        if (node === to && path.length > 1) {
-            const stationIds: string[] = [];
-            const segments: string[][] = [];
-            let segment: string[] = [];
-            path.forEach((id, index) => {
-                if (index > 0) segment.push(...bundles[index - 1]);
-                if (station(id)) {
-                    if (stationIds.length) segments.push(segment);
-                    stationIds.push(id);
-                    segment = [];
-                }
-            });
-            if (stationIds.length >= 2) routes.push({ key: path.join('/'), nodeIds: path, stationIds, segments });
-            return;
+    if (!from || !to || !adj.has(from) || !adj.has(to)) return routes;
+    const path = [from];
+    const bundles: string[][] = [];
+    const visited = new Set(path);
+    const pending = [adj.get(from)!.entries()];
+    while (pending.length) {
+        const nextNeighbour = pending[pending.length - 1].next();
+        if (nextNeighbour.done) {
+            pending.pop();
+            visited.delete(path.pop()!);
+            bundles.pop();
+            continue;
         }
-        for (const [next, bundle] of adj.get(node) ?? []) {
-            if (path.includes(next) && !(next === to && next === from && path.length > 2)) continue;
-            walk(next, [...path, next], [...bundles, bundle]);
+        const [next, bundle] = nextNeighbour.value;
+        if (visited.has(next) && !(next === to && next === from && path.length > 2)) continue;
+        path.push(next);
+        bundles.push(bundle);
+        if (next !== to) {
+            visited.add(next);
+            pending.push(adj.get(next)!.entries());
+            continue;
         }
-    };
-    if (from && to && adj.has(from) && adj.has(to)) walk(from, [from], []);
+        const stationIds: string[] = [];
+        const segments: string[][] = [];
+        let segment: string[] = [];
+        path.forEach((id, index) => {
+            if (index > 0) bundles[index - 1].forEach(edgeId => segment.push(edgeId));
+            if (station(id)) {
+                if (stationIds.length) segments.push(segment);
+                stationIds.push(id);
+                segment = [];
+            }
+        });
+        if (stationIds.length >= 2) routes.push({ key: path.join('/'), nodeIds: [...path], stationIds, segments });
+        path.pop();
+        bundles.pop();
+    }
     return routes;
 };
 
@@ -286,13 +432,14 @@ export const splitLineDefinition = (
     return reconcileLineDefinitions({ ...graph, attributes: { ...graph.attributes, lineDefinitions: next } });
 };
 
-/** Only connected sections with the same complete theme can share a line without changing its drawing. */
+/** Only connected sections with the same colour identity can share a line without changing its drawing. */
 export const getLineAssignmentTargets = (graph: Graph, sectionId: string): LineDefinition[] => {
-    const section = getUnassignedLineSections(graph).find(item => item.id === sectionId);
+    const index = getFrozenGraphIndex(graph);
+    const section = unassignedComponents(graph, index).get(sectionId);
     if (!section) return [];
-    const edges = new Map(graph.edges.map(edge => [edge.key!, edge]));
-    const selectedNodes = new Set(section.edgeIds.flatMap(id => [edges.get(id)!.source, edges.get(id)!.target]));
-    const theme = themeKey(edges.get(section.edgeIds[0])!);
+    const edges = index?.edges ?? new Map(graph.edges.map(edge => [edge.key!, edge]));
+    const selectedNodes = new Set(section.flatMap(id => [edges.get(id)!.source, edges.get(id)!.target]));
+    const theme = themeKey(edges.get(section[0])!);
     return (graph.attributes?.lineDefinitions ?? []).filter(
         item =>
             item.edgeIds.length > 0 &&

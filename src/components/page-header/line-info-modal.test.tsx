@@ -1,10 +1,12 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
 import { undoAction } from '../../redux/project-history';
 import { initializeProject, saveGraph } from '../../redux/param/param-slice';
 import { createTestLineGraph, render } from '../../test-utils';
+import * as lineExport from '../../util/line-export';
+import { useLineInformation } from '../../util/hooks';
 import { exportToRmg } from '../../util/to-rmg';
 import { LineInfoModal } from './line-info-modal';
 import { LineIntervalModal } from './line-interval-modal';
@@ -53,7 +55,111 @@ describe('line information and export panels', () => {
         vi.unstubAllGlobals();
     });
 
-    it('saves metadata on blur, selections immediately, and the focused field on close', () => {
+    it('calculates on each panel open, shows loading, and leaves drawing history unchanged', async () => {
+        const store = setup([['A', 'B']]);
+        window.graph.removeAttribute('lineDefinitions');
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+        const panel = (isOpen: boolean) => (
+            <RmgThemeProvider>
+                <LineInfoModal isOpen={isOpen} onClose={vi.fn()} />
+            </RmgThemeProvider>
+        );
+        const { rerender } = render(panel(false), { store });
+        act(() => store.dispatch(saveGraph(window.graph.export())));
+        expect(calculate).not.toHaveBeenCalled();
+        expect(store.getState().param.present.graph.attributes.lineDefinitions).toBeUndefined();
+        rerender(panel(true));
+        expect(screen.getByRole('status')).toHaveTextContent('Calculating line information');
+        expect(screen.queryByText('No line detected.')).not.toBeInTheDocument();
+        await screen.findByRole('button', { name: 'Adjust interval: A — B' });
+        expect(store.getState().param.present.graph.attributes.lineDefinitions).toHaveLength(1);
+        expect(window.graph.getAttribute('lineDefinitions')).toEqual(
+            store.getState().param.present.graph.attributes.lineDefinitions
+        );
+        expect(store.getState().param.past).toHaveLength(1);
+        expect(calculate).toHaveBeenCalledTimes(1);
+        rerender(panel(false));
+        rerender(panel(true));
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        expect(calculate).toHaveBeenCalledTimes(2);
+        expect(store.getState().param.past).toHaveLength(1);
+    });
+
+    it('cancels closed requests and discards an old graph when a newer one arrives', async () => {
+        const store = setup([['A', 'B']]);
+        window.graph.removeAttribute('lineDefinitions');
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const panel = (isOpen: boolean) => (
+            <RmgThemeProvider>
+                <ToRmgModal isOpen={isOpen} onClose={vi.fn()} />
+            </RmgThemeProvider>
+        );
+        const { rerender } = render(panel(true), { store });
+        rerender(panel(false));
+        await act(() => lineExport.yieldLineCalculation());
+        expect(store.getState().param.present.graph.attributes.lineDefinitions).toBeUndefined();
+        rerender(panel(true));
+        act(() => {
+            window.graph = createTestLineGraph([['X', 'Y']]);
+            store.dispatch(saveGraph(window.graph.export()));
+        });
+        expect(await screen.findByRole('button', { name: 'Download line X — Y' })).toBeEnabled();
+        expect(screen.queryByRole('button', { name: 'Download line A — B' })).not.toBeInTheDocument();
+        expect(window.graph.getAttribute('lineDefinitions')).toEqual(
+            store.getState().param.present.graph.attributes.lineDefinitions
+        );
+    });
+
+    it('settles simultaneous consumers without repeatedly publishing identical derived data', async () => {
+        const store = setup([['A', 'B']]);
+        window.graph.removeAttribute('lineDefinitions');
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+        const Consumer = () => {
+            const { isLoading, entries } = useLineInformation(true);
+            return <output>{isLoading ? 'pending' : entries.length}</output>;
+        };
+        render(
+            <div>
+                <Consumer />
+                <Consumer />
+            </div>,
+            { store }
+        );
+        await waitFor(() => {
+            expect(screen.getAllByText('1')).toHaveLength(2);
+            expect(screen.queryByText('pending')).not.toBeInTheDocument();
+        });
+        expect(calculate.mock.calls.length).toBeLessThanOrEqual(3);
+        expect(store.getState().param.past).toHaveLength(0);
+    });
+
+    it('preserves both name languages when they are saved before recalculation completes', async () => {
+        const store = setup();
+        render(
+            <RmgThemeProvider>
+                <LineInfoModal isOpen onClose={vi.fn()} />
+            </RmgThemeProvider>,
+            { store }
+        );
+        const chinese = await screen.findByRole('textbox', { name: 'Chinese name' });
+        const english = screen.getByRole('textbox', { name: 'English name' });
+        fireEvent.change(chinese, { target: { value: '一号线' } });
+        fireEvent.blur(chinese);
+        fireEvent.change(english, { target: { value: 'Line One' } });
+        fireEvent.blur(english);
+        expect(store.getState().param.present.graph.attributes.lineDefinitions![0].name).toEqual([
+            '一号线',
+            'Line One',
+        ]);
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        expect(chinese).toHaveValue('一号线');
+        expect(english).toHaveValue('Line One');
+    });
+
+    it('saves metadata on blur, selections immediately, and the focused field on close', async () => {
         const store = setup();
         const close = vi.fn();
         render(
@@ -62,6 +168,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const name = screen.getByRole('textbox', { name: 'Chinese name' });
         fireEvent.change(name, { target: { value: '一号线' } });
         expect(store.getState().param.present.graph.attributes.lineDefinitions![0].name[0]).toBe('');
@@ -86,7 +193,7 @@ describe('line information and export panels', () => {
         });
     });
 
-    it('previews with keyboard rings and commits exactly one history entry', () => {
+    it('previews with keyboard rings and commits exactly one history entry', async () => {
         const store = setup();
         render(
             <RmgThemeProvider>
@@ -94,6 +201,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(screen.queryByRole('button', { name: 'A — E' })).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
         expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
@@ -106,7 +214,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.present.graph.attributes.lineDefinitions).toHaveLength(3);
     });
 
-    it('shows the full branch structure and moves a different branch onto the editable path before separating', () => {
+    it('shows the full branch structure and moves a different branch onto the editable path before separating', async () => {
         const store = setup([
             ['A', 'B'],
             ['B', 'C'],
@@ -120,6 +228,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — C / E' }));
         const diagram = screen.getByLabelText('Line interval and branches');
         expect(diagram.querySelectorAll('[data-station-id]')).toHaveLength(5);
@@ -138,7 +247,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.past).toHaveLength(1);
     });
 
-    it('keeps an unfinished field draft when a sibling field is saved', () => {
+    it('keeps an unfinished field draft when a sibling field is saved', async () => {
         const store = setup();
         render(
             <RmgThemeProvider>
@@ -146,6 +255,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const operator = screen.getByRole('textbox', { name: 'Operator' });
         fireEvent.change(operator, { target: { value: 'Metro operator' } });
         act(() => {
@@ -159,7 +269,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.present.graph.attributes.lineDefinitions![0].operator).toBe('Metro operator');
     });
 
-    it('moves a separated line to unassigned with × and assigns it directly to a connected line', () => {
+    it('moves a separated line to unassigned with × and assigns it directly to a connected line', async () => {
         const store = setup();
         const before = store.getState().param.present.graph;
         render(
@@ -168,13 +278,16 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
         expect(screen.queryByRole('combobox', { name: 'Interval action' })).not.toBeInTheDocument();
         fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
         fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
         const leftId = store.getState().param.present.graph.attributes.lineDefinitions![1].id;
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Move line to unassigned: B — D' }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(store.getState().param.present.graph.attributes.unassignedLineEdgeIds).toEqual(['line_1', 'line_2']);
         expect(store.getState().param.past).toHaveLength(2);
         expect(screen.queryByRole('dialog', { name: 'Edit line interval' })).not.toBeInTheDocument();
@@ -189,13 +302,14 @@ describe('line information and export panels', () => {
             'line_1',
             'line_2',
         ]);
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(screen.queryByText('Unassigned intervals', { exact: true })).not.toBeInTheDocument();
         expect(after.nodes).toEqual(before.nodes);
         expect(after.edges).toEqual(before.edges);
         expect(store.getState().param.past).toHaveLength(3);
     });
 
-    it('hides lines with fewer than two stations and lists unsupported lines without setting fields at the bottom', () => {
+    it('hides lines with fewer than two stations and lists unsupported lines without setting fields at the bottom', async () => {
         const store = setup(
             [
                 ['V', 'A'],
@@ -217,7 +331,9 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Move line to unassigned: P — Q' }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const unavailable = screen.getByRole('region', { name: 'Complex lines' });
         expect(screen.queryByTestId(`line-info-${single.id}`)).not.toBeInTheDocument();
         expect(within(unavailable).getByTestId(`line-info-${branch.id}`)).toBeInTheDocument();
@@ -247,13 +363,14 @@ describe('line information and export panels', () => {
             store.dispatch(saveGraph(window.graph.export()));
         });
         expect(within(unavailable).queryByTestId(`line-info-${single.id}`)).not.toBeInTheDocument();
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(
             within(screen.getByTestId(`line-info-${single.id}`)).getByRole('textbox', { name: 'Chinese name' })
         ).toHaveValue('补齐线路');
         expect(screen.queryByText('At least two stations are required to export this line.')).not.toBeInTheDocument();
     });
 
-    it('assigns an entire removed branch from the parent panel without selecting a path', () => {
+    it('assigns an entire removed branch from the parent panel without selecting a path', async () => {
         const store = setup([
             ['A', 'B'],
             ['B', 'C'],
@@ -268,7 +385,9 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: /^Move line to unassigned:/ }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([]);
         expect(store.getState().param.present.graph.attributes.unassignedLineEdgeIds).toEqual(
             before.attributes.lineDefinitions![0].edgeIds
@@ -294,16 +413,19 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Move line to unassigned: A — E' }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([]);
         expect(screen.getByRole('button', { name: 'Assign: A — E' })).toBeEnabled();
         await act(() => store.dispatch(undoAction()));
         expect(store.getState().param.present.graph).toEqual(before);
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(screen.getByRole('button', { name: 'Adjust interval: A — E' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Assign: A — E' })).not.toBeInTheDocument();
     });
 
-    it('rejects impossible dates and saves a valid leap-day date', () => {
+    it('rejects impossible dates and saves a valid leap-day date', async () => {
         const store = setup();
         render(
             <RmgThemeProvider>
@@ -311,6 +433,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const date = screen.getByRole('textbox', { name: 'Opening date' });
         fireEvent.change(date, { target: { value: '2026-02-30' } });
         fireEvent.blur(date);
@@ -321,7 +444,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.present.graph.attributes.lineDefinitions![0].openingDate).toBe('2024-02-29');
     });
 
-    it('cancels a dragged preview without changing the project', () => {
+    it('cancels a dragged preview without changing the project', async () => {
         const store = setup();
         const before = store.getState().param.present;
         render(
@@ -330,6 +453,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
         fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -337,7 +461,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.past).toHaveLength(0);
     });
 
-    it('snaps touch pointer movement to stations without committing it', () => {
+    it('snaps touch pointer movement to stations without committing it', async () => {
         class TestPointerEvent extends MouseEvent {
             readonly pointerId: number;
             readonly pointerType: string;
@@ -361,6 +485,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const handle = screen.getByRole('slider', { name: 'Start' });
         vi.spyOn(handle.closest('svg')!, 'getBoundingClientRect').mockReturnValue({
             left: 0,
@@ -381,7 +506,7 @@ describe('line information and export panels', () => {
         expect(store.getState().param.past).toHaveLength(0);
     });
 
-    it('drags interval handle via native mobile touch events', () => {
+    it('drags interval handle via native mobile touch events', async () => {
         const store = setup();
         const graph = store.getState().param.present.graph;
         render(
@@ -395,6 +520,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const handle = screen.getByRole('slider', { name: 'Start' });
         vi.spyOn(handle.closest('svg')!, 'getBoundingClientRect').mockReturnValue({
             left: 0,
@@ -415,7 +541,7 @@ describe('line information and export panels', () => {
         expect(handle).toHaveAttribute('aria-valuenow', '1');
     });
 
-    it('switches to the complementary loop arc for the same endpoint pair', () => {
+    it('switches to the complementary loop arc for the same endpoint pair', async () => {
         const store = setup([
             ['A', 'B'],
             ['B', 'C'],
@@ -435,6 +561,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
         fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
         fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
@@ -444,7 +571,7 @@ describe('line information and export panels', () => {
         expect(result.attributes.lineDefinitions[0].edgeIds).toEqual(['line_0', 'line_2', 'line_3']);
     });
 
-    it('shows a read-only export list and downloads one synced configuration immediately', () => {
+    it('shows a read-only export list and downloads one synced configuration immediately', async () => {
         const store = setup();
         const line = window.graph.getAttribute('lineDefinitions')![0];
         line.name = ['一号线', 'Line One'];
@@ -457,6 +584,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Download line 一号线 / Line One' }));
         expect(exportToRmg).toHaveBeenCalledOnce();
@@ -468,7 +596,7 @@ describe('line information and export panels', () => {
         expect(screen.queryByText('Please select a starting station and click it.')).not.toBeInTheDocument();
     });
 
-    it('puts unsupported lines last while preserving the order and downloads of exportable lines', () => {
+    it('puts unsupported lines last while preserving the order and downloads of exportable lines', async () => {
         const store = setup([
             ['A', 'B'],
             ['B', 'C'],
@@ -484,6 +612,7 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         const [first, second, unavailable] = screen.getAllByRole('button', { name: /Download line/ });
         expect(first).toHaveAccessibleName('Download line X — Z');
         expect(second).toHaveAccessibleName('Download line M — N');
@@ -497,7 +626,7 @@ describe('line information and export panels', () => {
         expect(vi.mocked(exportToRmg).mock.calls[0][0].current_stn_idx).toBe('stn_X');
     });
 
-    it('updates the export list immediately when persisted metadata changes', () => {
+    it('updates the export list immediately when persisted metadata changes', async () => {
         const store = setup();
         render(
             <RmgThemeProvider>
@@ -505,12 +634,14 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         act(() => {
             const lines = structuredClone(window.graph.getAttribute('lineDefinitions')!);
             lines[0].name = ['更新线路', 'Updated Line'];
             window.graph.setAttribute('lineDefinitions', lines);
             store.dispatch(saveGraph(window.graph.export()));
         });
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Download line 更新线路 / Updated Line' }));
         expect(vi.mocked(exportToRmg).mock.calls[0][0].line_name).toEqual(['更新线路', 'Updated Line']);
     });

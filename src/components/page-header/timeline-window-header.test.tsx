@@ -15,6 +15,7 @@ import { TimelineProjectProvider } from '../../timeline/timeline-project-context
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
 import { createTimelineStore, openProject, setCursor } from '../../timeline/timeline-store';
 import { createTestLineGraph } from '../../test-utils';
+import * as lineExport from '../../util/line-export';
 import { CURRENT_VERSION } from '../../util/save';
 import TimelineWindowHeader from './timeline-window-header';
 
@@ -68,6 +69,58 @@ const makeProject = (): TimelineProjectRecord => ({
 });
 
 describe('TimelineWindowHeader', () => {
+    it('shows loading feedback and disables repeat requests while preparing current RMP line data', async () => {
+        await i18n.changeLanguage('en');
+        const project = makeProject();
+        const graph = createTestLineGraph([['A', 'B']]);
+        localStorage.setItem(
+            LocalStorageKey.PARAM,
+            JSON.stringify({ version: CURRENT_VERSION, graph: graph.export() })
+        );
+        let finishCalculation!: () => void;
+        const yieldSpy = vi.spyOn(lineExport, 'yieldLineCalculation').mockImplementationOnce(
+            () =>
+                new Promise<void>(resolve => {
+                    finishCalculation = resolve;
+                })
+        );
+        const store = createTimelineStore();
+        store.dispatch(openProject(project));
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        try {
+            const files = screen.getByRole('button', { name: 'Files' });
+            fireEvent.click(files);
+            fireEvent.click(screen.getByText('Import RMP data'));
+            fireEvent.click(await screen.findByText('Project open in painter'));
+
+            expect(files).toBeDisabled();
+            expect(files.querySelector('.chakra-spinner')).toBeInTheDocument();
+            expect(files).toHaveAttribute('aria-expanded', 'false');
+            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).not.toBeInTheDocument();
+            expect(store.getState().project.active!.revision).toEqual(project.revision);
+            fireEvent.click(files);
+            expect(yieldSpy).toHaveBeenCalledTimes(1);
+
+            finishCalculation();
+            await screen.findByRole('dialog', { name: 'Import RMP data' });
+            expect(files).not.toBeDisabled();
+        } finally {
+            finishCalculation();
+            yieldSpy.mockRestore();
+        }
+    });
+
     it('inserts Label without a selected station and supports project undo and redo', async () => {
         await i18n.changeLanguage('en');
         const project = makeProject();

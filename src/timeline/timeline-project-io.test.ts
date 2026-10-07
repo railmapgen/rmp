@@ -111,6 +111,83 @@ describe('Timeline project import and sync', () => {
         await imageStoreIndexedDB.delete('img-l_open-project');
     });
 
+    it('recalculates stale painter line memberships when Timeline requests current RMP data', async () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+        ]);
+        const line = graph.getAttribute('lineDefinitions')![0];
+        line.edgeIds = ['line_0', 'line_removed'];
+        line.name = ['保留名称', 'Kept name'];
+        line.exportStartStationId = 'stn_C';
+        localStorage.setItem(LocalStorageKey.PARAM, makeRmpSave(graph));
+
+        try {
+            const source = await getOpenRmpProjectSource();
+            const parsed = await parseRmpTimelineSource(source);
+            const fresh = parsed.revision.graph.attributes.lineDefinitions!;
+
+            expect(fresh).toHaveLength(1);
+            expect(fresh[0]).toMatchObject({
+                id: line.id,
+                name: line.name,
+                edgeIds: ['line_0', 'line_1'],
+                exportStartStationId: 'stn_C',
+            });
+            expect(graph.getAttribute('lineDefinitions')![0].edgeIds).toEqual(['line_0', 'line_removed']);
+        } finally {
+            localStorage.removeItem(LocalStorageKey.PARAM);
+        }
+    });
+
+    it('keeps derived line identities and Timeline labels across requests from a painter save without definitions', async () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+        ]);
+        graph.removeAttribute('lineDefinitions');
+        const painterSource = makeRmpSave(graph);
+        localStorage.setItem(LocalStorageKey.PARAM, painterSource);
+
+        try {
+            const original = await createTimelineProjectFromRmp(await getOpenRmpProjectSource(), 'Derived labels');
+            const line = original.revision.graph.attributes.lineDefinitions![0];
+            line.name = ['现有线路', 'Existing line'];
+            line.lineNumber = 'L1';
+            line.openingDate = '2000-01-01';
+            line.exportStartStationId = 'stn_C';
+            line.videoLabel = {
+                name: ['视频名称', 'Video label'],
+                lineNumber: 'V1',
+                openingDate: '2024-02-29',
+                color: '#0088cc',
+            };
+
+            let current = original.revision;
+            for (let request = 0; request < 2; request++) {
+                const result = await prepareTimelineProjectSync(await getOpenRmpProjectSource(), current);
+                expect(result.revision.graph.attributes.lineDefinitions).toEqual([line]);
+                current = result.revision;
+            }
+            expect(localStorage.getItem(LocalStorageKey.PARAM)).toBe(painterSource);
+
+            graph.addNode('stn_D', makeStationAttributes('D'));
+            graph.addDirectedEdgeWithKey('line_2', 'stn_C', 'stn_D', graph.getEdgeAttributes('line_1'));
+            localStorage.setItem(LocalStorageKey.PARAM, makeRmpSave(graph));
+            const extended = await prepareTimelineProjectSync(await getOpenRmpProjectSource(), current);
+            expect(extended.revision.graph.attributes.lineDefinitions).toEqual([
+                {
+                    ...line,
+                    edgeIds: ['line_0', 'line_1', 'line_2'],
+                    exportStartStationId: 'stn_A',
+                },
+            ]);
+            expect(original.revision.graph.attributes.lineDefinitions![0]).toEqual(line);
+        } finally {
+            localStorage.removeItem(LocalStorageKey.PARAM);
+        }
+    });
+
     it('fails before creating a project when a referenced image is missing', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('misc_node_image', {

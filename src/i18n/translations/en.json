@@ -789,6 +789,7 @@
     },
     "header": {
         "lineInfo": {
+            "calculating": "Calculating line information…",
             "title": "Line information settings",
             "help": "Changes are saved automatically. Use Adjust interval to separate a section, or × to move a line to Unassigned intervals.",
             "lineNumber": "Line number",

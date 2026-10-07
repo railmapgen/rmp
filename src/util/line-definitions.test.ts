@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import { CityCode } from '../constants/constants';
+import { freeze } from '@reduxjs/toolkit';
+import { CityCode, Theme } from '../constants/constants';
 import { LineStyleType } from '../constants/lines';
 import { createTestLineGraph } from '../test-utils';
 import {
@@ -9,6 +10,7 @@ import {
     getLineEndpointsLabel,
     getLineRoutes,
     getLineTopology,
+    getStationLabel,
     getUnassignedLineSections,
     isOpeningDateValid,
     reconcileLineDefinitions,
@@ -177,6 +179,103 @@ describe('persistent line definitions', () => {
         ]);
     });
 
+    it('finds all boundary stations of a virtual junction component', () => {
+        const graph = createTestLineGraph(
+            [
+                ['A', 'V'],
+                ['V', 'W'],
+                ['W', 'B'],
+                ['V', 'X'],
+                ['X', 'C'],
+                ['X', 'D'],
+                ['W', 'T'],
+            ],
+            ['V', 'W', 'X', 'T']
+        ).export();
+        const topology = getLineTopology(graph, graph.attributes.lineDefinitions![0]);
+        expect(topology.type).toBe('BRANCH');
+        expect(topology.stationIds).toEqual(['stn_A', 'stn_B', 'stn_C', 'stn_D']);
+        expect(topology.terminalIds).toEqual(topology.stationIds);
+        expect(topology.branchStations).toEqual(new Set(topology.stationIds));
+    });
+
+    it('keeps virtual cycles bounded by real stations and enumerates their arcs in the original order', () => {
+        const graph = createTestLineGraph(
+            [
+                ['A', 'V'],
+                ['V', 'W'],
+                ['W', 'X'],
+                ['X', 'V'],
+                ['W', 'B'],
+            ],
+            ['V', 'W', 'X']
+        ).export();
+        const line = graph.attributes.lineDefinitions![0];
+        const topology = getLineTopology(graph, line);
+        expect(topology.type).toBe('BRANCH');
+        expect(topology.terminalIds).toEqual(['stn_A', 'stn_B']);
+        expect(topology.branchStations).toEqual(new Set(topology.terminalIds));
+        expect(getLineRoutes(graph, line, 'stn_A', 'stn_B').map(route => route.segments)).toEqual([
+            [['line_0', 'line_1', 'line_4']],
+            [['line_0', 'line_3', 'line_2', 'line_4']],
+        ]);
+        expect(getLineRoutes(graph, line, 'stn_A', 'stn_A')).toEqual([]);
+    });
+
+    it('reflects in-place changes to mutable exports after earlier topology and label reads', () => {
+        const graph = straight().export();
+        const line = graph.attributes.lineDefinitions![0];
+        expect(getLineEndpointsLabel(graph, line)).toBe('A — E');
+        graph.edges.pop();
+        graph.nodes.find(node => node.key === 'stn_A')!.attributes!['shmetro-basic']!.names = ['Changed'];
+        expect(getLineTopology(graph, line).terminalIds).toEqual(['stn_A', 'stn_D']);
+        expect(getStationLabel(graph, 'stn_A')).toBe('Changed');
+        expect(getLineEndpointsLabel(graph, line)).toBe('Changed — D');
+        graph.attributes.unassignedLineEdgeIds = ['line_0'];
+        expect(getUnassignedLineSections(graph)[0].edgeIds).toEqual(['line_0']);
+        graph.attributes.unassignedLineEdgeIds.push('line_1');
+        expect(getUnassignedLineSections(graph)[0].edgeIds).toEqual(['line_0', 'line_1']);
+    });
+
+    it('reads immutable snapshots consistently and accepts a previously calculated topology for labels', () => {
+        const graph = freeze(straight().export(), true);
+        const line = graph.attributes.lineDefinitions![0];
+        const expected = getLineTopology(structuredClone(graph), line);
+        expect(getLineTopology(graph, line)).toEqual(expected);
+        expect(getLineTopology(graph, { ...line, edgeIds: [...line.edgeIds].reverse() })).toEqual(expected);
+        expect(getLineEndpointsLabel(graph, line, expected)).toBe('A — E');
+        expect(getStationLabel(graph, 'stn_E')).toBe('E');
+    });
+
+    it('does not cache mutable memberships within a shallowly frozen graph', () => {
+        const graph = straight().export();
+        graph.nodes.forEach(Object.freeze);
+        graph.edges.forEach(Object.freeze);
+        Object.freeze(graph.nodes);
+        Object.freeze(graph.edges);
+        Object.freeze(graph);
+        graph.attributes.unassignedLineEdgeIds = ['line_0'];
+        expect(getUnassignedLineSections(graph)[0].edgeIds).toEqual(['line_0']);
+        graph.attributes.unassignedLineEdgeIds.push('line_1');
+        expect(getUnassignedLineSections(graph)[0].edgeIds).toEqual(['line_0', 'line_1']);
+        graph.nodes.find(node => node.key === 'stn_A')!.attributes!['shmetro-basic']!.names = ['Changed'];
+        expect(getStationLabel(graph, 'stn_A')).toBe('Changed');
+    });
+
+    it('enumerates long station paths without overflowing the call stack', () => {
+        const length = 12000;
+        const graph = createTestLineGraph(
+            Array.from({ length }, (_, index) => [`S${index}`, `S${index + 1}`])
+        ).export();
+        const routes = getLineRoutes(graph, graph.attributes.lineDefinitions![0], 'stn_S0', `stn_S${length}`);
+        expect(routes).toHaveLength(1);
+        expect(routes[0].stationIds).toHaveLength(length + 1);
+        expect(routes[0].nodeIds).toEqual(routes[0].stationIds);
+        expect(routes[0].segments).toHaveLength(length);
+        expect(routes[0].segments[0]).toEqual(['line_0']);
+        expect(routes[0].segments[length - 1]).toEqual([`line_${length - 1}`]);
+    });
+
     it('keeps split lines separate when a new edge connects two definitions', () => {
         const graph = createTestLineGraph([
             ['A', 'B'],
@@ -201,7 +300,109 @@ describe('persistent line definitions', () => {
     });
 });
 
+describe('line colour identity', () => {
+    const palette: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
+    const paletteVariant: Theme = [CityCode.Shanghai, 'sh1', '#123456', MonoColour.black];
+    const custom: Theme = [CityCode.Other, 'other', '#E4002B', MonoColour.white];
+    const customVariant: Theme = [CityCode.Other, 'custom', '#E4002B', MonoColour.white];
+    const cases: [string, Theme, Theme, number][] = [
+        ['palette identity despite different background and foreground', palette, paletteVariant, 1],
+        [
+            'different palette line IDs with identical displayed colours',
+            palette,
+            [CityCode.Shanghai, 'sh2', palette[2], palette[3]],
+            2,
+        ],
+        [
+            'different palette city IDs with identical displayed colours',
+            palette,
+            [CityCode.Beijing, 'sh1', palette[2], palette[3]],
+            2,
+        ],
+        ['custom colours despite different line markers', custom, customVariant, 1],
+        ['different custom backgrounds', custom, [CityCode.Other, 'other', '#123456', custom[3]], 2],
+        ['different custom foregrounds', custom, [CityCode.Other, 'other', custom[2], MonoColour.black], 2],
+        ['custom hex strings differing only in case', custom, [CityCode.Other, 'other', '#e4002b', custom[3]], 2],
+        ['palette and custom themes with identical displayed colours', palette, custom, 2],
+    ];
+
+    it.each(cases)('groups connected edges by %s', (_, first, second, count) => {
+        const graph = createTestLineGraph([
+            ['A', 'B', first],
+            ['B', 'C', second],
+        ]).export();
+        const definitions = graph.attributes.lineDefinitions!;
+        expect(definitions).toHaveLength(count);
+        expect(definitions.map(line => line.edgeIds)).toEqual(
+            count === 1 ? [['line_0', 'line_1']] : [['line_0'], ['line_1']]
+        );
+        expect(reconcileLineDefinitions(graph).attributes.lineDefinitions).toEqual(definitions);
+    });
+
+    it.each([
+        ['palette', palette, paletteVariant],
+        ['custom', custom, customVariant],
+    ] as [string, Theme, Theme][])('extends an existing %s line without losing metadata', (_, first, second) => {
+        const graph = createTestLineGraph([
+            ['A', 'B', first],
+            ['B', 'C', first],
+        ]).export();
+        const line = graph.attributes.lineDefinitions![0];
+        line.name = ['测试线路', 'Test Line'];
+        line.edgeIds = ['line_0'];
+        graph.edges[1].attributes![LineStyleType.SingleColor]!.color = second;
+        const result = reconcileLineDefinitions(graph);
+        expect(result.attributes.lineDefinitions).toEqual([{ ...line, edgeIds: ['line_0', 'line_1'] }]);
+        expect(result.edges).toEqual(graph.edges);
+        const exported = getLineExports(result)[0];
+        expect(exported.error).toBeUndefined();
+        expect(Object.keys(exported.param!.stn_list)).toEqual(expect.arrayContaining(['stn_A', 'stn_B', 'stn_C']));
+    });
+
+    it.each([
+        ['palette', palette, paletteVariant],
+        ['custom', custom, customVariant],
+    ] as [string, Theme, Theme][])(
+        'offers matching %s sections for assignment without merging saved identities',
+        (_, first, second) => {
+            const graph = createTestLineGraph([
+                ['A', 'B', first],
+                ['B', 'C', second],
+            ]).export();
+            const line = graph.attributes.lineDefinitions![0];
+            const separated = splitLineDefinition(
+                graph,
+                line.id,
+                getLineRoutes(graph, line, 'stn_A', 'stn_C')[0],
+                0,
+                1
+            );
+            expect(reconcileLineDefinitions(separated).attributes.lineDefinitions).toHaveLength(2);
+            const [retained, remainder] = separated.attributes.lineDefinitions!;
+            const removed = unassignLineDefinition(separated, remainder.id);
+            const pending = getUnassignedLineSections(removed)[0];
+            expect(getLineAssignmentTargets(removed, pending.id).map(item => item.id)).toEqual([retained.id]);
+            const assigned = assignLineSection(removed, pending.id, retained.id);
+            expect(assigned.attributes.lineDefinitions).toEqual([{ ...retained, edgeIds: ['line_0', 'line_1'] }]);
+            expect(assigned.edges).toEqual(graph.edges);
+        }
+    );
+});
+
 describe('whole-line removal and assignment', () => {
+    it('keeps cached immutable pending sections private from edits to temporary display records', () => {
+        const graph = straight().export();
+        const line = graph.attributes.lineDefinitions![0];
+        const frozen = freeze(unassignLineDefinition(graph, line.id), true);
+        const first = getUnassignedLineSections(frozen)[0];
+        first.edgeIds.pop();
+        first.name[0] = 'Temporary';
+        const next = getUnassignedLineSections(frozen)[0];
+        expect(next.edgeIds).toEqual(line.edgeIds);
+        expect(next.name).toEqual(['', '']);
+        expect(getLineAssignmentTargets(frozen, next.id)).toEqual([]);
+    });
+
     it('keeps removed lines unassigned across normalization and JSON loading without changing the canvas', async () => {
         const graph = straight().export();
         const line = graph.attributes.lineDefinitions![0];

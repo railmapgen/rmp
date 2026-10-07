@@ -6,10 +6,11 @@ import {
     assignLineSection,
     splitLineDefinition,
     unassignLineDefinition,
+    reconcileLineDefinitions,
 } from '../util/line-definitions';
 import { stringifyParam } from '../util/save';
 import { createStore } from '.';
-import { initializeProject, saveGraph } from './param/param-slice';
+import { initializeProject, refreshLineDefinitions, saveGraph } from './param/param-slice';
 import { redoAction, replaceProject, undoAction } from './project-history';
 
 describe('line definition commit boundary', () => {
@@ -90,7 +91,7 @@ describe('line definition commit boundary', () => {
         expect(window.graph.export()).toEqual(separated);
     });
 
-    it('repairs loaded ownership and preserves it across project replacement', async () => {
+    it('defers ownership repair until requested and preserves the result across project replacement', async () => {
         window.graph = createTestLineGraph([
             ['A', 'B'],
             ['B', 'C'],
@@ -100,6 +101,11 @@ describe('line definition commit boundary', () => {
         store.dispatch(initializeProject({ ...store.getState().param.present, graph: original }));
         window.graph.dropEdge('line_0');
         store.dispatch(saveGraph(window.graph.export()));
+        const source = store.getState().param.present.graph;
+        expect(source.attributes.lineDefinitions![0].edgeIds).toEqual(['line_0', 'line_1']);
+        const repaired = reconcileLineDefinitions(source);
+        store.dispatch(refreshLineDefinitions({ source, attributes: repaired.attributes }));
+        expect(store.getState().param.past).toHaveLength(1);
         const line = store.getState().param.present.graph.attributes.lineDefinitions![0];
         expect(line.edgeIds).toEqual(['line_1']);
         expect(line.exportStartStationId).toBe('stn_B');
@@ -108,5 +114,21 @@ describe('line definition commit boundary', () => {
         expect(window.graph.export()).toEqual(replacement);
         await store.dispatch(undoAction());
         expect(window.graph.getAttribute('lineDefinitions')).toEqual([line]);
+    });
+
+    it('ignores stale calculations and leaves identical results as the same graph', () => {
+        window.graph = createTestLineGraph([['A', 'B']]);
+        const store = createStore();
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const source = store.getState().param.present.graph;
+        store.dispatch(refreshLineDefinitions({ source, attributes: structuredClone(source.attributes) }));
+        expect(store.getState().param.present.graph).toBe(source);
+        store.dispatch(saveGraph(window.graph.export()));
+        const latest = store.getState().param.present.graph;
+        const attributes = { ...source.attributes, lineDefinitions: [] };
+        store.dispatch(refreshLineDefinitions({ source, attributes }));
+        expect(store.getState().param.present.graph).toBe(latest);
+        expect(window.graph.getAttribute('lineDefinitions')).toEqual(latest.attributes.lineDefinitions);
+        expect(store.getState().param.past).toHaveLength(1);
     });
 });

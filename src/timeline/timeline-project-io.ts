@@ -1,11 +1,14 @@
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { LineDefinition } from '../constants/line-definitions';
 import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
 import { createEmptyTimelineDocument, TimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE, normalizeMapStyle } from '../map/map-style';
 import { blobToBase64 } from '../util/binary';
+import { reconcileLineDefinitions } from '../util/line-definitions';
+import { yieldLineCalculation } from '../util/line-export';
 import { RMPSave, upgradeWithoutBackup } from '../util/save';
 import { normalizeTimelineDocument } from '../util/timeline';
 import { populateTimelineFromLineInformation } from '../util/timeline-line-import';
@@ -78,6 +81,7 @@ export const getOpenRmpProjectSource = async (): Promise<string> => {
     const source = window.localStorage.getItem(LocalStorageKey.PARAM);
     if (!source) throw new Error('No project is currently open in the painter');
 
+    await yieldLineCalculation();
     const save = JSON.parse(await upgradeWithoutBackup(source)) as RMPSave;
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
     graph.import(save.graph);
@@ -95,11 +99,29 @@ export const getOpenRmpProjectSource = async (): Promise<string> => {
     return JSON.stringify({ ...save, images });
 };
 
-export const parseRmpTimelineSource = async (source: string): Promise<ParsedRmpTimelineSource> => {
+export const parseRmpTimelineSource = async (
+    source: string,
+    fallbackLineDefinitions?: LineDefinition[]
+): Promise<ParsedRmpTimelineSource> => {
+    await yieldLineCalculation();
     const upgraded = await upgradeWithoutBackup(source);
     const save = JSON.parse(upgraded) as RMPSave;
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
-    graph.import(save.graph);
+    // Before its first line-information request, a painter save may have no IDs.
+    // Reuse the imported ownership when syncing such a source so Timeline labels
+    // retain their identity. Explicit painter definitions always take precedence.
+    const sourceGraph =
+        fallbackLineDefinitions && !save.graph.attributes?.lineDefinitions
+            ? {
+                  ...save.graph,
+                  attributes: {
+                      ...save.graph.attributes,
+                      lineDefinitions: structuredClone(fallbackLineDefinitions),
+                  },
+              }
+            : save.graph;
+    // Painter saves can retain stale ownership until a consumer requests line information.
+    graph.import(reconcileLineDefinitions(sourceGraph));
 
     return {
         revision: {
@@ -126,6 +148,7 @@ export const createTimelineProjectFromParsedRmp = async (
 ): Promise<TimelineProjectRecord> => {
     const revision = structuredClone(parsed.revision);
     if (options.applyLineInformation) {
+        await yieldLineCalculation();
         revision.timeline = populateTimelineFromLineInformation(revision.graph, revision.timeline);
     }
     const now = Date.now();
@@ -265,7 +288,7 @@ export const prepareTimelineProjectSync = async (
     current: TimelineProjectRevision,
     options: RmpTimelineImportOptions = {}
 ) => {
-    const parsed = await parseRmpTimelineSource(source);
+    const parsed = await parseRmpTimelineSource(source, current.graph.attributes.lineDefinitions);
     // Video labels belong to the Timeline project. Refresh the imported railway
     // metadata while retaining overrides only for surviving, stable line IDs.
     const labels = new Map(
@@ -283,6 +306,7 @@ export const prepareTimelineProjectSync = async (
     const graph = MultiDirectedGraph.from(parsed.revision.graph) as TimelineGraph;
     const currentGraph = MultiDirectedGraph.from(current.graph) as TimelineGraph;
     const reconciled = reconcileTimelineAfterRmpSync(current.timeline, graph);
+    if (options.applyLineInformation) await yieldLineCalculation();
     const timeline = options.applyLineInformation
         ? populateTimelineFromLineInformation(parsed.revision.graph, reconciled)
         : reconciled;

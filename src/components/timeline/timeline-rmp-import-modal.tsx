@@ -36,7 +36,7 @@ export default function TimelineRmpImportModal({
 }: TimelineRmpImportModalProps) {
     const { t } = useTranslation();
     const [applyLineInformation, setApplyLineInformation] = React.useState(true);
-    const lineCount = revision ? getTimelineImportLines(revision.graph).length : 0;
+    const lineCount = React.useMemo(() => (revision ? getTimelineImportLines(revision.graph).length : 0), [revision]);
     React.useEffect(() => setApplyLineInformation(lineCount > 0), [revision, lineCount]);
 
     return (

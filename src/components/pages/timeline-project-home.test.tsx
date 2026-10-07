@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { LocalStorageKey } from '../../constants/constants';
 import { createTestLineGraph } from '../../test-utils';
+import * as lineExport from '../../util/line-export';
 import { CURRENT_VERSION } from '../../util/save';
 import i18n from '../../i18n/config';
 import { createTimelineStore, setLastProjectId, setProjects } from '../../timeline/timeline-store';
@@ -36,6 +37,48 @@ afterEach(() => {
 });
 
 describe('TimelineProjectHome', () => {
+    it('shows a loading animation while current RMP line information is prepared', async () => {
+        await i18n.changeLanguage('en');
+        const graph = createTestLineGraph([['A', 'B']]);
+        localStorage.setItem(
+            LocalStorageKey.PARAM,
+            JSON.stringify({ version: CURRENT_VERSION, graph: graph.export() })
+        );
+        let finishCalculation!: () => void;
+        const yieldSpy = vi.spyOn(lineExport, 'yieldLineCalculation').mockImplementationOnce(
+            () =>
+                new Promise<void>(resolve => {
+                    finishCalculation = resolve;
+                })
+        );
+        const store = createTimelineStore();
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectHome />
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        try {
+            const button = screen.getByRole('button', { name: 'Start from current RMP project' });
+            fireEvent.click(button);
+            expect(button).toBeDisabled();
+            expect(button.querySelector('.chakra-spinner')).toBeInTheDocument();
+            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).not.toBeInTheDocument();
+            expect(store.getState().project.active).toBeUndefined();
+
+            finishCalculation();
+            await screen.findByRole('dialog', { name: 'Import RMP data' });
+            expect(button).not.toBeDisabled();
+        } finally {
+            finishCalculation();
+            yieldSpy.mockRestore();
+        }
+    });
+
     it.each([true, false])('waits for the RMP import choice before opening a project (apply=%s)', async apply => {
         await i18n.changeLanguage('en');
         const graph = createTestLineGraph([

@@ -47,6 +47,7 @@ import {
     MdZoomOut,
 } from 'react-icons/md';
 import { downloadAs } from '../../util/download';
+import { yieldLineCalculation } from '../../util/line-export';
 import { populateTimelineFromLineInformation } from '../../util/timeline-line-import';
 import {
     exportTimelineProjectFile,
@@ -96,6 +97,7 @@ export default function TimelineWindowHeader() {
     const [renameName, setRenameName] = React.useState('');
     const [pendingSync, setPendingSync] = React.useState<PendingTimelineSync>();
     const [syncBusy, setSyncBusy] = React.useState(false);
+    const syncBusyRef = React.useRef(false);
     const viewportWidth = windowWidth ?? Number.POSITIVE_INFINITY;
     const isCompactHeaderText = viewportWidth < COMPACT_HEADER_TEXT_WIDTH;
     const shouldStackHeader = viewportWidth < STACKED_HEADER_WIDTH;
@@ -154,21 +156,28 @@ export default function TimelineWindowHeader() {
         dispatch(setViewport({ ...viewport, zoom: Math.max(10, Math.min(400, viewport.zoom * factor)) }));
     };
 
-    const handleSync = async (source: string | Promise<string>) => {
-        if (!active) return;
+    const handleSync = async (source: () => Promise<string>) => {
+        if (!active || syncBusyRef.current) return;
+        syncBusyRef.current = true;
+        setSyncBusy(true);
         dispatch(setError(undefined));
         try {
-            const prepared = await prepareTimelineProjectSync(await source, active.revision);
+            const prepared = await prepareTimelineProjectSync(await source(), active.revision);
             setPendingSync(prepared);
         } catch (cause) {
             dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        } finally {
+            syncBusyRef.current = false;
+            setSyncBusy(false);
         }
     };
 
     const confirmSync = async (applyLineInformation: boolean) => {
-        if (!active || !pendingSync) return;
+        if (!active || !pendingSync || syncBusyRef.current) return;
+        syncBusyRef.current = true;
         setSyncBusy(true);
         try {
+            if (applyLineInformation) await yieldLineCalculation();
             const revision = {
                 ...pendingSync.revision,
                 timeline: applyLineInformation
@@ -189,6 +198,7 @@ export default function TimelineWindowHeader() {
         } catch (cause) {
             dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
         } finally {
+            syncBusyRef.current = false;
             setSyncBusy(false);
         }
     };
@@ -227,6 +237,7 @@ export default function TimelineWindowHeader() {
                                         leftIcon={<MdFolder />}
                                         aria-label={t('header.timelinePage.files')}
                                         title={t('header.timelinePage.files')}
+                                        isLoading={syncBusy}
                                     >
                                         {isCompactHeaderText ? null : t('header.timelinePage.files')}
                                     </Button>
@@ -303,7 +314,7 @@ export default function TimelineWindowHeader() {
                                                                 leftIcon={<MdInsertDriveFile />}
                                                                 onClick={() => {
                                                                     closeFilesMenu();
-                                                                    void handleSync(getOpenRmpProjectSource());
+                                                                    void handleSync(getOpenRmpProjectSource);
                                                                 }}
                                                             >
                                                                 {t('header.timelinePage.importOpenPainterProject')}
@@ -334,9 +345,10 @@ export default function TimelineWindowHeader() {
                                 type="file"
                                 accept=".json,application/json"
                                 hidden
+                                disabled={syncBusy}
                                 onChange={event => {
                                     const file = event.target.files?.[0];
-                                    if (file) void handleSync(file.text());
+                                    if (file) void handleSync(() => file.text());
                                     event.target.value = '';
                                 }}
                             />

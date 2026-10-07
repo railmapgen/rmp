@@ -18,6 +18,7 @@ import {
     Select,
     SimpleGrid,
     Stack,
+    Spinner,
     Text,
     Textarea,
 } from '@chakra-ui/react';
@@ -26,7 +27,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAltRoute, MdClose } from 'react-icons/md';
 import type { LineDefinition, LineOperatingStatus } from '../../constants/line-definitions';
-import { useRootDispatch, useRootSelector } from '../../redux';
+import { useRootDispatch } from '../../redux';
 import { ParamGraph, saveGraph } from '../../redux/param/param-slice';
 import {
     assignLineSection,
@@ -34,11 +35,11 @@ import {
     getLineEndpointsLabel,
     getLineTopology,
     getStationLabel,
-    getUnassignedLineSections,
     isOpeningDateValid,
     unassignLineDefinition,
 } from '../../util/line-definitions';
-import { getLineExports, LineExport } from '../../util/line-export';
+import { LineExport } from '../../util/line-export';
+import { useLineInformation } from '../../util/hooks';
 import { LineIntervalModal } from './line-interval-modal';
 
 const STATUSES: LineOperatingStatus[] = ['planned', 'construction', 'operating', 'closed'];
@@ -89,15 +90,18 @@ const LineInfoRow = ({
     onUpdate,
     onEditInterval,
     onRemove,
+    isLoading,
 }: {
     entry: LineExport;
     graph: ParamGraph;
     onUpdate: (id: string, patch: Partial<LineDefinition>) => void;
     onEditInterval: () => void;
     onRemove: () => void;
+    isLoading: boolean;
 }) => {
     const { t } = useTranslation();
     const { line, topology } = entry;
+    const endpoints = getLineEndpointsLabel(graph, line, topology);
     const textField = (field: 'lineNumber' | 'openingDate' | 'operator' | 'notes') => (
         <AutosaveTextField
             label={t(`header.lineInfo.${field}`)}
@@ -120,7 +124,7 @@ const LineInfoRow = ({
                     fg={topology.theme[3]}
                 />
                 <Text flex="1" minW="120px">
-                    {getLineEndpointsLabel(graph, line)}
+                    {endpoints}
                 </Text>
                 <Badge>{t(`header.download.2rmg.type.${topology.type.toLowerCase()}`)}</Badge>
                 <HStack width={{ base: '100%', sm: 'auto' }} flexShrink="0">
@@ -129,7 +133,8 @@ const LineInfoRow = ({
                         colorScheme="blue"
                         leftIcon={<MdAltRoute />}
                         flex="1"
-                        aria-label={`${t('header.lineInfo.adjustInterval')}: ${getLineEndpointsLabel(graph, line)}`}
+                        aria-label={`${t('header.lineInfo.adjustInterval')}: ${endpoints}`}
+                        isDisabled={isLoading}
                         onClick={onEditInterval}
                     >
                         {t('header.lineInfo.adjustInterval')}
@@ -139,7 +144,8 @@ const LineInfoRow = ({
                         variant="ghost"
                         icon={<MdClose />}
                         title={t('header.lineInfo.removeLine')}
-                        aria-label={`${t('header.lineInfo.removeLine')}: ${getLineEndpointsLabel(graph, line)}`}
+                        aria-label={`${t('header.lineInfo.removeLine')}: ${endpoints}`}
+                        isDisabled={isLoading}
                         onClick={onRemove}
                     />
                 </HStack>
@@ -152,7 +158,10 @@ const LineInfoRow = ({
                             label={t(`header.download.2rmg.placeholder.${index === 0 ? 'chinese' : 'english'}`)}
                             value={line.name[index]}
                             onSave={value => {
-                                const name: [string, string] = [...line.name];
+                                const current = window.graph
+                                    .getAttribute('lineDefinitions')
+                                    ?.find(item => item.id === line.id);
+                                const name: [string, string] = [...(current?.name ?? line.name)];
                                 name[index] = value.trim();
                                 onUpdate(line.id, { name });
                             }}
@@ -209,14 +218,17 @@ const UnassignedLineRow = ({
     line,
     graph,
     onAssign,
+    isLoading,
 }: {
     line: LineDefinition;
     graph: ParamGraph;
     onAssign: (targetId?: string) => void;
+    isLoading: boolean;
 }) => {
     const { t } = useTranslation();
-    const theme = getLineTopology(graph, line).theme;
-    const endpoints = getLineEndpointsLabel(graph, line);
+    const topology = getLineTopology(graph, line);
+    const theme = topology.theme;
+    const endpoints = getLineEndpointsLabel(graph, line, topology);
     const targets = getLineAssignmentTargets(graph, line.id).filter(
         target => getLineTopology(graph, target).stationIds.length >= 2
     );
@@ -238,6 +250,7 @@ const UnassignedLineRow = ({
                         size="sm"
                         width={{ base: '100%', sm: '220px' }}
                         value={selectedTarget}
+                        isDisabled={isLoading}
                         aria-label={`${t('header.lineInfo.assignmentTarget')}: ${endpoints}`}
                         onChange={event => setTargetId(event.target.value)}
                     >
@@ -254,6 +267,7 @@ const UnassignedLineRow = ({
                         size="sm"
                         colorScheme="blue"
                         flexShrink="0"
+                        isDisabled={isLoading}
                         aria-label={`${t('header.lineInfo.assignInterval')}: ${endpoints}`}
                         onClick={() => onAssign(selectedTarget === 'new' ? undefined : selectedTarget)}
                     >
@@ -268,20 +282,10 @@ const UnassignedLineRow = ({
 export const LineInfoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
-    const graph = useRootSelector(state => state.param.present.graph);
-    const entries = React.useMemo(
-        () => (isOpen ? getLineExports(graph).filter(entry => entry.topology.stationIds.length >= 2) : []),
-        [graph, isOpen]
-    );
+    const { graph, entries: lineEntries, unassigned, isLoading, error } = useLineInformation(isOpen);
+    const entries = lineEntries.filter(entry => entry.topology.stationIds.length >= 2);
     const available = entries.filter(entry => !entry.error);
     const unavailable = entries.filter(entry => entry.error);
-    const unassigned = React.useMemo(
-        () =>
-            isOpen
-                ? getUnassignedLineSections(graph).filter(line => getLineTopology(graph, line).stationIds.length >= 2)
-                : [],
-        [graph, isOpen]
-    );
     const [editingId, setEditingId] = React.useState<string>();
     const editingLine = graph.attributes?.lineDefinitions?.find(line => line.id === editingId);
     const close = () => {
@@ -306,6 +310,7 @@ export const LineInfoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
             key={entry.line.id}
             entry={entry}
             graph={graph}
+            isLoading={isLoading}
             onUpdate={update}
             onEditInterval={() => setEditingId(entry.line.id)}
             onRemove={() => apply(unassignLineDefinition(window.graph.export(), entry.line.id))}
@@ -319,9 +324,16 @@ export const LineInfoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     <ModalHeader>{t('header.lineInfo.title')}</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Stack spacing="4">
+                        <Stack spacing="4" aria-busy={isLoading}>
                             <Text fontSize="sm">{t('header.lineInfo.help')}</Text>
-                            {entries.length === 0 && unassigned.length === 0 && (
+                            {isLoading && (
+                                <HStack role="status" justify="center" py="6">
+                                    <Spinner />
+                                    <Text>{t('header.lineInfo.calculating')}</Text>
+                                </HStack>
+                            )}
+                            {!isLoading && error && <Text color="red.600">{error}</Text>}
+                            {!isLoading && !error && entries.length === 0 && unassigned.length === 0 && (
                                 <Text>{t('header.download.2rmg.noline')}</Text>
                             )}
                             {available.map(renderLine)}
@@ -336,6 +348,7 @@ export const LineInfoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                                             key={line.id}
                                             line={line}
                                             graph={graph}
+                                            isLoading={isLoading}
                                             onAssign={targetId =>
                                                 apply(assignLineSection(window.graph.export(), line.id, targetId))
                                             }
@@ -360,7 +373,7 @@ export const LineInfoModal = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
                     </ModalFooter>
                 </ModalContent>
             </Modal>
-            {isOpen && editingLine && (
+            {isOpen && !isLoading && editingLine && (
                 <LineIntervalModal
                     key={editingLine.id}
                     graph={graph}

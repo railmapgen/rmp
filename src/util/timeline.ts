@@ -1,3 +1,4 @@
+import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { nanoid } from 'nanoid';
 import {
@@ -29,6 +30,7 @@ import {
     TimelinePhase,
     TimelineSettings,
 } from '../constants/timeline';
+import { getThemeKey } from './line-definitions';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 
@@ -525,12 +527,8 @@ export const getEdgeColorString = (theme: Theme | undefined): string => {
     return theme ? theme[2] : '#000000';
 };
 
-const themeToStr = (t: Theme | undefined) => {
-    const tDef = t ?? [CityCode.Other, 'other', '#000000', 'black'];
-    return tDef[0] === CityCode.Other && tDef[1] === 'other'
-        ? `${tDef[0]}-${tDef[1]}-${tDef[2]}-${tDef[3]}`
-        : `${tDef[0]}-${tDef[1]}`;
-};
+const themeToStr = (theme: Theme | undefined) =>
+    getThemeKey(theme ?? [CityCode.Other, 'other', '#000000', MonoColour.black]);
 
 export const getEdgeThemeString = (graph: TimelineGraph, edgeId: LineId): string => {
     if (!graph.hasEdge(edgeId)) return 'unknown';

@@ -1,7 +1,7 @@
 import { ActionReducerMapBuilder, createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
-import { Draft } from 'immer';
+import { Draft, original } from 'immer';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
 
@@ -139,6 +139,18 @@ const paramSlice = createSlice({
                 graph: structuredClone(action.payload),
             };
         },
+        /** Publish requested line data without adding a drawing operation to undo history. */
+        refreshLineDefinitions: (state, action: PayloadAction<{ source: ParamGraph; attributes: GraphAttributes }>) => {
+            if (original(state.present.graph) !== action.payload.source) return;
+            if (
+                JSON.stringify(state.present.graph.attributes?.lineDefinitions) ===
+                    JSON.stringify(action.payload.attributes.lineDefinitions) &&
+                JSON.stringify(state.present.graph.attributes?.unassignedLineEdgeIds) ===
+                    JSON.stringify(action.payload.attributes.unassignedLineEdgeIds)
+            )
+                return;
+            state.present.graph.attributes = structuredClone(action.payload.attributes);
+        },
         /** Records a whole-project replacement, including its persisted viewport. */
         replaceProjectState: {
             prepare: (project: ProjectReplacement) => ({ payload: project }),
@@ -189,6 +201,7 @@ const paramSlice = createSlice({
 export const {
     initializeProject,
     saveGraph,
+    refreshLineDefinitions,
     replaceProjectState,
     setSvgViewport,
     setSvgViewBoxZoom,
