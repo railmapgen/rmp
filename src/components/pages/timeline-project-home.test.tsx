@@ -118,4 +118,39 @@ describe('TimelineProjectHome', () => {
         const deleteDialog = screen.getByRole('alertdialog', { name: 'Delete Chronicle project' });
         expect(within(deleteDialog).getByText('Delete Chronicle project “Test project”?')).toBeInTheDocument();
     });
+
+    it('arranges action buttons in a responsive stack container', async () => {
+        await i18n.changeLanguage('en');
+        const store = createTimelineStore();
+        store.dispatch(
+            setProjects([
+                {
+                    id: 'p1',
+                    name: 'Project 1',
+                    version: 1,
+                    createdAt: 1,
+                    updatedAt: 1,
+                },
+            ])
+        );
+        store.dispatch(setLastProjectId('p1'));
+
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectHome />
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        const actions = screen.getByTestId('timeline-home-actions');
+        expect(actions).toBeInTheDocument();
+        const buttons = within(actions).getAllByRole('button');
+        expect(buttons).toHaveLength(3);
+        expect(buttons[0]).toHaveTextContent('Continue editing');
+        expect(buttons[1]).toHaveTextContent('Start from current RMP project');
+        expect(buttons[2]).toHaveTextContent('Import Chronicle project');
+    });
 });

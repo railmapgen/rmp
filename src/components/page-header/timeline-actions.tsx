@@ -23,7 +23,11 @@ import {
     insertTimelineLabel,
 } from '../../util/timeline';
 
-export default function TimelineActions() {
+interface TimelineActionsProps {
+    compact?: boolean;
+}
+
+export default function TimelineActions({ compact = false }: TimelineActionsProps) {
     const { t } = useTranslation();
     const dispatch = useTimelineDispatch();
     const timeline = useTimelineSelector(state => state.project.active!.revision.timeline);
@@ -128,8 +132,14 @@ export default function TimelineActions() {
                 placement="bottom-start"
             >
                 <PopoverTrigger>
-                    <Button size="sm" variant="ghost" leftIcon={<MdAdd />}>
-                        {t('header.timelinePage.insert')}
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        leftIcon={<MdAdd />}
+                        aria-label={t('header.timelinePage.insert')}
+                        title={t('header.timelinePage.insert')}
+                    >
+                        {compact ? null : t('header.timelinePage.insert')}
                     </Button>
                 </PopoverTrigger>
                 <Portal>
@@ -231,8 +241,14 @@ export default function TimelineActions() {
                 placement="bottom-start"
             >
                 <PopoverTrigger>
-                    <Button size="sm" variant="ghost" leftIcon={<MdEdit />}>
-                        {t('header.edit')}
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        leftIcon={<MdEdit />}
+                        aria-label={t('header.edit')}
+                        title={t('header.edit')}
+                    >
+                        {compact ? null : t('header.edit')}
                     </Button>
                 </PopoverTrigger>
                 <Portal>

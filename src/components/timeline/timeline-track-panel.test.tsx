@@ -152,6 +152,16 @@ describe('TimelineTrackPanel', () => {
         ]);
     });
 
+    const dragCard = (container: HTMLElement, from: number, clientX: number) => {
+        const card = container.querySelectorAll('[data-timeline-card]')[from] as HTMLElement;
+        card.setPointerCapture = vi.fn();
+        card.hasPointerCapture = vi.fn(() => true);
+        card.releasePointerCapture = vi.fn();
+        fireEvent.pointerDown(card, { button: 0, pointerId: 1, clientX: 500 });
+        fireEvent.pointerMove(card, { pointerId: 1, clientX });
+        fireEvent.pointerUp(card, { pointerId: 1, clientX });
+    };
+
     it('reorders cached cards on drag and saves through the latest callback', () => {
         const document: TimelineDocument = {
             version: 1,
@@ -169,13 +179,40 @@ describe('TimelineTrackPanel', () => {
         rerender(
             <TimelineTrackPanel {...defaultProps} document={document} playbackTime={3} onDocumentChange={nextChange} />
         );
-        const cards = container.querySelectorAll('[data-timeline-card]');
-        fireEvent.dragStart(cards[2]);
-        fireEvent.dragOver(cards[0]);
-        fireEvent.dragEnd(container.querySelector('[data-timeline-card]')!);
+        dragCard(container, 2, 0);
         expect(oldChange).not.toHaveBeenCalled();
         expect(nextChange.mock.calls.at(-1)![0].track.map((entry: { id: string }) => entry.id)).toEqual([
             'c',
+            'a',
+            'b',
+        ]);
+    });
+
+    it('moves every selected card together while keeping their relative order', () => {
+        const document: TimelineDocument = {
+            version: 1,
+            track: ['a', 'b', 'c', 'd'].map(id => ({
+                id,
+                kind: 'node',
+                refId: `stn_${id}`,
+                phase: 'enter',
+                showAnimation: true,
+            })),
+        };
+        const onDocumentChange = vi.fn();
+        const { container } = renderPanel({ document, onDocumentChange });
+        const track = container.querySelector('[data-timeline-track-content]')!.parentElement!;
+        track.setPointerCapture = vi.fn();
+        track.hasPointerCapture = vi.fn(() => true);
+        track.releasePointerCapture = vi.fn();
+        // Select the first two cards, then drag one of them to the end.
+        fireEvent.pointerDown(track, { button: 0, pointerId: 1, clientX: 0 });
+        fireEvent.pointerMove(track, { pointerId: 1, clientX: 380 });
+        fireEvent.pointerUp(track, { pointerId: 1, clientX: 380 });
+        dragCard(container, 1, 2000);
+        expect(onDocumentChange.mock.calls.at(-1)![0].track.map((entry: { id: string }) => entry.id)).toEqual([
+            'c',
+            'd',
             'a',
             'b',
         ]);
@@ -389,5 +426,42 @@ describe('TimelineTrackPanel', () => {
             'enter_c',
         ]);
         expect(onCursorChange).toHaveBeenCalledWith(1);
+    });
+
+    it('opens card scale popover and adjusts card sizes with the slider and zoom buttons', () => {
+        const onCardWidthChange = vi.fn();
+        const timelineDoc: TimelineDocument = {
+            version: 1,
+            track: [
+                { id: 'a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+                { id: 'b', kind: 'pause', duration: 1, position: 'after' },
+            ],
+        };
+        const { container } = renderPanel({ document: timelineDoc, onCardWidthChange });
+
+        const scaleBtn = screen.getByRole('button', { name: 'header.timelinePage.cardScale' });
+        fireEvent.click(scaleBtn);
+        const sliders = screen.getAllByRole('slider', { hidden: true });
+        const scaleSlider = sliders[1];
+        expect(scaleSlider.getAttribute('aria-valuemin')).toBe('60');
+        expect(scaleSlider.getAttribute('aria-valuemax')).toBe('160');
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('160');
+
+        // Zoom out button decreases width by 10
+        const zoomOutBtn = screen.getByLabelText('header.timelinePage.zoomOut');
+        fireEvent.click(zoomOutBtn);
+        expect(onCardWidthChange).toHaveBeenCalledWith(150);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('150');
+
+        // Slider keydown adjusts value
+        fireEvent.keyDown(scaleSlider, { key: 'ArrowLeft' });
+        expect(onCardWidthChange).toHaveBeenCalledWith(149);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('149');
+
+        // Reset button restores to max (160)
+        const resetBtn = screen.getByLabelText('header.timelinePage.resetCardScale');
+        fireEvent.click(resetBtn);
+        expect(onCardWidthChange).toHaveBeenCalledWith(160);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('160');
     });
 });

@@ -10,10 +10,10 @@ export interface TrackEntryLayout {
     center: number;
 }
 
-export const getTimelineTrackLayout = (track: TimelineEntry[]) => {
+export const getTimelineTrackLayout = (track: TimelineEntry[], cardWidth: number = TIMELINE_CLIP_WIDTH) => {
     let x = 0;
     const entries = track.map((entry, index): TrackEntryLayout => {
-        const width = entry.kind === 'keyframe' ? TIMELINE_KEYFRAME_SLOT_WIDTH : TIMELINE_CLIP_WIDTH;
+        const width = entry.kind === 'keyframe' ? TIMELINE_KEYFRAME_SLOT_WIDTH : cardWidth;
         const start = x + TIMELINE_CURSOR_WIDTH;
         x = start + width;
         return { entry, index, start, width, center: start + width / 2 };

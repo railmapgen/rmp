@@ -20,6 +20,12 @@ import TimelineWindowHeader from './timeline-window-header';
 
 vi.mock('./video-export-modal', () => ({ default: () => null }));
 vi.mock('./about-modal', () => ({ default: () => null }));
+const DEFAULT_INNER_WIDTH = window.innerWidth;
+
+const setWindowWidth = (width: number) => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: width });
+    fireEvent(window, new Event('resize'));
+};
 
 beforeAll(() => {
     vi.stubGlobal(
@@ -40,6 +46,7 @@ beforeAll(() => {
 afterAll(() => vi.unstubAllGlobals());
 afterEach(() => {
     cleanup();
+    setWindowWidth(DEFAULT_INNER_WIDTH);
     localStorage.removeItem(LocalStorageKey.PARAM);
 });
 
@@ -183,7 +190,7 @@ describe('TimelineWindowHeader', () => {
         expect(screen.getByText('Back to main menu')).toBeInTheDocument();
         expect(screen.getByText('Rename project')).toBeInTheDocument();
         expect(screen.getByText('Download Chronicle project')).toBeInTheDocument();
-        expect(screen.getByText('Export video')).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Export video' })).toBeInTheDocument();
         expect(screen.queryByText('Project open in painter')).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByText('Rename project'));
@@ -223,5 +230,67 @@ describe('TimelineWindowHeader', () => {
         expect(redo).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Zoom out' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
+    });
+
+    it('stacks the timeline header sections for narrow viewports', async () => {
+        await i18n.changeLanguage('en');
+        setWindowWidth(390);
+        const store = createTimelineStore();
+        const project = makeProject();
+        const graph = MultiDirectedGraph.from(project.revision.graph) as MultiDirectedGraph<
+            NodeAttributes,
+            EdgeAttributes,
+            GraphAttributes
+        >;
+        store.dispatch(openProject(project));
+
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        await waitFor(() =>
+            expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'column' })
+        );
+        expect(screen.queryByText('Files')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Export video' })).toBeInTheDocument();
+    });
+
+    it('hides left menu text while keeping one-row layout at medium widths', async () => {
+        await i18n.changeLanguage('en');
+        setWindowWidth(1000);
+        const store = createTimelineStore();
+        const project = makeProject();
+        const graph = MultiDirectedGraph.from(project.revision.graph) as MultiDirectedGraph<
+            NodeAttributes,
+            EdgeAttributes,
+            GraphAttributes
+        >;
+        store.dispatch(openProject(project));
+
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+
+        await waitFor(() => expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'row' }));
+        expect(screen.queryByText('Files')).not.toBeInTheDocument();
+        expect(screen.queryByText('Insert')).not.toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Files' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Insert' })).toBeInTheDocument();
     });
 });

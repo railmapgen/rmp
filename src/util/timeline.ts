@@ -210,14 +210,8 @@ export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): Tim
     };
 };
 
-export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIndex: number): TimelineDocument => {
-    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return doc;
-    if (fromIndex >= doc.track.length || toIndex >= doc.track.length) return doc;
-
-    const track = [...doc.track];
-    const [entry] = track.splice(fromIndex, 1);
-    track.splice(toIndex, 0, entry);
-    if (isPauseEntry(entry)) return { ...doc, track };
+const isElementPlacementValid = (track: TimelineEntry[], entry: TimelineEntry): boolean => {
+    if (isPauseEntry(entry)) return true;
 
     let visible = false;
     for (const candidate of track) {
@@ -225,10 +219,45 @@ export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIn
         if (candidate.refId !== entry.refId) continue;
         if (isElementEntry(candidate) && candidate.phase === 'enter') visible = true;
         else {
-            if (!visible) return doc;
+            if (!visible) return false;
             if (isElementEntry(candidate)) visible = false;
         }
     }
+
+    return true;
+};
+
+export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIndex: number): TimelineDocument => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return doc;
+    if (fromIndex >= doc.track.length || toIndex >= doc.track.length) return doc;
+
+    const track = [...doc.track];
+    const [entry] = track.splice(fromIndex, 1);
+    track.splice(toIndex, 0, entry);
+    if (!isElementPlacementValid(track, entry)) return doc;
+
+    return {
+        ...doc,
+        track,
+    };
+};
+
+/** Moves a block of selected entries together, preserving their relative order. */
+export const moveTimelineEntries = (
+    doc: TimelineDocument,
+    entryIds: Iterable<string>,
+    insertAt: number
+): TimelineDocument => {
+    const selected = new Set(entryIds);
+    const block = doc.track.filter(entry => selected.has(entry.id));
+    if (!block.length) return doc;
+
+    const remaining = doc.track.filter(entry => !selected.has(entry.id));
+    const at = Math.max(0, Math.min(insertAt, remaining.length));
+    const track = [...remaining.slice(0, at), ...block, ...remaining.slice(at)];
+
+    if (track.every((entry, index) => entry === doc.track[index])) return doc;
+    if (!block.every(entry => isElementPlacementValid(track, entry))) return doc;
 
     return {
         ...doc,

@@ -68,12 +68,15 @@ import {
     useTimelineDispatch,
     useTimelineSelector,
 } from '../../timeline/timeline-store';
+import { useWindowSize } from '../../util/hooks';
 import TimelineRmpImportModal from '../timeline/timeline-rmp-import-modal';
 import AboutModal from './about-modal';
 import TimelineActions from './timeline-actions';
 import VideoExportModal from './video-export-modal';
 
 type PendingTimelineSync = Awaited<ReturnType<typeof prepareTimelineProjectSync>>;
+const COMPACT_HEADER_TEXT_WIDTH = 1150;
+const STACKED_HEADER_WIDTH = 900;
 
 export default function TimelineWindowHeader() {
     const { t } = useTranslation();
@@ -82,6 +85,7 @@ export default function TimelineWindowHeader() {
     const canUndo = useTimelineSelector(state => state.project.past.length > 0);
     const canRedo = useTimelineSelector(state => state.project.future.length > 0);
     const runtimeViewport = useTimelineSelector(state => state.runtime.viewport);
+    const { width: windowWidth } = useWindowSize();
     const syncInput = React.useRef<HTMLInputElement>(null);
     const renameInput = React.useRef<HTMLInputElement>(null);
     const filesMenu = useDisclosure();
@@ -92,6 +96,9 @@ export default function TimelineWindowHeader() {
     const [renameName, setRenameName] = React.useState('');
     const [pendingSync, setPendingSync] = React.useState<PendingTimelineSync>();
     const [syncBusy, setSyncBusy] = React.useState(false);
+    const viewportWidth = windowWidth ?? Number.POSITIVE_INFINITY;
+    const isCompactHeaderText = viewportWidth < COMPACT_HEADER_TEXT_WIDTH;
+    const shouldStackHeader = viewportWidth < STACKED_HEADER_WIDTH;
 
     const closeFilesMenu = () => {
         setFilesMenuPage('root');
@@ -188,8 +195,14 @@ export default function TimelineWindowHeader() {
 
     return (
         <RmgWindowHeader>
-            <Flex width="100%" align="center">
-                <HStack minW={0}>
+            <Flex
+                data-testid="timeline-header-layout"
+                direction={shouldStackHeader ? 'column' : 'row'}
+                width="100%"
+                align={shouldStackHeader ? 'stretch' : 'center'}
+                gap={1}
+            >
+                <HStack minW={0} overflowX="auto" maxW="100%">
                     <Heading as="h4" size="md" whiteSpace="nowrap">
                         {t('Rail Map Chronicle')}
                     </Heading>
@@ -208,8 +221,14 @@ export default function TimelineWindowHeader() {
                                 placement="bottom-start"
                             >
                                 <PopoverTrigger>
-                                    <Button size="sm" variant="ghost" leftIcon={<MdFolder />}>
-                                        {t('header.timelinePage.files')}
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        leftIcon={<MdFolder />}
+                                        aria-label={t('header.timelinePage.files')}
+                                        title={t('header.timelinePage.files')}
+                                    >
+                                        {isCompactHeaderText ? null : t('header.timelinePage.files')}
                                     </Button>
                                 </PopoverTrigger>
                                 <Portal>
@@ -325,19 +344,26 @@ export default function TimelineWindowHeader() {
                     )}
                     {active && (
                         <>
-                            <TimelineActions />
+                            <TimelineActions compact={isCompactHeaderText} />
                             <Button
                                 size="sm"
                                 variant="ghost"
                                 leftIcon={<MdVideoLibrary />}
+                                aria-label={t('header.timelinePage.exportVideo')}
+                                title={t('header.timelinePage.exportVideo')}
                                 onClick={() => setIsVideoOpen(true)}
                             >
-                                {t('header.timelinePage.exportVideo')}
+                                {isCompactHeaderText ? null : t('header.timelinePage.exportVideo')}
                             </Button>
                         </>
                     )}
                 </HStack>
-                <HStack ml="auto">
+                <HStack
+                    ml={shouldStackHeader ? 0 : 'auto'}
+                    overflowX="auto"
+                    maxW="100%"
+                    justifyContent={shouldStackHeader ? 'flex-end' : 'flex-start'}
+                >
                     {active && (
                         <>
                             <IconButton

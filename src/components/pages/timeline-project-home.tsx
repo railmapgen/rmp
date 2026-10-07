@@ -23,6 +23,7 @@ import {
     ModalHeader,
     ModalOverlay,
     SimpleGrid,
+    Stack,
     Text,
     VStack,
 } from '@chakra-ui/react';
@@ -167,17 +168,22 @@ export default function TimelineProjectHome() {
                             {error}
                         </Alert>
                     )}
-                    <HStack>
-                        <input
-                            ref={timelineInput}
-                            type="file"
-                            accept=".json,application/json"
-                            hidden
-                            onChange={event => {
-                                void runImport(event.target.files?.[0]);
-                                event.target.value = '';
-                            }}
-                        />
+                    <input
+                        ref={timelineInput}
+                        type="file"
+                        accept=".json,application/json"
+                        hidden
+                        onChange={event => {
+                            void runImport(event.target.files?.[0]);
+                            event.target.value = '';
+                        }}
+                    />
+                    <Stack
+                        data-testid="timeline-home-actions"
+                        direction={{ base: 'column', md: 'row' }}
+                        spacing={3}
+                        align={{ base: 'stretch', md: 'center' }}
+                    >
                         {resumableProjectId && (
                             <Button
                                 leftIcon={<MdEdit />}
@@ -199,7 +205,7 @@ export default function TimelineProjectHome() {
                         <Button leftIcon={<MdUpload />} isLoading={busy} onClick={() => timelineInput.current?.click()}>
                             {t('header.timelinePage.importTimelineProject')}
                         </Button>
-                    </HStack>
+                    </Stack>
                     <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
                         {projects.map(project => (
                             <Card key={project.id} variant="outline">

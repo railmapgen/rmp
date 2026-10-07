@@ -5,6 +5,10 @@ import {
     Flex,
     HStack,
     IconButton,
+    Popover,
+    PopoverBody,
+    PopoverContent,
+    PopoverTrigger,
     Slider,
     SliderFilledTrack,
     SliderThumb,
@@ -17,7 +21,18 @@ import {
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { useTranslation } from 'react-i18next';
-import { MdAdd, MdAltRoute, MdPause, MdPlayArrow, MdSettings, MdSkipNext, MdSkipPrevious } from 'react-icons/md';
+import {
+    MdAdd,
+    MdAltRoute,
+    MdPause,
+    MdPlayArrow,
+    MdSettings,
+    MdSkipNext,
+    MdSkipPrevious,
+    MdViewWeek,
+    MdZoomIn,
+    MdZoomOut,
+} from 'react-icons/md';
 import { Id, NodeId } from '../../constants/constants';
 import { isElementEntry, isPauseEntry, TimelineDocument, TimelineEntry } from '../../constants/timeline';
 import type { TimelineGraph } from '../../timeline/timeline-project-context';
@@ -29,11 +44,13 @@ import {
     getTimelineEntryTitle,
     insertTimelineEntries,
     insertTimelineEntry,
-    moveTimelineEntry,
+    moveTimelineEntries,
     removeTimelineEntry,
 } from '../../util/timeline';
 import { formatTimelineTime, TimelinePlaybackTiming } from '../../util/timeline-playback';
 import TimelineTrack from './timeline-track';
+import { TIMELINE_CLIP_WIDTH, TIMELINE_MIN_CLIP_WIDTH } from './timeline-track-dimensions';
+import { getTimelineTrackLayout } from './timeline-track-layout';
 import TimelineSettingsModal from './timeline-settings-modal';
 import TimelineLineInfoModal from './timeline-line-info-modal';
 
@@ -59,6 +76,8 @@ interface TimelineTrackPanelProps {
     isPlaying?: boolean;
     onSeek?: (time: number) => void;
     onTogglePlayback?: () => void;
+    cardWidth?: number;
+    onCardWidthChange?: (width: number) => void;
 }
 
 export default function TimelineTrackPanel({
@@ -81,6 +100,8 @@ export default function TimelineTrackPanel({
     isPlaying = false,
     onSeek: onSeekProp,
     onTogglePlayback: onTogglePlaybackProp,
+    cardWidth: cardWidthProp,
+    onCardWidthChange: onCardWidthChangeProp,
 }: TimelineTrackPanelProps) {
     const onToggleMissingHighlight = useEvent(onToggleMissingHighlightProp);
     const onSelectEntry = useEvent(onSelectEntryProp);
@@ -93,7 +114,17 @@ export default function TimelineTrackPanel({
     const { t } = useTranslation();
     const toast = useToast();
     const [draftDocument, setDraftDocument] = React.useState(document);
+    const [localCardWidth, setLocalCardWidth] = React.useState(cardWidthProp ?? TIMELINE_CLIP_WIDTH);
+    const cardWidth = cardWidthProp ?? localCardWidth;
+    const handleCardWidthChange = React.useCallback(
+        (nextWidth: number) => {
+            setLocalCardWidth(nextWidth);
+            onCardWidthChangeProp?.(nextWidth);
+        },
+        [onCardWidthChangeProp]
+    );
     const dragEntryIdRef = React.useRef<string | null>(null);
+    const dragEntryIdsRef = React.useRef<string[]>([]);
     const dragDocumentRef = React.useRef(document);
 
     const [pathMode, setPathMode] = React.useState<{
@@ -259,26 +290,45 @@ export default function TimelineTrackPanel({
         onDocumentChange(nextDocument);
     });
 
-    const handleDragStart = useEvent((entryId: string) => {
+    const handleDragStart = useEvent((entryId: string, entryIds?: string[]) => {
         dragEntryIdRef.current = entryId;
+        dragEntryIdsRef.current = entryIds?.length ? entryIds : [entryId];
         dragDocumentRef.current = draftDocument;
     });
 
-    const handleDragOver = useEvent((index: number, e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        const dragEntryId = dragEntryIdRef.current;
-        if (!dragEntryId) return;
+    // `contentX` is the pointer position in track content coordinates. The whole
+    // selected block lands at the gap nearest the pointer while keeping its order.
+    const handleDragOver = useEvent((contentX: number) => {
+        const entryIds = dragEntryIdsRef.current;
+        if (!dragEntryIdRef.current || !entryIds.length) return;
 
-        const fromIndex = dragDocumentRef.current.track.findIndex(entry => entry.id === dragEntryId);
-        if (fromIndex === -1 || fromIndex === index) return;
+        const current = dragDocumentRef.current;
+        const selected = new Set(entryIds);
+        const layout = getTimelineTrackLayout(current.track, cardWidth).entries;
+        let insertAt = 0;
+        let count = 0;
+        let placed = false;
+        for (const item of layout) {
+            if (selected.has(item.entry.id)) continue;
+            if (contentX < item.center) {
+                insertAt = count;
+                placed = true;
+                break;
+            }
+            count++;
+        }
+        if (!placed) insertAt = count;
 
-        const nextDocument = moveTimelineEntry(dragDocumentRef.current, fromIndex, index);
+        const nextDocument = moveTimelineEntries(current, entryIds, insertAt);
+        if (nextDocument === current) return;
+
         dragDocumentRef.current = nextDocument;
         setDraftDocument(nextDocument);
     });
 
     const handleDragEnd = useEvent(() => {
         dragEntryIdRef.current = null;
+        dragEntryIdsRef.current = [];
         if (dragDocumentRef.current !== document) {
             onDocumentChange(dragDocumentRef.current);
         }
@@ -552,6 +602,80 @@ export default function TimelineTrackPanel({
                 >
                     {formatTimelineTime(timing?.duration ?? 0)}
                 </Text>
+                <Popover placement="top-end">
+                    <PopoverTrigger>
+                        <IconButton
+                            size="xs"
+                            variant="ghost"
+                            colorScheme="purple"
+                            color="gray.600"
+                            aria-label={t('header.timelinePage.cardScale')}
+                            title={t('header.timelinePage.cardScale')}
+                            icon={<MdViewWeek size="1.2em" />}
+                            _hover={{ color: 'purple.600', bg: 'purple.50' }}
+                        />
+                    </PopoverTrigger>
+                    <PopoverContent width="220px" p={2} _focus={{ boxShadow: 'md' }}>
+                        <PopoverBody p={1}>
+                            <VStack align="stretch" spacing={2}>
+                                <Flex justify="space-between" align="center">
+                                    <Text fontSize="xs" fontWeight="semibold" color="gray.600">
+                                        {t('header.timelinePage.cardScale')}
+                                    </Text>
+                                    <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        colorScheme="purple"
+                                        h="20px"
+                                        px={1.5}
+                                        fontSize="xs"
+                                        aria-label={t('header.timelinePage.resetCardScale')}
+                                        onClick={() => handleCardWidthChange(TIMELINE_CLIP_WIDTH)}
+                                        title={t('header.timelinePage.resetCardScale')}
+                                    >
+                                        {Math.round((cardWidth / TIMELINE_CLIP_WIDTH) * 100)}%
+                                    </Button>
+                                </Flex>
+                                <HStack spacing={2}>
+                                    <IconButton
+                                        size="xs"
+                                        variant="ghost"
+                                        icon={<MdZoomOut />}
+                                        aria-label={t('header.timelinePage.zoomOut')}
+                                        isDisabled={cardWidth <= TIMELINE_MIN_CLIP_WIDTH}
+                                        onClick={() =>
+                                            handleCardWidthChange(Math.max(TIMELINE_MIN_CLIP_WIDTH, cardWidth - 10))
+                                        }
+                                    />
+                                    <Slider
+                                        aria-label={t('header.timelinePage.cardScale')}
+                                        value={cardWidth}
+                                        min={TIMELINE_MIN_CLIP_WIDTH}
+                                        max={TIMELINE_CLIP_WIDTH}
+                                        step={1}
+                                        onChange={handleCardWidthChange}
+                                        colorScheme="purple"
+                                    >
+                                        <SliderTrack>
+                                            <SliderFilledTrack />
+                                        </SliderTrack>
+                                        <SliderThumb boxSize={3} />
+                                    </Slider>
+                                    <IconButton
+                                        size="xs"
+                                        variant="ghost"
+                                        icon={<MdZoomIn />}
+                                        aria-label={t('header.timelinePage.zoomIn')}
+                                        isDisabled={cardWidth >= TIMELINE_CLIP_WIDTH}
+                                        onClick={() =>
+                                            handleCardWidthChange(Math.min(TIMELINE_CLIP_WIDTH, cardWidth + 10))
+                                        }
+                                    />
+                                </HStack>
+                            </VStack>
+                        </PopoverBody>
+                    </PopoverContent>
+                </Popover>
             </HStack>
 
             <Box
@@ -572,6 +696,7 @@ export default function TimelineTrackPanel({
                         graph={graph}
                         graphRefresh={renderContext.graphRefresh}
                         insertionIndex={insertionIndex}
+                        cardWidth={cardWidth}
                         onSelectEntry={entry => {
                             setSelectedEntryIds(new Set([entry.id]));
                             onSelectEntry(entry);

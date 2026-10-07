@@ -56,4 +56,21 @@ describe('timeline card time scale', () => {
         expect(scale.positionToTime(446)).toBe(8);
         expect(scale.ticks.map(tick => tick.time)).toEqual([0, 0, 0, 8, 8]);
     });
+
+    it('calculates track entry layout and total width with custom cardWidth', () => {
+        const track: TimelineEntry[] = [
+            { id: 'node', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+            { id: 'key', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 },
+            { id: 'pause', kind: 'pause', duration: 2, position: 'after' },
+        ];
+        const { entries, totalWidth } = getTimelineTrackLayout(track, 80);
+        expect(entries[0].width).toBe(80);
+        expect(entries[0].start).toBe(24);
+        expect(entries[0].center).toBe(64);
+        expect(entries[1].width).toBe(20); // keyframe slot width
+        expect(entries[1].start).toBe(24 + 80 + 24);
+        expect(entries[2].width).toBe(80);
+        expect(entries[2].start).toBe(128 + 20 + 24);
+        expect(totalWidth).toBe(172 + 80 + 24);
+    });
 });
