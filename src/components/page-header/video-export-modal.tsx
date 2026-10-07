@@ -3,6 +3,7 @@ import {
     AlertDescription,
     AlertIcon,
     AlertTitle,
+    Badge,
     Box,
     Button,
     Checkbox,
@@ -242,6 +243,15 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             <Box>
                                 <Text fontSize="sm" fontWeight="semibold" color={sectionHeadingColor} mb={2}>
                                     {t('header.download.videoExport.groups.output')}
+                                    <Tooltip label={t('header.settings.proWithTrial')}>
+                                        <Badge
+                                            ml="1"
+                                            color="gray.50"
+                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
+                                        >
+                                            PRO
+                                        </Badge>
+                                    </Tooltip>
                                 </Text>
                                 <RmgFields fields={outputFields} />
                             </Box>
