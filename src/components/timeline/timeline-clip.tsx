@@ -12,6 +12,7 @@ interface TimelineClipProps {
     entry: TimelineElementEntry;
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
     isSelected: boolean;
+    cardWidth?: number;
     onSelect: () => void;
     onToggleAnimation: () => void;
     onRemove: () => void;
@@ -23,6 +24,7 @@ export default function TimelineClip({
     entry,
     graph,
     isSelected,
+    cardWidth = TIMELINE_CLIP_WIDTH,
     onSelect,
     onToggleAnimation,
     onRemove,
@@ -35,6 +37,8 @@ export default function TimelineClip({
 
     const isMultiColor = accent.length > 1;
     const borderColor = accent[0];
+    const title = getTimelineEntryTitle(graph, entry);
+    const subtitle = getTimelineEntrySubtitle(graph, entry);
 
     return (
         <Box
@@ -42,10 +46,12 @@ export default function TimelineClip({
             onPointerDown={onPointerDown}
             onClick={onSelect}
             onContextMenu={onContextMenu}
-            minW={`${TIMELINE_CLIP_WIDTH}px`}
-            maxW={`${TIMELINE_CLIP_WIDTH}px`}
-            px={3}
-            py={2}
+            minW={`${cardWidth}px`}
+            maxW={`${cardWidth}px`}
+            w={`${cardWidth}px`}
+            flexShrink={0}
+            px={cardWidth < 80 ? 1.5 : cardWidth < 100 ? 2 : 3}
+            py={cardWidth < 80 ? 1 : cardWidth < 100 ? 1.5 : 2}
             borderWidth="1px"
             borderRadius="md"
             borderColor={isSelected ? borderColor : 'chakra-border-color'}
@@ -64,7 +70,7 @@ export default function TimelineClip({
                     top="0"
                     left="0"
                     bottom="0"
-                    width="4px"
+                    width={cardWidth < 80 ? '3px' : '4px'}
                     overflow="hidden"
                     borderLeftRadius="md"
                 >
@@ -73,38 +79,60 @@ export default function TimelineClip({
                     ))}
                 </Box>
             ) : (
-                <Box position="absolute" top="0" left="0" bottom="0" width="4px" bg={accent[0]} borderLeftRadius="md" />
+                <Box
+                    position="absolute"
+                    top="0"
+                    left="0"
+                    bottom="0"
+                    width={cardWidth < 80 ? '3px' : '4px'}
+                    bg={accent[0]}
+                    borderLeftRadius="md"
+                />
             )}
             <CloseButton
                 size="sm"
+                w={cardWidth < 90 ? '18px' : '24px'}
+                h={cardWidth < 90 ? '18px' : '24px'}
+                fontSize={cardWidth < 90 ? '9px' : '2xs'}
                 position="absolute"
-                top="4px"
-                right="4px"
+                top={cardWidth < 90 ? '2px' : '4px'}
+                right={cardWidth < 90 ? '2px' : '4px'}
                 onClick={e => {
                     e.stopPropagation();
                     onRemove();
                 }}
             />
 
-            <VStack align="start" spacing={1} pl={1}>
-                <Flex align="center" gap={0.5} wrap="wrap" pr={5}>
+            <VStack
+                align="start"
+                spacing={cardWidth < 80 ? 0.5 : 1}
+                pl={cardWidth < 80 ? 0.5 : 1}
+                w="full"
+                minW={0}
+                overflow="hidden"
+            >
+                <Flex align="center" gap={0.5} wrap="wrap" pr={cardWidth < 90 ? 4 : 5} maxW="full">
                     <Badge
                         colorScheme={entry.kind === 'node' ? 'blue' : 'green'}
                         display="inline-flex"
                         alignItems="center"
                         gap={1}
-                        fontSize="10px"
-                        lineHeight="16px"
-                        px={1}
+                        fontSize={cardWidth < 100 ? '9px' : '10px'}
+                        lineHeight={cardWidth < 100 ? '14px' : '16px'}
+                        px={cardWidth < 80 ? 0.5 : 1}
+                        maxW="full"
+                        isTruncated
                     >
                         {entry.kind === 'node' ? 'Node' : 'Edge'}
                     </Badge>
                     <Badge
                         colorScheme={entry.phase === 'exit' ? 'orange' : 'teal'}
                         variant="subtle"
-                        fontSize="10px"
-                        lineHeight="16px"
-                        px={1}
+                        fontSize={cardWidth < 100 ? '9px' : '10px'}
+                        lineHeight={cardWidth < 100 ? '14px' : '16px'}
+                        px={cardWidth < 80 ? 0.5 : 1}
+                        maxW="full"
+                        isTruncated
                     >
                         {entry.phase === 'exit'
                             ? t('header.timelinePage.exitPhase')
@@ -116,7 +144,10 @@ export default function TimelineClip({
                             aria-pressed={entry.showAnimation}
                             icon={<MdAnimation />}
                             size="xs"
-                            fontSize="14px"
+                            minW="auto"
+                            h={cardWidth < 100 ? '16px' : '20px'}
+                            w={cardWidth < 100 ? '16px' : '20px'}
+                            fontSize={cardWidth < 100 ? '11px' : '14px'}
                             variant="ghost"
                             color={entry.showAnimation ? 'gray.500' : 'gray.300'}
                             opacity={entry.showAnimation ? 1 : 0.55}
@@ -127,14 +158,44 @@ export default function TimelineClip({
                         />
                     </Tooltip>
                 </Flex>
-                <Text fontSize="13px" fontWeight="bold" lineHeight="1.3" noOfLines={2}>
-                    {getTimelineEntryTitle(graph, entry)}
+                <Text
+                    fontSize={cardWidth < 90 ? '11px' : cardWidth < 120 ? '12px' : '13px'}
+                    fontWeight="bold"
+                    lineHeight="1.25"
+                    noOfLines={2}
+                    w="full"
+                    wordBreak="break-word"
+                    overflowWrap="anywhere"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    title={title}
+                >
+                    {title}
                 </Text>
-                <Text fontSize="11px" lineHeight="1.35" color="gray.500" noOfLines={2}>
-                    {getTimelineEntrySubtitle(graph, entry)}
+                <Text
+                    fontSize={cardWidth < 90 ? '10px' : '11px'}
+                    lineHeight="1.25"
+                    color="gray.500"
+                    noOfLines={cardWidth < 80 ? 1 : 2}
+                    w="full"
+                    wordBreak="break-word"
+                    overflowWrap="anywhere"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    title={subtitle}
+                >
+                    {subtitle}
                 </Text>
                 {!exists && (
-                    <Text fontSize="11px" lineHeight="1.35" color="red.500">
+                    <Text
+                        fontSize="10px"
+                        lineHeight="1.25"
+                        color="red.500"
+                        noOfLines={1}
+                        isTruncated
+                        w="full"
+                        title="Missing from current graph"
+                    >
                         Missing from current graph
                     </Text>
                 )}

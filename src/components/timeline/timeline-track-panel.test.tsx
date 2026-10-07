@@ -427,4 +427,41 @@ describe('TimelineTrackPanel', () => {
         ]);
         expect(onCursorChange).toHaveBeenCalledWith(1);
     });
+
+    it('opens card scale popover and adjusts card sizes with the slider and zoom buttons', () => {
+        const onCardWidthChange = vi.fn();
+        const timelineDoc: TimelineDocument = {
+            version: 1,
+            track: [
+                { id: 'a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+                { id: 'b', kind: 'pause', duration: 1, position: 'after' },
+            ],
+        };
+        const { container } = renderPanel({ document: timelineDoc, onCardWidthChange });
+
+        const scaleBtn = screen.getByRole('button', { name: 'header.timelinePage.cardScale' });
+        fireEvent.click(scaleBtn);
+        const sliders = screen.getAllByRole('slider', { hidden: true });
+        const scaleSlider = sliders[1];
+        expect(scaleSlider.getAttribute('aria-valuemin')).toBe('60');
+        expect(scaleSlider.getAttribute('aria-valuemax')).toBe('160');
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('160');
+
+        // Zoom out button decreases width by 10
+        const zoomOutBtn = screen.getByLabelText('header.timelinePage.zoomOut');
+        fireEvent.click(zoomOutBtn);
+        expect(onCardWidthChange).toHaveBeenCalledWith(150);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('150');
+
+        // Slider keydown adjusts value
+        fireEvent.keyDown(scaleSlider, { key: 'ArrowLeft' });
+        expect(onCardWidthChange).toHaveBeenCalledWith(149);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('149');
+
+        // Reset button restores to max (160)
+        const resetBtn = screen.getByLabelText('header.timelinePage.resetCardScale');
+        fireEvent.click(resetBtn);
+        expect(onCardWidthChange).toHaveBeenCalledWith(160);
+        expect(scaleSlider.getAttribute('aria-valuenow')).toBe('160');
+    });
 });

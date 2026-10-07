@@ -256,7 +256,9 @@ describe('TimelineWindowHeader', () => {
             </I18nextProvider>
         );
 
-        await waitFor(() => expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'column' }));
+        await waitFor(() =>
+            expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'column' })
+        );
         expect(screen.queryByText('Files')).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Export video' })).toBeInTheDocument();
     });

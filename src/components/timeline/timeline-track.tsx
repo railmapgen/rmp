@@ -18,6 +18,7 @@ import TimelinePauseClip from './timeline-pause-clip';
 import TimelineAudioTrack from './timeline-audio-track';
 import TimelineLabelTrack from './timeline-label-track';
 import {
+    TIMELINE_CLIP_WIDTH,
     TIMELINE_CURSOR_WIDTH as CURSOR_WIDTH,
     TIMELINE_KEYFRAME_SLOT_WIDTH as KEYFRAME_SLOT_WIDTH,
     TIMELINE_KEYFRAME_ROW_HEIGHT as KEYFRAME_ROW_HEIGHT,
@@ -30,6 +31,7 @@ interface TimelineTrackProps {
     graphRefresh?: unknown;
     selectedEntryIds: Set<string>;
     insertionIndex: number;
+    cardWidth?: number;
     onSelectEntry: (entry: TimelineEntry) => void;
     onToggleAnimation: (entryId: string) => void;
     onPauseDurationChange: (entryId: string, duration: number) => void;
@@ -93,6 +95,7 @@ export default function TimelineTrack({
     graphRefresh,
     selectedEntryIds = new Set<string>(),
     insertionIndex,
+    cardWidth = TIMELINE_CLIP_WIDTH,
     onSelectEntry: onSelectEntryProp,
     onToggleAnimation: onToggleAnimationProp,
     onPauseDurationChange: onPauseDurationChangeProp,
@@ -142,8 +145,8 @@ export default function TimelineTrack({
     const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; entry: TimelineEntry } | null>(null);
 
     const { entries: entryLayout, totalWidth } = React.useMemo(
-        () => getTimelineTrackLayout(document.track),
-        [document.track]
+        () => getTimelineTrackLayout(document.track, cardWidth),
+        [document.track, cardWidth]
     );
     const duration = timing?.duration ?? 0;
     const timeScale = React.useMemo(
@@ -358,6 +361,7 @@ export default function TimelineTrack({
                             graph={graph}
                             graphRefresh={graphRefresh}
                             isSelected={selectedEntryIds.has(entry.id)}
+                            cardWidth={cardWidth}
                             onSelectEntry={onSelectEntry}
                             onContextMenu={handleContextMenu}
                             onCardPointerDown={handleCardPointerDown}
@@ -376,6 +380,7 @@ export default function TimelineTrack({
             graphRefresh,
             selectedEntryIds,
             cursorStore,
+            cardWidth,
             t,
             onSelectEntry,
             handleContextMenu,
@@ -680,6 +685,7 @@ interface TrackCardProps
     > {
     entry: TimelineEntry;
     isSelected: boolean;
+    cardWidth?: number;
     onContextMenu: (event: React.MouseEvent, entry: TimelineEntry) => void;
     onCardPointerDown: (event: React.PointerEvent<HTMLElement>, entry: TimelineEntry) => void;
 }
@@ -689,6 +695,7 @@ const TrackCard = React.memo(function TrackCard({
     entry,
     graph,
     isSelected,
+    cardWidth = TIMELINE_CLIP_WIDTH,
     onSelectEntry,
     onContextMenu,
     onCardPointerDown,
@@ -710,6 +717,7 @@ const TrackCard = React.memo(function TrackCard({
         <TimelinePauseClip
             entry={entry}
             isSelected={isSelected}
+            cardWidth={cardWidth}
             onSelect={() => onSelectEntry(entry)}
             onContextMenu={e => onContextMenu(e, entry)}
             onDurationChange={duration => onPauseDurationChange(entry.id, duration)}
@@ -721,6 +729,7 @@ const TrackCard = React.memo(function TrackCard({
             entry={entry}
             graph={graph}
             isSelected={isSelected}
+            cardWidth={cardWidth}
             onSelect={() => onSelectEntry(entry)}
             onContextMenu={e => onContextMenu(e, entry)}
             onToggleAnimation={() => onToggleAnimation(entry.id)}
