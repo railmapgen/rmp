@@ -381,6 +381,40 @@ describe('line information and export panels', () => {
         expect(store.getState().param.past).toHaveLength(0);
     });
 
+    it('drags interval handle via native mobile touch events', () => {
+        const store = setup();
+        const graph = store.getState().param.present.graph;
+        render(
+            <RmgThemeProvider>
+                <LineIntervalModal
+                    graph={graph}
+                    line={graph.attributes.lineDefinitions![0]}
+                    onClose={vi.fn()}
+                    onApply={vi.fn()}
+                />
+            </RmgThemeProvider>,
+            { store }
+        );
+        const handle = screen.getByRole('slider', { name: 'Start' });
+        vi.spyOn(handle.closest('svg')!, 'getBoundingClientRect').mockReturnValue({
+            left: 0,
+            top: 0,
+            width: 480,
+            height: 210,
+            right: 480,
+            bottom: 210,
+            x: 0,
+            y: 0,
+            toJSON: () => ({}),
+        });
+        const touch1 = { identifier: 42, clientX: 40, clientY: 90 };
+        fireEvent.touchStart(handle, { touches: [touch1], changedTouches: [touch1] });
+        const touch2 = { identifier: 42, clientX: 141, clientY: 90 };
+        fireEvent.touchMove(window, { touches: [touch2], changedTouches: [touch2] });
+        fireEvent.touchEnd(window, { touches: [], changedTouches: [touch2] });
+        expect(handle).toHaveAttribute('aria-valuenow', '1');
+    });
+
     it('switches to the complementary loop arc for the same endpoint pair', () => {
         const store = setup([
             ['A', 'B'],

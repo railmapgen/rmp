@@ -76,14 +76,103 @@ export const LineIntervalModal = ({
         }
     }, [graph, line.id, route, start, end]);
 
-    const move = (handle: 'start' | 'end', index: number) => {
-        if (!route) return;
+    const stateRef = React.useRef({ start, end, last, route, width });
+    stateRef.current = { start, end, last, route, width };
+    const startRef = React.useRef<SVGGElement | null>(null);
+    const endRef = React.useRef<SVGGElement | null>(null);
+
+    const move = React.useCallback((handle: 'start' | 'end', index: number) => {
+        const { start: curStart, end: curEnd, last: curLast, route: curRoute } = stateRef.current;
+        if (!curRoute) return;
+        const nextStart = handle === 'start' ? Math.max(0, Math.min(index, curEnd - 1)) : curStart;
+        const nextEnd = handle === 'end' ? Math.min(curLast, Math.max(index, curStart + 1)) : curEnd;
+        if (nextStart === curStart && nextEnd === curEnd) return;
         setSelection({
-            key: route.key,
-            start: handle === 'start' ? Math.max(0, Math.min(index, end - 1)) : start,
-            end: handle === 'end' ? Math.min(last, Math.max(index, start + 1)) : end,
+            key: curRoute.key,
+            start: nextStart,
+            end: nextEnd,
         });
-    };
+    }, []);
+
+    const updateHandle = React.useCallback(
+        (handle: 'start' | 'end', clientX: number) => {
+            if (!svgRef.current) return;
+            const rect = svgRef.current.getBoundingClientRect();
+            if (!rect.width) return;
+            const svgX = ((clientX - rect.left) * stateRef.current.width) / rect.width;
+            const index = Math.round((svgX - PADDING) / GAP);
+            move(handle, index);
+        },
+        [move]
+    );
+
+    const handleTouchStart = React.useCallback(
+        (kind: 'start' | 'end') => (event: React.TouchEvent | TouchEvent) => {
+            const touches = 'touches' in event ? event.touches : undefined;
+            if (touches && touches.length !== 1) return;
+            if (typeof event.preventDefault === 'function') event.preventDefault();
+            if (typeof event.stopPropagation === 'function') event.stopPropagation();
+            const clientX = touches ? touches[0].clientX : (event as unknown as { clientX: number }).clientX;
+            const touchId = touches ? touches[0].identifier : 0;
+            drag.current = { handle: kind, pointerId: touchId };
+            updateHandle(kind, clientX);
+
+            let rafId: number | null = null;
+            let lastClientX: number | null = null;
+
+            const onTouchMove = (moveEvent: TouchEvent) => {
+                const touch = Array.from(moveEvent.touches).find(t => t.identifier === touchId);
+                if (!touch) return;
+                moveEvent.preventDefault();
+                moveEvent.stopPropagation();
+                lastClientX = touch.clientX;
+                if (rafId === null) {
+                    rafId = requestAnimationFrame(() => {
+                        rafId = null;
+                        if (lastClientX !== null && drag.current?.handle === kind) {
+                            updateHandle(kind, lastClientX);
+                        }
+                    });
+                }
+            };
+
+            const onTouchEnd = (endEvent: TouchEvent) => {
+                const touch = Array.from(endEvent.changedTouches).find(t => t.identifier === touchId);
+                if (!touch) return;
+                if (rafId !== null) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+                if (lastClientX !== null) {
+                    updateHandle(kind, lastClientX);
+                }
+                drag.current = undefined;
+                window.removeEventListener('touchmove', onTouchMove);
+                window.removeEventListener('touchend', onTouchEnd);
+                window.removeEventListener('touchcancel', onTouchEnd);
+            };
+
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd);
+            window.addEventListener('touchcancel', onTouchEnd);
+        },
+        [updateHandle]
+    );
+
+    React.useEffect(() => {
+        const startEl = startRef.current;
+        const endEl = endRef.current;
+        if (!startEl && !endEl) return;
+        const startListener = handleTouchStart('start') as unknown as EventListener;
+        const endListener = handleTouchStart('end') as unknown as EventListener;
+        startEl?.addEventListener('touchstart', startListener, { passive: false });
+        endEl?.addEventListener('touchstart', endListener, { passive: false });
+        return () => {
+            startEl?.removeEventListener('touchstart', startListener);
+            endEl?.removeEventListener('touchstart', endListener);
+        };
+    }, [handleTouchStart, route?.key]);
+
     const swapArc = () => {
         if (!route || !isLoop) return;
         const a = route.stationIds[start],
@@ -106,8 +195,11 @@ export const LineIntervalModal = ({
         setRouteIndex(index);
         setSelection({ key: options[index].key, start: 0, end: options[index].stationIds.indexOf(b) });
     };
+
     const handleRing = (kind: 'start' | 'end', index: number, colour: string) => (
         <g
+            key={kind}
+            ref={kind === 'start' ? startRef : endRef}
             role="slider"
             tabIndex={0}
             aria-label={t(`header.lineInfo.${kind === 'start' ? 'rangeStart' : 'rangeEnd'}`)}
@@ -117,25 +209,68 @@ export const LineIntervalModal = ({
             aria-valuetext={route ? getStationLabel(graph, route.stationIds[index]) : ''}
             transform={`translate(${PADDING + index * GAP},${INTERVAL_ROUTE_Y})`}
             style={{ cursor: 'ew-resize', touchAction: 'none' }}
+            onTouchStart={handleTouchStart(kind)}
             onPointerDown={event => {
                 if (event.button !== 0 || event.isPrimary === false) return;
+                if (drag.current) return;
                 event.preventDefault();
                 drag.current = { handle: kind, pointerId: event.pointerId };
-                event.currentTarget.setPointerCapture?.(event.pointerId);
+                try {
+                    event.currentTarget.setPointerCapture?.(event.pointerId);
+                } catch {
+                    // SVG pointer capture might fail in some WebKit browsers
+                }
+                updateHandle(kind, event.clientX);
+
+                let rafId: number | null = null;
+                let lastClientX: number | null = null;
+
+                const onPointerMove = (moveEvent: PointerEvent) => {
+                    if (drag.current?.handle !== kind || drag.current.pointerId !== moveEvent.pointerId) return;
+                    lastClientX = moveEvent.clientX;
+                    if (rafId === null) {
+                        rafId = requestAnimationFrame(() => {
+                            rafId = null;
+                            if (lastClientX !== null && drag.current?.handle === kind) {
+                                updateHandle(kind, lastClientX);
+                            }
+                        });
+                    }
+                };
+                const onPointerUp = (upEvent: PointerEvent) => {
+                    if (upEvent.pointerId !== event.pointerId) return;
+                    if (rafId !== null) {
+                        cancelAnimationFrame(rafId);
+                        rafId = null;
+                    }
+                    if (lastClientX !== null) {
+                        updateHandle(kind, lastClientX);
+                    }
+                    drag.current = undefined;
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+                };
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
             }}
             onPointerMove={event => {
-                if (drag.current?.handle !== kind || drag.current.pointerId !== event.pointerId || !svgRef.current)
-                    return;
-                const rect = svgRef.current.getBoundingClientRect();
-                if (rect.width)
-                    move(kind, Math.round((((event.clientX - rect.left) * width) / rect.width - PADDING) / GAP));
+                if (drag.current?.handle !== kind || drag.current.pointerId !== event.pointerId) return;
+                updateHandle(kind, event.clientX);
             }}
             onPointerUp={event => {
                 drag.current = undefined;
-                event.currentTarget.releasePointerCapture?.(event.pointerId);
+                try {
+                    event.currentTarget.releasePointerCapture?.(event.pointerId);
+                } catch {
+                    // ignore
+                }
             }}
-            onPointerCancel={() => {
-                drag.current = undefined;
+            onPointerCancel={event => {
+                if (drag.current?.pointerId === event.pointerId) {
+                    drag.current = undefined;
+                }
             }}
             onLostPointerCapture={() => {
                 drag.current = undefined;
@@ -155,8 +290,9 @@ export const LineIntervalModal = ({
                 }
             }}
         >
+            <circle r="26" fill="white" opacity="0.001" cursor="ew-resize" />
             <circle r="18" fill="transparent" stroke={colour} strokeWidth="4" />
-            <text y="-33" textAnchor="middle" fill={colour} fontSize="13">
+            <text y="-33" textAnchor="middle" fill={colour} fontSize="13" pointerEvents="none">
                 {t(`header.lineInfo.${kind === 'start' ? 'rangeStart' : 'rangeEnd'}`)}
             </text>
         </g>
