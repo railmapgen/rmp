@@ -36,67 +36,81 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
     const [text, setText] = React.useState('');
     const [step, setStep] = React.useState<1 | 2>(1);
     const [mode, setMode] = React.useState<StationTypeOption>(StationTypeOption.Suzhou);
-    const graphNew = React.useRef(new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>());
+    const graphNew = React.useRef<MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes> | null>(null);
 
     const [nodeCount, setNodeCount] = React.useState(0);
     const [edgeCount, setEdgeCount] = React.useState(0);
+    const [lineCount, setLineCount] = React.useState(0);
+    const [datedLineCount, setDatedLineCount] = React.useState(0);
 
     const handleImport = () => {
         if (!text.trim()) return;
 
         try {
-            graphNew.current.clear();
-            convertAARCToRmp(text, graphNew.current);
-            setNodeCount(graphNew.current.nodes().length);
-            setEdgeCount(graphNew.current.edges().length);
+            const candidate = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+            convertAARCToRmp(text, candidate);
+            graphNew.current = candidate;
+            const lines = candidate.getAttribute('lineDefinitions') ?? [];
+            setNodeCount(candidate.order);
+            setEdgeCount(candidate.size);
+            setLineCount(lines.length);
+            setDatedLineCount(lines.filter(line => line.openingDate).length);
         } catch (error) {
             logger.error('ImportFromAarc.handleImport():: Error occurred while importing data from other tools', error);
+            graphNew.current = null;
             setNodeCount(0);
             setEdgeCount(0);
+            setLineCount(0);
+            setDatedLineCount(0);
         }
 
         setStep(2);
     };
 
     const confirmImport = () => {
+        const candidate = graphNew.current;
+        if (!candidate) return;
         changeStationsTypeInBatch(
-            graphNew.current,
+            candidate,
             StationType.SuzhouRTBasic,
             stationTypeOptions[mode].basic,
-            graphNew.current.nodes().filter(id => id.startsWith('stn_')) as StnId[]
+            candidate.nodes().filter(id => id.startsWith('stn_')) as StnId[]
         );
         changeStationsTypeInBatch(
-            graphNew.current,
+            candidate,
             StationType.SuzhouRTInt,
             stationTypeOptions[mode].int,
-            graphNew.current.nodes().filter(id => id.startsWith('stn_')) as StnId[]
+            candidate.nodes().filter(id => id.startsWith('stn_')) as StnId[]
         );
-        graphNew.current
+        candidate
             .nodes()
             .filter(id => id.startsWith('stn_'))
             .forEach(id => {
-                autoPopulateTransfer(graphNew.current, id as StnId);
+                autoPopulateTransfer(candidate, id as StnId);
             });
         dispatch(
             replaceProject({
                 mapEnabled,
-                graph: graphNew.current.export(),
+                graph: candidate.export(),
                 mapStyle,
                 svgViewBoxZoom: 100,
                 svgViewBoxMin: { x: 0, y: 0 },
             })
         );
+        graphNew.current = null;
         setText('');
         setStep(1);
         onClose();
     };
 
     const handlePrevious = () => {
+        graphNew.current = null;
         setText('');
         setStep(1);
     };
 
     const handleClose = () => {
+        graphNew.current = null;
         setText('');
         setStep(1);
         onClose();
@@ -184,12 +198,18 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                     </>
                 )}
                 {step === 2 &&
-                    (nodeCount > 0 && edgeCount > 0 ? (
+                    (nodeCount > 0 || edgeCount > 0 ? (
                         <>
                             <ModalBody pt={2}>
                                 <VStack align="stretch" spacing={4}>
                                     <Text fontSize="md">
                                         {t('header.open.otherPlatform.detected', { x: nodeCount, y: edgeCount })}
+                                    </Text>
+                                    <Text fontSize="sm">
+                                        {t('header.open.otherPlatform.lineMetadata', {
+                                            x: lineCount,
+                                            y: datedLineCount,
+                                        })}
                                     </Text>
                                     <RmgFields fields={modeFields} />
                                 </VStack>

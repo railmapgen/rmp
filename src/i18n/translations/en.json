@@ -1029,7 +1029,8 @@
                     "suzhou": "Suzhou",
                     "wuhan": "Wuhan"
                 },
-                "detected": "Save file from AARC detected. Preparing to import {{x}} stations and {{y}} lines.",
+                "detected": "Save file from AARC detected. Drawing nodes: {{x}}; connections: {{y}}.",
+                "lineMetadata": "Railway lines/sections: {{x}}; sections with opening dates: {{y}}.",
                 "error": "The save file you submitted is not supported.",
                 "next": "Next",
                 "previous": "Previous",
