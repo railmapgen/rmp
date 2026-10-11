@@ -21,11 +21,12 @@ import { useTranslation } from 'react-i18next';
 import type { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import type { LineDefinition } from '../../constants/line-definitions';
 import {
+    adjustLineDefinitionInterval,
     getLineEndpointsLabel,
+    getLineIntervalScope,
     getLineRoutes,
     getLineTopology,
     getStationLabel,
-    splitLineDefinition,
 } from '../../util/line-definitions';
 import {
     getLineIntervalDiagram,
@@ -49,28 +50,78 @@ export const LineIntervalModal = ({
     onApply: (preview: Graph) => void;
 }) => {
     const { t } = useTranslation();
-    const topology = React.useMemo(() => getLineTopology(graph, line), [graph, line]);
+    const scope = React.useMemo(() => getLineIntervalScope(graph, line), [graph, line]);
+    const owned = React.useMemo(() => new Set(line.edgeIds), [line.edgeIds]);
+    const topology = React.useMemo(() => getLineTopology(graph, scope), [graph, scope]);
     const isLoop = topology.type === 'LOOP';
-    const [from, setFrom] = React.useState(line.exportStartStationId || topology.startCandidates[0] || '');
-    const [to, setTo] = React.useState(topology.startCandidates.find(id => id !== from) || from);
-    const [routeIndex, setRouteIndex] = React.useState(0);
+    const candidates = topology.startCandidates.length < 2 && !isLoop ? topology.stationIds : topology.startCandidates;
+    const hasUnassigned = scope.edgeIds.some(id => !owned.has(id));
+    const routeOwnedCount = React.useCallback(
+        (candidate: { segments: string[][] }) => candidate.segments.flat().filter(id => owned.has(id)).length,
+        [owned]
+    );
+    const initialFrom = () => {
+        if (candidates.includes(line.exportStartStationId)) return line.exportStartStationId;
+        // An existing endpoint may now sit inside the enlarged path. Start from its pending extension.
+        return (
+            candidates.find(id =>
+                getLineRoutes(graph, scope, id, line.exportStartStationId).some(option =>
+                    option.segments.flat().every(edgeId => !owned.has(edgeId))
+                )
+            ) ||
+            candidates[0] ||
+            ''
+        );
+    };
+    const [from, setFrom] = React.useState(initialFrom);
+    const [to, setTo] = React.useState(() => {
+        if (isLoop) return from;
+        const ends = candidates.filter(id => id !== from);
+        if (!hasUnassigned) return ends[0] || from;
+        // Prefer a path through the current line, including pending extensions at either endpoint.
+        const scores = ends.map(id => ({
+            id,
+            ownedCount: Math.max(0, ...getLineRoutes(graph, scope, from, id).map(routeOwnedCount)),
+        }));
+        return (
+            scores.reduce((best, option) => (option.ownedCount > best.ownedCount ? option : best), scores[0])?.id ||
+            from
+        );
+    });
+    const [routeIndex, setRouteIndex] = React.useState<number>();
     const [selection, setSelection] = React.useState<Selection>();
     const routes = React.useMemo(
-        () => getLineRoutes(graph, line, from, isLoop ? from : to),
-        [graph, line, from, to, isLoop]
+        () => getLineRoutes(graph, scope, from, isLoop ? from : to),
+        [graph, scope, from, to, isLoop]
     );
-    const route = routes[Math.min(routeIndex, routes.length - 1)];
-    const diagram = React.useMemo(() => route && getLineIntervalDiagram(graph, line, route), [graph, line, route]);
+    const preferredRouteIndex = hasUnassigned
+        ? routes.reduce(
+              (best, option, index) => (routeOwnedCount(option) > routeOwnedCount(routes[best]) ? index : best),
+              0
+          )
+        : 0;
+    const activeRouteIndex = Math.min(routeIndex ?? preferredRouteIndex, routes.length - 1);
+    const route = routes[activeRouteIndex];
+    const diagram = React.useMemo(() => route && getLineIntervalDiagram(graph, scope, route), [graph, scope, route]);
     const last = (route?.stationIds.length ?? 1) - 1;
-    const end = selection?.key === route?.key ? Math.min(selection?.end ?? last, last) : last;
-    const start = selection?.key === route?.key ? Math.min(selection?.start ?? 0, Math.max(0, end - 1)) : 0;
+    const ownedSegments = route?.segments.flatMap((ids, index) => (ids.some(id => owned.has(id)) ? [index] : [])) ?? [];
+    const initialStart = ownedSegments[0] ?? 0;
+    const initialEnd = ownedSegments.length ? ownedSegments[ownedSegments.length - 1] + 1 : last;
+    const end = selection?.key === route?.key ? Math.min(selection?.end ?? initialEnd, last) : initialEnd;
+    const start =
+        selection?.key === route?.key ? Math.min(selection?.start ?? initialStart, Math.max(0, end - 1)) : initialStart;
+    const isExtension =
+        route?.segments
+            .slice(start, end)
+            .flat()
+            .some(id => !owned.has(id)) ?? false;
     const drag = React.useRef<{ handle: 'start' | 'end'; pointerId: number } | undefined>(undefined);
     const svgRef = React.useRef<SVGSVGElement>(null);
     const width = diagram?.width ?? 440;
     const preview = React.useMemo(() => {
         if (!route) return undefined;
         try {
-            return splitLineDefinition(graph, line.id, route, start, end);
+            return adjustLineDefinitionInterval(graph, line.id, route, start, end);
         } catch {
             return undefined;
         }
@@ -179,7 +230,7 @@ export const LineIntervalModal = ({
             b = route.stationIds[end];
         if (a === b) return;
         const selected = new Set(route.segments.slice(start, end).flat());
-        const options = getLineRoutes(graph, line, a, a);
+        const options = getLineRoutes(graph, scope, a, a);
         const index = options.findIndex(option => {
             const bIndex = option.stationIds.indexOf(b);
             return (
@@ -307,6 +358,7 @@ export const LineIntervalModal = ({
                 <ModalBody>
                     <Stack spacing="4">
                         <Text fontSize="sm">{t('header.lineInfo.intervalHelp')}</Text>
+                        {hasUnassigned && <Text fontSize="sm">{t('header.lineInfo.extendHelp')}</Text>}
                         <HStack align="start" flexWrap="wrap">
                             <FormControl flex="1" minW="160px">
                                 <FormLabel>
@@ -317,12 +369,12 @@ export const LineIntervalModal = ({
                                     onChange={event => {
                                         setFrom(event.target.value);
                                         if (event.target.value === to)
-                                            setTo(topology.startCandidates.find(id => id !== event.target.value) || '');
-                                        setRouteIndex(0);
+                                            setTo(candidates.find(id => id !== event.target.value) || '');
+                                        setRouteIndex(undefined);
                                         setSelection(undefined);
                                     }}
                                 >
-                                    {topology.startCandidates.map(id => (
+                                    {candidates.map(id => (
                                         <option key={id} value={id}>
                                             {getStationLabel(graph, id)}
                                         </option>
@@ -336,11 +388,11 @@ export const LineIntervalModal = ({
                                         value={to}
                                         onChange={event => {
                                             setTo(event.target.value);
-                                            setRouteIndex(0);
+                                            setRouteIndex(undefined);
                                             setSelection(undefined);
                                         }}
                                     >
-                                        {topology.startCandidates
+                                        {candidates
                                             .filter(id => id !== from)
                                             .map(id => (
                                                 <option key={id} value={id}>
@@ -354,7 +406,7 @@ export const LineIntervalModal = ({
                                 <FormControl flex="1" minW="160px">
                                     <FormLabel>{t('header.lineInfo.path')}</FormLabel>
                                     <Select
-                                        value={routeIndex}
+                                        value={activeRouteIndex}
                                         onChange={event => {
                                             setRouteIndex(Number(event.target.value));
                                             setSelection(undefined);
@@ -384,24 +436,34 @@ export const LineIntervalModal = ({
                                         <path
                                             key={branch.key}
                                             data-branch-edges={branch.edgeIds.join(' ')}
+                                            data-unassigned={branch.edgeIds.some(id => !owned.has(id))}
                                             d={branch.path}
                                             fill="none"
                                             stroke={topology.theme[2]}
                                             strokeWidth="4"
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            opacity="0.5"
+                                            strokeDasharray={
+                                                branch.edgeIds.some(id => !owned.has(id)) ? '8 6' : undefined
+                                            }
+                                            opacity={branch.edgeIds.some(id => !owned.has(id)) ? '0.3' : '0.5'}
                                         />
                                     ))}
-                                    <line
-                                        x1={PADDING}
-                                        x2={PADDING + last * GAP}
-                                        y1={INTERVAL_ROUTE_Y}
-                                        y2={INTERVAL_ROUTE_Y}
-                                        stroke={topology.theme[2]}
-                                        strokeWidth="5"
-                                        opacity="0.3"
-                                    />
+                                    {route.segments.map((edgeIds, index) => (
+                                        <line
+                                            key={index}
+                                            data-interval-edges={edgeIds.join(' ')}
+                                            data-unassigned={edgeIds.some(id => !owned.has(id))}
+                                            x1={PADDING + index * GAP}
+                                            x2={PADDING + (index + 1) * GAP}
+                                            y1={INTERVAL_ROUTE_Y}
+                                            y2={INTERVAL_ROUTE_Y}
+                                            stroke={topology.theme[2]}
+                                            strokeWidth="5"
+                                            strokeDasharray={edgeIds.some(id => !owned.has(id)) ? '8 6' : undefined}
+                                            opacity="0.3"
+                                        />
+                                    ))}
                                     <line
                                         x1={PADDING + start * GAP}
                                         x2={PADDING + end * GAP}
@@ -461,7 +523,9 @@ export const LineIntervalModal = ({
                         )}
                         {preview ? (
                             <Box>
-                                <Text fontWeight="bold">{t('header.lineInfo.splitPreview')}</Text>
+                                <Text fontWeight="bold">
+                                    {t(`header.lineInfo.${isExtension ? 'extendPreview' : 'splitPreview'}`)}
+                                </Text>
                                 {preview.attributes?.lineDefinitions
                                     ?.filter(
                                         item =>
@@ -473,7 +537,9 @@ export const LineIntervalModal = ({
                                     ))}
                             </Box>
                         ) : (
-                            <Text fontSize="sm">{t('header.lineInfo.properInterval')}</Text>
+                            <Text fontSize="sm">
+                                {t(`header.lineInfo.${hasUnassigned ? 'extendProperInterval' : 'properInterval'}`)}
+                            </Text>
                         )}
                     </Stack>
                 </ModalBody>
@@ -488,7 +554,7 @@ export const LineIntervalModal = ({
                             if (preview) onApply(preview);
                         }}
                     >
-                        {t('header.lineInfo.split')}
+                        {t(`header.lineInfo.${isExtension ? 'extend' : 'split'}`)}
                     </Button>
                 </ModalFooter>
             </ModalContent>

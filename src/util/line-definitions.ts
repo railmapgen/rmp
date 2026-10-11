@@ -207,37 +207,121 @@ export const getLineTopology = (graph: Graph, line: LineDefinition): LineTopolog
     );
 };
 
-/** Repairs ownership when line data is requested or edited. Existing definitions never merge with each other. */
-export const reconcileLineDefinitions = (graph: Graph): Graph => {
+/** Repairs ownership only when requested. Reconnect replacements before splitting existing identities. */
+export const reconcileLineDefinitions = (graph: Graph, history: readonly Graph[] = []): Graph => {
     const edges = graph.edges.filter(edge => getLineTheme(edge));
     const available = new Map(edges.map(edge => [edge.key!, edge]));
     const nodes = new Map(graph.nodes.map(node => [node.key, node.attributes]));
     const unassigned = new Set((graph.attributes?.unassignedLineEdgeIds ?? []).filter(id => available.has(id)));
     const claimed = new Set<string>();
-    const definitions: LineDefinition[] = [];
     const original = graph.attributes?.lineDefinitions ?? [];
-    for (const line of original) {
-        const valid = line.edgeIds.filter(id => available.has(id) && !claimed.has(id) && !unassigned.has(id));
-        const components = themedComponents(valid.map(id => available.get(id)!));
-        const withStart = new Set(
-            components.filter(ids =>
-                ids.some(id => {
-                    const edge = available.get(id)!;
-                    return edge.source === line.exportStartStationId || edge.target === line.exportStartStationId;
-                })
-            )
-        );
-        components.sort(
-            (a, b) =>
-                Number(withStart.has(b)) - Number(withStart.has(a)) || b.length - a.length || a[0].localeCompare(b[0])
-        );
-        components.forEach((edgeIds, index) => {
-            edgeIds.forEach(id => claimed.add(id));
-            definitions.push(
-                index === 0 ? { ...line, edgeIds, status: line.status || 'operating' } : emptyLineDefinition(edgeIds)
-            );
-        });
+    const memberships = original.map(line => ({
+        ...line,
+        edgeIds: line.edgeIds.filter(id => {
+            if (!available.has(id) || claimed.has(id) || unassigned.has(id)) return false;
+            claimed.add(id);
+            return true;
+        }),
+    }));
+
+    // Compare prior graph states only during calculation; no extra data is stored on the graph.
+    const previousEdges = new Map<string, Edge>();
+    const missing = new Set(
+        [...original.flatMap(line => line.edgeIds), ...(graph.attributes?.unassignedLineEdgeIds ?? [])].filter(
+            id => !available.has(id)
+        )
+    );
+    for (let index = history.length - 1; missing.size && index >= 0; index--) {
+        for (const edge of history[index].edges) {
+            if (missing.has(edge.key!) && getLineTheme(edge)) {
+                previousEdges.set(edge.key!, edge);
+                missing.delete(edge.key!);
+            }
+        }
     }
+
+    type NewComponent = { adjacency: Adjacency };
+    const newByTheme = new Map<string, Map<string, NewComponent>>();
+    for (const ids of themedComponents(edges.filter(edge => !claimed.has(edge.key!) && !unassigned.has(edge.key!)))) {
+        const componentEdges = ids.map(id => available.get(id)!);
+        const theme = themeKey(componentEdges[0]);
+        const component = { adjacency: adjacency(componentEdges) };
+        if (!newByTheme.has(theme)) newByTheme.set(theme, new Map());
+        for (const node of component.adjacency.keys()) newByTheme.get(theme)!.set(node, component);
+    }
+    const pendingOwner = Symbol('unassigned');
+    type Owner = LineDefinition | typeof pendingOwner;
+    const nominations = new Map<string, Set<Owner>>();
+    const nominate = (ids: string[], owner: Owner) => {
+        const obsolete = new Map<string, Edge[]>();
+        for (const id of ids) {
+            const edge = previousEdges.get(id);
+            if (available.has(id) || !edge) continue;
+            const theme = themeKey(edge);
+            if (!obsolete.has(theme)) obsolete.set(theme, []);
+            obsolete.get(theme)!.push(edge);
+        }
+        for (const [theme, oldEdges] of obsolete) {
+            const oldById = new Map(oldEdges.map(edge => [edge.key!, edge]));
+            for (const componentIds of lineEdgeComponents(oldEdges)) {
+                const anchors = new Map<NewComponent, Set<string>>();
+                for (const id of componentIds) {
+                    const edge = oldById.get(id)!;
+                    for (const node of [edge.source, edge.target]) {
+                        const component = newByTheme.get(theme)?.get(node);
+                        if (!component) continue;
+                        if (!anchors.has(component)) anchors.set(component, new Set());
+                        anchors.get(component)!.add(node);
+                    }
+                }
+                for (const [component, endpoints] of anchors) {
+                    if (endpoints.size < 2) continue;
+                    const root = endpoints.values().next().value!;
+                    const parents = new Map<string, { node: string; bundle: string[] }>();
+                    const queue = [root];
+                    const visited = new Set(queue);
+                    const remaining = new Set(endpoints);
+                    remaining.delete(root);
+                    for (let index = 0; remaining.size && index < queue.length; index++) {
+                        const node = queue[index];
+                        for (const [next, bundle] of component.adjacency.get(node) ?? []) {
+                            if (visited.has(next)) continue;
+                            visited.add(next);
+                            parents.set(next, { node, bundle });
+                            queue.push(next);
+                            remaining.delete(next);
+                            if (!remaining.size) break;
+                        }
+                    }
+                    // Only nominate the connecting paths; an unrelated new branch may belong to another line.
+                    const connected = new Set([root]);
+                    for (let node of endpoints) {
+                        while (!connected.has(node)) {
+                            const parent = parents.get(node)!;
+                            connected.add(node);
+                            for (const id of parent.bundle) {
+                                if (!nominations.has(id)) nominations.set(id, new Set());
+                                nominations.get(id)!.add(owner);
+                            }
+                            node = parent.node;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    memberships.forEach((line, index) => nominate(original[index].edgeIds, line));
+    nominate(graph.attributes?.unassignedLineEdgeIds ?? [], pendingOwner);
+    const ambiguous = new Set<string>();
+    for (const [id, owners] of nominations) {
+        if (owners.has(pendingOwner)) unassigned.add(id);
+        else if (owners.size === 1) {
+            const line = owners.values().next().value as LineDefinition;
+            line.edgeIds.push(id);
+            claimed.add(id);
+        } else ambiguous.add(id);
+    }
+
     const touchingByTheme = new Map<string, Map<string, Set<LineDefinition>>>();
     const indexLine = (line: LineDefinition, ids = line.edgeIds) => {
         for (const id of ids) {
@@ -251,17 +335,53 @@ export const reconcileLineDefinitions = (graph: Graph): Graph => {
             }
         }
     };
-    definitions.forEach(line => indexLine(line));
-    for (const ids of themedComponents(edges.filter(edge => !claimed.has(edge.key!) && !unassigned.has(edge.key!)))) {
-        const newEdges = ids.map(id => available.get(id)!);
+    const touchingLines = (componentEdges: Edge[]) => {
         const touching = new Set<LineDefinition>();
-        const neighbours = touchingByTheme.get(themeKey(newEdges[0]));
-        for (const edge of newEdges) {
+        const neighbours = touchingByTheme.get(themeKey(componentEdges[0]));
+        for (const edge of componentEdges) {
             for (const node of [edge.source, edge.target]) {
                 neighbours?.get(node)?.forEach(line => touching.add(line));
             }
         }
-        if (touching.size === 1) {
+        return touching;
+    };
+    memberships.forEach(line => indexLine(line));
+    // A new bridge between two surviving parts of the SAME original definition belongs to that line.
+    for (const ids of themedComponents(edges.filter(edge => !claimed.has(edge.key!) && !unassigned.has(edge.key!)))) {
+        const touching = touchingLines(ids.map(id => available.get(id)!));
+        if (touching.size !== 1 || ids.some(id => ambiguous.has(id))) continue;
+        const line = touching.values().next().value!;
+        line.edgeIds.push(...ids);
+        ids.forEach(id => claimed.add(id));
+        indexLine(line, ids);
+    }
+
+    const definitions: LineDefinition[] = [];
+    for (const line of memberships) {
+        const components = themedComponents(line.edgeIds.map(id => available.get(id)!));
+        const withStart = new Set(
+            components.filter(ids =>
+                ids.some(id => {
+                    const edge = available.get(id)!;
+                    return edge.source === line.exportStartStationId || edge.target === line.exportStartStationId;
+                })
+            )
+        );
+        components.sort(
+            (a, b) =>
+                Number(withStart.has(b)) - Number(withStart.has(a)) || b.length - a.length || a[0].localeCompare(b[0])
+        );
+        components.forEach((edgeIds, index) => {
+            definitions.push(
+                index === 0 ? { ...line, edgeIds, status: line.status || 'operating' } : emptyLineDefinition(edgeIds)
+            );
+        });
+    }
+    touchingByTheme.clear();
+    definitions.forEach(line => indexLine(line));
+    for (const ids of themedComponents(edges.filter(edge => !claimed.has(edge.key!) && !unassigned.has(edge.key!)))) {
+        const touching = touchingLines(ids.map(id => available.get(id)!));
+        if (touching.size === 1 && !ids.some(id => ambiguous.has(id))) {
             const line = touching.values().next().value!;
             line.edgeIds = [...line.edgeIds, ...ids].sort();
             indexLine(line, ids);
@@ -270,6 +390,7 @@ export const reconcileLineDefinitions = (graph: Graph): Graph => {
             definitions.push(line);
             indexLine(line);
         }
+        ids.forEach(id => claimed.add(id));
     }
     for (const line of definitions) {
         const candidates = topologyFromEdges(
@@ -401,6 +522,38 @@ export const getLineRoutes = (graph: Graph, line: LineDefinition, from: string, 
     return routes;
 };
 
+/** Include reachable pending sections for editing without crossing another authored line. */
+export const getLineIntervalScope = (graph: Graph, line: LineDefinition): LineDefinition => {
+    const owned = new Set(line.edgeIds);
+    const first = graph.edges.find(edge => owned.has(edge.key!) && getLineTheme(edge));
+    if (!first) return line;
+    const theme = themeKey(first);
+    const pending = new Set(graph.attributes?.unassignedLineEdgeIds ?? []);
+    const otherOwned = new Set(
+        (graph.attributes?.lineDefinitions ?? []).filter(item => item.id !== line.id).flatMap(item => item.edgeIds)
+    );
+    const candidates = graph.edges.filter(
+        edge =>
+            (owned.has(edge.key!) || (pending.has(edge.key!) && !otherOwned.has(edge.key!))) &&
+            getLineTheme(edge) &&
+            themeKey(edge) === theme
+    );
+    const adj = adjacency(candidates);
+    const nodes = candidates.filter(edge => owned.has(edge.key!)).flatMap(edge => [edge.source, edge.target]);
+    const visited = new Set<string>();
+    const edgeIds = new Set(line.edgeIds);
+    while (nodes.length) {
+        const node = nodes.pop()!;
+        if (visited.has(node)) continue;
+        visited.add(node);
+        for (const [next, bundle] of adj.get(node) ?? []) {
+            bundle.forEach(id => edgeIds.add(id));
+            if (!visited.has(next)) nodes.push(next);
+        }
+    }
+    return edgeIds.size === owned.size ? line : { ...line, edgeIds: [...edgeIds].sort() };
+};
+
 /** Returns a preview without touching graph geometry. Throws for empty/full selections. */
 export const splitLineDefinition = (
     graph: Graph,
@@ -430,6 +583,50 @@ export const splitLineDefinition = (
         item.id === lineId ? [extracted, ...components.map(emptyLineDefinition)] : [item]
     );
     return reconcileLineDefinitions({ ...graph, attributes: { ...graph.attributes, lineDefinitions: next } });
+};
+
+/** Extend through a selected pending path; existing off-path branches keep their membership. */
+export const adjustLineDefinitionInterval = (
+    graph: Graph,
+    lineId: string,
+    route: LineRoute,
+    start: number,
+    end: number
+): Graph => {
+    const definitions = graph.attributes?.lineDefinitions ?? [];
+    const line = definitions.find(item => item.id === lineId);
+    if (
+        !line ||
+        !Number.isInteger(start) ||
+        !Number.isInteger(end) ||
+        start < 0 ||
+        end >= route.stationIds.length ||
+        start >= end
+    )
+        throw new Error('Invalid line interval');
+    const owned = new Set(line.edgeIds);
+    const selected = new Set(route.segments.slice(start, end).flat());
+    const added = [...selected].filter(id => !owned.has(id));
+    if (!added.length) return splitLineDefinition(graph, lineId, route, start, end);
+    const allowed = new Set(getLineIntervalScope(graph, line).edgeIds);
+    const routeEdges = new Set(route.segments.flat());
+    if (![...selected].some(id => owned.has(id)) || [...routeEdges].some(id => !allowed.has(id)))
+        throw new Error('Choose an interval overlapping the line and connected pending sections');
+    const retained = new Set([...selected, ...line.edgeIds.filter(id => !routeEdges.has(id))]);
+    const remainder = new Set(line.edgeIds.filter(id => !retained.has(id)));
+    const components = lineEdgeComponents(graph.edges.filter(edge => remainder.has(edge.key!)));
+    const extended = { ...line, edgeIds: [...retained].sort(), exportStartStationId: route.stationIds[start] };
+    const next = definitions.flatMap(item =>
+        item.id === lineId ? [extended, ...components.map(emptyLineDefinition)] : [item]
+    );
+    return reconcileLineDefinitions({
+        ...graph,
+        attributes: {
+            ...graph.attributes,
+            lineDefinitions: next,
+            unassignedLineEdgeIds: (graph.attributes?.unassignedLineEdgeIds ?? []).filter(id => !selected.has(id)),
+        },
+    });
 };
 
 /** Only connected sections with the same colour identity can share a line without changing its drawing. */

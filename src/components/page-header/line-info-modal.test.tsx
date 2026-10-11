@@ -2,9 +2,10 @@ import { RmgThemeProvider } from '@railmapgen/rmg-components';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createStore } from '../../redux';
-import { undoAction } from '../../redux/project-history';
-import { initializeProject, saveGraph } from '../../redux/param/param-slice';
-import { createTestLineGraph, render } from '../../test-utils';
+import { replaceProject, undoAction } from '../../redux/project-history';
+import { initializeProject, MAX_UNDO_SIZE, saveGraph } from '../../redux/param/param-slice';
+import { createTestLineGraph, render, TEST_LINE_THEME } from '../../test-utils';
+import { emptyLineDefinition } from '../../util/line-definitions';
 import * as lineExport from '../../util/line-export';
 import { useLineInformation } from '../../util/hooks';
 import { exportToRmg } from '../../util/to-rmg';
@@ -86,6 +87,397 @@ describe('line information and export panels', () => {
         expect(calculate).toHaveBeenCalledTimes(2);
         expect(store.getState().param.past).toHaveLength(1);
     });
+
+    it('repairs a fully drawn replacement path only when the panel opens and preserves its line information', async () => {
+        const store = setup([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+        ]);
+        const original = structuredClone(window.graph.getAttribute('lineDefinitions')!);
+        Object.assign(original[0], {
+            name: ['一号线', 'Line One'],
+            lineNumber: '1',
+            openingDate: '2026-01-02',
+            operator: 'Metro operator',
+            status: 'construction',
+            notes: 'Keep this information after inserting stations',
+        });
+        window.graph.setAttribute('lineDefinitions', original);
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const edgeAttributes = structuredClone(window.graph.getEdgeAttributes('line_1'));
+        const stationAttributes = structuredClone(window.graph.getNodeAttributes('stn_B'));
+        const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+        const panel = (isOpen: boolean) => (
+            <RmgThemeProvider>
+                <LineInfoModal isOpen={isOpen} onClose={vi.fn()} />
+            </RmgThemeProvider>
+        );
+        const { rerender } = render(panel(false), { store });
+        const saveDrawing = (edit: () => void) => {
+            act(() => {
+                edit();
+                store.dispatch(saveGraph(window.graph.export()));
+            });
+            expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual(original);
+            expect(window.graph.getAttribute('lineDefinitions')).toEqual(original);
+            expect(calculate).not.toHaveBeenCalled();
+        };
+
+        saveDrawing(() => window.graph.dropEdge('line_1'));
+        const path = ['B', 'X1', 'X2', 'X3', 'X4', 'C'];
+        const addedEdges = path.slice(1).map((target, index) => {
+            const edgeId = `line_insert_${index}`;
+            saveDrawing(() => {
+                if (!window.graph.hasNode(`stn_${target}`)) {
+                    const station = structuredClone(stationAttributes);
+                    station.x += (index + 1) * 20;
+                    station['shmetro-basic']!.names = [target, `${target} en`];
+                    window.graph.addNode(`stn_${target}`, station);
+                }
+                window.graph.addDirectedEdgeWithKey(
+                    edgeId,
+                    `stn_${path[index]}`,
+                    `stn_${target}`,
+                    structuredClone(edgeAttributes)
+                );
+            });
+            return edgeId;
+        });
+        await act(() => lineExport.yieldLineCalculation());
+        expect(calculate).not.toHaveBeenCalled();
+        const history = structuredClone(store.getState().param.past);
+        const drawing = store.getState().param.present.graph;
+
+        rerender(panel(true));
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        await screen.findByRole('button', { name: 'Adjust interval: A — D' });
+        const expected = {
+            ...original[0],
+            edgeIds: ['line_0', 'line_2', ...addedEdges].sort(),
+        };
+        expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([expected]);
+        expect(window.graph.getAttribute('lineDefinitions')).toEqual([expected]);
+        expect(store.getState().param.present.graph.nodes).toEqual(drawing.nodes);
+        expect(store.getState().param.present.graph.edges).toEqual(drawing.edges);
+        expect(store.getState().param.past).toEqual(history);
+        expect(calculate).toHaveBeenCalledTimes(1);
+        const entries = await calculate.mock.results[0].value;
+        expect(
+            Object.keys(entries[0].param!.stn_list)
+                .filter(id => id.startsWith('stn_'))
+                .sort()
+        ).toEqual(['A', 'B', 'X1', 'X2', 'X3', 'X4', 'C', 'D'].map(id => `stn_${id}`).sort());
+
+        const calculated = store.getState().param.present.graph;
+        rerender(panel(false));
+        rerender(panel(true));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        expect(calculate).toHaveBeenCalledTimes(2);
+        expect(store.getState().param.present.graph).toEqual(calculated);
+        expect(window.graph.export()).toEqual(calculated);
+        expect(store.getState().param.past).toEqual(history);
+    });
+
+    it('keeps an unfinished replacement path disconnected when the panel calculates', async () => {
+        const store = setup([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+        ]);
+        const original = structuredClone(window.graph.getAttribute('lineDefinitions')!);
+        const edgeAttributes = structuredClone(window.graph.getEdgeAttributes('line_1'));
+        const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+        const panel = (isOpen: boolean) => (
+            <RmgThemeProvider>
+                <LineInfoModal isOpen={isOpen} onClose={vi.fn()} />
+            </RmgThemeProvider>
+        );
+        const { rerender } = render(panel(false), { store });
+        act(() => {
+            window.graph.dropEdge('line_1');
+            const station = structuredClone(window.graph.getNodeAttributes('stn_B'));
+            station.x += 20;
+            station['shmetro-basic']!.names = ['X1', 'X1 en'];
+            window.graph.addNode('stn_X1', station);
+            window.graph.addDirectedEdgeWithKey('line_partial', 'stn_B', 'stn_X1', edgeAttributes);
+            store.dispatch(saveGraph(window.graph.export()));
+        });
+        await act(() => lineExport.yieldLineCalculation());
+        expect(calculate).not.toHaveBeenCalled();
+        expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual(original);
+        const before = store.getState().param.present.graph;
+        const history = structuredClone(store.getState().param.past);
+
+        rerender(panel(true));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        expect(screen.getByRole('button', { name: 'Adjust interval: A — X1' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Adjust interval: C — D' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Adjust interval: A — D' })).not.toBeInTheDocument();
+        const lines = store.getState().param.present.graph.attributes.lineDefinitions!;
+        expect(lines).toHaveLength(2);
+        expect(lines.find(line => line.id === original[0].id)!.edgeIds).toEqual(['line_0', 'line_partial']);
+        expect(lines.find(line => line.id !== original[0].id)!.edgeIds).toEqual(['line_2']);
+        expect(store.getState().param.present.graph.nodes).toEqual(before.nodes);
+        expect(store.getState().param.present.graph.edges).toEqual(before.edges);
+        expect(store.getState().param.past).toEqual(history);
+    });
+
+    it.each(['drawing', 'undo colour change', 'project replacement', 'undo after calculation'])(
+        'retains a single interval identity after insertion history is truncated without adding stored graph fields (%s)',
+        async scenario => {
+            const store = setup([['A', 'B']]);
+            const original = structuredClone(window.graph.getAttribute('lineDefinitions')!);
+            Object.assign(original[0], {
+                name: ['一号线', 'Line One'],
+                lineNumber: '1',
+                openingDate: '2026-01-02',
+                operator: 'Metro operator',
+                status: 'construction',
+                notes: 'Preserve after undo history is truncated',
+            });
+            window.graph.setAttribute('lineDefinitions', original);
+            window.graph.setAttribute('name', 'Insertion regression');
+            store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+            const stationAttributes = structuredClone(window.graph.getNodeAttributes('stn_A'));
+            const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+            const panel = (isOpen: boolean) => (
+                <RmgThemeProvider>
+                    <LineInfoModal isOpen={isOpen} onClose={vi.fn()} />
+                </RmgThemeProvider>
+            );
+            const { rerender } = render(panel(true), { store });
+            await screen.findByRole('button', { name: 'Adjust interval: A — B' });
+            expect(calculate).toHaveBeenCalledTimes(1);
+            expect(Object.keys(store.getState().param.present.graph.attributes).sort()).toEqual([
+                'lineDefinitions',
+                'name',
+            ]);
+            expect(store.getState().param.past).toHaveLength(0);
+            rerender(panel(false));
+
+            if (scenario === 'undo colour change') {
+                act(() => {
+                    window.graph.getEdgeAttributes('line_0')['single-color']!.color = [
+                        TEST_LINE_THEME[0],
+                        'sh2',
+                        '#008000',
+                        TEST_LINE_THEME[3],
+                    ];
+                    store.dispatch(saveGraph(window.graph.export()));
+                });
+                rerender(panel(true));
+                await screen.findByRole('button', { name: 'Adjust interval: A — B' });
+                expect(calculate).toHaveBeenCalledTimes(2);
+                rerender(panel(false));
+                await act(() => store.dispatch(undoAction()));
+                expect(window.graph.getEdgeAttributes('line_0')['single-color']!.color).toEqual(TEST_LINE_THEME);
+            } else if (scenario === 'project replacement') {
+                const replacement = createTestLineGraph([
+                    ['A', 'B', [TEST_LINE_THEME[0], 'sh2', '#008000', TEST_LINE_THEME[3]]],
+                ]);
+                original[0] = {
+                    ...original[0],
+                    name: ['替换后的线路', 'Replacement line'],
+                    notes: 'New project information',
+                };
+                replacement.setAttribute('lineDefinitions', original);
+                replacement.setAttribute('name', 'Replacement project');
+                await act(() =>
+                    store.dispatch(replaceProject({ ...store.getState().param.present, graph: replacement.export() }))
+                );
+                expect(store.getState().param.past.at(-1)!.scope).toBe('project');
+                expect(calculate).toHaveBeenCalledTimes(1);
+            }
+
+            const edgeAttributes = structuredClone(window.graph.getEdgeAttributes('line_0'));
+            const calculationsBeforeDrawing = calculate.mock.calls.length;
+
+            const insertedCount = MAX_UNDO_SIZE + 5;
+            const addedEdges: string[] = [];
+            for (let index = 0; index < insertedCount; index++) {
+                const stationId = `stn_X${index + 1}`;
+                const head = `line_insert_${index}_head`;
+                const tail = `line_insert_${index}_tail`;
+                act(() => {
+                    window.graph.dropEdge(index === 0 ? 'line_0' : `line_insert_${index - 1}_tail`);
+                    const station = structuredClone(stationAttributes);
+                    station.x = index + 1;
+                    station['shmetro-basic']!.names = [`X${index + 1}`, `X${index + 1} en`];
+                    window.graph.addNode(stationId, station);
+                    window.graph.addDirectedEdgeWithKey(
+                        head,
+                        index === 0 ? 'stn_A' : `stn_X${index}`,
+                        stationId,
+                        structuredClone(edgeAttributes)
+                    );
+                    window.graph.addDirectedEdgeWithKey(tail, stationId, 'stn_B', structuredClone(edgeAttributes));
+                    store.dispatch(saveGraph(window.graph.export()));
+                });
+                addedEdges.push(head);
+                if (index === insertedCount - 1) addedEdges.push(tail);
+                expect(calculate).toHaveBeenCalledTimes(calculationsBeforeDrawing);
+                expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual(original);
+                expect(Object.keys(store.getState().param.present.graph.attributes).sort()).toEqual([
+                    'lineDefinitions',
+                    'name',
+                ]);
+            }
+            await act(() => lineExport.yieldLineCalculation());
+            expect(calculate).toHaveBeenCalledTimes(calculationsBeforeDrawing);
+            const history = structuredClone(store.getState().param.past);
+            expect(history).toHaveLength(MAX_UNDO_SIZE);
+            expect(history.every(entry => entry.graph.edges.every(edge => edge.key !== 'line_0'))).toBe(true);
+            const drawing = store.getState().param.present.graph;
+
+            rerender(panel(true));
+            await screen.findByRole('button', { name: 'Adjust interval: A — B' });
+            expect(calculate).toHaveBeenCalledTimes(calculationsBeforeDrawing + 1);
+            const expected = { ...original[0], edgeIds: addedEdges.sort() };
+            expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([expected]);
+            expect(window.graph.getAttribute('lineDefinitions')).toEqual([expected]);
+            expect(Object.keys(store.getState().param.present.graph.attributes).sort()).toEqual([
+                'lineDefinitions',
+                'name',
+            ]);
+            expect(store.getState().param.present.graph.nodes).toEqual(drawing.nodes);
+            expect(store.getState().param.present.graph.edges).toEqual(drawing.edges);
+            expect(store.getState().param.past).toEqual(history);
+            const entries = await calculate.mock.results.at(-1)!.value;
+            expect(Object.keys(entries[0].param!.stn_list).filter(id => id.startsWith('stn_'))).toHaveLength(
+                insertedCount + 2
+            );
+
+            if (scenario === 'undo after calculation') {
+                rerender(panel(false));
+                await act(() => store.dispatch(undoAction()));
+                expect(calculate).toHaveBeenCalledTimes(calculationsBeforeDrawing + 1);
+                const restored = store.getState().param.present.graph;
+                const restoredHistory = structuredClone(store.getState().param.past);
+                expect(restored.attributes.lineDefinitions).toEqual(original);
+                expect(restored.nodes).toHaveLength(insertedCount + 1);
+                expect(restored.edges.every(edge => edge.key !== 'line_0')).toBe(true);
+                expect(restoredHistory.every(entry => entry.graph.edges.every(edge => edge.key !== 'line_0'))).toBe(
+                    true
+                );
+
+                rerender(panel(true));
+                await screen.findByRole('button', { name: 'Adjust interval: A — B' });
+                expect(calculate).toHaveBeenCalledTimes(calculationsBeforeDrawing + 2);
+                const restoredEdges = [
+                    ...Array.from({ length: insertedCount - 1 }, (_, index) => `line_insert_${index}_head`),
+                    `line_insert_${insertedCount - 2}_tail`,
+                ].sort();
+                const restoredLine = { ...original[0], edgeIds: restoredEdges };
+                expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([restoredLine]);
+                expect(window.graph.getAttribute('lineDefinitions')).toEqual([restoredLine]);
+                expect(Object.keys(store.getState().param.present.graph.attributes).sort()).toEqual([
+                    'lineDefinitions',
+                    'name',
+                ]);
+                expect(store.getState().param.present.graph.nodes).toEqual(restored.nodes);
+                expect(store.getState().param.present.graph.edges).toEqual(restored.edges);
+                expect(store.getState().param.past).toEqual(restoredHistory);
+                const restoredEntries = await calculate.mock.results.at(-1)!.value;
+                expect(
+                    Object.keys(restoredEntries[0].param!.stn_list).filter(id => id.startsWith('stn_'))
+                ).toHaveLength(insertedCount + 1);
+            }
+        }
+    );
+
+    it('preserves original information across every retained undo followed by recalculation', async () => {
+        const store = setup([['A', 'B']]);
+        const original = structuredClone(window.graph.getAttribute('lineDefinitions')!);
+        Object.assign(original[0], {
+            name: ['一号线', 'Line One'],
+            lineNumber: '1',
+            openingDate: '2026-01-02',
+            operator: 'Metro operator',
+            status: 'construction',
+            notes: 'Keep through repeated undo and recalculation',
+        });
+        window.graph.setAttribute('lineDefinitions', original);
+        store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
+        const edgeAttributes = structuredClone(window.graph.getEdgeAttributes('line_0'));
+        const stationAttributes = structuredClone(window.graph.getNodeAttributes('stn_A'));
+        const calculate = vi.spyOn(lineExport, 'getLineExportsAsync');
+        const Probe = ({ isOpen }: { isOpen: boolean }) => {
+            const { isLoading, entries } = useLineInformation(isOpen);
+            return (
+                <output data-testid="line-history-probe">
+                    {!isOpen ? 'closed' : isLoading ? 'pending' : entries[0]?.line.id || 'none'}
+                </output>
+            );
+        };
+        const { rerender } = render(<Probe isOpen />, { store });
+        await waitFor(() => expect(screen.getByTestId('line-history-probe')).toHaveTextContent(original[0].id));
+        expect(calculate).toHaveBeenCalledTimes(1);
+        rerender(<Probe isOpen={false} />);
+
+        const insertedCount = MAX_UNDO_SIZE + 5;
+        for (let index = 0; index < insertedCount; index++) {
+            const stationId = `stn_X${index + 1}`;
+            act(() => {
+                window.graph.dropEdge(index === 0 ? 'line_0' : `line_probe_${index - 1}_tail`);
+                const station = structuredClone(stationAttributes);
+                station.x = index + 1;
+                station['shmetro-basic']!.names = [`X${index + 1}`, `X${index + 1} en`];
+                window.graph.addNode(stationId, station);
+                window.graph.addDirectedEdgeWithKey(
+                    `line_probe_${index}_head`,
+                    index === 0 ? 'stn_A' : `stn_X${index}`,
+                    stationId,
+                    structuredClone(edgeAttributes)
+                );
+                window.graph.addDirectedEdgeWithKey(
+                    `line_probe_${index}_tail`,
+                    stationId,
+                    'stn_B',
+                    structuredClone(edgeAttributes)
+                );
+                store.dispatch(saveGraph(window.graph.export()));
+            });
+            expect(calculate).toHaveBeenCalledTimes(1);
+            expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual(original);
+        }
+        expect(store.getState().param.past).toHaveLength(MAX_UNDO_SIZE);
+        expect(store.getState().param.past.every(entry => entry.graph.edges.every(edge => edge.key !== 'line_0'))).toBe(
+            true
+        );
+
+        const assertCalculated = async (stationCount: number) => {
+            const past = store.getState().param.past;
+            const future = store.getState().param.future;
+            const drawing = store.getState().param.present.graph;
+            rerender(<Probe isOpen />);
+            await waitFor(() => expect(screen.getByTestId('line-history-probe')).toHaveTextContent(original[0].id));
+            const expectedEdges = [
+                ...Array.from({ length: stationCount }, (_, index) => `line_probe_${index}_head`),
+                `line_probe_${stationCount - 1}_tail`,
+            ].sort();
+            const expected = { ...original[0], edgeIds: expectedEdges };
+            expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual([expected]);
+            expect(window.graph.getAttribute('lineDefinitions')).toEqual([expected]);
+            expect(Object.keys(store.getState().param.present.graph.attributes)).toEqual(['lineDefinitions']);
+            expect(store.getState().param.present.graph.nodes).toEqual(drawing.nodes);
+            expect(store.getState().param.present.graph.edges).toEqual(drawing.edges);
+            expect(store.getState().param.past).toBe(past);
+            expect(store.getState().param.future).toBe(future);
+        };
+        await assertCalculated(insertedCount);
+        expect(calculate).toHaveBeenCalledTimes(2);
+        for (let count = 1; count <= MAX_UNDO_SIZE; count++) {
+            rerender(<Probe isOpen={false} />);
+            await act(() => store.dispatch(undoAction()));
+            expect(calculate).toHaveBeenCalledTimes(count + 1);
+            expect(store.getState().param.present.graph.attributes.lineDefinitions).toEqual(original);
+            await assertCalculated(insertedCount - count);
+            expect(calculate).toHaveBeenCalledTimes(count + 2);
+        }
+        expect(store.getState().param.past).toHaveLength(0);
+        expect(store.getState().param.future).toHaveLength(MAX_UNDO_SIZE);
+    }, 15000);
 
     it('cancels closed requests and discards an old graph when a newer one arrives', async () => {
         const store = setup([['A', 'B']]);
@@ -307,6 +699,179 @@ describe('line information and export panels', () => {
         expect(after.nodes).toEqual(before.nodes);
         expect(after.edges).toEqual(before.edges);
         expect(store.getState().param.past).toHaveLength(3);
+    });
+
+    it('shows removed intervals in the editor and extends only the selected path after explicit confirmation', async () => {
+        const store = setup();
+        render(
+            <RmgThemeProvider>
+                <LineInfoModal isOpen onClose={vi.fn()} />
+            </RmgThemeProvider>,
+            { store }
+        );
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'Home' });
+        fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        fireEvent.click(screen.getByRole('button', { name: 'Move line to unassigned: B — E' }));
+        await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+        const before = store.getState().param.present.graph;
+        const historyCount = store.getState().param.past.length;
+
+        fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — B' }));
+        const diagram = screen.getByLabelText('Line interval and branches');
+        expect(diagram.querySelectorAll('line[data-unassigned="true"]')).toHaveLength(3);
+        expect(diagram.querySelector('[data-interval-edges="line_1"]')).toHaveAttribute('stroke-dasharray', '8 6');
+        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'A');
+        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'B');
+        expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        expect(screen.getByRole('button', { name: 'Extend' })).toBeEnabled();
+        expect(store.getState().param.present.graph).toEqual(before);
+        expect(store.getState().param.past).toHaveLength(historyCount);
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+        expect(store.getState().param.present.graph).toEqual(before);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — B' }));
+        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'B');
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
+        const after = store.getState().param.present.graph;
+        expect(after.attributes.lineDefinitions![0].edgeIds).toEqual(['line_0', 'line_1']);
+        expect(after.attributes.unassignedLineEdgeIds).toEqual(['line_2', 'line_3']);
+        expect(after.nodes).toEqual(before.nodes);
+        expect(after.edges).toEqual(before.edges);
+        expect(store.getState().param.past).toHaveLength(historyCount + 1);
+        await act(() => store.dispatch(undoAction()));
+        expect(store.getState().param.present.graph).toEqual(before);
+        expect(window.graph.export()).toEqual(before);
+        expect(store.getState().param.past).toHaveLength(historyCount);
+    });
+
+    it('initializes both rings to the existing interval when pending sections surround it', () => {
+        const store = setup();
+        const graph = structuredClone(store.getState().param.present.graph);
+        const line = graph.attributes.lineDefinitions![0];
+        line.edgeIds = ['line_1'];
+        line.exportStartStationId = 'stn_B';
+        graph.attributes.unassignedLineEdgeIds = ['line_0', 'line_2', 'line_3'];
+        const apply = vi.fn();
+        render(
+            <RmgThemeProvider>
+                <LineIntervalModal graph={graph} line={line} onClose={vi.fn()} onApply={apply} />
+            </RmgThemeProvider>,
+            { store }
+        );
+        expect(screen.getByRole('combobox', { name: 'Path start' })).toHaveValue('stn_A');
+        expect(screen.getByRole('combobox', { name: 'Path end' })).toHaveValue('stn_E');
+        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'B');
+        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
+        expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
+        expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual(['line_1', 'line_2']);
+        expect(apply.mock.calls[0][0].attributes.unassignedLineEdgeIds).toEqual(['line_0', 'line_3']);
+    });
+
+    it('excludes owned lines, different colours, and disconnected pending sections from the editable scope', () => {
+        const drawing = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+            ['B', 'X', [TEST_LINE_THEME[0], 'sh2', '#008000', TEST_LINE_THEME[3]]],
+            ['P', 'Q'],
+        ]);
+        const graph = drawing.export();
+        const line = { ...emptyLineDefinition(['line_0']), exportStartStationId: 'stn_A' };
+        const other = { ...emptyLineDefinition(['line_2']), exportStartStationId: 'stn_C' };
+        graph.attributes.lineDefinitions = [line, other];
+        graph.attributes.unassignedLineEdgeIds = ['line_1', 'line_3', 'line_4'];
+        const apply = vi.fn();
+        render(
+            <RmgThemeProvider>
+                <LineIntervalModal graph={graph} line={line} onClose={vi.fn()} onApply={apply} />
+            </RmgThemeProvider>
+        );
+        const diagram = screen.getByLabelText('Line interval and branches');
+        expect(
+            [...diagram.querySelectorAll('[data-station-id]')].map(node => node.getAttribute('data-station-id'))
+        ).toEqual(['stn_A', 'stn_B', 'stn_C']);
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'End' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
+        expect(screen.getByRole('button', { name: 'Extend' })).toBeDisabled();
+        expect(apply).not.toHaveBeenCalled();
+    });
+
+    it('shows unassigned branches and keeps existing off-path branches when extending', () => {
+        const store = setup([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['B', 'D'],
+            ['D', 'E'],
+            ['C', 'X'],
+            ['B', 'Y'],
+        ]);
+        const graph = structuredClone(store.getState().param.present.graph);
+        const line = graph.attributes.lineDefinitions![0];
+        line.edgeIds = ['line_0', 'line_1', 'line_2', 'line_3'];
+        graph.attributes.unassignedLineEdgeIds = ['line_4', 'line_5'];
+        const apply = vi.fn();
+        render(
+            <RmgThemeProvider>
+                <LineIntervalModal graph={graph} line={line} onClose={vi.fn()} onApply={apply} />
+            </RmgThemeProvider>,
+            { store }
+        );
+        fireEvent.change(screen.getByRole('combobox', { name: 'Path end' }), { target: { value: 'stn_X' } });
+        const diagram = screen.getByLabelText('Line interval and branches');
+        expect(diagram.querySelector('[data-branch-edges="line_5"]')).toHaveAttribute('data-unassigned', 'true');
+        expect(diagram.querySelector('[data-branch-edges="line_5"]')).toHaveAttribute('stroke-dasharray', '8 6');
+        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
+        expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual([
+            'line_0',
+            'line_1',
+            'line_2',
+            'line_3',
+            'line_4',
+        ]);
+        expect(apply.mock.calls[0][0].attributes.unassignedLineEdgeIds).toEqual(['line_5']);
+    });
+
+    it('opens a restored loop with only the original arc selected before extending the complementary pending arc', () => {
+        const store = setup([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+            ['D', 'A'],
+        ]);
+        const graph = structuredClone(store.getState().param.present.graph);
+        const line = graph.attributes.lineDefinitions![0];
+        line.edgeIds = ['line_0', 'line_1'];
+        graph.attributes.unassignedLineEdgeIds = ['line_2', 'line_3'];
+        const apply = vi.fn();
+        render(
+            <RmgThemeProvider>
+                <LineIntervalModal graph={graph} line={line} onClose={vi.fn()} onApply={apply} />
+            </RmgThemeProvider>,
+            { store }
+        );
+        expect(screen.getByRole('combobox', { name: 'Reference station' })).toHaveValue('stn_A');
+        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'A');
+        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
+        expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Select the other arc' })).toBeEnabled();
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'End' });
+        fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
+        expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual([
+            'line_0',
+            'line_1',
+            'line_2',
+            'line_3',
+        ]);
+        expect(apply.mock.calls[0][0].attributes.unassignedLineEdgeIds).toEqual([]);
     });
 
     it('hides lines with fewer than two stations and lists unsupported lines without setting fields at the bottom', async () => {

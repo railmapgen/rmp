@@ -5,9 +5,11 @@ import { CityCode, Theme } from '../constants/constants';
 import { LineStyleType } from '../constants/lines';
 import { createTestLineGraph } from '../test-utils';
 import {
+    adjustLineDefinitionInterval,
     assignLineSection,
     getLineAssignmentTargets,
     getLineEndpointsLabel,
+    getLineIntervalScope,
     getLineRoutes,
     getLineTopology,
     getStationLabel,
@@ -565,6 +567,217 @@ describe('whole-line removal and assignment', () => {
             expect(getLineTopology(assigned, assigned.attributes.lineDefinitions![0]).type).toBe('LOOP');
             expect(getLineExports(assigned)[0].param!.loop).toBe(true);
         }
+    });
+});
+
+describe('interval extension into pending sections', () => {
+    const withPendingEnds = () => {
+        const graph = straight().export();
+        const original = graph.attributes.lineDefinitions![0];
+        original.name = ['原线路', 'Original line'];
+        original.notes = 'Keep authored information';
+        original.openingDate = '2026-10-03';
+        const separated = splitLineDefinition(
+            graph,
+            original.id,
+            getLineRoutes(graph, original, 'stn_A', 'stn_E')[0],
+            1,
+            2
+        );
+        const [line, left, right] = separated.attributes.lineDefinitions!;
+        return { line, graph: unassignLineDefinition(unassignLineDefinition(separated, left.id), right.id) };
+    };
+
+    it('offers both pending ends without assigning them or changing the original definition', () => {
+        const { graph, line } = withPendingEnds();
+        const frozen = freeze(graph, true);
+        const before = JSON.stringify(frozen);
+        const scope = getLineIntervalScope(frozen, line);
+        expect(scope).toEqual({ ...line, edgeIds: ['line_0', 'line_1', 'line_2', 'line_3'] });
+        expect(getLineRoutes(frozen, scope, 'stn_A', 'stn_E')[0].stationIds).toEqual([
+            'stn_A',
+            'stn_B',
+            'stn_C',
+            'stn_D',
+            'stn_E',
+        ]);
+        expect(JSON.stringify(frozen)).toBe(before);
+        expect(frozen.attributes.lineDefinitions).toHaveLength(1);
+        expect(frozen.attributes.unassignedLineEdgeIds).toEqual(['line_0', 'line_2', 'line_3']);
+    });
+
+    it('extends only the selected pending path and can extend the remaining part later', () => {
+        const { graph, line } = withPendingEnds();
+        const before = structuredClone(graph);
+        const scope = getLineIntervalScope(graph, line);
+        const route = getLineRoutes(graph, scope, 'stn_A', 'stn_E')[0];
+        const extended = adjustLineDefinitionInterval(graph, line.id, route, 0, 3);
+        expect(extended.attributes.lineDefinitions).toEqual([
+            { ...line, edgeIds: ['line_0', 'line_1', 'line_2'], exportStartStationId: 'stn_A' },
+        ]);
+        expect(extended.attributes.unassignedLineEdgeIds).toEqual(['line_3']);
+        expect(extended.nodes).toEqual(graph.nodes);
+        expect(extended.edges).toEqual(graph.edges);
+        expect(graph).toEqual(before);
+        expect(reconcileLineDefinitions(JSON.parse(JSON.stringify(extended)))).toEqual(extended);
+        const current = extended.attributes.lineDefinitions![0];
+        const nextRoute = getLineRoutes(extended, getLineIntervalScope(extended, current), 'stn_A', 'stn_E')[0];
+        const complete = adjustLineDefinitionInterval(extended, line.id, nextRoute, 0, 4);
+        expect(complete.attributes.lineDefinitions).toEqual([
+            { ...line, edgeIds: ['line_0', 'line_1', 'line_2', 'line_3'], exportStartStationId: 'stn_A' },
+        ]);
+        expect(complete.attributes.unassignedLineEdgeIds).toEqual([]);
+        expect(Object.keys(getLineExports(complete)[0].param!.stn_list)).toEqual(
+            expect.arrayContaining(['stn_A', 'stn_B', 'stn_C', 'stn_D', 'stn_E'])
+        );
+    });
+
+    it('does not cross an existing same-colour line to collect a pending interval', () => {
+        const graph = straight().export();
+        const original = graph.attributes.lineDefinitions![0];
+        const separated = splitLineDefinition(
+            graph,
+            original.id,
+            getLineRoutes(graph, original, 'stn_A', 'stn_E')[0],
+            1,
+            2
+        );
+        const [middle, left, right] = separated.attributes.lineDefinitions!;
+        const removed = unassignLineDefinition(separated, right.id);
+        expect(getLineIntervalScope(removed, left)).toEqual(left);
+        const scope = getLineIntervalScope(removed, middle);
+        expect(scope.edgeIds).toEqual(['line_1', 'line_2', 'line_3']);
+        const extended = adjustLineDefinitionInterval(
+            removed,
+            middle.id,
+            getLineRoutes(removed, scope, 'stn_B', 'stn_E')[0],
+            0,
+            3
+        );
+        expect(extended.attributes.lineDefinitions!.find(item => item.id === left.id)).toEqual(left);
+        const foreignRoute = getLineRoutes(removed, original, 'stn_A', 'stn_E')[0];
+        expect(() => adjustLineDefinitionInterval(removed, middle.id, foreignRoute, 0, 4)).toThrow();
+    });
+
+    it('can shorten one end while extending the other without reabsorbing the separated remainder', () => {
+        const graph = straight().export();
+        const original = graph.attributes.lineDefinitions![0];
+        original.notes = 'Keep';
+        const separated = splitLineDefinition(
+            graph,
+            original.id,
+            getLineRoutes(graph, original, 'stn_A', 'stn_E')[0],
+            0,
+            3
+        );
+        const [line, right] = separated.attributes.lineDefinitions!;
+        const removed = unassignLineDefinition(separated, right.id);
+        const route = getLineRoutes(removed, getLineIntervalScope(removed, line), 'stn_A', 'stn_E')[0];
+        const adjusted = adjustLineDefinitionInterval(removed, line.id, route, 1, 4);
+        expect(adjusted.attributes.lineDefinitions![0]).toEqual({
+            ...line,
+            edgeIds: ['line_1', 'line_2', 'line_3'],
+            exportStartStationId: 'stn_B',
+        });
+        expect(adjusted.attributes.lineDefinitions![1]).toMatchObject({
+            edgeIds: ['line_0'],
+            name: ['', ''],
+            notes: '',
+        });
+        expect(adjusted.attributes.unassignedLineEdgeIds).toEqual([]);
+        expect(reconcileLineDefinitions(adjusted)).toEqual(adjusted);
+    });
+
+    it('excludes disconnected and differently themed pending edges while accepting palette variants', () => {
+        const palette: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
+        const graph = createTestLineGraph([
+            ['A', 'B', palette],
+            ['B', 'C', [CityCode.Shanghai, 'sh1', '#123456', MonoColour.black]],
+            ['C', 'D', [CityCode.Shanghai, 'sh2', palette[2], palette[3]]],
+            ['M', 'N', palette],
+        ]).export();
+        const line = { ...graph.attributes.lineDefinitions![0], edgeIds: ['line_0'] };
+        graph.attributes.lineDefinitions = [line];
+        graph.attributes.unassignedLineEdgeIds = ['line_1', 'line_2', 'line_3', 'line_missing'];
+        const scope = getLineIntervalScope(graph, line);
+        expect(scope.edgeIds).toEqual(['line_0', 'line_1']);
+        expect(getLineTopology(graph, scope).stationIds).toEqual(['stn_A', 'stn_B', 'stn_C']);
+    });
+
+    it('keeps owned branches and collects virtual connectors and parallel bundles only on the selected path', () => {
+        const graph = createTestLineGraph(
+            [
+                ['A', 'B'],
+                ['B', 'V'],
+                ['V', 'C'],
+                ['C', 'D'],
+                ['B', 'V'],
+                ['V', 'E'],
+                ['A', 'Z'],
+            ],
+            ['V']
+        ).export();
+        const line = { ...graph.attributes.lineDefinitions![0], edgeIds: ['line_0', 'line_6'] };
+        graph.attributes.lineDefinitions = [line];
+        graph.attributes.unassignedLineEdgeIds = ['line_1', 'line_2', 'line_3', 'line_4', 'line_5'];
+        const scope = getLineIntervalScope(graph, line);
+        const route = getLineRoutes(graph, scope, 'stn_A', 'stn_D')[0];
+        const extended = adjustLineDefinitionInterval(graph, line.id, route, 0, 3);
+        expect(extended.attributes.lineDefinitions).toHaveLength(1);
+        expect(extended.attributes.lineDefinitions![0].edgeIds).toEqual([
+            'line_0',
+            'line_1',
+            'line_2',
+            'line_3',
+            'line_4',
+            'line_6',
+        ]);
+        expect(extended.attributes.unassignedLineEdgeIds).toEqual(['line_5']);
+        expect(extended.edges).toEqual(graph.edges);
+        expect(extended.nodes).toEqual(graph.nodes);
+    });
+
+    it('restores a removed loop arc while retaining the line identity and metadata', () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+            ['D', 'A'],
+        ]).export();
+        const original = graph.attributes.lineDefinitions![0];
+        original.name = ['环线', 'Loop'];
+        const separated = splitLineDefinition(
+            graph,
+            original.id,
+            getLineRoutes(graph, original, 'stn_A', 'stn_A')[0],
+            0,
+            2
+        );
+        const [line, other] = separated.attributes.lineDefinitions!;
+        const removed = unassignLineDefinition(separated, other.id);
+        const scope = getLineIntervalScope(removed, line);
+        expect(getLineTopology(removed, scope).type).toBe('LOOP');
+        const route = getLineRoutes(removed, scope, 'stn_A', 'stn_A')[0];
+        const extended = adjustLineDefinitionInterval(removed, line.id, route, 0, 4);
+        expect(extended.attributes.lineDefinitions).toEqual([{ ...line, edgeIds: original.edgeIds }]);
+        expect(extended.attributes.unassignedLineEdgeIds).toEqual([]);
+        expect(getLineExports(extended)[0].param!.loop).toBe(true);
+    });
+
+    it('rejects pending-only selections and unchanged full intervals while preserving ordinary separation', () => {
+        const { graph, line } = withPendingEnds();
+        const route = getLineRoutes(graph, getLineIntervalScope(graph, line), 'stn_A', 'stn_E')[0];
+        expect(() => adjustLineDefinitionInterval(graph, line.id, route, 2, 4)).toThrow();
+        expect(() => adjustLineDefinitionInterval(graph, line.id, route, 1, 2)).toThrow();
+        const full = straight().export();
+        const original = full.attributes.lineDefinitions![0];
+        const ownedRoute = getLineRoutes(full, original, 'stn_A', 'stn_E')[0];
+        const separated = adjustLineDefinitionInterval(full, original.id, ownedRoute, 1, 3);
+        expect(separated.attributes.lineDefinitions!.map(item => item.edgeIds)).toEqual([
+            ['line_1', 'line_2'],
+            ['line_0'],
+            ['line_3'],
+        ]);
     });
 });
 
