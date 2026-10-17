@@ -1,6 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { isElementEntry, TimelineDocument, TimelineElementEntry, TimelineEntry } from '../constants/timeline';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../constants/constants';
+import { isElementEntry, TimelineDocument, TimelineElementEntry, TimelineEntry } from '../../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 type Position = { x: number; y: number };

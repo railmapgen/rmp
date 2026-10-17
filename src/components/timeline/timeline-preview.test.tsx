@@ -6,7 +6,7 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants
 import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { render } from '../../test-utils';
-import { videoPreviewDefaultOptions } from '../../util/video-export';
+import { videoPreviewDefaultOptions } from '../../util/video-export/video-export';
 import TimelinePreview from './timeline-preview';
 
 const mocks = vi.hoisted(() => ({
@@ -16,8 +16,8 @@ const mocks = vi.hoisted(() => ({
     dispose: vi.fn(),
     setLabelTrack: vi.fn(),
 }));
-vi.mock('../../util/video-export', async original => ({
-    ...(await original<typeof import('../../util/video-export')>()),
+vi.mock('../../util/video-export/video-export', async original => ({
+    ...(await original<typeof import('../../util/video-export/video-export')>()),
     createVideoPreviewRenderer: mocks.prepare,
 }));
 

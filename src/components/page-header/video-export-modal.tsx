@@ -33,8 +33,13 @@ import { Events } from '../../constants/constants';
 import { getTimelineSettings } from '../../constants/timeline';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
 import { setError, setVideoOptions, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
-import { downloadBlobAs } from '../../util/download';
-import { exportVideo, VideoExportOptions, VideoExportResolution } from '../../util/video-export';
+import { exportVideo, VideoExportOptions, VideoExportResolution } from '../../util/video-export/video-export';
+import {
+    downloadVideoExportResult,
+    prepareVideoExportDestination,
+    VideoExportResult,
+    VideoExportStorageError,
+} from '../../util/video-export/video-export-destination';
 import { getUnavailableLineIds } from '../../util/line-path-availability';
 import { useSvgRenderContext } from '../svg-render-context';
 import TermsAndConditionsModal from './terms-and-conditions';
@@ -75,6 +80,9 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isAttachSelected, setIsAttachSelected] = React.useState(savedVideoOptions?.hideWatermark ?? false);
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
+    const exportController = React.useRef<AbortController | null>(null);
+
+    React.useEffect(() => () => exportController.current?.abort(), []);
 
     React.useEffect(() => {
         dispatch(
@@ -96,14 +104,21 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     };
 
     const handleVideoExport = async () => {
-        if (unavailableLineCount > 0) return;
+        if (unavailableLineCount > 0 || exportController.current) return;
+        const controller = new AbortController();
+        exportController.current = controller;
         setIsVideoGenerating(true);
         setVideoProgress(0);
 
         if (isAllowAppTelemetry)
             rmgRuntime.event(Events.DOWNLOAD_IMAGES, { numberOfNodes: graph.order, numberOfEdges: graph.size });
 
+        let result: VideoExportResult | undefined;
+        let consumed = false;
         try {
+            const fileName = `Timeline_${new Date().valueOf()}.${videoFormat}`;
+            const destinationFactory = await prepareVideoExportDestination(fileName, videoFormat);
+            controller.signal.throwIfAborted();
             const options: VideoExportOptions = {
                 format: videoFormat,
                 fps: videoFps,
@@ -120,7 +135,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 hideWatermark: isAttachSelected,
             };
 
-            const blob = await exportVideo(
+            result = await exportVideo(
                 graph,
                 timeline,
                 languages,
@@ -135,14 +150,25 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     isSubscriber,
                     getAudio,
                     getImage,
-                }
+                },
+                { destinationFactory, signal: controller.signal }
             );
 
-            downloadBlobAs(`Timeline_${new Date().valueOf()}.${videoFormat}`, blob);
+            if (result.kind !== 'saved-file') controller.signal.throwIfAborted();
+            downloadVideoExportResult(fileName, result);
+            consumed = true;
         } catch (error) {
+            if (controller.signal.aborted || (error instanceof DOMException && error.name === 'AbortError')) return;
             console.error('Video export failed:', error);
-            dispatch(setError(t('header.download.videoExport.error')));
+            const message = t('header.download.videoExport.error');
+            dispatch(setError(error instanceof VideoExportStorageError ? `${message} ${error.message}` : message));
         } finally {
+            if (!consumed && result?.kind === 'temporary-file') {
+                await result
+                    .dispose()
+                    .catch(error => console.warn('Could not remove the temporary video export:', error));
+            }
+            exportController.current = null;
             setIsVideoGenerating(false);
             setVideoProgress(0);
         }
@@ -350,6 +376,11 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
                 <ModalFooter>
                     <HStack>
+                        {isVideoGenerating && (
+                            <Button size="sm" onClick={() => exportController.current?.abort()}>
+                                {t('cancel')}
+                            </Button>
+                        )}
                         <Box>
                             <Tooltip label={t('header.download.videoExport.unavailableLines')} hasArrow>
                                 <span>

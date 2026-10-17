@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createTestLineGraph } from '../test-utils';
+import { createTestLineGraph } from '../../test-utils';
 import { createVideoLineOverlay, getVideoLineAnnotation, getVideoLineLabel } from './video-overlay';
 
 const annotation = {

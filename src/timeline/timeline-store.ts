@@ -5,7 +5,7 @@ import { Id } from '../constants/constants';
 import { TimelineDocument } from '../constants/timeline';
 import { MAX_UNDO_SIZE } from '../redux/param/param-slice';
 import { normalizeTimelineDocument } from '../util/timeline';
-import type { VideoExportOptions } from '../util/video-export';
+import type { VideoExportOptions } from '../util/video-export/video-export';
 import { timelineProjectDB } from './timeline-project-db';
 import { TimelineProjectRecord, TimelineProjectRevision, TimelineProjectSummary } from './timeline-project';
 

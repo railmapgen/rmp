@@ -137,4 +137,42 @@ describe('video audio muxing', () => {
         expect(mocks.terminate).toHaveBeenCalledOnce();
         expect(vi.getTimerCount()).toBe(0);
     });
+
+    it('does not create a worker for an already cancelled load', async () => {
+        const controller = new AbortController();
+        controller.abort();
+        await expect(loadVideoFFmpeg(controller.signal)).rejects.toMatchObject({ name: 'AbortError' });
+        expect(FFmpeg).not.toHaveBeenCalled();
+    });
+
+    it('cancels a stalled load even when its worker ignores the abort signal', async () => {
+        vi.useFakeTimers();
+        mocks.load.mockImplementation(() => new Promise(() => {}));
+        const controller = new AbortController();
+        const loading = loadVideoFFmpeg(controller.signal);
+        const cancelled = expect(loading).rejects.toMatchObject({ name: 'AbortError' });
+        controller.abort();
+        await cancelled;
+        expect(mocks.terminate).toHaveBeenCalledOnce();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('times out a stalled worker and clears the timer', async () => {
+        vi.useFakeTimers();
+        mocks.load.mockImplementation(() => new Promise(() => {}));
+        const timedOut = expect(loadVideoFFmpeg()).rejects.toThrow('loading timed out');
+        await vi.advanceTimersByTimeAsync(90_000);
+        await timedOut;
+        expect(mocks.terminate).toHaveBeenCalledOnce();
+        expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('removes the loading cancellation listener after the worker is ready', async () => {
+        vi.useFakeTimers();
+        const controller = new AbortController();
+        await loadVideoFFmpeg(controller.signal);
+        controller.abort();
+        expect(mocks.terminate).not.toHaveBeenCalled();
+        expect(vi.getTimerCount()).toBe(0);
+    });
 });

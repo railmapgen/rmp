@@ -20,7 +20,7 @@ import {
     setCursor,
     setVideoOptions,
 } from '../../timeline/timeline-store';
-import type { VideoExportOptions } from '../../util/video-export';
+import type { VideoExportOptions } from '../../util/video-export/video-export';
 import TimelinePage from './timeline-page';
 
 const { previewRender, previewPrepare, playbackClock, projectContext, svgContext } = vi.hoisted(() => ({

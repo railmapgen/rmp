@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { MultiDirectedGraph } from 'graphology';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import stations from '../components/svgs/stations/stations';
-import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import stations from '../../components/svgs/stations/stations';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
 import {
     createEmptyTimelineDocument,
     TimelineDocument,
     TimelineElementEntry,
     TimelineEntry,
-} from '../constants/timeline';
+} from '../../constants/timeline';
 import {
     createFrameStationGraph,
     embedVideoExportStyles,

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { LineId, NodeId } from '../constants/constants';
+import { LineId, NodeId } from '../../constants/constants';
 import { createVideoFrameScene, VIDEO_FRAME_BASE_VARIANT, VideoFrameSceneState } from './video-frame-scene';
 
 const parseSvg = (markup: string) =>

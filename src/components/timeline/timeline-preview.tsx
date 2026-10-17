@@ -6,7 +6,7 @@ import { MapStyle } from '../../map/map-style';
 import { TimelineGraph } from '../../timeline/timeline-project-context';
 import { TextLanguage } from '../../util/fonts';
 import { TimelinePlaybackTiming } from '../../util/timeline-playback';
-import { createVideoPreviewRenderer, VideoExportOptions } from '../../util/video-export';
+import { createVideoPreviewRenderer, VideoExportOptions } from '../../util/video-export/video-export';
 import { fitVideoPreviewFrame } from './timeline-preview-layout';
 
 interface TimelinePreviewProps {

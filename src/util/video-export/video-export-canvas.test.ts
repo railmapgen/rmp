@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MAP_ROUTING } from '../map/map-routing';
-import { DEFAULT_MAP_STYLE, compileMapStyleCss } from '../map/map-style';
-import { MapTileController } from '../map/map-tile-controller';
+import { MAP_ROUTING } from '../../map/map-routing';
+import { DEFAULT_MAP_STYLE, compileMapStyleCss } from '../../map/map-style';
+import { MapTileController } from '../../map/map-tile-controller';
 import { createVideoExportCanvas } from './video-export-canvas';
 
 const { updateViewport, dispose } = vi.hoisted(() => ({ updateViewport: vi.fn(), dispose: vi.fn() }));
-vi.mock('../map/map-tile-controller', () => ({
+vi.mock('../../map/map-tile-controller', () => ({
     MapTileController: vi.fn(() => ({ updateViewport, dispose })),
 }));
 

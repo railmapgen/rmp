@@ -1,7 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, Theme } from '../constants/constants';
-import { LineDefinition, VideoLineLabel } from '../constants/line-definitions';
-import { TimelineLabelEntry } from '../constants/timeline';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, Theme } from '../../constants/constants';
+import { LineDefinition, VideoLineLabel } from '../../constants/line-definitions';
+import { TimelineLabelEntry } from '../../constants/timeline';
 
 type VideoGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 

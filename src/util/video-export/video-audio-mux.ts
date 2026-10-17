@@ -8,7 +8,8 @@ const RecentLogLines = 8;
 const ffmpegLogs = new WeakMap<FFmpeg, string[]>();
 
 /** Each export owns its worker and releases the grown WASM heap on termination. */
-export const loadVideoFFmpeg = async (): Promise<FFmpeg> => {
+export const loadVideoFFmpeg = async (signal?: AbortSignal): Promise<FFmpeg> => {
+    if (signal?.aborted) throw signal.reason ?? new DOMException('Video export cancelled', 'AbortError');
     const ffmpeg = new FFmpeg();
     const logs: string[] = [];
     ffmpegLogs.set(ffmpeg, logs);
@@ -17,15 +18,34 @@ export const loadVideoFFmpeg = async (): Promise<FFmpeg> => {
         if (logs.length > RecentLogLines) logs.shift();
     });
     const abortController = new AbortController();
-    const timeout = window.setTimeout(() => abortController.abort(), 90_000);
+    let terminated = false;
+    const terminate = () => {
+        if (terminated) return;
+        terminated = true;
+        ffmpeg.terminate();
+    };
+    let rejectAbort!: (reason: unknown) => void;
+    const aborted = new Promise<never>((_resolve, reject) => {
+        rejectAbort = reject;
+    });
+    const abort = (reason: unknown) => {
+        rejectAbort(reason);
+        abortController.abort(reason);
+        terminate();
+    };
+    const onAbort = () => abort(signal?.reason ?? new DOMException('Video export cancelled', 'AbortError'));
+    const timeout = window.setTimeout(() => abort(new Error('Video encoder loading timed out')), 90_000);
+    signal?.addEventListener('abort', onAbort, { once: true });
     try {
-        await ffmpeg.load({ coreURL, wasmURL }, { signal: abortController.signal });
+        if (signal?.aborted) onAbort();
+        await Promise.race([ffmpeg.load({ coreURL, wasmURL }, { signal: abortController.signal }), aborted]);
         return ffmpeg;
     } catch (error) {
-        ffmpeg.terminate();
+        terminate();
         throw error;
     } finally {
         window.clearTimeout(timeout);
+        signal?.removeEventListener('abort', onAbort);
     }
 };
 

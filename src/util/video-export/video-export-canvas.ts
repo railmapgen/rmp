@@ -1,7 +1,7 @@
-import { MAP_ROUTING } from '../map/map-routing';
-import { compileMapStyleCss, MapStyle } from '../map/map-style';
-import { MapTileController } from '../map/map-tile-controller';
-import { LiveViewport } from '../redux/viewport/viewport-slice';
+import { MAP_ROUTING } from '../../map/map-routing';
+import { compileMapStyleCss, MapStyle } from '../../map/map-style';
+import { MapTileController } from '../../map/map-tile-controller';
+import { LiveViewport } from '../../redux/viewport/viewport-slice';
 
 /** Own an export source when a route, such as the timeline, has no editor canvas. */
 export const createVideoExportCanvas = (
@@ -47,5 +47,11 @@ export const createVideoExportCanvas = (
     editorLayer.setAttribute('data-editor-layer', '');
     wrapper.append(editorLayer);
 
-    return { canvas, renderGeometry: true, dispose: () => controller?.dispose() };
+    return {
+        canvas,
+        renderGeometry: true,
+        // Only the offline export uses this to select map detail for its actual camera, without touching the editor.
+        updateMapViewport: (next: LiveViewport) => controller?.updateViewport(next),
+        dispose: () => controller?.dispose(),
+    };
 };
