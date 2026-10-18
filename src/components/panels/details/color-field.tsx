@@ -26,6 +26,9 @@ const dynamicColorInjectionStationKeys = [
     StationType.FoshanMetroBasic,
     StationType.QingdaoMetroStation,
     StationType.TokyoMetroBasic,
+    StationType.TaipeiMetroBasic,
+    StationType.TaipeiLightRail,
+    StationType.TaipeiMaokongGondola,
     StationType.ChongqingRTBasic,
     StationType.ChongqingRTBasic2021,
     StationType.ChongqingRTInt2021,
@@ -58,6 +61,9 @@ const dynamicColorInjectionMiscNodeKeys = [
     MiscNodeType.LondonArrow,
     MiscNodeType.ChengduRTLineBadge,
     MiscNodeType.TaiPeiMetroLineBadege,
+    MiscNodeType.TaipeiLightRailLineBadge,
+    MiscNodeType.TaipeiMaokongGondolaBadge,
+    MiscNodeType.TaiwanRailwayArrow,
     MiscNodeType.WuhanRTLineBadge,
 ] as const;
 const dynamicColorInjectionLineStyleKeys = [
@@ -79,6 +85,9 @@ const dynamicColorInjectionLineStyleKeys = [
     LineStyleType.ChongqingRTLoop,
     LineStyleType.ChongqingRTLineBadge,
     LineStyleType.Shinkansen,
+    LineStyleType.TaipeiLightRail,
+    LineStyleType.TaipeiMaokongGondola,
+    LineStyleType.TaipeiTaiwanRailway,
 ] as const;
 type DynamicColorInjectionStationKeys = (typeof dynamicColorInjectionStationKeys)[number];
 type DynamicColorInjectionMiscNodeKeys = (typeof dynamicColorInjectionMiscNodeKeys)[number];

@@ -1,6 +1,7 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
 import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '../redux';
@@ -1187,5 +1188,59 @@ describe('Unit tests for param upgrade function', () => {
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         });
+    });
+
+    it('converts legacy Taipei tram badges from version 80 to light rail badges in version 81', async () => {
+        const graph = new MultiDirectedGraph();
+        const common = { visible: false, zIndex: 3, x: 120, y: 80 };
+        const color = ['taipei', 'custom', '#123456', '#fff'];
+        const badge = { code: 'LB', color };
+        const metro = MiscNodeType.TaiPeiMetroLineBadege;
+        const lightRail = MiscNodeType.TaipeiLightRailLineBadge;
+        graph.addNode('misc_node_tram', { ...common, type: metro, [metro]: { ...badge, tram: true } });
+        graph.addNode('misc_node_custom_tram', {
+            ...common,
+            type: metro,
+            [metro]: { ...badge, tram: true, size: 24 },
+        });
+        graph.addNode('misc_node_metro', { ...common, type: metro, [metro]: { ...badge, tram: false, size: 20 } });
+        graph.addNode('misc_node_no_tram', { ...common, type: metro, [metro]: { ...badge, size: 18 } });
+        graph.addNode('misc_node_light_rail', { ...common, type: lightRail, [lightRail]: badge });
+        graph.addNode('misc_node_other_tram', {
+            ...common,
+            type: MiscNodeType.GzmtrLineBadge,
+            [MiscNodeType.GzmtrLineBadge]: { names: ['1号线', 'Line 1'], color, tram: true, span: false },
+        });
+        const originalGraph = graph.export();
+        const oldSave = {
+            version: 80,
+            graph: originalGraph,
+            svgViewBoxZoom: 75,
+            svgViewBoxMin: { x: 10, y: 20 },
+            mapEnabled: true,
+            mapStyle: DEFAULT_MAP_STYLE,
+            images: [{ id: 'image', base64: 'data:image/png;base64,example' }],
+        };
+
+        const upgradedString = await upgrade(JSON.stringify(oldSave));
+        const upgraded = JSON.parse(upgradedString);
+        expect(upgraded).toEqual({
+            ...oldSave,
+            version: 81,
+            graph: {
+                ...originalGraph,
+                nodes: [
+                    { key: 'misc_node_tram', attributes: { ...common, type: lightRail, [lightRail]: badge } },
+                    { key: 'misc_node_custom_tram', attributes: { ...common, type: lightRail, [lightRail]: badge } },
+                    { key: 'misc_node_metro', attributes: { ...common, type: metro, [metro]: { ...badge, size: 20 } } },
+                    {
+                        key: 'misc_node_no_tram',
+                        attributes: { ...common, type: metro, [metro]: { ...badge, size: 18 } },
+                    },
+                    ...originalGraph.nodes.slice(4),
+                ],
+            },
+        });
+        expect(await upgrade(upgradedString)).toBe(upgradedString);
     });
 });

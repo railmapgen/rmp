@@ -17,10 +17,11 @@ interface InterchangeCardProps {
     onUp?: (index: number) => void;
     onDown?: (index: number) => void;
     foshan?: boolean;
+    taipei?: boolean;
 }
 
 export default function InterchangeCard(props: InterchangeCardProps) {
-    const { interchangeList, maximumTransfers, onAdd, onDelete, onUpdate, onDown, onUp, foshan } = props;
+    const { interchangeList, maximumTransfers, onAdd, onDelete, onUpdate, onDown, onUp, foshan, taipei } = props;
     const dispatch = useRootDispatch();
     const {
         paletteAppClip: { input, output },
@@ -34,12 +35,8 @@ export default function InterchangeCard(props: InterchangeCardProps) {
         if (indexRequestedTheme === undefined) {
             return;
         }
-        if (output) {
-            onUpdate?.(indexRequestedTheme, [
-                ...output,
-                interchangeList[indexRequestedTheme][4],
-                interchangeList[indexRequestedTheme][5],
-            ]);
+        if (output && interchangeList[indexRequestedTheme]) {
+            onUpdate?.(indexRequestedTheme, [...output, ...interchangeList[indexRequestedTheme].slice(4)]);
             setIndexRequestedTheme(undefined);
         } else if (!input) {
             setIndexRequestedTheme(undefined);
@@ -69,6 +66,15 @@ export default function InterchangeCard(props: InterchangeCardProps) {
             hidden: !foshan,
             onChange: val =>
                 onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], it[5], val ? 'fs' : 'gz', ...it.slice(7)]),
+        },
+        {
+            type: 'switch',
+            label: t('panel.details.stations.taipeiCommon.filled'),
+            isChecked: it[6] === 'filled',
+            minW: '20px',
+            hidden: !taipei,
+            onChange: val =>
+                onUpdate?.(i, [it[0], it[1], it[2], it[3], it[4], it[5], val ? 'filled' : 'hollow', ...it.slice(7)]),
         },
     ]);
 

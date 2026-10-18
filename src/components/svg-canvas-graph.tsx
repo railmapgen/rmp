@@ -62,6 +62,7 @@ const connectableNodesType = [
     MiscNodeType.Master,
     MiscNodeType.Fill,
     MiscNodeType.LondonArrow,
+    MiscNodeType.TaiwanRailwayArrow,
     MiscNodeType.ChongqingRTNumLineBadge2021,
     MiscNodeType.ChongqingRTTextLineBadge2021,
     MiscNodeType.ChengduRTLineBadge,

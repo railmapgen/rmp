@@ -180,7 +180,7 @@
                 },
                 "taipeiMetroLineBadge": {
                     "displayName": "台北捷運線路標識",
-                    "tram": "輕軌"
+                    "size": "大小"
                 },
                 "wuhanRTLineBadge": {
                     "displayName": "武漢軌道交通線路標識"
@@ -252,7 +252,12 @@
                     "tram_shenzhen": "深圳有軌電車",
                     "airport_shenzhen": "深圳機場",
                     "railway_wuhan": "武漢火車站",
-                    "airport_wuhan": "武漢機場"
+                    "airport_wuhan": "武漢機場",
+                    "airport_taipei": "機場（台北）",
+                    "hsr_taipei": "高鐵（台北）",
+                    "railway_taipei": "台鐵（台北）",
+                    "taoyuan_airport_mrt": "桃園機場捷運（台北）",
+                    "hot_spring_taipei": "溫泉（台北）"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -295,6 +300,16 @@
                     "createSquare": "建立正方形",
                     "createTriangle": "建立三角形",
                     "createCircle": "建立圓形"
+                },
+                "taipeiLightRailLineBadge": {
+                    "displayName": "台北輕軌路線標識"
+                },
+                "taipeiMaokongGondolaBadge": {
+                    "displayName": "台北貓空纜車標識"
+                },
+                "taiwanRailwayArrow": {
+                    "displayName": "台鐵端點箭頭",
+                    "outlined": "黑色邊框"
                 }
             },
             "stations": {
@@ -566,6 +581,32 @@
                     "displayName": "杭州地鐵換乘車站",
                     "mirror": "圖標鏡像",
                     "scale": "站名橫向縮放"
+                },
+                "taipeiMetroBasic": {
+                    "displayName": "台北捷運基本車站"
+                },
+                "taipeiMetroInt": {
+                    "displayName": "台北捷運轉乘車站"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北輕軌車站",
+                    "codeLayout": "編號排版",
+                    "codeInline": "單行（V11）",
+                    "codeStacked": "雙行（LB / 12）",
+                    "textOpacity": "文字不透明度"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北貓空纜車車站"
+                },
+                "taipeiCommon": {
+                    "nameOffset": "站名位置",
+                    "secondaryNameZh": "第二站名（中文）",
+                    "secondaryNameEn": "第二站名（英文）",
+                    "secondaryNameOnNewLine": "換行顯示第二名稱",
+                    "filled": "實心編號牌",
+                    "align": "編號牌排列",
+                    "horizontal": "橫向",
+                    "vertical": "縱向"
                 }
             },
             "lines": {
@@ -769,6 +810,21 @@
                     "moveLayerUp": "上移線層",
                     "moveLayerDown": "下移線層",
                     "removeLayer": "刪除線層"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北輕軌"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北貓空纜車"
+                },
+                "taipeiMetroOutOfStation": {
+                    "displayName": "台北捷運站外轉乘"
+                },
+                "taipeiTaiwanRailway": {
+                    "displayName": "台鐵路線（台北）"
+                },
+                "taipeiMaokongGondolaTransfer": {
+                    "displayName": "貓空纜車步行連接線"
                 }
             },
             "edges": {},
@@ -783,6 +839,10 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "taipeiOpacity": {
+                "preset": "預設",
+                "opaque": "不透明"
             }
         }
     },

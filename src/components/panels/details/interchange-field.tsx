@@ -173,6 +173,7 @@ export const InterchangeField = (props: {
                         onDelete={handleDelete(i)}
                         onUpdate={handleUpdate(i)}
                         foshan={stationType === StationType.GzmtrInt2024 || stationType === StationType.GzmtrInt}
+                        taipei={stationType === StationType.TaipeiMetroInt}
                     />
                 </React.Fragment>
             ))}
