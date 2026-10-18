@@ -1,13 +1,15 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { LinePathType, LineStyleType } from '../../constants/lines';
 import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
-import { render } from '../../test-utils';
+import { setActiveSubscriptions } from '../../redux/account/account-slice';
+import { createTestLineGraph, render } from '../../test-utils';
 import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
 import { createTimelineStore, openProject, setVideoOptions } from '../../timeline/timeline-store';
@@ -18,6 +20,7 @@ import {
     VideoExportResult,
     VideoExportStorageError,
 } from '../../util/video-export/video-export-destination';
+import { linePaths, lineStyles } from '../svgs/lines/lines';
 import VideoExportModal from './video-export-modal';
 
 vi.mock('../../util/video-export/video-export', async importOriginal => ({
@@ -36,8 +39,10 @@ beforeEach(() => {
     vi.mocked(prepareVideoExportDestination).mockResolvedValue(vi.fn());
 });
 
-const renderDefaultModal = () => {
-    const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+const renderDefaultModal = (
+    graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>(),
+    mapEnabled = false
+) => {
     const record: TimelineProjectRecord = {
         id: 'video-export-result-test',
         name: 'Video export test',
@@ -47,7 +52,7 @@ const renderDefaultModal = () => {
         revision: {
             rmpVersion: 80,
             graph: graph.export(),
-            mapEnabled: false,
+            mapEnabled,
             mapStyle: structuredClone(DEFAULT_MAP_STYLE),
             svgViewBoxZoom: 100,
             svgViewBoxMin: { x: 0, y: 0 },
@@ -171,6 +176,97 @@ describe('VideoExportModal Timeline settings', () => {
             destinationFactory: expect.any(Function),
             signal: expect.any(AbortSignal),
         });
+    });
+});
+
+describe('VideoExportModal subscription policy', () => {
+    it('shows the line restriction tooltip only while a line is unavailable', async () => {
+        const { store, unmount } = renderDefaultModal(createTestLineGraph([['A', 'B']]));
+        const exportTrigger = document.getElementById('video_export_button')!.parentElement!;
+        fireEvent.pointerOver(exportTrigger);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent(
+            'Some lines cannot be displayed in the current map or normal mode.'
+        );
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+        expect(screen.getByRole('tooltip')).toHaveTextContent(
+            'Some lines cannot be displayed in the current map or normal mode.'
+        );
+        expect(document.getElementById('video_export_button')).toBeDisabled();
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+        await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
+        fireEvent.pointerLeave(exportTrigger);
+        await act(async () => {
+            fireEvent.pointerOver(exportTrigger);
+            await new Promise(resolve => setTimeout(resolve, 0));
+        });
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+
+        unmount();
+        renderDefaultModal();
+        const unrestrictedButton = document.getElementById('video_export_button')!;
+        for (const acceptsTerms of [true, false]) {
+            if (!acceptsTerms) fireEvent.click(document.getElementById('agree_terms_video')!);
+            expect(unrestrictedButton).toHaveProperty('disabled', !acceptsTerms);
+            await act(async () => {
+                fireEvent.pointerOver(unrestrictedButton.parentElement!);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            });
+            expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+            fireEvent.pointerLeave(unrestrictedButton.parentElement!);
+        }
+    });
+
+    it.each([
+        { type: LinePathType.Bezier, style: LineStyleType.GzmtrVirtualInt, mapEnabled: false },
+        { type: LinePathType.Diagonal, style: LineStyleType.SingleColor, mapEnabled: true },
+        { type: LinePathType.Simple, style: LineStyleType.SingleColor, mapEnabled: false },
+        { type: LinePathType.Simple, style: LineStyleType.SingleColor, mapEnabled: true },
+    ])('requires Export access for $type / $style when mapEnabled=$mapEnabled', async ({ type, style, mapEnabled }) => {
+        const graph = createTestLineGraph([['A', 'B']]);
+        graph.replaceEdgeAttributes('line_0', {
+            type,
+            [type]: structuredClone(linePaths[type].defaultAttrs),
+            style,
+            [style]: structuredClone(lineStyles[style].defaultAttrs),
+            visible: true,
+            zIndex: 0,
+            reconcileId: '',
+            parallelIndex: -1,
+        });
+        const { store } = renderDefaultModal(graph, mapEnabled);
+        const warning =
+            'Some lines cannot be displayed in the current map or normal mode. Video export is unavailable until they are fixed.';
+        const exportButton = document.getElementById('video_export_button')!;
+
+        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(exportButton).toBeDisabled();
+        fireEvent.click(exportButton);
+        expect(exportVideo).not.toHaveBeenCalled();
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+
+        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(exportButton).toBeDisabled();
+        fireEvent.click(exportButton);
+        expect(exportVideo).not.toHaveBeenCalled();
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+
+        expect(screen.queryByText(warning)).not.toBeInTheDocument();
+        expect(exportButton).toBeEnabled();
+        fireEvent.click(exportButton);
+        await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
+        expect(vi.mocked(exportVideo).mock.calls[0][6]).toMatchObject({ isSubscriber: true, mapEnabled });
+        await waitFor(() => expect(downloadVideoExportResult).toHaveBeenCalledOnce());
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+
+        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(exportButton).toBeDisabled();
+        fireEvent.click(exportButton);
+        expect(exportVideo).toHaveBeenCalledOnce();
     });
 });
 

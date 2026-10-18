@@ -61,7 +61,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
     const mapEnabled = active.revision.mapEnabled;
-    const isSubscriber = false;
+    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
     const unavailableLineCount = React.useMemo(
         () => getUnavailableLineIds(graph, mapEnabled, isSubscriber).size,
         [graph, mapEnabled, isSubscriber]
@@ -382,7 +382,11 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             </Button>
                         )}
                         <Box>
-                            <Tooltip label={t('header.download.videoExport.unavailableLines')} hasArrow>
+                            <Tooltip
+                                label={t('header.download.videoExport.unavailableLines')}
+                                isDisabled={unavailableLineCount === 0}
+                                hasArrow
+                            >
                                 <span>
                                     <Button
                                         id="video_export_button"

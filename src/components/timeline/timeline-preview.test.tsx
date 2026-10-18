@@ -35,6 +35,7 @@ const props = {
     time: 0,
     options: videoPreviewDefaultOptions,
     mapEnabled: false,
+    isSubscriber: false,
     mapStyle: DEFAULT_MAP_STYLE,
     svgViewBoxMin: { x: 0, y: 0 },
     svgViewBoxZoom: 100,
@@ -72,6 +73,22 @@ describe('TimelinePreview video frames', () => {
     });
 
     afterEach(() => vi.unstubAllGlobals());
+
+    it('rebuilds video geometry when Export access changes', async () => {
+        const { container, rerender } = render(<TimelinePreview {...props} />);
+        await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
+        expect(mocks.prepare.mock.calls[0][4]).toMatchObject({ isSubscriber: false });
+
+        rerender(<TimelinePreview {...props} isSubscriber={true} />);
+        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(2));
+        expect(mocks.prepare.mock.calls[1][4]).toMatchObject({ isSubscriber: true });
+        expect(mocks.dispose).toHaveBeenCalledTimes(1);
+
+        rerender(<TimelinePreview {...props} isSubscriber={false} />);
+        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(3));
+        expect(mocks.prepare.mock.calls[2][4]).toMatchObject({ isSubscriber: false });
+        expect(mocks.dispose).toHaveBeenCalledTimes(2);
+    });
 
     it('uses exported frames at real seconds and publishes the complete video timing', async () => {
         const onTimingChange = vi.fn();

@@ -16,6 +16,7 @@ interface TimelinePreviewProps {
     time: number;
     options: VideoExportOptions;
     mapEnabled: boolean;
+    isSubscriber: boolean;
     mapStyle: MapStyle;
     svgViewBoxMin: { x: number; y: number };
     svgViewBoxZoom: number;
@@ -33,6 +34,7 @@ export default function TimelinePreview({
     time,
     options,
     mapEnabled,
+    isSubscriber,
     mapStyle,
     svgViewBoxMin,
     svgViewBoxZoom,
@@ -183,7 +185,7 @@ export default function TimelinePreview({
             mapStyle,
             svgViewBoxMin,
             svgViewBoxZoom,
-            isSubscriber: false,
+            isSubscriber,
             getImage,
         })
             .then(prepared => {
@@ -215,6 +217,7 @@ export default function TimelinePreview({
         languages,
         options,
         mapEnabled,
+        isSubscriber,
         mapStyle,
         svgViewBoxMin,
         svgViewBoxZoom,
