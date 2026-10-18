@@ -180,7 +180,7 @@
                 },
                 "taipeiMetroLineBadge": {
                     "displayName": "Taipei Metro line badge",
-                    "tram": "Tram"
+                    "size": "Size"
                 },
                 "wuhanRTLineBadge": {
                     "displayName": "Wuhan Rail Transit line badge"
@@ -252,7 +252,12 @@
                     "tram_shenzhen": "Tram Shenzhen",
                     "airport_shenzhen": "Airport Shenzhen",
                     "railway_wuhan": "Railway Wuhan",
-                    "airport_wuhan": "Airport Wuhan"
+                    "airport_wuhan": "Airport Wuhan",
+                    "airport_taipei": "Airport (Taipei)",
+                    "hsr_taipei": "High Speed Rail (Taipei)",
+                    "railway_taipei": "Taiwan Railway (Taipei)",
+                    "taoyuan_airport_mrt": "Taoyuan Airport MRT (Taipei)",
+                    "hot_spring_taipei": "Hot spring (Taipei)"
                 },
                 "text": {
                     "displayName": "Arbitrary text",
@@ -295,6 +300,16 @@
                     "createSquare": "Create square",
                     "createTriangle": "Create triangle",
                     "createCircle": "Create circle"
+                },
+                "taipeiLightRailLineBadge": {
+                    "displayName": "Taipei light rail line badge"
+                },
+                "taipeiMaokongGondolaBadge": {
+                    "displayName": "Taipei Maokong Gondola badge"
+                },
+                "taiwanRailwayArrow": {
+                    "displayName": "Taiwan Railway endpoint arrows",
+                    "outlined": "Black border"
                 }
             },
             "stations": {
@@ -567,6 +582,32 @@
                     "displayName": "Hangzhou Metro interchange station",
                     "mirror": "Icon mirroring",
                     "scale": "Names horizontal scale"
+                },
+                "taipeiMetroBasic": {
+                    "displayName": "Taipei Metro basic station"
+                },
+                "taipeiMetroInt": {
+                    "displayName": "Taipei Metro interchange station"
+                },
+                "taipeiLightRail": {
+                    "displayName": "Taipei light rail station",
+                    "codeLayout": "Code layout",
+                    "codeInline": "Single line (V11)",
+                    "codeStacked": "Two lines (LB / 12)",
+                    "textOpacity": "Text opacity"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "Taipei Maokong Gondola station"
+                },
+                "taipeiCommon": {
+                    "nameOffset": "Station name position",
+                    "secondaryNameZh": "Secondary name (Chinese)",
+                    "secondaryNameEn": "Secondary name (English)",
+                    "secondaryNameOnNewLine": "Show secondary name on a new line",
+                    "filled": "Filled number plate",
+                    "align": "Number plate arrangement",
+                    "horizontal": "Horizontal",
+                    "vertical": "Vertical"
                 }
             },
             "lines": {
@@ -770,6 +811,21 @@
                     "moveLayerUp": "Move layer up",
                     "moveLayerDown": "Move layer down",
                     "removeLayer": "Remove layer"
+                },
+                "taipeiLightRail": {
+                    "displayName": "Taipei light rail"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "Taipei Maokong Gondola"
+                },
+                "taipeiMetroOutOfStation": {
+                    "displayName": "Taipei Metro out-of-station transfer"
+                },
+                "taipeiTaiwanRailway": {
+                    "displayName": "Taiwan Railway line (Taipei)"
+                },
+                "taipeiMaokongGondolaTransfer": {
+                    "displayName": "Maokong Gondola walking connection"
                 }
             },
             "edge": {},
@@ -784,6 +840,10 @@
             },
             "footer": {
                 "duplicate": "Duplicate"
+            },
+            "taipeiOpacity": {
+                "preset": "Preset",
+                "opaque": "Opaque"
             }
         }
     },

@@ -4,6 +4,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
@@ -55,7 +56,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 80;
+export const CURRENT_VERSION = 81;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1077,5 +1078,30 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
     79: param => {
         const save = JSON.parse(param) as RMPSave;
         return JSON.stringify({ ...save, version: 80, graph: reconcileLineDefinitions(save.graph) });
+    },
+    80: param => {
+        // Add Taipei resources, preserve existing metro dimensions, and migrate tram badges to light rail.
+        const save = JSON.parse(param) as RMPSave;
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.import(save.graph);
+        graph.forEachNode((node, attrs) => {
+            if (attrs.type !== MiscNodeType.TaiPeiMetroLineBadege) return;
+            const badge = attrs[MiscNodeType.TaiPeiMetroLineBadege] as
+                | (TaipeiMetroLineBadgeAttributes & { tram?: boolean })
+                | undefined;
+            if (!badge) return;
+
+            const { tram, size = 16, ...metroAttrs } = badge;
+            if (tram) {
+                graph.mergeNodeAttributes(node, {
+                    type: MiscNodeType.TaipeiLightRailLineBadge,
+                    [MiscNodeType.TaipeiLightRailLineBadge]: { code: badge.code, color: badge.color },
+                });
+                graph.removeNodeAttribute(node, MiscNodeType.TaiPeiMetroLineBadege);
+            } else {
+                graph.setNodeAttribute(node, MiscNodeType.TaiPeiMetroLineBadege, { ...metroAttrs, size });
+            }
+        });
+        return JSON.stringify({ ...save, version: 81, graph: graph.export() });
     },
 };

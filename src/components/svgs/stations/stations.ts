@@ -39,6 +39,10 @@ import csmetroBasicStation from './csmetro-basic';
 import csmetroIntStation from './csmetro-int';
 import hzmetroBasicStation from './hzmetro-basic';
 import hzmetroIntStation from './hzmetro-int';
+import taipeiMetroBasicStation from './taipei-metro-basic';
+import taipeiMetroIntStation from './taipei-metro-int';
+import taipeiLightRailStation from './taipei-light-rail';
+import taipeiMaokongGondolaStation from './taipei-maokong-gondola';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -81,6 +85,10 @@ const stations = {
     [StationType.CsmetroInt]: csmetroIntStation,
     [StationType.HzmetroBasic]: hzmetroBasicStation,
     [StationType.HzmetroInt]: hzmetroIntStation,
+    [StationType.TaipeiMetroBasic]: taipeiMetroBasicStation,
+    [StationType.TaipeiMetroInt]: taipeiMetroIntStation,
+    [StationType.TaipeiLightRail]: taipeiLightRailStation,
+    [StationType.TaipeiMaokongGondola]: taipeiMaokongGondolaStation,
 };
 
 export default stations;

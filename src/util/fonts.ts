@@ -32,6 +32,10 @@ export const Node2Font: {
     [StationType.JREastImportant]: [TextLanguage.jreast_ja, TextLanguage.jreast_en],
     [StationType.TokyoMetroBasic]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
     [StationType.TokyoMetroInt]: [TextLanguage.tokyo_ja, TextLanguage.tokyo_en],
+    [StationType.TaipeiMetroBasic]: [TextLanguage.taipei],
+    [StationType.TaipeiMetroInt]: [TextLanguage.taipei],
+    [StationType.TaipeiLightRail]: [TextLanguage.taipei],
+    [StationType.TaipeiMaokongGondola]: [TextLanguage.taipei],
     [StationType.OsakaMetro]: [TextLanguage.tokyo_ja, TextLanguage.berlin],
     [StationType.LondonTubeBasic]: [TextLanguage.tube],
     [StationType.LondonTubeInt]: [TextLanguage.tube],
@@ -42,6 +46,8 @@ export const Node2Font: {
     [MiscNodeType.MRTDestinationNumbers]: [TextLanguage.mrt],
     [MiscNodeType.MRTLineBadge]: [TextLanguage.mrt],
     [MiscNodeType.TaiPeiMetroLineBadege]: [TextLanguage.taipei],
+    [MiscNodeType.TaipeiLightRailLineBadge]: [TextLanguage.taipei],
+    [MiscNodeType.TaipeiMaokongGondolaBadge]: [TextLanguage.taipei],
     [MiscNodeType.LondonTubeLineBadge]: [TextLanguage.tube],
 };
 
