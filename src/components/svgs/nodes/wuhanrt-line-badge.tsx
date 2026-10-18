@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -23,6 +24,7 @@ const getDisplayText = (content: string) => {
 };
 
 const WuhanRTLineBadge = (props: NodeComponentProps<WuhanRTLineBadgeAttributes>) => {
+    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { content = defaultWuhanRTLineBadgeAttributes.content, color = defaultWuhanRTLineBadgeAttributes.color } =
         attrs ?? defaultWuhanRTLineBadgeAttributes;
@@ -30,7 +32,7 @@ const WuhanRTLineBadge = (props: NodeComponentProps<WuhanRTLineBadgeAttributes>)
     const textEl = React.useRef<SVGTextElement | null>(null);
     const displayText = getDisplayText(content);
     const [textWidth, setTextWidth] = React.useState(0);
-    React.useEffect(() => setTextWidth(textEl.current?.getBBox().width ?? 0), [displayText]);
+    useSvgLayoutEffect(() => setTextWidth(textEl.current ? measureBBox(textEl.current).width : 0), [displayText]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

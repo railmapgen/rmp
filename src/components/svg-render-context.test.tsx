@@ -1,12 +1,14 @@
-import { render, waitFor } from '@testing-library/react';
+import { logger } from '@railmapgen/rmg-runtime';
+import { render, renderHook, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { TextLanguage } from '../util/fonts';
+import * as fonts from '../util/fonts';
 import { getNodes } from '../util/process-elements';
 import SvgLayer from './svg-layer';
-import { SvgRenderProvider } from './svg-render-context';
+import { SvgRenderProvider, useSvgRenderContext } from './svg-render-context';
 
 beforeAll(() => {
     if (!(SVGElement.prototype as SVGElement & { getBBox?: () => DOMRect }).getBBox) {
@@ -18,10 +20,22 @@ beforeAll(() => {
 });
 
 afterEach(() => {
+    vi.restoreAllMocks();
     window.graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 });
 
 describe('SvgRenderContext', () => {
+    it('observes font failures in the editor fallback without interrupting rendering', async () => {
+        const failure = new Error('Font download failed');
+        vi.spyOn(fonts, 'loadFont').mockRejectedValue(failure);
+        const warn = vi.spyOn(logger, 'warn').mockImplementation(() => undefined);
+        const { result } = renderHook(useSvgRenderContext);
+
+        expect(() => result.current.ensureFont(TextLanguage.mrt)).not.toThrow();
+
+        await waitFor(() => expect(warn).toHaveBeenCalledWith('Failed to load font', TextLanguage.mrt, failure));
+    });
+
     it('renders Fill, Image and Text through SvgLayer without RMP Redux or window.graph', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('misc_node_fill', {

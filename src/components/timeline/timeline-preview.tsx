@@ -87,12 +87,14 @@ export default function TimelinePreview({
     );
 
     React.useEffect(() => {
+        const preparationController = new AbortController();
         let cancelled = false;
         let pending = false;
         let forcePending = false;
         let rendering = false;
         let renderedFrame: number | undefined;
         let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+        let unsubscribeLayout: (() => void) | undefined;
         setLoading(true);
         setError(undefined);
         onTimingChange(undefined);
@@ -180,14 +182,21 @@ export default function TimelinePreview({
                 cancelled = true;
             };
         }
-        void createVideoPreviewRenderer(graph, visualDocument, languages, options, {
-            mapEnabled,
-            mapStyle,
-            svgViewBoxMin,
-            svgViewBoxZoom,
-            isSubscriber,
-            getImage,
-        })
+        void createVideoPreviewRenderer(
+            graph,
+            visualDocument,
+            languages,
+            options,
+            {
+                mapEnabled,
+                mapStyle,
+                svgViewBoxMin,
+                svgViewBoxZoom,
+                isSubscriber,
+                getImage,
+            },
+            preparationController.signal
+        )
             .then(prepared => {
                 renderer = prepared;
                 if (cancelled) {
@@ -195,6 +204,7 @@ export default function TimelinePreview({
                     return;
                 }
                 onTimingChange({ duration: prepared.duration, cursorTimes: prepared.cursorTimes });
+                unsubscribeLayout = prepared.subscribeLayoutInvalidation?.(() => void renderLatest(true));
                 prepared.setLabelTrack(latestLabels.current ?? []);
                 void renderLatest();
             })
@@ -206,6 +216,8 @@ export default function TimelinePreview({
             });
         return () => {
             cancelled = true;
+            preparationController.abort();
+            unsubscribeLayout?.();
             dragRef.current = undefined;
             renderer?.dispose();
             requestRenderRef.current = () => {};

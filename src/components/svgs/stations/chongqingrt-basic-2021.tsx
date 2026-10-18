@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -32,6 +33,7 @@ export const LINE_HEIGHT = {
 };
 
 const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
+    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -87,11 +89,11 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
     const [elOffset, setElOffset] = React.useState(0);
     const [opOffset, setOpOffset] = React.useState(0);
 
-    React.useEffect(() => {
+    useSvgLayoutEffect(() => {
         if (elRef.current && zhRef.current) {
             if (nameOffsetX !== 'middle') {
-                const elWidth = elRef.current.getBBox().width;
-                const zhWidth = zhRef.current.getBBox().width;
+                const elWidth = measureBBox(elRef.current).width;
+                const zhWidth = measureBBox(zhRef.current).width;
                 if (zhWidth > elWidth) {
                     setElOffset((zhWidth - elWidth) / 2);
                 } else {
@@ -102,8 +104,8 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
             }
         }
         if (!open && opRef.current && zhRef.current) {
-            const opWidth = opRef.current.getBBox().width;
-            const zhWidth = zhRef.current.getBBox().width;
+            const opWidth = measureBBox(opRef.current).width;
+            const zhWidth = measureBBox(zhRef.current).width;
             if (zhWidth > opWidth) {
                 setOpOffset((zhWidth - opWidth) / 2);
             } else {

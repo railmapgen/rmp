@@ -1,13 +1,6 @@
 import { MultiDirectedGraph } from 'graphology';
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import { I18nextProvider } from 'react-i18next';
-import { utils } from '@railmapgen/svg-assets';
-import i18n from '../../i18n/config';
 import videoWatermarkSVG from '../../assets/rmp-video-watermark.svg?raw';
 import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId, StnId } from '../../constants/constants';
-import SvgLayer from '../../components/svg-layer';
-import { SvgRenderProvider } from '../../components/svg-render-context';
 import { StationType } from '../../constants/stations';
 import { MiscNodeType } from '../../constants/nodes';
 import { ImageAttributes } from '../../components/svgs/nodes/image';
@@ -24,7 +17,7 @@ import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
 import { renderMapLayerForExport } from '../../map/map-tile-controller';
 import { positionMapAttribution } from '../../map/map-attribution';
 import { isMapZoomed } from '../../map/map-config';
-import { loadFont, TextLanguage } from '../fonts';
+import { TextLanguage } from '../fonts';
 import { changeStationType, checkAndChangeStationIntType } from '../change-types';
 import { makeRenderReadySVGElement } from '../download';
 import { calculateCanvasSize } from '../helpers';
@@ -42,6 +35,11 @@ import { createVideoFrameScene, VIDEO_FRAME_BASE_VARIANT } from './video-frame-s
 import { renderVideoSVGToCanvas } from './video-export-rasterizer';
 import { throwIfVideoExportAborted } from './video-export-control';
 import type { VideoExportDestinationFactory, VideoExportResult } from './video-export-destination';
+import {
+    createVideoResourceLayout,
+    getVideoResourceLanguages,
+    renderStaticVideoElements,
+} from './video-resource-layout';
 
 export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>> = {
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
@@ -304,15 +302,21 @@ export const getRenderedEdgeLength = (
 const measureRenderedEdgeLengths = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     edgeIds: LineId[],
+    resourceLayout: ReturnType<typeof createVideoResourceLayout>,
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
     renderGeometry = false,
     sourceCanvas?: SVGSVGElement,
     mapEnabled = false,
-    isSubscriber = false,
     imageAssets = new Map<string, string>(),
     deferMap = false
 ): Promise<{ edgeLengths: Map<LineId, number>; geometry: SVGSVGElement }> => {
+    const markup = renderGeometry
+        ? await resourceLayout.prepare(graph, [
+              ...getLines(graph, { showReconcileWarnings: false }),
+              ...getNodes(graph),
+          ])
+        : undefined;
     const { elem } = await makeRenderReadySVGElement(
         graph,
         mapEnabled && !deferMap,
@@ -321,9 +325,7 @@ const measureRenderedEdgeLengths = async (
         languages,
         false,
         2,
-        renderGeometry
-            ? clone => renderVideoFrameGeometry(graph, clone, mapEnabled, isSubscriber, imageAssets)
-            : undefined,
+        markup === undefined ? undefined : clone => applyVideoFrameGeometry(graph, clone, markup, imageAssets),
         sourceCanvas
     );
     const edgeLengths = new Map<LineId, number>();
@@ -645,11 +647,10 @@ export const embedVideoExportStyles = (elem: SVGSVGElement) => {
 };
 
 /** Rebuild the detached graph layer before export cleanup embeds fonts and facility symbols. */
-export const renderVideoFrameGeometry = (
+const applyVideoFrameGeometry = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     elem: SVGSVGElement,
-    mapEnabled = false,
-    isSubscriber = false,
+    preparedMarkup: string,
     imageAssets = new Map<string, string>()
 ) => {
     let layer = elem.querySelector<SVGGElement>('[data-editor-layer]');
@@ -659,12 +660,7 @@ export const renderVideoFrameGeometry = (
         elem.appendChild(layer);
     }
     layer.removeAttribute('display');
-    layer.innerHTML = renderVideoElementsGeometry(
-        graph,
-        [...getLines(graph, { showReconcileWarnings: false }), ...getNodes(graph)],
-        mapEnabled,
-        isSubscriber
-    );
+    layer.innerHTML = preparedMarkup;
     graph.forEachNode((node, attrs) => {
         if (attrs.type !== MiscNodeType.Image) return;
         const imageAttrs = attrs[MiscNodeType.Image] as ImageAttributes | undefined;
@@ -684,46 +680,33 @@ export const renderVideoFrameGeometry = (
     });
 };
 
+/** Standalone callers receive the same measured geometry as preview and export. */
+export const renderVideoFrameGeometry = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    elem: SVGSVGElement,
+    mapEnabled = false,
+    isSubscriber = false,
+    imageAssets = new Map<string, string>()
+) => {
+    const layout = createVideoResourceLayout({ mapEnabled, isSubscriber });
+    try {
+        const markup = await layout.prepare(graph, [
+            ...getLines(graph, { showReconcileWarnings: false }),
+            ...getNodes(graph),
+        ]);
+        applyVideoFrameGeometry(graph, elem, markup, imageAssets);
+    } finally {
+        layout.dispose();
+    }
+};
+
 /** Render only elements whose geometry or station appearance has changed. */
 const renderVideoElementsGeometry = (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
     elements: RenderElement[],
     mapEnabled: boolean,
     isSubscriber: boolean
-) =>
-    renderToStaticMarkup(
-        React.createElement(
-            I18nextProvider,
-            { i18n },
-            React.createElement(
-                SvgRenderProvider,
-                {
-                    value: {
-                        graph,
-                        graphRefresh: graph,
-                        imageRefresh: graph,
-                        getImage: async () => undefined,
-                        ensureFont: language => void loadFont(language),
-                    },
-                },
-                React.createElement(
-                    utils.SvgAssetsContextProvider,
-                    null,
-                    React.createElement(SvgLayer, {
-                        elements,
-                        selected: new Set<Id>(),
-                        mapEnabled,
-                        isSubscriber,
-                        handlePointerDown: () => {},
-                        handlePointerMove: () => {},
-                        handlePointerUp: () => {},
-                        handleEdgePointerDown: () => {},
-                        handleEdgeDoubleClick: () => {},
-                    })
-                )
-            )
-        )
-    );
+) => renderStaticVideoElements(graph, elements, { mapEnabled, isSubscriber });
 
 export const exportVideo = async (
     graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
@@ -812,8 +795,52 @@ const createPreparedVideoRenderer = async (
     options: VideoExportOptions,
     source: ReturnType<typeof createVideoExportCanvas>,
     environment: VideoExportEnvironment,
+    exportRuntime?: VideoExportRuntime,
+    previewSignal?: AbortSignal
+) => {
+    const layout = createVideoResourceLayout({
+        languages,
+        isSystemFontsOnly: options.isSystemFontsOnly,
+        mapEnabled: environment.mapEnabled,
+        isSubscriber: environment.isSubscriber,
+        signal: exportRuntime?.signal ?? previewSignal,
+    });
+    try {
+        const renderer = await prepareVideoRenderer(
+            graph,
+            timeline,
+            languages,
+            options,
+            source,
+            environment,
+            layout,
+            exportRuntime
+        );
+        return {
+            ...renderer,
+            subscribeLayoutInvalidation: layout.subscribe,
+            dispose: () => {
+                renderer.dispose();
+                layout.dispose();
+            },
+        };
+    } catch (error) {
+        layout.dispose();
+        throw error;
+    }
+};
+
+const prepareVideoRenderer = async (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    timeline: TimelineDocument,
+    languages: TextLanguage[],
+    options: VideoExportOptions,
+    source: ReturnType<typeof createVideoExportCanvas>,
+    environment: VideoExportEnvironment,
+    resourceLayout: ReturnType<typeof createVideoResourceLayout>,
     exportRuntime?: VideoExportRuntime
 ) => {
+    languages = getVideoResourceLanguages(getNodes(graph), languages);
     const { fps, speedMultiplier, resolution, autoChangeStationType, isSystemFontsOnly, hideWatermark } = {
         ...options,
         ...timeline.settings,
@@ -887,12 +914,12 @@ const createPreparedVideoRenderer = async (
     const { edgeLengths: measuredEdgeLengths, geometry } = await measureRenderedEdgeLengths(
         graph,
         sequence.edges,
+        resourceLayout,
         isSystemFontsOnly,
         languages,
         renderGeometry,
         source.canvas,
         environment.mapEnabled,
-        !!environment.isSubscriber,
         imageAssets,
         exportRuntime !== undefined
     );
@@ -1344,14 +1371,17 @@ const createPreparedVideoRenderer = async (
         if (isStationNodeId(id as Id))
             baseStationKeys.set(id as StnId, JSON.stringify([attrs.type, attrs[attrs.type]]));
     });
-    type Appearance = { stations: Map<StnId, { key: string; attrs: NodeAttributes }> };
+    type Appearance = {
+        graph: typeof graph;
+        stations: Map<StnId, { key: string; attrs: NodeAttributes }>;
+    };
     const appearances = new Map<string, Appearance>();
     const stationAppearanceAt = (visibleEdges: Set<LineId>): Appearance => {
         const key = autoChangeStationType ? [...visibleEdges].join('|') : '';
         let appearance = appearances.get(key);
         if (appearance) return appearance;
         const analysis = autoChangeStationType ? createFrameStationGraph(graph, visibleEdges) : graph;
-        appearance = { stations: new Map() };
+        appearance = { graph: analysis, stations: new Map() };
         analysis.forEachNode((id, attrs) => {
             const stationId = id as StnId;
             if (!baseStationKeys.has(stationId)) return;
@@ -1417,7 +1447,30 @@ const createPreparedVideoRenderer = async (
         }
         lastGeometryGraph = frameGraph;
     };
-    const updateStationAppearance = (appearance: Appearance) => {
+    const prepareStationAppearance = async (appearance: Appearance) => {
+        const prepared = new Map<string, Map<string, SVGElement>>();
+        const missing: RenderElement[] = [];
+        for (const [id, variant] of appearance.stations) {
+            if (currentStationKeys.get(id) === variant.key) continue;
+            const key = id + variant.key;
+            const cached = stationTemplates.get(key);
+            if (cached) prepared.set(key, cached);
+            else missing.push({ id, type: 'station', station: variant.attrs });
+        }
+        if (!missing.length) return prepared;
+        const templates = parseTemplates(await resourceLayout.prepare(appearance.graph, missing));
+        for (const element of missing) {
+            const key = element.id + appearance.stations.get(element.id as StnId)!.key;
+            const groups = new Map([...templates].filter(([id]) => id.replace(/\.(pre|post)$/, '') === element.id));
+            // Keep this request's templates available even when it exceeds the bounded shared cache.
+            prepared.set(key, groups);
+            stationTemplates.set(key, groups);
+            if (stationTemplates.size > 128) stationTemplates.delete(stationTemplates.keys().next().value!);
+        }
+        return prepared;
+    };
+    const updateStationAppearance = async (appearance: Appearance) => {
+        const prepared = await prepareStationAppearance(appearance);
         for (const id of baseStationKeys.keys()) {
             const variant = appearance.stations.get(id);
             const key = variant?.key ?? VIDEO_FRAME_BASE_VARIANT;
@@ -1427,19 +1480,7 @@ const createPreparedVideoRenderer = async (
                     if (scene.getGroup(id + suffix)) scene.replaceGroup(id + suffix, VIDEO_FRAME_BASE_VARIANT);
             } else {
                 const cacheKey = id + key;
-                let templates = stationTemplates.get(cacheKey);
-                if (!templates) {
-                    templates = parseTemplates(
-                        renderVideoElementsGeometry(
-                            graph,
-                            [{ id, type: 'station', station: variant.attrs }],
-                            environment.mapEnabled,
-                            !!environment.isSubscriber
-                        )
-                    );
-                    stationTemplates.set(cacheKey, templates);
-                    if (stationTemplates.size > 128) stationTemplates.delete(stationTemplates.keys().next().value!);
-                }
+                const templates = prepared.get(cacheKey)!;
                 for (const [groupId, template] of templates)
                     if (scene.getGroup(id)) scene.replaceGroup(groupId, key, template);
             }
@@ -1515,6 +1556,23 @@ const createPreparedVideoRenderer = async (
     let overlay: SVGGElement | undefined;
     let annotationKey: string | undefined;
     let lastFrame = -1;
+    let layoutRevision = resourceLayout.revision;
+    const refreshFontLayout = async () => {
+        if (layoutRevision === resourceLayout.revision) return;
+        const nodes = getNodes(graph).filter(
+            element =>
+                ![MiscNodeType.Image, MiscNodeType.Facilities, MiscNodeType.Fill].includes(
+                    element.miscNode?.type as MiscNodeType
+                )
+        );
+        const templates = parseTemplates(await resourceLayout.prepare(graph, nodes));
+        for (const [id, template] of templates) scene.replaceGroup(id, VIDEO_FRAME_BASE_VARIANT, template);
+        stationTemplates.clear();
+        currentStationKeys.clear();
+        layoutRevision = resourceLayout.revision;
+        scene.invalidate();
+        lastFrame = -1;
+    };
     const placeLabels = (labels: readonly TimelineLabelEntry[]) =>
         labels.map(entry => ({
             entry,
@@ -1526,6 +1584,8 @@ const createPreparedVideoRenderer = async (
         lastFrame = -1;
     };
     const renderPreviewFrame = async (time: number, request: { force?: boolean } = {}): Promise<SVGSVGElement> => {
+        if (disposed) throw new DOMException('Video renderer disposed', 'AbortError');
+        await refreshFontLayout();
         const frame = Math.max(
             0,
             Math.min(totalFrames - 1, Math.floor((Number.isFinite(time) ? time : 0) * fps + 1e-6))
@@ -1535,7 +1595,7 @@ const createPreparedVideoRenderer = async (
         const state = frameAt(frame);
         const appearance = stationAppearanceAt(state.visibleEdges);
         updateGeometry(state.frameGraph);
-        updateStationAppearance(appearance);
+        await updateStationAppearance(appearance);
         updateFills(state.frameGraph, state.visibleEdges);
         const nodeTransforms = new Map<NodeId, string>();
         for (const id of state.visibleNodes) {
@@ -1595,8 +1655,43 @@ const createPreparedVideoRenderer = async (
     };
     let disposed = false;
     let warmup: number | undefined;
+    let resourceWarmup: number | undefined;
+    let resourceWarmupRunning = false;
+    const warmFrames = new Set<number>();
+    if (autoChangeStationType) {
+        for (const time of [0, ...cursorTimes, ...cumulativeWeights, animationDuration]) {
+            const frame = Math.floor(time * fps);
+            for (const delta of [-1, 0, 1]) warmFrames.add(Math.max(0, Math.min(totalFrames - 1, frame + delta)));
+        }
+    }
+    const remainingWarmFrames = [...warmFrames].sort((a, b) => a - b);
+    const warmResources = () => {
+        if (
+            disposed ||
+            resourceWarmup !== undefined ||
+            resourceWarmupRunning ||
+            !remainingWarmFrames.length ||
+            typeof requestIdleCallback !== 'function'
+        )
+            return;
+        resourceWarmup = requestIdleCallback(() => {
+            resourceWarmup = undefined;
+            if (disposed || !remainingWarmFrames.length) return;
+            resourceWarmupRunning = true;
+            const frame = remainingWarmFrames.shift()!;
+            void prepareStationAppearance(stationAppearanceAt(frameAt(frame).visibleEdges))
+                .catch(() => {
+                    // The foreground request retries and reports a resource failure with its context.
+                })
+                .finally(() => {
+                    resourceWarmupRunning = false;
+                    warmResources();
+                });
+        });
+    };
     const cameraFrameCount = Math.ceil(((totalFrames - 1) * VideoTimelineTimingFps) / fps) + 1;
     const warmCamera = () => {
+        warmResources();
         if (cameraZoom === 1 || typeof requestIdleCallback !== 'function' || disposed) return;
         warmup = requestIdleCallback(deadline => {
             warmup = undefined;
@@ -1609,6 +1704,7 @@ const createPreparedVideoRenderer = async (
     const dispose = () => {
         disposed = true;
         if (warmup !== undefined) cancelIdleCallback(warmup);
+        if (resourceWarmup !== undefined) cancelIdleCallback(resourceWarmup);
         geometry.remove();
         frameStates.clear();
         appearances.clear();
@@ -1627,6 +1723,7 @@ const createPreparedVideoRenderer = async (
 };
 
 export interface VideoPreviewRenderer {
+    subscribeLayoutInvalidation?: (listener: () => void) => () => void;
     duration: number;
     cursorTimes: number[];
     renderFrame: (time: number) => Promise<SVGSVGElement>;
@@ -1653,7 +1750,8 @@ export const createVideoPreviewRenderer = async (
     timeline: TimelineDocument,
     languages: TextLanguage[],
     options: VideoExportOptions = videoPreviewDefaultOptions,
-    environment: VideoExportEnvironment = DefaultVideoEnvironment
+    environment: VideoExportEnvironment = DefaultVideoEnvironment,
+    signal?: AbortSignal
 ): Promise<VideoPreviewRenderer> => {
     const source = createVideoExportCanvas(
         environment.mapEnabled,
@@ -1663,7 +1761,16 @@ export const createVideoPreviewRenderer = async (
         false
     );
     try {
-        const renderer = await createPreparedVideoRenderer(graph, timeline, languages, options, source, environment);
+        const renderer = await createPreparedVideoRenderer(
+            graph,
+            timeline,
+            languages,
+            options,
+            source,
+            environment,
+            undefined,
+            signal
+        );
         renderer.warmCamera();
         return {
             ...renderer,
@@ -1713,11 +1820,7 @@ const renderVideo = async (
             }))
             .filter(clip => clip.end > clip.start);
         throwIfVideoExportAborted(runtime.signal);
-        videoWriter = await createVideoFrameWriter(
-            canvas,
-            { ...options, audioTracks, duration: renderer.duration, ...runtime },
-            forceSoftware
-        );
+        videoWriter = await createVideoFrameWriter(canvas, { ...options, audioTracks, ...runtime }, forceSoftware);
         for (let frame = 0; frame < renderer.totalFrames; frame++) {
             throwIfVideoExportAborted(runtime.signal);
             const elem = await renderer.renderFrame(frame / options.fps);

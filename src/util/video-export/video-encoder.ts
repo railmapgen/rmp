@@ -10,7 +10,6 @@ export interface VideoEncodingOptions {
     audioTracks?: { blob: Blob; start: number; end: number }[];
     signal?: AbortSignal;
     destinationFactory?: VideoExportDestinationFactory;
-    duration?: number;
 }
 
 export interface VideoFrameWriter {

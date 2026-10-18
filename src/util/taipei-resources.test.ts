@@ -11,7 +11,7 @@ import { createTestLineGraph } from '../test-utils';
 import { autoPopulateTransfer, checkAndChangeStationIntType } from './change-types';
 import { Node2Font, TextLanguage } from './fonts';
 import { UPGRADE_COLLECTION } from './save';
-import { createFrameStationGraph } from './video-export';
+import { createFrameStationGraph } from './video-export/video-export';
 
 const red: Theme = [CityCode.Taipei, 'r', '#E3002D', MonoColour.white];
 const green: Theme = [CityCode.Taipei, 'g', '#00865B', MonoColour.white];

@@ -1,6 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgBBox, useSvgLayoutContext, useSvgLayoutEffect, waitForSvgImage } from '../../svg-layout';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttrsProps } from '../../../constants/constants';
 
@@ -71,13 +72,60 @@ export enum FacilitiesType {
     AirportWuhan = 'airport_wuhan',
 }
 
+const hasImageSize = (box: DOMRect) =>
+    Number.isFinite(box.width) && Number.isFinite(box.height) && box.width > 0 && box.height > 0;
+
+const waitForImageLayout = (signal: AbortSignal) =>
+    new Promise<void>(resolve => {
+        if (signal.aborted) return resolve();
+        const finish = () => {
+            signal.removeEventListener('abort', abort);
+            resolve();
+        };
+        const frame = requestAnimationFrame(finish);
+        const abort = () => {
+            cancelAnimationFrame(frame);
+            finish();
+        };
+        signal.addEventListener('abort', abort, { once: true });
+    });
+
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
+    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { type = defaultFacilitiesAttributes.type } = attrs ?? defaultFacilitiesAttributes;
+    const layout = useSvgLayoutContext();
 
     const imgEl = React.useRef<SVGImageElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 25, height: 25 } as DOMRect);
-    React.useEffect(() => setBBox(imgEl.current!.getBBox()), [type, setBBox, imgEl]);
+    useSvgLayoutEffect(
+        async signal => {
+            const image = imgEl.current!;
+            const source = image.getAttribute('href');
+            const isCurrent = () => !signal.aborted && imgEl.current === image && image.getAttribute('href') === source;
+            try {
+                // The SVG load event can precede React's effect or be missed on a cached image.
+                await waitForSvgImage(image, signal);
+                if (!isCurrent()) return;
+                let box = measureBBox(image);
+                if (!hasImageSize(box)) {
+                    // A loaded resource may still await the visible SVG image's intrinsic layout.
+                    if (layout) throw new Error(`Could not measure facility image: ${source}`);
+                    await waitForImageLayout(signal);
+                    if (!isCurrent()) return;
+                    box = measureBBox(image);
+                }
+                if (hasImageSize(box))
+                    setBBox(current => (current.width === box.width && current.height === box.height ? current : box));
+            } catch (error) {
+                // Keep the editor's last valid position for missing images; video preparation reports failures.
+                if (layout && !signal.aborted) throw error;
+            }
+        },
+        [type, setBBox, imgEl],
+        imgEl,
+        false
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -100,12 +148,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
             onPointerUp={onPointerUp}
             style={{ cursor: 'move' }}
         >
-            <image
-                ref={imgEl}
-                href={import.meta.env.BASE_URL + `images/facilities/${type}.svg`}
-                // eslint-disable-next-line react/no-unknown-property
-                onLoad={() => setBBox(imgEl.current!.getBBox())}
-            />
+            <image ref={imgEl} href={import.meta.env.BASE_URL + `images/facilities/${type}.svg`} />
         </g>
     );
 };

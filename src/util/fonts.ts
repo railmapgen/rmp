@@ -202,15 +202,70 @@ const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; 
     taipei: { config: TaipeiSansTC, name: 'Taipei Sans TC Beta' },
 };
 
-const loadedLangs: TextLanguage[] = [];
-export const loadFont = async (lang: TextLanguage) => {
+// Languages such as Japanese JR East and Tokyo Metro use the same font face.
+// Keep the actual loading task so concurrent callers also wait for its completion.
+const fontLoadTasks = new Map<string, Promise<void>>();
+export const loadFont = (lang: TextLanguage): Promise<void> => {
     const fontObj = FONTS[lang];
-    if (!fontObj || loadedLangs.includes(lang)) return;
+    if (!fontObj) return Promise.resolve();
 
     const { config, name } = fontObj;
+    const existing = fontLoadTasks.get(name);
+    if (existing) return existing;
 
-    loadedLangs.push(lang);
-    await rmgRuntime.loadFont(name, config && { configs: [config] });
+    const task: Promise<void> = Promise.resolve()
+        .then(async () => {
+            const loadedFont = await rmgRuntime.loadFont(name, config && { configs: [config] });
+            if (!loadedFont?.configs.length) throw new Error(`Unable to load font ${name}`);
+
+            // The runtime registers remote faces without starting their downloads.
+            // Explicitly load them before measuring an offscreen SVG that uses them.
+            try {
+                await Promise.all(loadedFont.configs.map(({ font }) => font.load()));
+            } catch (error) {
+                // A failed FontFace cannot be loaded again. Remove the runtime's
+                // failed entry as well so the next request creates fresh faces.
+                const loadedFonts = rmgRuntime.getLoadedFonts();
+                if (loadedFonts[name] === loadedFont) {
+                    delete loadedFonts[name];
+                    loadedFont.configs.forEach(({ font }) => document.fonts?.delete(font));
+                }
+                throw error;
+            }
+        })
+        .catch(error => {
+            if (fontLoadTasks.get(name) === task) fontLoadTasks.delete(name);
+            throw error;
+        });
+    fontLoadTasks.set(name, task);
+    return task;
+};
+
+/** Wait for downloadable faces and browser font layout without cancelling shared loads. */
+export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSignal): Promise<void> => {
+    signal?.throwIfAborted();
+    const preparation = Promise.all([...new Set(languages)].map(loadFont)).then(async () => {
+        await document.fonts?.ready;
+    });
+    if (!signal) return preparation;
+
+    return new Promise<void>((resolve, reject) => {
+        const abort = () => {
+            signal.removeEventListener('abort', abort);
+            reject(signal.reason);
+        };
+        signal.addEventListener('abort', abort, { once: true });
+        preparation.then(
+            () => {
+                signal.removeEventListener('abort', abort);
+                resolve();
+            },
+            error => {
+                signal.removeEventListener('abort', abort);
+                reject(error);
+            }
+        );
+    });
 };
 
 export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
