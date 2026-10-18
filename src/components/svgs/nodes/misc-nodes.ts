@@ -28,6 +28,9 @@ import londonArrow from './london-arrow';
 import londonTubeLineBadge from './london-tube-line-badge/london-tube-line-badge';
 import chengduRTLineBadge from './chengdurt-line-badge';
 import taipeiMetroLineBadge from './taipei-metro-line-badge';
+import taipeiLightRailLineBadge from './taipei-light-rail-line-badge';
+import taipeiMaokongGondolaBadge from './taipei-maokong-gondola-badge';
+import taiwanRailwayArrow from './taiwan-railway-arrow';
 import wuhanRTLineBadge from './wuhanrt-line-badge';
 
 const miscNodes = {
@@ -60,6 +63,9 @@ const miscNodes = {
     [MiscNodeType.LondonTubeLineBadge]: londonTubeLineBadge,
     [MiscNodeType.ChengduRTLineBadge]: chengduRTLineBadge,
     [MiscNodeType.TaiPeiMetroLineBadege]: taipeiMetroLineBadge,
+    [MiscNodeType.TaipeiLightRailLineBadge]: taipeiLightRailLineBadge,
+    [MiscNodeType.TaipeiMaokongGondolaBadge]: taipeiMaokongGondolaBadge,
+    [MiscNodeType.TaiwanRailwayArrow]: taiwanRailwayArrow,
     [MiscNodeType.WuhanRTLineBadge]: wuhanRTLineBadge,
 };
 

@@ -52,6 +52,7 @@ export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>>
     [StationType.KunmingRTInt]: StationType.KunmingRTBasic,
     [StationType.MRTInt]: StationType.MRTBasic,
     [StationType.TokyoMetroInt]: StationType.TokyoMetroBasic,
+    [StationType.TaipeiMetroInt]: StationType.TaipeiMetroBasic,
     [StationType.ChongqingRTInt]: StationType.ChongqingRTBasic,
     [StationType.ChongqingRTInt2021]: StationType.ChongqingRTBasic2021,
     [StationType.ChengduRTInt]: StationType.ChengduRTBasic,

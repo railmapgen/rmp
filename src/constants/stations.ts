@@ -41,6 +41,10 @@ import type { CsmetroBasicStationAttributes } from '../components/svgs/stations/
 import type { CsmetroIntStationAttributes } from '../components/svgs/stations/csmetro-int';
 import type { HzmetroBasicStationAttributes } from '../components/svgs/stations/hzmetro-basic';
 import type { HzmetroIntStationAttributes } from '../components/svgs/stations/hzmetro-int';
+import type { TaipeiMetroBasicStationAttributes } from '../components/svgs/stations/taipei-metro-basic';
+import type { TaipeiMetroIntStationAttributes } from '../components/svgs/stations/taipei-metro-int';
+import type { TaipeiLightRailStationAttributes } from '../components/svgs/stations/taipei-light-rail';
+import type { TaipeiMaokongGondolaStationAttributes } from '../components/svgs/stations/taipei-maokong-gondola';
 
 export enum StationType {
     ShmetroBasic = 'shmetro-basic',
@@ -83,6 +87,10 @@ export enum StationType {
     CsmetroInt = 'csmetro-int',
     HzmetroBasic = 'hzmetro-basic',
     HzmetroInt = 'hzmetro-int',
+    TaipeiMetroBasic = 'taipei-metro-basic',
+    TaipeiMetroInt = 'taipei-metro-int',
+    TaipeiLightRail = 'taipei-light-rail',
+    TaipeiMaokongGondola = 'taipei-maokong-gondola',
 }
 
 export interface ExternalStationAttributes {
@@ -126,6 +134,10 @@ export interface ExternalStationAttributes {
     [StationType.CsmetroInt]?: CsmetroIntStationAttributes;
     [StationType.HzmetroBasic]?: HzmetroBasicStationAttributes;
     [StationType.HzmetroInt]?: HzmetroIntStationAttributes;
+    [StationType.TaipeiMetroBasic]?: TaipeiMetroBasicStationAttributes;
+    [StationType.TaipeiMetroInt]?: TaipeiMetroIntStationAttributes;
+    [StationType.TaipeiLightRail]?: TaipeiLightRailStationAttributes;
+    [StationType.TaipeiMaokongGondola]?: TaipeiMaokongGondolaStationAttributes;
 }
 
 /* ----- Below are core types for all stations, DO NOT TOUCH. ----- */
