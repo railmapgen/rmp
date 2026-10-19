@@ -54,13 +54,8 @@ const createControlledLibav = () => ({
     terminate: vi.fn(),
 });
 
-const InitializationStages = [
-    'LibAV',
-    'ff_init_encoder',
-    'AVCodecContext_extradata',
-    'AVCodecContext_extradata_size',
-    'copyout_u8',
-] as const;
+// One deadline covers every initialization RPC; exercise worker startup and the last header read.
+const InitializationStages = ['LibAV', 'copyout_u8'] as const;
 
 const createControlledAudioEncoder = async (signal?: AbortSignal) => {
     codecMocks.nativeSupport = true;

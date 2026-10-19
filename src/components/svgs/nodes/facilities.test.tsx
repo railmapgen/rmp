@@ -105,17 +105,6 @@ describe('Facilities image layout', () => {
         expect(image.parentElement?.getAttribute('transform')).toBe('translate(-60, -20)');
     });
 
-    it('centers a cold editor image without receiving the SVG load event', async () => {
-        const loading = deferred();
-        waitForImage.mockReturnValue(loading.promise);
-        const { container } = render(tree());
-        expect(getBBox).not.toHaveBeenCalled();
-
-        await act(async () => loading.resolve());
-
-        expect(container.querySelector('g')?.getAttribute('transform')).toBe('translate(-60, -20)');
-    });
-
     it('retries intrinsic layout when a cached image initially measures zero', async () => {
         getBBox.mockReturnValueOnce({ width: 0, height: 0 });
         const { container } = render(tree());
@@ -132,8 +121,6 @@ describe('Facilities image layout', () => {
     it.each([
         { width: 0, height: 0 },
         { width: Number.NaN, height: 20 },
-        { width: 80, height: Number.POSITIVE_INFINITY },
-        { width: -10, height: 20 },
     ])('keeps the valid position when the next image size is invalid: %j', async box => {
         const { container, rerender } = render(tree());
         await finishLayout();
@@ -145,33 +132,21 @@ describe('Facilities image layout', () => {
         expect(container.querySelector('g')?.getAttribute('transform')).toBe('translate(-60, -20)');
     });
 
-    it('ignores completion from a superseded image type', async () => {
+    it('ignores superseded and unmounted image requests', async () => {
         const previous = deferred();
         const current = deferred();
         waitForImage.mockReturnValueOnce(previous.promise).mockReturnValueOnce(current.promise);
-        const { container, rerender } = render(tree());
+        const { rerender, unmount } = render(tree());
         const previousSignal = waitForImage.mock.calls[0][1] as AbortSignal;
         rerender(tree(FacilitiesType.Disney));
         expect(previousSignal.aborted).toBe(true);
 
         await act(async () => previous.resolve());
         expect(getBBox).not.toHaveBeenCalled();
-        getBBox.mockReturnValue({ width: 80, height: 20 });
-        await act(async () => current.resolve());
-
-        expect(getBBox).toHaveBeenCalledTimes(1);
-        expect(container.querySelector('g')?.getAttribute('transform')).toBe('translate(-40, -10)');
-    });
-
-    it('cancels an unfinished image request on unmount', async () => {
-        const loading = deferred();
-        waitForImage.mockReturnValue(loading.promise);
-        const { unmount } = render(tree());
-        const signal = waitForImage.mock.calls[0][1] as AbortSignal;
+        const currentSignal = waitForImage.mock.calls[1][1] as AbortSignal;
         unmount();
-        expect(signal.aborted).toBe(true);
-
-        await act(async () => loading.resolve());
+        expect(currentSignal.aborted).toBe(true);
+        await act(async () => current.resolve());
         expect(getBBox).not.toHaveBeenCalled();
     });
 

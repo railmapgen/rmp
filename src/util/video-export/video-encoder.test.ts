@@ -104,7 +104,15 @@ describe('bounded browser video encoding', () => {
         expect(mocks.software).not.toHaveBeenCalled();
     });
     it.each([30, 60])('preserves timestamps and interleaves audio at %i FPS', async fps => {
-        const writer = await createVideoFrameWriter(canvas, { ...options, fps });
+        const requested = {
+            ...options,
+            fps,
+            audioTracks: [{ blob: new Blob(['m4a']), start: 0.35, end: 3.2 }],
+            destinationFactory: vi.fn(),
+            signal: new AbortController().signal,
+        };
+        const writer = await createVideoFrameWriter(canvas, requested);
+        expect(mocks.session).toHaveBeenCalledWith(expect.anything(), requested);
         await writer.addFrame(0);
         await writer.addFrame(fps);
         const result = await writer.complete();
@@ -133,16 +141,6 @@ describe('bounded browser video encoding', () => {
             expect.objectContaining({ alpha: 'keep' }),
             expect.objectContaining({ fps: 60 })
         );
-    });
-    it('passes audio, destination and signal to the unified output', async () => {
-        const requested = {
-            ...options,
-            audioTracks: [{ blob: new Blob(['m4a']), start: 0.35, end: 3.2 }],
-            destinationFactory: vi.fn(),
-            signal: new AbortController().signal,
-        };
-        await createVideoFrameWriter(canvas, requested);
-        expect(mocks.session).toHaveBeenCalledWith(expect.anything(), requested);
     });
     it('bounds a stalled frame and disposes its output', async () => {
         vi.useFakeTimers();

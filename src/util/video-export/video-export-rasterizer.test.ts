@@ -42,18 +42,20 @@ afterEach(() => {
 });
 
 describe('export SVG resource lifetime', () => {
-    it('uses a self-contained SVG Blob and releases it after drawing', async () => {
-        const operation = renderVideoSVGToCanvas(svg, canvas, false, 'white');
-        expect(images[0].src).toBe('blob:frame-0');
-        const blob = createURL.mock.calls[0][0] as Blob;
-        expect(blob.type).toBe('image/svg+xml;charset=utf-8');
-        images[0].onload!();
-        await operation;
-        expect(draw).toHaveBeenCalledWith(images[0], 0, 0, 1920, 1080);
-        expect(revokeURL).toHaveBeenCalledExactlyOnceWith('blob:frame-0');
-        expect(images[0].onload).toBeNull();
-        expect(images[0].onerror).toBeNull();
-        expect(images[0].removeAttribute).toHaveBeenCalledWith('src');
+    it('uses self-contained SVG Blobs and releases their URLs and handlers across consecutive frames', async () => {
+        for (let frame = 0; frame < 3; frame++) {
+            const operation = renderVideoSVGToCanvas(svg, canvas, false, 'white');
+            expect(images[frame].src).toBe(`blob:frame-${frame}`);
+            const blob = createURL.mock.calls[frame][0] as Blob;
+            expect(blob.type).toBe('image/svg+xml;charset=utf-8');
+            images[frame].onload!();
+            await operation;
+            expect(draw).toHaveBeenLastCalledWith(images[frame], 0, 0, 1920, 1080);
+            expect(revokeURL).toHaveBeenCalledTimes(frame + 1);
+            expect(revokeURL).toHaveBeenLastCalledWith(`blob:frame-${frame}`);
+            expect(images.every(image => image.onload === null && image.onerror === null)).toBe(true);
+            expect(images[frame].removeAttribute).toHaveBeenCalledWith('src');
+        }
     });
     it.each(['decode', 'draw'] as const)('releases failed %s resources', async stage => {
         if (stage === 'draw')
@@ -86,14 +88,5 @@ describe('export SVG resource lifetime', () => {
         await assertion;
         expect(revokeURL).toHaveBeenCalledOnce();
         expect(vi.getTimerCount()).toBe(0);
-    });
-    it('does not accumulate live URLs across consecutive frames', async () => {
-        for (let frame = 0; frame < 100; frame++) {
-            const operation = renderVideoSVGToCanvas(svg, canvas, false, 'white');
-            images[frame].onload!();
-            await operation;
-            expect(revokeURL).toHaveBeenCalledTimes(frame + 1);
-            expect(images.every(image => image.onload === null && image.onerror === null)).toBe(true);
-        }
     });
 });

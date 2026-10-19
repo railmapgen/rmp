@@ -64,7 +64,8 @@ describe('Timeline session history', () => {
             json: async () => ({ subscriptions: [{ type: 'RMP_EXPORT', expires: '2099-01-01T00:00:00Z' }] }),
         } as Response);
         localStorage.setItem(LocalStorageKey.ACCOUNT, JSON.stringify({ token: 'timeline-account-token' }));
-        const storageSpy = vi.spyOn(localStorage, 'getItem');
+        const storageMethods = localStorage instanceof Storage ? Storage.prototype : localStorage;
+        const storageSpy = vi.spyOn(storageMethods, 'getItem');
         const painterGraph = window.graph;
 
         await initTimelineStore();
@@ -73,6 +74,7 @@ describe('Timeline session history', () => {
         expect(timelineStore.getState().project.active).toBeUndefined();
         expect(timelineStore.getState().project.lastProjectId).toBe('recent-project');
         expect(getSpy).not.toHaveBeenCalled();
+        expect(storageSpy).toHaveBeenCalledWith(LocalStorageKey.ACCOUNT);
         expect(storageSpy).not.toHaveBeenCalledWith(LocalStorageKey.PARAM);
         expect(window.graph).toBe(painterGraph);
         expect(fetchSpy).toHaveBeenCalledWith(subscription_endpoint, {

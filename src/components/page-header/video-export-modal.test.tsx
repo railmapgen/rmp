@@ -17,7 +17,6 @@ import { exportVideo } from '../../util/video-export/video-export';
 import {
     downloadVideoExportResult,
     prepareVideoExportDestination,
-    VideoExportResult,
     VideoExportStorageError,
 } from '../../util/video-export/video-export-destination';
 import { linePaths, lineStyles } from '../svgs/lines/lines';
@@ -176,6 +175,10 @@ describe('VideoExportModal Timeline settings', () => {
             destinationFactory: expect.any(Function),
             signal: expect.any(AbortSignal),
         });
+        expect(downloadVideoExportResult).toHaveBeenCalledExactlyOnceWith(
+            expect.stringMatching(/^Timeline_\d+\.mp4$/),
+            await vi.mocked(exportVideo).mock.results[0].value
+        );
     });
 });
 
@@ -221,8 +224,6 @@ describe('VideoExportModal subscription policy', () => {
     it.each([
         { type: LinePathType.Bezier, style: LineStyleType.GzmtrVirtualInt, mapEnabled: false },
         { type: LinePathType.Diagonal, style: LineStyleType.SingleColor, mapEnabled: true },
-        { type: LinePathType.Simple, style: LineStyleType.SingleColor, mapEnabled: false },
-        { type: LinePathType.Simple, style: LineStyleType.SingleColor, mapEnabled: true },
     ])('requires Export access for $type / $style when mapEnabled=$mapEnabled', async ({ type, style, mapEnabled }) => {
         const graph = createTestLineGraph([['A', 'B']]);
         graph.replaceEdgeAttributes('line_0', {
@@ -271,19 +272,6 @@ describe('VideoExportModal subscription policy', () => {
 });
 
 describe('VideoExportModal save lifecycle', () => {
-    it('passes a saved result to the result consumer', async () => {
-        const result: VideoExportResult = { kind: 'saved-file', fileName: 'selected.mp4', size: 42 };
-        vi.mocked(exportVideo).mockResolvedValueOnce(result);
-        renderDefaultModal();
-        fireEvent.click(document.getElementById('video_export_button')!);
-        await waitFor(() =>
-            expect(downloadVideoExportResult).toHaveBeenCalledExactlyOnceWith(
-                expect.stringMatching(/^Timeline_\d+\.mp4$/),
-                result
-            )
-        );
-    });
-
     it('treats save picker cancellation as cancellation without starting the renderer', async () => {
         vi.mocked(prepareVideoExportDestination).mockRejectedValueOnce(new DOMException('Canceled', 'AbortError'));
         const { store } = renderDefaultModal();

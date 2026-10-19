@@ -145,27 +145,6 @@ describe('video resource layout through real SVG preparation', () => {
         expect(document.body.children).toHaveLength(bodyChildren);
     });
 
-    it('uses measured long-name templates in preview and reuses them for repeated seeks', async () => {
-        const shortPreview = await createVideoPreviewRenderer(makeGraph(), timeline(), [], options);
-        const longGraph = makeGraph(true);
-        const originalGraph = structuredClone(longGraph.export());
-        const longPreview = await createVideoPreviewRenderer(longGraph, timeline(), [], options);
-        previews.push(shortPreview, longPreview);
-        const shortSVG = await shortPreview.renderFrame(shortPreview.duration);
-        const longSVG = await longPreview.renderFrame(longPreview.duration);
-
-        expect(dimensions(shortSVG, 'stn_jr')).toEqual({ width: 27, height: 11 });
-        expect(dimensions(longSVG, 'stn_jr').width).toBeGreaterThan(dimensions(shortSVG, 'stn_jr').width);
-        expect(dimensions(longSVG, 'misc_node_bj').width).toBeGreaterThan(dimensions(shortSVG, 'misc_node_bj').width);
-        assertCleanGeometry(longSVG);
-        const count = getBBox.mock.calls.length;
-        for (const time of [0, longPreview.duration / 2, longPreview.duration, 0, longPreview.duration]) {
-            await longPreview.renderPreviewFrame(time);
-        }
-        expect(getBBox).toHaveBeenCalledTimes(count);
-        expect(longGraph.export()).toEqual(originalGraph);
-    });
-
     it('uses the same measured geometry during export and performs no per-frame text measurement', async () => {
         await exportVideo(makeGraph(), timeline(), [], options, 'white');
         const shortSVG = encoding.frames.at(-1)!;
@@ -177,7 +156,10 @@ describe('video resource layout through real SVG preparation', () => {
             expect(getBBox).toHaveBeenCalledTimes(countAtFirstFrame);
         });
 
-        await exportVideo(makeGraph(true), timeline(), [], options, 'white');
+        const longGraph = makeGraph(true);
+        const originalGraph = structuredClone(longGraph.export());
+        await exportVideo(longGraph, timeline(), [], options, 'white');
+        expect(longGraph.export()).toEqual(originalGraph);
         const longSVG = encoding.frames.at(-1)!;
         expect(shortFrameCount).toBeGreaterThan(1);
         expect(encoding.frames.length).toBeGreaterThan(1);
@@ -217,7 +199,7 @@ describe('video resource layout through real SVG preparation', () => {
         assertCleanGeometry(refreshedSVG);
 
         const refreshedMeasurements = getBBox.mock.calls.length;
-        await preview.renderPreviewFrame(time);
+        for (const seek of [0, time / 2, time]) await preview.renderPreviewFrame(seek);
         expect(getBBox).toHaveBeenCalledTimes(refreshedMeasurements);
         expect(waitForFonts).toHaveBeenCalledTimes(preparations + 1);
         unsubscribe();

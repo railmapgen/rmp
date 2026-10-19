@@ -92,7 +92,9 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('unified video output session', () => {
-    it('registers video and incremental audio in the same disk target and disables MP4 in-memory fast start', async () => {
+    it('streams MP4 video and incremental audio to disk and retains the completed file for its consumer', async () => {
+        const remove = vi.fn(async () => undefined);
+        result = { kind: 'temporary-file', file: new File(['video'], 'video.mp4'), dispose: remove };
         const tracks = [{ blob: new Blob(['audio']), start: 0.5, end: 2 }];
         const session = await createVideoOutputSession(source, { ...options, audioTracks: tracks });
         expect(mocks.outputOptions).toHaveBeenCalledExactlyOnceWith({
@@ -117,6 +119,7 @@ describe('unified video output session', () => {
         expect(audio.dispose).toHaveBeenCalledOnce();
         expect(destination.dispose).toHaveBeenCalledOnce();
         expect(mocks.forceClose).not.toHaveBeenCalled();
+        expect(remove).not.toHaveBeenCalled();
     });
 
     it('supports silent WebM and its explicitly prepared destination factory', async () => {
@@ -277,18 +280,13 @@ describe('unified video output session', () => {
         await session.dispose();
     });
 
-    it('releases resources only once even if disposal is requested concurrently', async () => {
+    it('force-closes resources before canceling only once even with concurrent disposal', async () => {
         const session = await createVideoOutputSession(source, options);
         await Promise.all([session.dispose(), session.dispose()]);
         await session.dispose();
         expect(mocks.cancel).toHaveBeenCalledOnce();
         expect(audio.dispose).toHaveBeenCalledOnce();
         expect(destination.dispose).toHaveBeenCalledOnce();
-    });
-
-    it('force-closes codec resources before awaiting container cancellation', async () => {
-        const session = await createVideoOutputSession(source, options);
-        await session.dispose();
         expect(mocks.forceClose).toHaveBeenCalledWith(source);
         expect(mocks.forceClose.mock.invocationCallOrder[0]).toBeLessThan(mocks.cancel.mock.invocationCallOrder[0]);
     });
@@ -299,17 +297,6 @@ describe('unified video output session', () => {
         const session = await createVideoOutputSession(source, options);
         await expect(session.dispose()).rejects.toBe(error);
         expect(destination.dispose).toHaveBeenCalledOnce();
-    });
-
-    it('leaves a successful temporary file available to the download consumer', async () => {
-        const remove = vi.fn(async () => undefined);
-        result = { kind: 'temporary-file', file: new File(['video'], 'video.mp4'), dispose: remove };
-        const session = await createVideoOutputSession(source, options);
-        expect(await session.complete(1)).toBe(result);
-        await session.dispose();
-        expect(mocks.cancel).not.toHaveBeenCalled();
-        expect(destination.dispose).toHaveBeenCalledOnce();
-        expect(remove).not.toHaveBeenCalled();
     });
 });
 

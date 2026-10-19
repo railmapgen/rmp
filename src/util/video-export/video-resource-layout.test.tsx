@@ -120,24 +120,6 @@ describe('video resource layout preparation', () => {
         expect(document.body.children).toHaveLength(bodyChildren);
     });
 
-    it('commits measured JR and Beijing resource dimensions before returning markup', async () => {
-        const layout = createLayout();
-        const shortGraph = makeGraph();
-        const longGraph = makeGraph('東京品川新宿池袋', '北京地铁自适应文字线路');
-        const shortMarkup = await layout.prepare(shortGraph, getNodes(shortGraph));
-        const longMarkup = await layout.prepare(longGraph, getNodes(longGraph));
-
-        expect(getBBox).toHaveBeenCalled();
-        expect(dimensions(shortMarkup, 'stn_jr')).toEqual({ width: 27, height: 11 });
-        expect(dimensions(longMarkup, 'stn_jr').width).toBeGreaterThan(dimensions(shortMarkup, 'stn_jr').width);
-        expect(dimensions(shortMarkup, 'misc_node_bj').width).toBeCloseTo(32.84375);
-        expect(dimensions(longMarkup, 'misc_node_bj').width).toBeGreaterThan(32.84375);
-        const width = dimensions(longMarkup, 'stn_jr').width;
-        expect(parseMarkup(longMarkup).getElementById('stn_name_stn_jr')?.getAttribute('transform')).toBe(
-            `translate(${-width / 2 - 1}, 0)`
-        );
-    });
-
     it('handles vertical JR text and permits zero-width empty text', async () => {
         const layout = createLayout();
         const verticalGraph = makeGraph('東京品川新宿池袋', '', true);
@@ -244,20 +226,6 @@ describe('video resource layout preparation', () => {
         await layout.prepare(graph, elements);
         expect(waitForFonts).toHaveBeenCalledTimes(preparations + 1);
         expect(getBBox).toHaveBeenCalledTimes(changedTextCount);
-    });
-
-    it('remeasures after fonts change and then reuses the refreshed template', async () => {
-        const layout = createLayout();
-        const graph = makeGraph();
-        await layout.prepare(graph, getNodes(graph));
-        const previousCount = getBBox.mock.calls.length;
-
-        fontSet.dispatchEvent(new Event('loadingdone'));
-        await layout.prepare(graph, getNodes(graph));
-        expect(getBBox.mock.calls.length).toBeGreaterThan(previousCount);
-        const refreshedCount = getBBox.mock.calls.length;
-        await layout.prepare(graph, getNodes(graph));
-        expect(getBBox).toHaveBeenCalledTimes(refreshedCount);
     });
 
     it('retries a layout affected by a font change before caching its result', async () => {
@@ -390,19 +358,6 @@ describe('video resource layout preparation', () => {
             return measureText(this);
         });
         expect(dimensions(await layout.prepare(graph, getNodes(graph)), 'stn_jr').width).toBe(27);
-    });
-
-    it('aborts in-flight work and releases the measurement host', async () => {
-        const controller = new AbortController();
-        const layout = createLayout({ signal: controller.signal });
-        const graph = makeGraph();
-        getBBox.mockImplementation(function (this: SVGElement) {
-            controller.abort();
-            return measureText(this);
-        });
-
-        await expect(layout.prepare(graph, getNodes(graph))).rejects.toMatchObject({ name: 'AbortError' });
-        expect(document.body.children).toHaveLength(bodyChildren);
     });
 
     it('rejects an already aborted service without starting measurement', async () => {

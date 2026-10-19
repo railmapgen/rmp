@@ -11,6 +11,7 @@ import {
 } from './video-export-destination';
 
 interface TestTarget {
+    _writable: WritableStream<StreamTargetChunk>;
     _start: () => void;
     _write: (data: Uint8Array, position: number) => void;
     _flush: () => Promise<void>;
@@ -62,7 +63,7 @@ afterEach(() => {
 });
 
 describe('video export destinations', () => {
-    it('commits a selected file only after successful finalization, with a fresh stream for every attempt', async () => {
+    it('commits random-access writes only after finalization, with a fresh stream for retries', async () => {
         const file = createFile();
         const picker = vi.fn(async () => file.handle);
         Object.assign(window, { showSaveFilePicker: picker });
@@ -77,7 +78,11 @@ describe('video export destinations', () => {
         targetOf(destination)._start();
         targetOf(destination)._write(new Uint8Array([1, 2, 3]), 0);
         await targetOf(destination)._flush();
+        targetOf(destination)._write(new Uint8Array([7]), 0);
+        await targetOf(destination)._flush();
         await targetOf(destination)._finalize();
+        expect(file.writes.at(-1)).toMatchObject({ type: 'write', position: 0 });
+        expect(Array.from(file.writes.at(-1)!.data)).toEqual([7, 2, 3]);
         expect(file.close).not.toHaveBeenCalled();
         expect(await destination.complete('video/mp4')).toEqual({
             kind: 'saved-file',
@@ -117,22 +122,6 @@ describe('video export destinations', () => {
         expect(file.close).not.toHaveBeenCalled();
         await destination.dispose();
         expect(file.abort).toHaveBeenCalledOnce();
-    });
-
-    it('preserves random-access writes needed by ordinary MP4', async () => {
-        const file = createFile();
-        Object.assign(window, { showSaveFilePicker: vi.fn(async () => file.handle) });
-        const destination = await (await prepareVideoExportDestination('Timeline.mp4', 'mp4'))();
-        targetOf(destination)._start();
-        targetOf(destination)._write(new Uint8Array([1, 2, 3]), 0);
-        await targetOf(destination)._flush();
-        targetOf(destination)._write(new Uint8Array([7]), 0);
-        await targetOf(destination)._flush();
-        await targetOf(destination)._finalize();
-        expect(file.writes.at(-1)).toMatchObject({ type: 'write', position: 0 });
-        expect(Array.from(file.writes.at(-1)!.data)).toEqual([7, 2, 3]);
-        expect((await destination.complete('video/mp4')).kind).toBe('saved-file');
-        await destination.dispose();
     });
 
     it('waits for the actual disk write before finalization and commit', async () => {
@@ -273,18 +262,20 @@ describe('video export destinations', () => {
 
     it('rejects a memory output beyond 64 MiB instead of continuing to grow', async () => {
         const destination = await createVideoExportDestination();
-        const target = targetOf(destination);
-        target._start();
-        const chunk = new Uint8Array(4 * 1024 * 1024);
-        const encode = async () => {
-            for (let position = 0; position <= VideoExportMemoryLimit; position += chunk.byteLength) {
-                target._write(chunk, position);
-                await target._flush();
-            }
-            await target._finalize();
-        };
-        await expect(encode()).rejects.toThrow('64 MiB');
-        await destination.dispose();
+        // Write to the real sink directly: StreamTarget pads sparse writes with a 64 MiB buffer.
+        const writer = targetOf(destination)._writable.getWriter();
+        try {
+            const writing = writer.write({
+                type: 'write',
+                data: new Uint8Array([0]),
+                position: VideoExportMemoryLimit,
+            });
+            await expect(writing).rejects.toBeInstanceOf(VideoExportStorageError);
+            await expect(writing).rejects.toThrow('64 MiB');
+        } finally {
+            writer.releaseLock();
+            await destination.dispose();
+        }
     });
 
     it('propagates a canceled save picker without starting a fallback destination', async () => {
@@ -323,11 +314,8 @@ describe('video export destinations', () => {
         vi.advanceTimersByTime(60_000);
         expect(revoke).toHaveBeenCalledExactlyOnceWith('blob:video');
         expect(dispose).not.toHaveBeenCalled();
-    });
-
-    it('does not download an already saved result a second time', () => {
-        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click');
         downloadVideoExportResult('Timeline.mp4', { kind: 'saved-file', fileName: 'Timeline.mp4', size: 42 });
-        expect(click).not.toHaveBeenCalled();
+        expect(click).toHaveBeenCalledOnce();
+        expect(createURL).toHaveBeenCalledOnce();
     });
 });

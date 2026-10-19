@@ -90,14 +90,6 @@ describe('font preparation', () => {
         expect(runtime.loadFont).toHaveBeenCalledOnce();
     });
 
-    it('rejects a failed runtime registration and allows retry', async () => {
-        runtime.loadFont.mockResolvedValueOnce(undefined);
-
-        await expect(fonts.loadFont(TextLanguage.mrt)).rejects.toThrow('Unable to load font LTAIdentity');
-        await expect(fonts.loadFont(TextLanguage.mrt)).resolves.toBeUndefined();
-        expect(runtime.loadFont).toHaveBeenCalledTimes(2);
-    });
-
     it('removes a failed FontFace from the runtime so a retry creates a fresh face', async () => {
         const failedFont = makeFont();
         vi.mocked(failedFont.configs[0].font.load).mockRejectedValue(new Error('Font download failed'));

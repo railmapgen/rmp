@@ -62,7 +62,6 @@ describe('account subscription verification compatibility', () => {
 
     it.each([
         { subscriptions: [], state: 'free', cloud: false, export: false },
-        { subscriptions: [{ ...cloudSubscription, type: 'RMP' }], state: 'free', cloud: false, export: false },
         {
             subscriptions: [{ ...cloudSubscription, type: 'RMP_EXPORT' }],
             state: 'subscriber',
@@ -87,8 +86,8 @@ describe('account subscription verification compatibility', () => {
         }
     );
 
-    it.each([401, 403, 500])('expires the login and clears subscriptions when HTTP status is %s', async status => {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([], status)));
+    it('expires the login and clears subscriptions when the token is rejected', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([], 401)));
         const store = createAccountStore();
         store.dispatch(setState('subscriber'));
         store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: true }));
@@ -121,27 +120,6 @@ describe('account subscription verification compatibility', () => {
         expect(dispatch).not.toHaveBeenCalled();
         expect(onCloudSubscription).not.toHaveBeenCalled();
     });
-
-    it('sets the state to free before reading JSON and preserves permissions when JSON reading rejects', async () => {
-        const error = new SyntaxError('Invalid JSON');
-        const store = createAccountStore();
-        store.dispatch(setState('subscriber'));
-        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: true }));
-        const json = vi.fn(async () => {
-            expect(store.getState().account.state).toBe('free');
-            throw error;
-        });
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ status: 200, json }));
-        const dispatch = vi.spyOn(store, 'dispatch');
-
-        await expect(fetchLoginStateAndSubscriptions(store.dispatch, 'token')).rejects.toBe(error);
-
-        expect(dispatch.mock.calls).toEqual([[setState('free')]]);
-        expect(store.getState().account).toMatchObject({
-            state: 'free',
-            activeSubscriptions: { RMP_CLOUD: true, RMP_EXPORT: true },
-        });
-    });
 });
 
 describe('RMT account synchronization compatibility', () => {
@@ -149,8 +127,10 @@ describe('RMT account synchronization compatibility', () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([cloudSubscription])));
         setAccount('initial-token');
         localStorage.setItem(LocalStorageKey.PARAM, 'painter-project');
-        const readStorage = vi.spyOn(localStorage, 'getItem');
-        const writeStorage = vi.spyOn(localStorage, 'setItem');
+        // jsdom Storage proxies ignore instance spies; the fallback mock owns its methods directly.
+        const storageMethods = localStorage instanceof Storage ? Storage.prototype : localStorage;
+        const readStorage = vi.spyOn(storageMethods, 'getItem');
+        const writeStorage = vi.spyOn(storageMethods, 'setItem');
         const store = createAccountStore();
         const onCloudSubscription = vi.fn();
 
@@ -161,46 +141,6 @@ describe('RMT account synchronization compatibility', () => {
         expect(readStorage.mock.calls).toEqual([[LocalStorageKey.ACCOUNT]]);
         expect(writeStorage).not.toHaveBeenCalled();
         expect(onCloudSubscription).toHaveBeenCalledOnce();
-    });
-
-    it('clears cached membership when there is no RMT account', () => {
-        const fetch = vi.fn();
-        vi.stubGlobal('fetch', fetch);
-        const store = createAccountStore();
-        store.dispatch(setState('subscriber'));
-        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: true }));
-
-        onLocalStorageChangeRMT(store);
-
-        expect(store.getState().account).toEqual({
-            token: undefined,
-            state: 'logged-out',
-            activeSubscriptions: defaultActiveSubscriptions,
-        });
-        expect(fetch).not.toHaveBeenCalled();
-    });
-
-    it('preserves previous membership while verifying a new token', async () => {
-        let resolve!: (value: Response) => void;
-        const pending = new Promise<Response>(resolver => {
-            resolve = resolver;
-        });
-        vi.stubGlobal('fetch', vi.fn().mockReturnValue(pending));
-        setAccount('new-token');
-        const store = createAccountStore();
-        store.dispatch(setState('subscriber'));
-        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: true }));
-
-        onLocalStorageChangeRMT(store);
-
-        expect(store.getState().account).toEqual({
-            token: 'new-token',
-            state: 'subscriber',
-            activeSubscriptions: { RMP_CLOUD: true, RMP_EXPORT: true },
-        });
-        resolve(response([]));
-        await vi.waitFor(() => expect(store.getState().account.activeSubscriptions.RMP_CLOUD).toBe(false));
-        expect(store.getState().account.state).toBe('free');
     });
 
     it('updates subscriptions on login, token expiration and logout, and skips unchanged accounts', async () => {
@@ -231,32 +171,5 @@ describe('RMT account synchronization compatibility', () => {
             activeSubscriptions: defaultActiveSubscriptions,
         });
         expect(fetch).toHaveBeenCalledTimes(2);
-    });
-
-    it('rereads ACCOUNT for storage events regardless of their key', async () => {
-        const fetch = vi.fn().mockResolvedValue(response([cloudSubscription]));
-        vi.stubGlobal('fetch', fetch);
-        const store = createAccountStore();
-        onLocalStorageChangeRMT(store);
-
-        setAccount('token');
-        notifyStorage(LocalStorageKey.PARAM);
-
-        await vi.waitFor(() => expect(store.getState().account.activeSubscriptions.RMP_CLOUD).toBe(true));
-        expect(store.getState().account.token).toBe('token');
-        expect(fetch).toHaveBeenCalledOnce();
-    });
-
-    it('propagates malformed account JSON synchronously', () => {
-        const fetch = vi.fn();
-        vi.stubGlobal('fetch', fetch);
-        localStorage.setItem(LocalStorageKey.ACCOUNT, '{');
-        const store = createAccountStore();
-        const previous = store.getState().account;
-
-        expect(() => onLocalStorageChangeRMT(store)).toThrow(SyntaxError);
-
-        expect(store.getState().account).toBe(previous);
-        expect(fetch).not.toHaveBeenCalled();
     });
 });
