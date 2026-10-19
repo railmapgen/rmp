@@ -14,14 +14,12 @@ export interface SvgLayoutContextValue {
 
 const SvgLayoutContext = React.createContext<SvgLayoutContextValue | null>(null);
 export const SvgLayoutProvider = SvgLayoutContext.Provider;
-export const useSvgLayoutContext = () => React.useContext(SvgLayoutContext);
-export const useSvgBBox = () => {
-    const layout = useSvgLayoutContext();
-    return React.useCallback(
-        (element: SVGGraphicsElement): DOMRect => layout?.measureBBox?.(element) ?? element.getBBox(),
-        [layout?.measureBBox]
-    );
-};
+
+interface SvgLayoutEffectContext {
+    signal: AbortSignal;
+    measureBBox: (element: SVGGraphicsElement) => DOMRect;
+    offscreen: boolean;
+}
 
 // Visible text resources share the browser font subscription. Offscreen video
 // layouts have their own explicit preparation and invalidation lifecycle.
@@ -67,9 +65,9 @@ const createFontLayoutStore = (fonts: FontFaceSet) => {
         },
     };
 };
-const getFontLayoutStore = () => {
-    const fonts = document.fonts;
-    if (!fonts) return;
+const idleFontLayoutStore = { subscribe: () => () => {}, getSnapshot: () => 0 };
+const getFontLayoutStore = (fonts?: FontFaceSet) => {
+    if (!fonts) return idleFontLayoutStore;
     let store = fontLayoutStores.get(fonts);
     if (!store) {
         store = createFontLayoutStore(fonts);
@@ -77,23 +75,22 @@ const getFontLayoutStore = () => {
     }
     return store;
 };
-const subscribeToFontLayout = (listener: () => void) => getFontLayoutStore()?.subscribe(listener) ?? (() => {});
-const getFontLayoutRevision = () => getFontLayoutStore()?.getSnapshot() ?? 0;
-const subscribeToNothing = () => () => {};
-const getZero = () => 0;
 
 /** A task is ready only after the state written by its measurement has committed. */
 export const useSvgLayoutEffect = (
-    effect: (signal: AbortSignal) => void | Promise<void>,
+    effect: (context: SvgLayoutEffectContext) => void | Promise<void>,
     deps: React.DependencyList,
     geometryRef?: React.RefObject<SVGGraphicsElement | null>,
     watchFonts = true
 ) => {
-    const layout = useSvgLayoutContext();
+    const layout = React.useContext(SvgLayoutContext);
+    const fontStore = getFontLayoutStore(
+        !layout && watchFonts && typeof document !== 'undefined' ? document.fonts : undefined
+    );
     const fontRevision = React.useSyncExternalStore(
-        layout || !watchFonts ? subscribeToNothing : subscribeToFontLayout,
-        layout || !watchFonts ? getZero : getFontLayoutRevision,
-        getZero
+        fontStore.subscribe,
+        fontStore.getSnapshot,
+        idleFontLayoutStore.getSnapshot
     );
     const [geometryRevision, setGeometryRevision] = React.useState(0);
     React.useEffect(() => {
@@ -139,7 +136,11 @@ export const useSvgLayoutEffect = (
             if (!cancelled && layout && !layout.signal.aborted) setCommitted(request);
         };
         try {
-            const result = effectRef.current(controller.signal);
+            const result = effectRef.current({
+                signal: controller.signal,
+                measureBBox: element => layout?.measureBBox?.(element) ?? element.getBBox(),
+                offscreen: !!layout,
+            });
             if (result instanceof Promise) {
                 void result.then(finish, error => {
                     if (!cancelled) {

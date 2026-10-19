@@ -273,7 +273,7 @@ describe('visible SVG resource readiness', () => {
         const signals: AbortSignal[] = [];
         const Measurement = ({ name }: { name: string }) => {
             useSvgLayoutEffect(
-                signal => {
+                ({ signal }) => {
                     signals.push(signal);
                     return new Promise<void>((_resolve, reject) => {
                         signal.addEventListener('abort', () => reject(signal.reason), { once: true });

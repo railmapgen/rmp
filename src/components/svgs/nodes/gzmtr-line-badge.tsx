@@ -3,7 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
@@ -11,7 +11,6 @@ import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 
 const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultGzmtrLineBadgeAttributes.names,
@@ -36,7 +35,7 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
     const iconRef = React.useRef<SVGSVGElement>(null);
     const [iconBBox, setIconBBox] = React.useState({ height: 0, width: 0 });
     useSvgLayoutEffect(
-        () => setIconBBox(iconRef.current ? measureBBox(iconRef.current) : { height: 0, width: 0 }),
+        ({ measureBBox }) => setIconBBox(iconRef.current ? measureBBox(iconRef.current) : { height: 0, width: 0 }),
         [...names, tram]
     );
 

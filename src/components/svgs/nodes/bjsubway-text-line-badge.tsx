@@ -2,7 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -11,7 +11,6 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 const MIN_WIDTH = 28.84375;
 
 const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAttributes>) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultBjsubwayTextLineBadgeAttributes.names,
@@ -21,7 +20,7 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
     useSvgLayoutEffect(
-        () => {
+        ({ measureBBox }) => {
             const bounds = measureBBox(textLineEl.current!);
             if (!Number.isFinite(bounds.width) || bounds.width < 0) return;
             setBBox(previous => (previous.width === bounds.width ? previous : bounds));

@@ -3,7 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/fmetro';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -26,7 +26,6 @@ import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { NAME_DY as DEFAULT_NAME_DY, MultilineText } from '../common/multiline-text';
 
 const FoshanMetroBasicStation = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -56,7 +55,7 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
 
     const iconEl = React.useRef<SVGGElement | null>(null);
     const [iconBBox, setIconBBox] = React.useState({ x: -18.5, y: -9.25, width: 37, height: 18.5 } as DOMRect);
-    useSvgLayoutEffect(() => setIconBBox(measureBBox(iconEl.current!)), []);
+    useSvgLayoutEffect(({ measureBBox }) => setIconBBox(measureBBox(iconEl.current!)), []);
 
     const FONT_SIZE = {
         en: tram ? 5.08 : 6.56,
@@ -100,13 +99,17 @@ const FoshanMetroBasicStation = (props: StationComponentProps) => {
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
     useSvgLayoutEffect(
-        () => setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
+        ({ measureBBox }) =>
+            setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
         [...secondaryNames]
     );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
-    useSvgLayoutEffect(() => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0), [...names]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
+        [...names]
+    );
 
     const secondaryDx =
         nameOffsetX === 'middle'

@@ -2,7 +2,7 @@ import { Flex, NumberInput, NumberInputField } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField, RmgLabel } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -39,7 +39,6 @@ const NAME_JRE_BASIC = {
 const LINE_WIDTH = 5;
 
 const JREastBasicStation = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -103,7 +102,10 @@ const JREastBasicStation = (props: StationComponentProps) => {
 
     const textJAEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 0, height: 0 } as DOMRect);
-    useSvgLayoutEffect(() => setBBox(measureBBox(textJAEl.current!)), [names[0], textVertical, setBBox, textJAEl]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setBBox(measureBBox(textJAEl.current!)),
+        [names[0], textVertical, setBBox, textJAEl]
+    );
     const textImportantSafeD = (textVertical ? 0.2 : 0.7) * NAME_JRE_BASIC.ja.size;
     const textJAImportantX = { left: -textImportantSafeD / 2, middle: 0, right: textImportantSafeD / 2 }[nameOffsetX];
     const textJAImportantY = { top: -2, middle: 0, bottom: 2 }[nameOffsetY];

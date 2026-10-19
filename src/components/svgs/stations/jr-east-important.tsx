@@ -1,7 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
 import {
@@ -34,7 +34,6 @@ const NAME_JRE_IMPORTANT = {
 const ICON_SAFE_D = 1;
 
 const JREastImportantStation = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -61,7 +60,10 @@ const JREastImportantStation = (props: StationComponentProps) => {
 
     const textJAEl = React.useRef<SVGTextElement | null>(null);
     const [bBox, setBBox] = React.useState({ height: 0, width: 0 } as DOMRect);
-    useSvgLayoutEffect(() => setBBox(measureBBox(textJAEl.current!)), [names[0], textVertical, setBBox, textJAEl]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setBBox(measureBBox(textJAEl.current!)),
+        [names[0], textVertical, setBBox, textJAEl]
+    );
 
     // Looks like the width of the bbox has some relation to the writing-mode on first render.
     // writing-mode = horizontal-tb -> the length of the text = bBox.width

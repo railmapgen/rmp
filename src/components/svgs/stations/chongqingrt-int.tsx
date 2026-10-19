@@ -2,7 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -37,7 +37,6 @@ const ORIGINAL_SIZE = 6.9233;
 const HALF_SIZE = (ORIGINAL_SIZE * SCALE) / 2;
 
 const ChongqingRTIntStation = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -91,21 +90,24 @@ const ChongqingRTIntStation = (props: StationComponentProps) => {
     const elRef = React.useRef<SVGGElement>(null);
     const [elOffset, setElOffset] = React.useState(0);
 
-    useSvgLayoutEffect(() => {
-        if (elRef.current && zhRef.current) {
-            if (nameOffsetX !== 'middle') {
-                const elWidth = measureBBox(elRef.current).width;
-                const zhWidth = measureBBox(zhRef.current).width;
-                if (zhWidth > elWidth) {
-                    setElOffset((zhWidth - elWidth) / 2);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            if (elRef.current && zhRef.current) {
+                if (nameOffsetX !== 'middle') {
+                    const elWidth = measureBBox(elRef.current).width;
+                    const zhWidth = measureBBox(zhRef.current).width;
+                    if (zhWidth > elWidth) {
+                        setElOffset((zhWidth - elWidth) / 2);
+                    } else {
+                        setElOffset(0);
+                    }
                 } else {
                     setElOffset(0);
                 }
-            } else {
-                setElOffset(0);
             }
-        }
-    }, [names[0], names[1], nameOffsetX]);
+        },
+        [names[0], names[1], nameOffsetX]
+    );
 
     const defaultNameLayout: NameLayout = {
         x: textX,

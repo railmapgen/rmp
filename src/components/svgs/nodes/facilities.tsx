@@ -1,7 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutContext, useSvgLayoutEffect, waitForSvgImage } from '../../svg-layout';
+import { useSvgLayoutEffect, waitForSvgImage } from '../../svg-layout';
 import { Node, NodeComponentProps } from '../../../constants/nodes';
 import { AttrsProps } from '../../../constants/constants';
 
@@ -91,15 +91,13 @@ const waitForImageLayout = (signal: AbortSignal) =>
     });
 
 const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const { type = defaultFacilitiesAttributes.type } = attrs ?? defaultFacilitiesAttributes;
-    const layout = useSvgLayoutContext();
 
     const imgEl = React.useRef<SVGImageElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 25, height: 25 } as DOMRect);
     useSvgLayoutEffect(
-        async signal => {
+        async ({ signal, measureBBox, offscreen }) => {
             const image = imgEl.current!;
             const source = image.getAttribute('href');
             const isCurrent = () => !signal.aborted && imgEl.current === image && image.getAttribute('href') === source;
@@ -110,7 +108,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                 let box = measureBBox(image);
                 if (!hasImageSize(box)) {
                     // A loaded resource may still await the visible SVG image's intrinsic layout.
-                    if (layout) throw new Error(`Could not measure facility image: ${source}`);
+                    if (offscreen) throw new Error(`Could not measure facility image: ${source}`);
                     await waitForImageLayout(signal);
                     if (!isCurrent()) return;
                     box = measureBBox(image);
@@ -119,7 +117,7 @@ const Facilities = (props: NodeComponentProps<FacilitiesAttributes>) => {
                     setBBox(current => (current.width === box.width && current.height === box.height ? current : box));
             } catch (error) {
                 // Keep the editor's last valid position for missing images; video preparation reports failures.
-                if (layout && !signal.aborted) throw error;
+                if (offscreen && !signal.aborted) throw error;
             }
         },
         [type, setBBox, imgEl],

@@ -3,7 +3,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate } from '../../../constants/stations';
@@ -20,7 +20,6 @@ const languageWithoutSynthesis: Set<TextLanguage> = new Set([
 ]);
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
-    const measureBBox = useSvgBBox();
     const { ensureFont } = useSvgRenderContext();
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
@@ -40,7 +39,7 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ x: 0, y: 0, width: 32, height: 16 } as DOMRect);
     useSvgLayoutEffect(
-        () => setBBox(measureBBox(textLineEl.current!)),
+        ({ measureBBox }) => setBBox(measureBBox(textLineEl.current!)),
         // Watch content to get update of bBox's width and height.
         // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
         [

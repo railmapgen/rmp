@@ -1,7 +1,7 @@
 import { RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { TFunction } from 'i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, Theme } from '../../../constants/constants';
 import {
     NameOffsetX,
@@ -114,7 +114,6 @@ const measureTaipeiNameWidth = (
 
 /** Keep the main and secondary names in one draggable group. */
 export const TaipeiStationName = ({ id, type, attrs, width, height }: TaipeiStationNameProps) => {
-    const measureBBox = useSvgBBox();
     const {
         names,
         secondaryNames,
@@ -183,15 +182,18 @@ export const TaipeiStationName = ({ id, type, attrs, width, height }: TaipeiStat
     const mainNameWidth = measuredName?.key === namesKey ? measuredName.width : initialWidth;
     const secondaryNameWidth =
         measuredSecondaryName?.key === secondaryNamesKey ? measuredSecondaryName.width : initialSecondaryWidth;
-    const measure = React.useCallback(() => {
-        const width = mainNameRef.current?.getBBox ? measureBBox(mainNameRef.current).width : undefined;
-        if (width !== undefined) setMeasuredName({ key: namesKey, width });
-        const secondaryWidth = secondaryNameRef.current?.getBBox
-            ? measureBBox(secondaryNameRef.current).width
-            : undefined;
-        if (secondaryWidth !== undefined) setMeasuredSecondaryName({ key: secondaryNamesKey, width: secondaryWidth });
-    }, [namesKey, secondaryNamesKey, measureBBox]);
-    useSvgLayoutEffect(measure, [measure]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            const width = mainNameRef.current?.getBBox ? measureBBox(mainNameRef.current).width : undefined;
+            if (width !== undefined) setMeasuredName({ key: namesKey, width });
+            const secondaryWidth = secondaryNameRef.current?.getBBox
+                ? measureBBox(secondaryNameRef.current).width
+                : undefined;
+            if (secondaryWidth !== undefined)
+                setMeasuredSecondaryName({ key: secondaryNamesKey, width: secondaryWidth });
+        },
+        [namesKey, secondaryNamesKey]
+    );
     const direction = layout.anchor === 'end' ? -1 : 1;
     const dividerX = secondaryNameOnNewLine
         ? layout.anchor === 'middle'

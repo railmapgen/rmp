@@ -1,7 +1,7 @@
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -25,7 +25,6 @@ import { SecondaryNameText } from './secondary-name';
 import { NAME_DY_SH_BASIC } from './shmetro-basic';
 
 const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -59,14 +58,15 @@ const GuangdongIntercityRailwayStation = (props: StationComponentProps) => {
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
     useSvgLayoutEffect(
-        () => setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
+        ({ measureBBox }) =>
+            setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
         [...secondaryNames]
     );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
     useSvgLayoutEffect(
-        () => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
+        ({ measureBBox }) => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
         [...names, nameOffsetX]
     );
 

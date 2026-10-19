@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSvgBBox, useSvgLayoutEffect } from '../../../svg-layout';
+import { useSvgLayoutEffect } from '../../../svg-layout';
 import { AttrsProps } from '../../../../constants/constants';
 import { LINE_WIDTH } from '../../../../constants/lines';
 import { Node, NodeComponentProps } from '../../../../constants/nodes';
@@ -51,7 +51,6 @@ const getWalkingTitleYs = (lineCount: number, itemLineWidth: number) => {
 };
 
 const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttributes>) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const items = React.useMemo(
         () => (attrs?.items ?? defaultLondonTubeLineBadgeAttributes.items).map(normalizeLondonTubeLineBadgeItem),
@@ -61,18 +60,19 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
     const textRefs = React.useRef<(SVGGElement | null)[]>([]);
     const [contentWidths, setContentWidths] = React.useState<number[]>([]);
 
-    const measure = React.useCallback(() => {
-        const next = items.map((_, index) => {
-            const textRef = textRefs.current[index];
-            if (!textRef) return 0;
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            const next = items.map((_, index) => {
+                const textRef = textRefs.current[index];
+                if (!textRef) return 0;
 
-            return Number(measureBBox(textRef).width.toFixed(2));
-        });
+                return Number(measureBBox(textRef).width.toFixed(2));
+            });
 
-        setContentWidths(prev => (areWidthsEqual(prev, next) ? prev : next));
-    }, [items, measureBBox]);
-
-    useSvgLayoutEffect(measure, [measure]);
+            setContentWidths(prev => (areWidthsEqual(prev, next) ? prev : next));
+        },
+        [items]
+    );
 
     const itemLineWidths = items.map(getItemLineWidth);
     const stackWidth =

@@ -5,7 +5,7 @@ import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
-import { useSvgBBox, useSvgLayoutEffect } from '../../svg-layout';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -40,7 +40,6 @@ const SCALE = 0.56; // scale the InterchangeStation2024 to match the global line
 const SCALE_WITH_PADDING = 0.6; // station names uses the coordinates from the icon and also need some padding
 
 const GzmtrInt2024Station = (props: StationComponentProps) => {
-    const measureBBox = useSvgBBox();
     const { id, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         names = defaultStationAttributes.names,
@@ -123,13 +122,17 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
     useSvgLayoutEffect(
-        () => setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
+        ({ measureBBox }) =>
+            setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
         [...secondaryNames]
     );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
-    useSvgLayoutEffect(() => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0), [...names]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
+        [...names]
+    );
 
     const secondaryDx = (textWidth + (secondaryTextWidth + 12 * 2) / 2) * (nameOffsetX === 'left' ? -1 : 1);
     const underConstructionDx =
