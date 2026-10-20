@@ -99,6 +99,7 @@ export default React.forwardRef<TimelineSvgHandle, TimelineSvgWrapperProps>(func
                         mapEnabled={mapEnabled ?? false}
                         mapStyle={mapStyle ?? DEFAULT_MAP_STYLE}
                         initialViewport={viewport}
+                        forceDetailed
                     />
                     <utils.SvgAssetsContextProvider>
                         <TimelineSvgCanvas

@@ -636,6 +636,58 @@ describe('MapTileController', () => {
         svg.remove();
     });
 
+    it('keeps forced detailed tiles across viewport scales and exports without changing visible bounds', async () => {
+        stubAnimationFrame();
+        const { chinaZoomed, fetcher, fetcherMock, japanZoomed, routing } = createRegionalMapSourceFixture();
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 1_000, height: 1_000 }),
+            fetch: fetcher,
+            rasterCache: null,
+            forceDetailed: true,
+        });
+        const chinaSelector = `[data-tile-key="13/${chinaZoomed.x}/${chinaZoomed.y}"]`;
+        const japanSelector = `[data-tile-key="13/${japanZoomed.x}/${japanZoomed.y}"]`;
+        const viewport = { x: -100, y: -100, zoom: 800 };
+        controller.updateViewport(viewport);
+        await controller.initialize();
+        await vi.waitFor(() => {
+            expect(root.querySelector(chinaSelector)).not.toBeNull();
+            expect(root.querySelector(japanSelector)).not.toBeNull();
+        });
+        const chinaTile = root.querySelector(chinaSelector);
+
+        for (const zoom of [MAP_ZOOMED_SWITCH_THRESHOLD, MAP_ZOOMED_SWITCH_THRESHOLD + 1, 800]) {
+            controller.updateViewport({ ...viewport, zoom });
+            await vi.waitFor(() => {
+                expect(root.querySelector(chinaSelector)).toBe(chinaTile);
+                expect(root.querySelector(japanSelector) !== null).toBe(zoom === 800);
+                expect(root.querySelector('[data-level="overview"]')).toBeNull();
+            });
+        }
+
+        // The real zoom still controls coverage; detail selection must not clamp the viewport scale.
+        controller.updateViewport({ ...viewport, x: -4_000 });
+        await vi.waitFor(() => expect(root.querySelector(japanSelector)).toBeNull());
+        const exportMin = worldPixelToGraph({ x: japanZoomed.x * MAP_TILE_SIZE, y: japanZoomed.y * MAP_TILE_SIZE });
+        const exportRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        await renderMapLayerForExport(root, exportRoot, {
+            xMin: exportMin.x,
+            yMin: exportMin.y,
+            xMax: exportMin.x + MAP_TILE_SIZE - 1,
+            yMax: exportMin.y + MAP_TILE_SIZE - 1,
+        });
+        expect(exportRoot.querySelector(japanSelector)).not.toBeNull();
+        expect(exportRoot.querySelector('[data-level="overview"]')).toBeNull();
+        expect(root.querySelector(japanSelector)).toBeNull();
+        expect(root.querySelector(chinaSelector)).toBe(chinaTile);
+        expect(fetcherMock.mock.calls.some(([input]) => String(input).includes('/bundles/overview/'))).toBe(false);
+        controller.dispose();
+        svg.remove();
+    });
+
     it('mounts SVG before cached raster work and keeps it visible until decode', async () => {
         stubAnimationFrame();
         const NativeUrl = URL;

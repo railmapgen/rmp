@@ -36,6 +36,7 @@ export interface MapCanvasCoreProps {
     mapEnabled: boolean;
     mapStyle: MapStyle;
     initialViewport: LiveViewport;
+    forceDetailed?: boolean;
     disableMapPerformanceOptimization?: boolean;
     editorInteractionActive?: boolean;
     onOverviewChange?: (isOverview: boolean) => void;
@@ -55,6 +56,7 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
         mapEnabled,
         mapStyle,
         initialViewport,
+        forceDetailed = false,
         disableMapPerformanceOptimization = false,
         editorInteractionActive = false,
         onOverviewChange = () => undefined,
@@ -98,12 +100,12 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
         (viewport: LiveViewport) => {
             latestViewportRef.current = viewport;
 
-            const isOverview = mapEnabled && !isMapZoomed(viewport.zoom);
+            const isOverview = mapEnabled && !forceDetailed && !isMapZoomed(viewport.zoom);
             updateOverviewState(isOverview);
 
             mapControllerRef.current?.updateViewport(viewport);
         },
-        [mapEnabled, updateOverviewState]
+        [forceDetailed, mapEnabled, updateOverviewState]
     );
 
     const markViewportInteraction = React.useCallback(() => {
@@ -129,8 +131,8 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
      * while transient pan/zoom frames continue through `updateViewport`.
      */
     React.useLayoutEffect(() => {
-        updateOverviewState(mapEnabled && !isMapZoomed(initialViewport.zoom));
-    }, [initialViewport.zoom, mapEnabled, updateOverviewState]);
+        updateOverviewState(mapEnabled && !forceDetailed && !isMapZoomed(initialViewport.zoom));
+    }, [forceDetailed, initialViewport.zoom, mapEnabled, updateOverviewState]);
 
     React.useEffect(
         () => () => {
@@ -154,6 +156,7 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
             routing: MAP_ROUTING,
             styleCss: mapStyleCssRef.current,
             rasterEnabled: rasterEnabledRef.current,
+            forceDetailed,
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
@@ -187,7 +190,7 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
             controller.dispose();
             if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
         };
-    }, [mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
+    }, [forceDetailed, mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
 
     viewportSizeRef.current = { height, width };
     mapStyleCssRef.current = mapStyleCss;

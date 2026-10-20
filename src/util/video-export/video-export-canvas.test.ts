@@ -49,6 +49,7 @@ describe('video export canvas lifecycle', () => {
         expect(options.root).toBe(source.canvas.querySelector('[data-map-layer]'));
         expect(options.routing).toBe(MAP_ROUTING);
         expect(options.rasterEnabled).toBe(false);
+        expect(options.forceDetailed).toBe(true);
         expect(updateViewport).toHaveBeenCalledWith(viewport);
         source.dispose();
         expect(dispose).toHaveBeenCalledOnce();

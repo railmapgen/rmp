@@ -39,6 +39,7 @@ export const createVideoExportCanvas = (
             styleCss: css,
             getViewportSize: () => size,
             rasterEnabled: false,
+            forceDetailed: true,
         });
         // renderForExport initializes the controller lazily and reuses its caches for every frame.
         controller.updateViewport(viewport);
@@ -50,7 +51,7 @@ export const createVideoExportCanvas = (
     return {
         canvas,
         renderGeometry: true,
-        // Only the offline export uses this to select map detail for its actual camera, without touching the editor.
+        // Only the offline export uses this to follow its actual camera, without touching the editor.
         updateMapViewport: (next: LiveViewport) => controller?.updateViewport(next),
         dispose: () => controller?.dispose(),
     };
