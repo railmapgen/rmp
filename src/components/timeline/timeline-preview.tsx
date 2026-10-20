@@ -6,7 +6,7 @@ import { MapStyle } from '../../map/map-style';
 import { TimelineGraph } from '../../timeline/timeline-project-context';
 import { TextLanguage } from '../../util/fonts';
 import { TimelinePlaybackTiming } from '../../util/timeline-playback';
-import { createVideoPreviewRenderer, VideoExportOptions } from '../../util/video-export';
+import { createVideoPreviewRenderer, VideoExportOptions } from '../../util/video-export/video-export';
 import { fitVideoPreviewFrame } from './timeline-preview-layout';
 
 interface TimelinePreviewProps {
@@ -16,6 +16,7 @@ interface TimelinePreviewProps {
     time: number;
     options: VideoExportOptions;
     mapEnabled: boolean;
+    isSubscriber: boolean;
     mapStyle: MapStyle;
     svgViewBoxMin: { x: number; y: number };
     svgViewBoxZoom: number;
@@ -33,6 +34,7 @@ export default function TimelinePreview({
     time,
     options,
     mapEnabled,
+    isSubscriber,
     mapStyle,
     svgViewBoxMin,
     svgViewBoxZoom,
@@ -85,12 +87,14 @@ export default function TimelinePreview({
     );
 
     React.useEffect(() => {
+        const preparationController = new AbortController();
         let cancelled = false;
         let pending = false;
         let forcePending = false;
         let rendering = false;
         let renderedFrame: number | undefined;
         let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+        let unsubscribeLayout: (() => void) | undefined;
         setLoading(true);
         setError(undefined);
         onTimingChange(undefined);
@@ -178,14 +182,21 @@ export default function TimelinePreview({
                 cancelled = true;
             };
         }
-        void createVideoPreviewRenderer(graph, visualDocument, languages, options, {
-            mapEnabled,
-            mapStyle,
-            svgViewBoxMin,
-            svgViewBoxZoom,
-            isSubscriber: false,
-            getImage,
-        })
+        void createVideoPreviewRenderer(
+            graph,
+            visualDocument,
+            languages,
+            options,
+            {
+                mapEnabled,
+                mapStyle,
+                svgViewBoxMin,
+                svgViewBoxZoom,
+                isSubscriber,
+                getImage,
+            },
+            preparationController.signal
+        )
             .then(prepared => {
                 renderer = prepared;
                 if (cancelled) {
@@ -193,6 +204,7 @@ export default function TimelinePreview({
                     return;
                 }
                 onTimingChange({ duration: prepared.duration, cursorTimes: prepared.cursorTimes });
+                unsubscribeLayout = prepared.subscribeLayoutInvalidation?.(() => void renderLatest(true));
                 prepared.setLabelTrack(latestLabels.current ?? []);
                 void renderLatest();
             })
@@ -204,6 +216,8 @@ export default function TimelinePreview({
             });
         return () => {
             cancelled = true;
+            preparationController.abort();
+            unsubscribeLayout?.();
             dragRef.current = undefined;
             renderer?.dispose();
             requestRenderRef.current = () => {};
@@ -215,6 +229,7 @@ export default function TimelinePreview({
         languages,
         options,
         mapEnabled,
+        isSubscriber,
         mapStyle,
         svgViewBoxMin,
         svgViewBoxZoom,

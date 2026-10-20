@@ -1,15 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MultiDirectedGraph } from 'graphology';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
-import stations from '../components/svgs/stations/stations';
-import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { StationType } from '../constants/stations';
+import stations from '../../components/svgs/stations/stations';
+import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
 import {
     createEmptyTimelineDocument,
     TimelineDocument,
     TimelineElementEntry,
     TimelineEntry,
-} from '../constants/timeline';
+} from '../../constants/timeline';
 import {
     createFrameStationGraph,
     embedVideoExportStyles,
@@ -24,6 +24,11 @@ import {
     renderVideoFrameGeometry,
 } from './video-export';
 import { createVideoFrameScene } from './video-frame-scene';
+
+vi.mock('../fonts', async importOriginal => ({
+    ...(await importOriginal<typeof import('../fonts')>()),
+    waitForFonts: vi.fn(async () => undefined),
+}));
 
 const makeGraph = () => new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
 
@@ -463,13 +468,13 @@ describe('getRenderedEdgeLength', () => {
 });
 
 describe('station frame geometry', () => {
-    const renderFrameGraph = (graph: ReturnType<typeof makeGraph>) => {
+    const renderFrameGraph = async (graph: ReturnType<typeof makeGraph>) => {
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        renderVideoFrameGeometry(graph, svg);
+        await renderVideoFrameGeometry(graph, svg);
         return svg;
     };
 
-    it('renders a Suzhou interchange from the visible line colors for the current frame', () => {
+    it('renders a Suzhou interchange from the visible line colors for the current frame', async () => {
         const graph = makeGraph();
         const stationType = StationType.SuzhouRTInt;
         const line1: Theme = [CityCode.Suzhou, 'sz1', '#78BA25', MonoColour.white];
@@ -501,7 +506,7 @@ describe('station frame geometry', () => {
 
         const frameGraph = createFrameStationGraph(graph, new Set(['line_1', 'line_2']));
         const frameAttrs = frameGraph.getNodeAttribute('stn_suzhou', StationType.SuzhouRTInt);
-        const markup = renderFrameGraph(frameGraph).outerHTML;
+        const markup = (await renderFrameGraph(frameGraph)).outerHTML;
 
         expect(frameGraph.getNodeAttribute('stn_suzhou', 'type')).toBe(StationType.SuzhouRTInt);
         expect(frameAttrs?.transfer[0].map(transfer => transfer[2])).toEqual(['#78BA25', '#ED3240']);
@@ -510,7 +515,7 @@ describe('station frame geometry', () => {
         expect(markup).not.toContain('fill="#F39800"');
     });
 
-    it('keeps the Suzhou interchange hit area transparent after the reveal animation', () => {
+    it('keeps the Suzhou interchange hit area transparent after the reveal animation', async () => {
         const graph = makeGraph();
         const stationType = StationType.SuzhouRTInt;
         graph.addNode('stn_suzhou', {
@@ -522,7 +527,7 @@ describe('station frame geometry', () => {
             [stationType]: structuredClone(stations[stationType].defaultAttrs),
         });
 
-        const svg = renderFrameGraph(graph);
+        const svg = await renderFrameGraph(graph);
         const scene = createVideoFrameScene(svg, { nodeIds: ['stn_suzhou'], edgeIds: [] });
         scene.applyNode('stn_suzhou', { visible: true, progress: 1 });
         const container = scene.getGroup('stn_suzhou')!;

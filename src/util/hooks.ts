@@ -264,7 +264,7 @@ export const useFonts = () => {
 
     useEffect(() => {
         for (const lang of languages) {
-            loadFont(lang);
+            void loadFont(lang).catch(error => logger.warn('Failed to load font', lang, error));
         }
     }, [refreshNodes, languages]);
 };

@@ -29,7 +29,7 @@ import { VideoLineLabel } from '../../constants/line-definitions';
 import { TimelineGraph } from '../../timeline/timeline-project-context';
 import { commitRevision, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
 import { isOpeningDateValid } from '../../util/line-definitions';
-import { getVideoLineLabel } from '../../util/video-overlay';
+import { getVideoLineLabel } from '../../util/video-export/video-overlay';
 
 interface TimelineLineInfoModalProps {
     isOpen: boolean;

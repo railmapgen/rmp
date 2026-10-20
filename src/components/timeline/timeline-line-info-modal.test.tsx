@@ -18,7 +18,7 @@ import { TimelineProjectRecord } from '../../timeline/timeline-project';
 import { timelineProjectDB } from '../../timeline/timeline-project-db';
 import { exportTimelineProjectFile, importTimelineProjectFile } from '../../timeline/timeline-project-io';
 import { closeProject, initTimelineStore, openProject, redo, timelineStore, undo } from '../../timeline/timeline-store';
-import { getVideoLineAnnotation } from '../../util/video-overlay';
+import { getVideoLineAnnotation } from '../../util/video-export/video-overlay';
 import TimelineLineInfoModal from './timeline-line-info-modal';
 
 type Graph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;

@@ -1,4 +1,4 @@
-import { Id, LineId, NodeId } from '../constants/constants';
+import { Id, LineId, NodeId } from '../../constants/constants';
 
 export const VIDEO_FRAME_BASE_VARIANT = 'base';
 

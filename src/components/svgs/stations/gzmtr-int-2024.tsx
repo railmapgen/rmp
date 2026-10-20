@@ -5,6 +5,7 @@ import { Coordinates, InterchangeStation2024, InterchangeStation2024Handle } fro
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove } from 'react-icons/md';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -79,7 +80,7 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     const [borderBox, setBorderBox] = React.useState<SVGRect>();
     const [translate, setTranslate] = React.useState<Coordinates>([0, 0]);
     const ref = React.useRef<InterchangeStation2024Handle>(null);
-    React.useEffect(() => {
+    useSvgLayoutEffect(() => {
         if (ref.current) {
             setBorderBox(ref.current.getCorrectedBBox());
             setTranslate(ref.current.getTranslate());
@@ -96,8 +97,9 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
     // bbox calculated before fonts are loaded will be incorrect.
     // Also see SvgAssetsContextProvider in src/components/svg-wrapper.tsx
     const { update } = React.useContext(utils.SvgAssetsContext);
-    React.useEffect(() => {
-        document.fonts.load('12px Arial', 'ABCDEFG123456').finally(() => setTimeout(update, 100));
+    useSvgLayoutEffect(async () => {
+        await document.fonts?.load('12px Arial', 'ABCDEFG123456');
+        update();
     }, []);
 
     const textX =
@@ -119,11 +121,18 @@ const GzmtrInt2024Station = (props: StationComponentProps) => {
 
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
-    React.useEffect(() => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0), [...secondaryNames]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) =>
+            setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
+        [...secondaryNames]
+    );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
-    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
+        [...names]
+    );
 
     const secondaryDx = (textWidth + (secondaryTextWidth + 12 * 2) / 2) * (nameOffsetX === 'left' ? -1 : 1);
     const underConstructionDx =

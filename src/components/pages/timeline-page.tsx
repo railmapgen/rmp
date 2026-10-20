@@ -39,6 +39,7 @@ export default function TimelinePage() {
     const { t } = useTranslation();
     const dispatch = useTimelineDispatch();
     const active = useTimelineSelector(state => state.project.active)!;
+    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
     const timeline = active.revision.timeline;
     const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
     const selected = useTimelineSelector(state => state.runtime.selected);
@@ -298,7 +299,7 @@ export default function TimelinePage() {
                         graph={graph}
                         mapEnabled={mapEnabled}
                         mapStyle={mapStyle}
-                        isSubscriber={false}
+                        isSubscriber={isSubscriber}
                     />
                 </Box>
                 <Divider orientation="vertical" borderColor={borderColor} />
@@ -318,6 +319,7 @@ export default function TimelinePage() {
                         graph={graph}
                         mapEnabled={mapEnabled}
                         mapStyle={mapStyle}
+                        isSubscriber={isSubscriber}
                     />
                     {editableKeyframe && (
                         <Badge

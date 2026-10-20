@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSvgLayoutEffect } from '../../../svg-layout';
 import { AttrsProps } from '../../../../constants/constants';
 import { LINE_WIDTH } from '../../../../constants/lines';
 import { Node, NodeComponentProps } from '../../../../constants/nodes';
@@ -59,35 +60,19 @@ const LondonTubeLineBadge = (props: NodeComponentProps<LondonTubeLineBadgeAttrib
     const textRefs = React.useRef<(SVGGElement | null)[]>([]);
     const [contentWidths, setContentWidths] = React.useState<number[]>([]);
 
-    const measure = React.useCallback(() => {
-        const next = items.map((_, index) => {
-            const textRef = textRefs.current[index];
-            if (!textRef) return 0;
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            const next = items.map((_, index) => {
+                const textRef = textRefs.current[index];
+                if (!textRef) return 0;
 
-            try {
-                return Number(textRef.getBBox().width.toFixed(2));
-            } catch {
-                return 0;
-            }
-        });
+                return Number(measureBBox(textRef).width.toFixed(2));
+            });
 
-        setContentWidths(prev => (areWidthsEqual(prev, next) ? prev : next));
-    }, [items]);
-
-    React.useLayoutEffect(() => {
-        measure();
-        const rafId = requestAnimationFrame(measure);
-
-        const fontSet = document.fonts;
-        const handleLoadingDone = () => measure();
-        void fontSet.ready.then(measure);
-        fontSet.addEventListener('loadingdone', handleLoadingDone);
-
-        return () => {
-            cancelAnimationFrame(rafId);
-            fontSet.removeEventListener('loadingdone', handleLoadingDone);
-        };
-    }, [measure]);
+            setContentWidths(prev => (areWidthsEqual(prev, next) ? prev : next));
+        },
+        [items]
+    );
 
     const itemLineWidths = items.map(getItemLineWidth);
     const stackWidth =

@@ -1,8 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
+import { waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
+import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { subscription_endpoint } from '../constants/server';
 import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { setActiveSubscriptions, setToken } from '../redux/account/account-slice';
 import { TimelineProjectRecord } from './timeline-project';
 import { timelineProjectDB } from './timeline-project-db';
 import {
@@ -35,17 +38,54 @@ const makeProject = (): TimelineProjectRecord => ({
 });
 
 describe('Timeline session history', () => {
-    it('starts on the project home while remembering the most recent project', async () => {
+    it('keeps account changes outside project data and undo history', () => {
+        const store = createTimelineStore();
+        store.dispatch(openProject(makeProject()));
+        const projectState = store.getState().project;
+
+        store.dispatch(setToken('account-token'));
+        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true }));
+        expect(store.getState().account.activeSubscriptions.RMP_EXPORT).toBe(true);
+        expect(store.getState().project).toBe(projectState);
+
+        store.dispatch(setToken(undefined));
+        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: false }));
+        expect(store.getState().account.activeSubscriptions.RMP_EXPORT).toBe(false);
+        expect(store.getState().project).toBe(projectState);
+    });
+
+    it('starts on the project home with live account access without loading the painter project', async () => {
         timelineStore.dispatch(closeProject());
         const listSpy = vi.spyOn(timelineProjectDB, 'listProjects').mockResolvedValue([]);
         const lastSpy = vi.spyOn(timelineProjectDB, 'getLastProjectId').mockResolvedValue('recent-project');
         const getSpy = vi.spyOn(timelineProjectDB, 'getProject');
+        const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+            status: 200,
+            json: async () => ({ subscriptions: [{ type: 'RMP_EXPORT', expires: '2099-01-01T00:00:00Z' }] }),
+        } as Response);
+        localStorage.setItem(LocalStorageKey.ACCOUNT, JSON.stringify({ token: 'timeline-account-token' }));
+        const storageMethods = localStorage instanceof Storage ? Storage.prototype : localStorage;
+        const storageSpy = vi.spyOn(storageMethods, 'getItem');
+        const painterGraph = window.graph;
 
         await initTimelineStore();
+        await waitFor(() => expect(timelineStore.getState().account.activeSubscriptions.RMP_EXPORT).toBe(true));
 
         expect(timelineStore.getState().project.active).toBeUndefined();
         expect(timelineStore.getState().project.lastProjectId).toBe('recent-project');
         expect(getSpy).not.toHaveBeenCalled();
+        expect(storageSpy).toHaveBeenCalledWith(LocalStorageKey.ACCOUNT);
+        expect(storageSpy).not.toHaveBeenCalledWith(LocalStorageKey.PARAM);
+        expect(window.graph).toBe(painterGraph);
+        expect(fetchSpy).toHaveBeenCalledWith(subscription_endpoint, {
+            headers: expect.objectContaining({ Authorization: 'Bearer timeline-account-token' }),
+        });
+
+        localStorage.removeItem(LocalStorageKey.ACCOUNT);
+        window.onstorage?.call(window, new StorageEvent('storage', { key: LocalStorageKey.ACCOUNT }));
+        expect(timelineStore.getState().account.activeSubscriptions.RMP_EXPORT).toBe(false);
+        storageSpy.mockRestore();
+        fetchSpy.mockRestore();
         listSpy.mockRestore();
         lastSpy.mockRestore();
         getSpy.mockRestore();

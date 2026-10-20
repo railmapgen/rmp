@@ -12,6 +12,7 @@ import {
     TimelineKeyframeEntry,
 } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
+import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
 import {
     createTimelineStore,
@@ -20,7 +21,7 @@ import {
     setCursor,
     setVideoOptions,
 } from '../../timeline/timeline-store';
-import type { VideoExportOptions } from '../../util/video-export';
+import type { VideoExportOptions } from '../../util/video-export/video-export';
 import TimelinePage from './timeline-page';
 
 const { previewRender, previewPrepare, playbackClock, projectContext, svgContext } = vi.hoisted(() => ({
@@ -47,7 +48,11 @@ vi.mock('react-i18next', async importOriginal => ({
 vi.mock('../timeline/timeline-track', () => ({ KEYFRAME_ROW_HEIGHT: 20 }));
 vi.mock('../timeline/use-timeline-audio-playback', () => ({ useTimelineAudioPlayback: () => undefined }));
 vi.mock('../timeline/use-timeline-playback-clock', () => ({ useTimelinePlaybackClock: playbackClock }));
-vi.mock('../timeline/timeline-svg-wrapper', () => ({ default: () => <div data-testid="timeline-editor" /> }));
+vi.mock('../timeline/timeline-svg-wrapper', () => ({
+    default: ({ isSubscriber }: { isSubscriber: boolean }) => (
+        <div data-testid="timeline-editor" data-subscriber={isSubscriber} />
+    ),
+}));
 vi.mock('../timeline/timeline-track-panel', () => ({
     default: ({
         document,
@@ -86,11 +91,13 @@ vi.mock('../timeline/timeline-preview', () => ({
         onTimingChange,
         document,
         editableKeyframe,
+        isSubscriber,
     }: {
         options: VideoExportOptions;
         onTimingChange: (timing: { duration: number; cursorTimes: number[] }) => void;
         document: TimelineDocument;
         editableKeyframe?: TimelineKeyframeEntry;
+        isSubscriber: boolean;
     }) => {
         previewRender(options);
         React.useEffect(() => {
@@ -105,7 +112,13 @@ vi.mock('../timeline/timeline-preview', () => ({
                     : [0, 20],
             });
         }, [options, onTimingChange]);
-        return <div data-testid="timeline-preview" data-editable-keyframe={editableKeyframe?.id} />;
+        return (
+            <div
+                data-testid="timeline-preview"
+                data-editable-keyframe={editableKeyframe?.id}
+                data-subscriber={isSubscriber}
+            />
+        );
     },
 }));
 
@@ -176,6 +189,23 @@ const renderPage = (track: TimelineEntry[] = []) => {
 const latestPreviewOptions = () => previewRender.mock.calls.at(-1)![0] as VideoExportOptions;
 
 describe('TimelinePage preview and export isolation', () => {
+    it('updates both the editor and video preview when Export access changes', () => {
+        const store = renderPage();
+        const expectSubscriber = (subscriber: boolean) => {
+            for (const pane of ['timeline-editor', 'timeline-preview']) {
+                expect(screen.getByTestId(pane).getAttribute('data-subscriber')).toBe(String(subscriber));
+            }
+        };
+
+        expectSubscriber(false);
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+        expectSubscriber(false);
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+        expectSubscriber(true);
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: false })));
+        expectSubscriber(false);
+    });
+
     it('keeps a fixed 720p/15 FPS preview without a watermark and ignores every export option', () => {
         const store = renderPage();
         const options = latestPreviewOptions();

@@ -3,9 +3,11 @@ import { enableMapSet } from 'immer';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { Id } from '../constants/constants';
 import { TimelineDocument } from '../constants/timeline';
+import accountReducer from '../redux/account/account-slice';
 import { MAX_UNDO_SIZE } from '../redux/param/param-slice';
+import { onLocalStorageChangeRMT } from '../util/account-sync';
 import { normalizeTimelineDocument } from '../util/timeline';
-import type { VideoExportOptions } from '../util/video-export';
+import type { VideoExportOptions } from '../util/video-export/video-export';
 import { timelineProjectDB } from './timeline-project-db';
 import { TimelineProjectRecord, TimelineProjectRevision, TimelineProjectSummary } from './timeline-project';
 
@@ -131,7 +133,11 @@ const runtimeSlice = createSlice({
     },
 });
 
-const reducer = combineReducers({ project: projectSlice.reducer, runtime: runtimeSlice.reducer });
+const reducer = combineReducers({
+    account: accountReducer,
+    project: projectSlice.reducer,
+    runtime: runtimeSlice.reducer,
+});
 export const createTimelineStore = () =>
     configureStore({
         reducer,
@@ -159,7 +165,12 @@ export const {
 export const { setCursor, setSelected, setViewport, setVideoOptions, clearRuntime } = runtimeSlice.actions;
 
 let unsubscribePersistence: (() => void) | undefined;
+let accountInitialized = false;
 export const initTimelineStore = async () => {
+    if (!accountInitialized) {
+        onLocalStorageChangeRMT(timelineStore);
+        accountInitialized = true;
+    }
     const [projects, lastProjectId] = await Promise.all([
         timelineProjectDB.listProjects(),
         timelineProjectDB.getLastProjectId(),

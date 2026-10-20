@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { LineIcon } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
@@ -33,7 +34,10 @@ const GzmtrLineBadge = (props: NodeComponentProps<GzmtrLineBadgeAttributes>) => 
 
     const iconRef = React.useRef<SVGSVGElement>(null);
     const [iconBBox, setIconBBox] = React.useState({ height: 0, width: 0 });
-    React.useEffect(() => setIconBBox(iconRef.current?.getBBox() ?? { height: 0, width: 0 }), [...names, tram]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setIconBBox(iconRef.current ? measureBBox(iconRef.current) : { height: 0, width: 0 }),
+        [...names, tram]
+    );
 
     return (
         <g transform={`translate(0, ${-iconBBox.height / 2})scale(${tram ? 0.5 : 1})`}>

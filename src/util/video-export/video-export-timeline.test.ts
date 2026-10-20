@@ -1,8 +1,8 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it, vi } from 'vitest';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../constants/constants';
-import { StationType } from '../constants/stations';
-import { TimelineElementEntry, TimelineEntry } from '../constants/timeline';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
+import { TimelineElementEntry, TimelineEntry } from '../../constants/timeline';
 import { createVideoTimelinePlayback } from './video-export-timeline';
 
 const makeGraph = () => {

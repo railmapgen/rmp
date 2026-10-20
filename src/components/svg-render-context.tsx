@@ -1,3 +1,4 @@
+import { logger } from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { EdgeAttributes, GraphAttributes, Id, NodeAttributes, RuntimeMode, StnId } from '../constants/constants';
@@ -26,7 +27,7 @@ const fallback: SvgRenderContextValue = {
         return window.graph;
     },
     getImage: id => imageStoreIndexedDB.get(id),
-    ensureFont: language => void loadFont(language),
+    ensureFont: language => void loadFont(language).catch(error => logger.warn('Failed to load font', language, error)),
 };
 
 const SvgRenderContext = React.createContext<SvgRenderContextValue>(fallback);

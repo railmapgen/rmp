@@ -6,7 +6,7 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants
 import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { render } from '../../test-utils';
-import { videoPreviewDefaultOptions } from '../../util/video-export';
+import { videoPreviewDefaultOptions } from '../../util/video-export/video-export';
 import TimelinePreview from './timeline-preview';
 
 const mocks = vi.hoisted(() => ({
@@ -15,9 +15,11 @@ const mocks = vi.hoisted(() => ({
     renderPreviewFrame: vi.fn(),
     dispose: vi.fn(),
     setLabelTrack: vi.fn(),
+    subscribeLayoutInvalidation: vi.fn(),
+    unsubscribeLayout: vi.fn(),
 }));
-vi.mock('../../util/video-export', async original => ({
-    ...(await original<typeof import('../../util/video-export')>()),
+vi.mock('../../util/video-export/video-export', async original => ({
+    ...(await original<typeof import('../../util/video-export/video-export')>()),
     createVideoPreviewRenderer: mocks.prepare,
 }));
 
@@ -35,6 +37,7 @@ const props = {
     time: 0,
     options: videoPreviewDefaultOptions,
     mapEnabled: false,
+    isSubscriber: false,
     mapStyle: DEFAULT_MAP_STYLE,
     svgViewBoxMin: { x: 0, y: 0 },
     svgViewBoxZoom: 100,
@@ -55,6 +58,7 @@ describe('TimelinePreview video frames', () => {
         vi.clearAllMocks();
         mocks.prepare.mockReset();
         mocks.renderPreviewFrame.mockReset();
+        mocks.subscribeLayoutInvalidation.mockReset().mockReturnValue(mocks.unsubscribeLayout);
         scene = createScene();
         mocks.renderPreviewFrame.mockImplementation(async (time, options) => {
             scene.setAttribute('data-time', String(time));
@@ -68,10 +72,27 @@ describe('TimelinePreview video frames', () => {
             renderPreviewFrame: mocks.renderPreviewFrame,
             dispose: mocks.dispose,
             setLabelTrack: mocks.setLabelTrack,
+            subscribeLayoutInvalidation: mocks.subscribeLayoutInvalidation,
         });
     });
 
     afterEach(() => vi.unstubAllGlobals());
+
+    it('rebuilds video geometry when Export access changes', async () => {
+        const { container, rerender } = render(<TimelinePreview {...props} />);
+        await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
+        expect(mocks.prepare.mock.calls[0][4]).toMatchObject({ isSubscriber: false });
+
+        rerender(<TimelinePreview {...props} isSubscriber={true} />);
+        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(2));
+        expect(mocks.prepare.mock.calls[1][4]).toMatchObject({ isSubscriber: true });
+        expect(mocks.dispose).toHaveBeenCalledTimes(1);
+
+        rerender(<TimelinePreview {...props} isSubscriber={false} />);
+        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(3));
+        expect(mocks.prepare.mock.calls[2][4]).toMatchObject({ isSubscriber: false });
+        expect(mocks.dispose).toHaveBeenCalledTimes(2);
+    });
 
     it('uses exported frames at real seconds and publishes the complete video timing', async () => {
         const onTimingChange = vi.fn();
@@ -104,6 +125,29 @@ describe('TimelinePreview video frames', () => {
         await waitFor(() => expect(container.querySelector('svg')?.getAttribute('data-time')).toBe('0.01'));
         expect(mocks.renderPreviewFrame).toHaveBeenCalledTimes(3);
         expect(mocks.prepare).toHaveBeenCalledOnce();
+    });
+
+    it('refreshes a paused frame on layout invalidation and cancels its subscription on unmount', async () => {
+        const { container, unmount } = render(<TimelinePreview {...props} time={2} />);
+        await waitFor(() => expect(container.querySelector('svg')?.getAttribute('data-time')).toBe('2'));
+        expect(mocks.subscribeLayoutInvalidation).toHaveBeenCalledOnce();
+        const invalidate = mocks.subscribeLayoutInvalidation.mock.calls[0][0] as () => void;
+        const signal = mocks.prepare.mock.calls[0][5] as AbortSignal;
+        expect(signal.aborted).toBe(false);
+        const initialRequests = mocks.renderPreviewFrame.mock.calls.length;
+
+        await act(async () => invalidate());
+        await waitFor(() => expect(mocks.renderPreviewFrame).toHaveBeenCalledTimes(initialRequests + 1));
+        expect(mocks.renderPreviewFrame).toHaveBeenLastCalledWith(2, { force: true });
+        expect(mocks.prepare).toHaveBeenCalledOnce();
+        expect(container.querySelector('svg')).toBe(scene);
+
+        unmount();
+        expect(signal.aborted).toBe(true);
+        expect(mocks.unsubscribeLayout).toHaveBeenCalledOnce();
+        expect(mocks.dispose).toHaveBeenCalledOnce();
+        await act(async () => invalidate());
+        expect(mocks.renderPreviewFrame).toHaveBeenCalledTimes(initialRequests + 1);
     });
 
     it('coalesces seeks while a frame is pending and mounts only the latest result', async () => {

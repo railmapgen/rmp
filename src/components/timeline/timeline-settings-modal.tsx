@@ -25,7 +25,7 @@ import {
     TimelineDocument,
     TimelineSettings,
 } from '../../constants/timeline';
-import { videoExportSpeedRange } from '../../util/video-export';
+import { videoExportSpeedRange } from '../../util/video-export/video-export';
 
 interface TimelineSettingsModalProps {
     document: TimelineDocument;

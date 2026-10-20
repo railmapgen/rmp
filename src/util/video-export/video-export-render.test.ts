@@ -1,19 +1,24 @@
 import { MultiDirectedGraph } from 'graphology';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getI18n, setI18n } from 'react-i18next';
-import i18n from '../i18n/config';
-import stations from '../components/svgs/stations/stations';
-import miscNodes from '../components/svgs/nodes/misc-nodes';
-import { linePaths, lineStyles } from '../components/svgs/lines/lines';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
-import { LinePathType, LineStyleType } from '../constants/lines';
-import { StationType } from '../constants/stations';
-import { MiscNodeType } from '../constants/nodes';
-import { DEFAULT_MAP_STYLE } from '../map/map-style';
-import * as mapTileController from '../map/map-tile-controller';
-import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../constants/timeline';
-import { makeRenderReadySVGElement } from './download';
+import i18n from '../../i18n/config';
+import stations from '../../components/svgs/stations/stations';
+import miscNodes from '../../components/svgs/nodes/misc-nodes';
+import { linePaths, lineStyles } from '../../components/svgs/lines/lines';
+import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { LinePathType, LineStyleType } from '../../constants/lines';
+import { StationType } from '../../constants/stations';
+import { MiscNodeType } from '../../constants/nodes';
+import { DEFAULT_MAP_STYLE } from '../../map/map-style';
+import { isMapZoomed } from '../../map/map-config';
+import * as mapTileController from '../../map/map-tile-controller';
+import type { LiveViewport } from '../../redux/viewport/viewport-slice';
+import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../../constants/timeline';
+import { makeRenderReadySVGElement } from '../download';
+import { calculateCanvasSize } from '../helpers';
+import * as canvasHelpers from '../helpers';
 import * as videoExportCanvas from './video-export-canvas';
+import * as videoResourceLayout from './video-resource-layout';
 import {
     createVideoPreviewRenderer,
     exportVideo,
@@ -22,20 +27,31 @@ import {
     VideoExportOptions,
 } from './video-export';
 import { createVideoFrameWriter, NativeVideoEncodingError } from './video-encoder';
-import { calculateCanvasSize } from './helpers';
+import { renderVideoSVGToCanvas } from './video-export-rasterizer';
 
 const { addFrame, complete } = vi.hoisted(() => ({
     addFrame: vi.fn(),
-    complete: vi.fn().mockResolvedValue(new Blob()),
+    complete: vi.fn().mockResolvedValue({ kind: 'memory-blob', blob: new Blob() }),
 }));
 vi.mock('./video-encoder', async importOriginal => ({
     ...(await importOriginal<typeof import('./video-encoder')>()),
     createVideoFrameWriter: vi.fn(async () => ({ addFrame, complete, dispose: vi.fn() })),
 }));
-vi.mock('./download', () => ({ makeRenderReadySVGElement: vi.fn() }));
+vi.mock('../download', () => ({ makeRenderReadySVGElement: vi.fn() }));
+vi.mock('../fonts', async importOriginal => ({
+    ...(await importOriginal<typeof import('../fonts')>()),
+    waitForFonts: vi.fn(async () => undefined),
+    loadFont: vi.fn(async () => undefined),
+}));
+vi.mock('./video-export-rasterizer', () => ({
+    renderVideoSVGToCanvas: vi.fn(async (svg: SVGSVGElement) => {
+        renderedSVGs.push(svg.cloneNode(true) as SVGSVGElement);
+    }),
+}));
 
 const renderedSVGs: SVGSVGElement[] = [];
 let editorCanvas: SVGSVGElement;
+let originalGetBBox: PropertyDescriptor | undefined;
 const defaultOptions: VideoExportOptions = {
     format: 'mp4',
     fps: 30,
@@ -50,17 +66,21 @@ const defaultOptions: VideoExportOptions = {
 
 beforeEach(() => {
     vi.clearAllMocks();
+    originalGetBBox = Object.getOwnPropertyDescriptor(SVGElement.prototype, 'getBBox');
+    Object.defineProperty(SVGElement.prototype, 'getBBox', {
+        configurable: true,
+        value: vi.fn(() => ({ x: 0, y: 0, width: 40, height: 10 })),
+    });
     renderedSVGs.length = 0;
     editorCanvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     editorCanvas.id = 'canvas';
     document.body.append(editorCanvas);
     vi.mocked(makeRenderReadySVGElement).mockImplementation(
-        async (graph, mapEnabled, _info, _fonts, _languages, _force, _version, renderGraph, sourceCanvas) => {
+        async (graph, _mapEnabled, _info, _fonts, _languages, _force, _version, renderGraph, sourceCanvas) => {
             const elem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            if (mapEnabled) {
-                const sourceMap = sourceCanvas?.querySelector('[data-map-layer]');
-                if (sourceMap) elem.append(sourceMap.cloneNode(true));
-            }
+            // Real preparation clones the map layer even when export defers its initial tile population.
+            const sourceMap = sourceCanvas?.querySelector('[data-map-layer]');
+            if (sourceMap) elem.append(sourceMap.cloneNode(true));
             const layer = document.createElementNS(elem.namespaceURI, 'g');
             layer.setAttribute('data-editor-layer', '');
             elem.append(layer);
@@ -105,23 +125,12 @@ beforeEach(() => {
         fillRect: vi.fn(),
         drawImage: vi.fn(),
     } as unknown as CanvasRenderingContext2D);
-    vi.stubGlobal(
-        'Image',
-        class {
-            onload?: () => void;
-            set src(value: string) {
-                const encodedSVG = value.split(',', 2)[1];
-                const bytes = Uint8Array.from(atob(encodedSVG), character => character.charCodeAt(0));
-                const svg = new DOMParser().parseFromString(new TextDecoder().decode(bytes), 'text/html');
-                renderedSVGs.push(svg.querySelector('svg')!);
-                this.onload?.();
-            }
-        }
-    );
 });
 
 afterEach(() => {
     editorCanvas.remove();
+    if (originalGetBBox) Object.defineProperty(SVGElement.prototype, 'getBBox', originalGetBBox);
+    else delete (SVGElement.prototype as { getBBox?: unknown }).getBBox;
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
 });
@@ -274,13 +283,14 @@ const geographicEnvironment = {
     svgViewBoxZoom: 100,
 };
 
-const mockGeographicMap = () => {
+const mockGeographicMap = (updateMapViewport = vi.fn<(viewport: LiveViewport) => void>()) => {
     const layer = document.createElementNS(editorCanvas.namespaceURI, 'g');
     layer.setAttribute('data-map-layer', '');
     editorCanvas.append(layer);
     vi.spyOn(videoExportCanvas, 'createVideoExportCanvas').mockReturnValue({
         canvas: editorCanvas,
         renderGeometry: true,
+        updateMapViewport,
         dispose: vi.fn(),
     });
     return vi
@@ -292,7 +302,9 @@ const mockGeographicMap = () => {
             background.setAttribute('y', String(bounds.yMin));
             background.setAttribute('width', String(bounds.xMax - bounds.xMin));
             background.setAttribute('height', String(bounds.yMax - bounds.yMin));
-            target.replaceChildren(background);
+            const attribution = document.createElementNS(editorCanvas.namespaceURI, 'g');
+            attribution.setAttribute('data-map-attribution', '');
+            target.replaceChildren(background, attribution);
         });
 };
 
@@ -418,6 +430,145 @@ describe('geographic timeline overlays and frame coverage', () => {
         await coversFrame(renderer.duration);
         renderer.dispose();
     });
+
+    it('keeps preview travel coverage and backwards seeks independent of the export viewport loader', async () => {
+        const updateViewport = vi.fn<(viewport: LiveViewport) => void>();
+        const load = mockGeographicMap(updateViewport);
+        const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+            id: 'far-away',
+            kind: 'keyframe',
+            refId: 'stn_a',
+            x: 5000,
+            y: 600,
+        });
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            timeline,
+            [],
+            defaultOptions,
+            geographicEnvironment
+        );
+        expect(vi.mocked(makeRenderReadySVGElement).mock.calls[0][1]).toBe(true);
+        expect(load).toHaveBeenCalledOnce();
+        const bounds = load.mock.calls[0][2];
+        expect(bounds.xMin).toBeLessThan(0);
+        expect(bounds.xMax).toBeGreaterThan(5000);
+        const live = await renderer.renderPreviewFrame(0);
+        const layer = live.querySelector('[data-map-layer]');
+        const coverage = layer!.firstElementChild;
+        for (const time of [renderer.duration, 0.5, renderer.duration / 2, 0]) {
+            expect(await renderer.renderPreviewFrame(time)).toBe(live);
+            expect(live.querySelector('[data-map-layer]')).toBe(layer);
+            expect(layer!.firstElementChild).toBe(coverage);
+        }
+        expect(load).toHaveBeenCalledOnce();
+        expect(updateViewport).not.toHaveBeenCalled();
+        expect(renderVideoSVGToCanvas).not.toHaveBeenCalled();
+        renderer.dispose();
+    });
+
+    it('reuses a stationary export camera and defers full-graph map loading during SVG preparation', async () => {
+        const updateViewport = vi.fn<(viewport: LiveViewport) => void>();
+        const load = mockGeographicMap(updateViewport);
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings!.cameraZoom = 1;
+        await exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white', undefined, geographicEnvironment);
+        expect(vi.mocked(makeRenderReadySVGElement).mock.calls[0][1]).toBe(false);
+        expect(load).toHaveBeenCalledOnce();
+        expect(updateViewport).toHaveBeenCalledOnce();
+        const frames = renderedSVGs.slice(1);
+        expect(frames.length).toBeGreaterThan(1);
+        const [x, y, width, height] = frames[0].getAttribute('viewBox')!.split(' ').map(Number);
+        const bounds = load.mock.calls[0][2];
+        expect(bounds.xMin).toBeCloseTo(x - width * 0.2);
+        expect(bounds.yMin).toBeCloseTo(y - height * 0.2);
+        expect(bounds.xMax).toBeCloseTo(x + width * 1.2);
+        expect(bounds.yMax).toBeCloseTo(y + height * 1.2);
+        expect(frames.every(frame => frame.querySelectorAll('[data-test-map-coverage]').length === 1)).toBe(true);
+    });
+
+    it.each([
+        { resolution: '720p' as const, outputWidth: 1280, changesDetail: true },
+        { resolution: '4k' as const, outputWidth: 3840, changesDetail: false },
+    ])(
+        'refreshes only visible export bounds as the camera moves and selects detail for $resolution',
+        async ({ resolution, outputWidth, changesDetail }) => {
+            // jsdom cannot measure the detached SVG's visual bounds; model the authored node extent for this LOD case.
+            vi.spyOn(canvasHelpers, 'calculateCanvasSize').mockImplementation(graph => {
+                const attrs = graph.nodes().map(node => graph.getNodeAttributes(node));
+                return {
+                    xMin: Math.min(...attrs.map(node => node.x)) - 50,
+                    yMin: Math.min(...attrs.map(node => node.y)) - 50,
+                    xMax: Math.max(...attrs.map(node => node.x)) + 50,
+                    yMax: Math.max(...attrs.map(node => node.y)) + 50,
+                };
+            });
+            const updateViewport = vi.fn<(viewport: LiveViewport) => void>();
+            const load = mockGeographicMap(updateViewport);
+            const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+                id: 'far-away',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 5000,
+                y: 0,
+            });
+            timeline.settings = { ...createEmptyTimelineDocument().settings!, cameraZoom: 16 };
+            await exportVideo(
+                makeGraph(200),
+                timeline,
+                [],
+                { ...defaultOptions, fps: 6, resolution },
+                'white',
+                undefined,
+                geographicEnvironment
+            );
+            const frames = renderedSVGs.slice(1);
+            expect(load.mock.calls.length).toBeGreaterThan(1);
+            expect(updateViewport).toHaveBeenCalledTimes(load.mock.calls.length);
+            // The initial camera does not fetch a future keyframe's entire travel region.
+            const firstBounds = load.mock.calls[0][2];
+            expect(firstBounds.xMax).toBeLessThan(5000);
+            const initialWidth = firstBounds.xMax - firstBounds.xMin;
+            expect(
+                load.mock.calls.some(
+                    ([, , bounds]) =>
+                        Math.abs(bounds.xMax - bounds.xMin - initialWidth) < 1e-6 &&
+                        Math.abs(bounds.xMin - firstBounds.xMin) > initialWidth
+                )
+            ).toBe(true);
+            // The same target layer is replaced each time; old tile ranges cannot accumulate in exported snapshots.
+            const target = load.mock.calls[0][1];
+            expect(load.mock.calls.every(([, layer]) => layer === target)).toBe(true);
+            frames.forEach(frame => {
+                const coverage = frame.querySelectorAll('[data-test-map-coverage]');
+                expect(coverage).toHaveLength(1);
+                const [x, y, width, height] = frame.getAttribute('viewBox')!.split(' ').map(Number);
+                const left = Number(coverage[0].getAttribute('x'));
+                const top = Number(coverage[0].getAttribute('y'));
+                const right = left + Number(coverage[0].getAttribute('width'));
+                const bottom = top + Number(coverage[0].getAttribute('height'));
+                expect(left).toBeLessThanOrEqual(x);
+                expect(top).toBeLessThanOrEqual(y);
+                expect(right).toBeGreaterThanOrEqual(x + width);
+                expect(bottom).toBeGreaterThanOrEqual(y + height);
+                const unit = width / outputWidth;
+                expect(frame.querySelector('[data-map-attribution]')?.getAttribute('transform')).toBe(
+                    `translate(${x + 8 * unit} ${y + height - 8 * unit}) scale(${unit})`
+                );
+            });
+            updateViewport.mock.calls.forEach(([viewport], index) => {
+                const bounds = load.mock.calls[index][2];
+                const width = (bounds.xMax - bounds.xMin) / 1.4;
+                const height = (bounds.yMax - bounds.yMin) / 1.4;
+                expect(viewport.x).toBeCloseTo(bounds.xMin + width * 0.2);
+                expect(viewport.y).toBeCloseTo(bounds.yMin + height * 0.2);
+                expect(viewport.zoom).toBeCloseTo((width / outputWidth) * 100);
+            });
+            const detailLevels = new Set(updateViewport.mock.calls.map(([viewport]) => isMapZoomed(viewport.zoom)));
+            expect(detailLevels.has(true)).toBe(true);
+            expect(detailLevels.has(false)).toBe(changesDetail);
+        }
+    );
 });
 // Rasterization strips control characters before encoding the SVG, including CSS line breaks.
 const rasterizedMarkup = (svg: SVGSVGElement) => svg.outerHTML.replace(/&nbsp;/g, ' ').replace(/\p{Cc}/gu, '');
@@ -460,7 +611,7 @@ describe('authored video frames', () => {
             editorCanvas.remove();
             expect(document.getElementById('canvas')).toBeNull();
             const { makeRenderReadySVGElement: prepareSVG } =
-                await vi.importActual<typeof import('./download')>('./download');
+                await vi.importActual<typeof import('../download')>('../download');
             vi.mocked(makeRenderReadySVGElement).mockImplementation(async (...args) => {
                 const result = await prepareSVG(...args);
                 const graph = args[0];
@@ -660,6 +811,159 @@ describe('authored video frames', () => {
 });
 
 describe('shared real-time preview renderer', () => {
+    const observeResourceLayouts = () => {
+        const createLayout = videoResourceLayout.createVideoResourceLayout;
+        const layouts: ReturnType<typeof createLayout>[] = [];
+        vi.spyOn(videoResourceLayout, 'createVideoResourceLayout').mockImplementation(options => {
+            const layout = createLayout(options);
+            vi.spyOn(layout, 'prepare');
+            layouts.push(layout);
+            return layout;
+        });
+        return layouts;
+    };
+    const stubIdleQueue = () => {
+        const callbacks = new Map<number, IdleRequestCallback>();
+        let nextHandle = 0;
+        const schedule = vi.fn((callback: IdleRequestCallback) => {
+            const handle = ++nextHandle;
+            callbacks.set(handle, callback);
+            return handle;
+        });
+        const cancel = vi.fn((handle: number) => callbacks.delete(handle));
+        vi.stubGlobal('requestIdleCallback', schedule);
+        vi.stubGlobal('cancelIdleCallback', cancel);
+        return { callbacks, schedule, cancel };
+    };
+    const idleDeadline: IdleDeadline = { didTimeout: false, timeRemaining: () => 0 };
+
+    it('deduplicates resource warmups without changing the current frame or editor graph', async () => {
+        const idle = stubIdleQueue();
+        const layouts = observeResourceLayouts();
+        const graph = makeGraph(200);
+        graph.mergeNodeAttributes('stn_a', {
+            type: StationType.ShmetroInt,
+            [StationType.ShmetroInt]: structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+        });
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+        const secondLine = structuredClone(graph.getEdgeAttributes('line_ab'));
+        secondLine[LineStyleType.SingleColor]!.color[1] = 'idle-other';
+        secondLine[LineStyleType.SingleColor]!.color[2] = '#ff0000';
+        graph.addDirectedEdgeWithKey('line_ac', 'stn_a', 'stn_c', secondLine);
+        const original = structuredClone(graph.export());
+        const timeline = authoredTimeline(nodeEntry, edgeEntry, { ...edgeEntry, id: 'enter_ac', refId: 'line_ac' });
+        // Full-map camera mode isolates resource idle work from camera idle work.
+        timeline.settings = {
+            ...createEmptyTimelineDocument().settings!,
+            cameraZoom: 1,
+            autoChangeStationType: true,
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const warmCamera = (renderer as typeof renderer & { warmCamera: () => void }).warmCamera;
+        try {
+            const live = await renderer.renderPreviewFrame(renderer.duration);
+            const currentMarkup = live.outerHTML;
+            const prepare = vi.mocked(layouts[0].prepare);
+            prepare.mockClear();
+
+            warmCamera();
+            warmCamera();
+            expect(idle.schedule).toHaveBeenCalledOnce();
+            const [handle, callback] = [...idle.callbacks.entries()][0];
+            idle.callbacks.delete(handle);
+            callback(idleDeadline);
+            expect(prepare).toHaveBeenCalledOnce();
+            expect(prepare.mock.calls[0][1].some(element => element.station?.type === StationType.ShmetroBasic)).toBe(
+                true
+            );
+
+            // An executing preparation also prevents duplicate scheduling.
+            warmCamera();
+            warmCamera();
+            expect(idle.schedule).toHaveBeenCalledOnce();
+            await prepare.mock.results[0].value;
+            await vi.waitFor(() => expect(idle.schedule).toHaveBeenCalledTimes(2));
+            expect(live.outerHTML).toBe(currentMarkup);
+            expect(graph.export()).toEqual(original);
+
+            const [pendingHandle, lateCallback] = [...idle.callbacks.entries()][0];
+            renderer.dispose();
+            expect(idle.cancel).toHaveBeenCalledWith(pendingHandle);
+            lateCallback(idleDeadline);
+            await Promise.resolve();
+            expect(prepare).toHaveBeenCalledOnce();
+            expect(idle.schedule).toHaveBeenCalledTimes(2);
+            expect(graph.export()).toEqual(original);
+        } finally {
+            renderer.dispose();
+        }
+    });
+
+    it('cancels pending resource and camera idle work before accepting a late resource callback', async () => {
+        const idle = stubIdleQueue();
+        const layouts = observeResourceLayouts();
+        const graph = makeGraph(200);
+        graph.mergeNodeAttributes('stn_a', {
+            type: StationType.ShmetroInt,
+            [StationType.ShmetroInt]: structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+        });
+        const original = structuredClone(graph.export());
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.settings = {
+            ...createEmptyTimelineDocument().settings!,
+            cameraZoom: 2,
+            autoChangeStationType: true,
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const prepare = vi.mocked(layouts[0].prepare);
+        prepare.mockClear();
+        expect(idle.callbacks.size).toBe(2);
+        const pendingCallbacks = [...idle.callbacks.entries()];
+
+        renderer.dispose();
+
+        expect(idle.cancel.mock.calls.map(([handle]) => handle).sort()).toEqual(
+            pendingCallbacks.map(([handle]) => handle).sort()
+        );
+        for (const [, callback] of pendingCallbacks) callback(idleDeadline);
+        await Promise.resolve();
+        expect(prepare).not.toHaveBeenCalled();
+        expect(idle.schedule).toHaveBeenCalledTimes(2);
+        expect(graph.export()).toEqual(original);
+    });
+
+    it('applies more station variants than the cache holds without preparing unchanged frames again', async () => {
+        const layouts = observeResourceLayouts();
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        for (let index = 0; index < 129; index++)
+            graph.addNode(`stn_${index}`, {
+                visible: true,
+                zIndex: 0,
+                x: index * 30,
+                y: 0,
+                type: StationType.ShmetroInt,
+                [StationType.ShmetroInt]: structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+            });
+        const timeline = createEmptyTimelineDocument();
+        timeline.settings!.autoChangeStationType = true;
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        try {
+            const prepare = vi.mocked(layouts[0].prepare);
+            prepare.mockClear();
+            const live = await renderer.renderPreviewFrame(0);
+            expect(prepare).toHaveBeenCalledOnce();
+            expect(prepare.mock.calls[0][1]).toHaveLength(129);
+            for (const id of graph.nodes()) expect(live.getElementById(`stn_core_${id}`)?.tagName).toBe('circle');
+
+            prepare.mockClear();
+            for (const time of [0.1, 0.2, 0.3, 0]) expect(await renderer.renderPreviewFrame(time)).toBe(live);
+            expect(prepare).not.toHaveBeenCalled();
+            expect(graph.getNodeAttribute('stn_0', 'type')).toBe(StationType.ShmetroInt);
+        } finally {
+            renderer.dispose();
+        }
+    });
+
     it.each([false, true])(
         'keeps station names at a fixed size after their fade across adjacent lines (authored=%s)',
         async authored => {

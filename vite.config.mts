@@ -48,6 +48,8 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
+        // Each isolated jsdom worker loads the SVG/UI modules; keep peak memory bounded.
+        fileParallelism: false,
         setupFiles: './src/setupTests.ts',
         server: {
             deps: {
