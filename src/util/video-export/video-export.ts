@@ -1,4 +1,5 @@
 import { MultiDirectedGraph } from 'graphology';
+import i18n from '../../i18n/config';
 import videoWatermarkSVG from '../../assets/rmp-video-watermark.svg?raw';
 import { EdgeAttributes, GraphAttributes, Id, LineId, NodeAttributes, NodeId, StnId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
@@ -20,6 +21,7 @@ import { isMapZoomed } from '../../map/map-config';
 import { TextLanguage } from '../fonts';
 import { changeStationType, checkAndChangeStationIntType } from '../change-types';
 import { makeRenderReadySVGElement } from '../download';
+import { getRmpWatermarkUrl } from '../watermark';
 import { calculateCanvasSize } from '../helpers';
 import { Element as RenderElement, getLines, getNodes } from '../process-elements';
 import { getTimelineAudioRange, getTimelineClipRange } from '../timeline-playback';
@@ -127,9 +129,10 @@ const OverviewZoomTransitionRatio = 0.5;
 const CameraViewportHeight = (CameraViewportBaseHeight * CameraViewportZoom) / 100;
 const CameraViewportWidth = CameraViewportHeight * CameraViewportAspectRatio;
 const VideoWatermarkContentWidth = 280;
-const VideoWatermarkContentHeight = 110;
-const VideoWatermarkDisplayScale = 0.55;
-const VideoWatermarkMargin = 20;
+const VideoWatermarkContentHeight = 170;
+const VideoWatermarkDisplayScale = 0.7;
+const VideoWatermarkMarginX = 20;
+const VideoWatermarkMarginY = 32;
 const VideoExportStyleId = 'rmp_video_export_styles';
 const VideoExportCSS = `
 .rmp-name-outline {
@@ -495,11 +498,12 @@ export const getVideoWatermarkLayout = (
     const scale = worldUnitsPerPixel * resolutionScale * VideoWatermarkDisplayScale;
     const width = VideoWatermarkContentWidth * scale;
     const height = VideoWatermarkContentHeight * scale;
-    const margin = VideoWatermarkMargin * resolutionScale * worldUnitsPerPixel;
+    const marginX = VideoWatermarkMarginX * resolutionScale * worldUnitsPerPixel;
+    const marginY = VideoWatermarkMarginY * resolutionScale * worldUnitsPerPixel;
 
     return {
-        x: viewBox.x + viewBox.width - width - margin,
-        y: viewBox.y + margin,
+        x: viewBox.x + viewBox.width - width - marginX,
+        y: viewBox.y + marginY,
         width,
         height,
         scale,
@@ -524,6 +528,45 @@ const createVideoWatermarkElement = (
             .documentElement as unknown as SVGSVGElement;
     }
     Array.from(videoWatermarkGraphic.children).forEach(child => info.appendChild(document.importNode(child, true)));
+
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    title.setAttribute('data-watermark-part', 'title');
+    title.setAttribute('x', '140');
+    title.setAttribute('y', '136');
+    title.setAttribute('text-anchor', 'middle');
+    title.setAttribute('textLength', '240');
+    title.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    title.setAttribute('font-family', 'Arial, sans-serif');
+    title.setAttribute('font-size', '22');
+    title.setAttribute('font-weight', 'bold');
+    title.setAttribute('fill', '#20252b');
+    title.setAttribute('stroke', '#ffffff');
+    title.setAttribute('stroke-width', '3');
+    title.setAttribute('stroke-linejoin', 'round');
+    title.setAttribute('stroke-linecap', 'round');
+    title.setAttribute('paint-order', 'stroke');
+    title.textContent = i18n.t('Rail Map Painter');
+
+    const link = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    link.setAttribute('data-watermark-part', 'url');
+    link.setAttribute('x', '140');
+    link.setAttribute('y', '158');
+    link.setAttribute('text-anchor', 'middle');
+    link.setAttribute('textLength', '240');
+    link.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    link.setAttribute('font-family', 'Arial, sans-serif');
+    link.setAttribute('font-size', '14');
+    link.setAttribute('font-weight', 'bold');
+    link.setAttribute('fill', '#20252b');
+    link.setAttribute('stroke', '#ffffff');
+    link.setAttribute('stroke-width', '2');
+    link.setAttribute('stroke-linejoin', 'round');
+    link.setAttribute('stroke-linecap', 'round');
+    link.setAttribute('paint-order', 'stroke');
+    link.textContent = getRmpWatermarkUrl();
+
+    info.appendChild(title);
+    info.appendChild(link);
 
     return info;
 };
@@ -1569,6 +1612,12 @@ const prepareVideoRenderer = async (
         for (const [id, template] of templates) scene.replaceGroup(id, VIDEO_FRAME_BASE_VARIANT, template);
         stationTemplates.clear();
         currentStationKeys.clear();
+        if (watermark) {
+            const titleElement = watermark.querySelector('[data-watermark-part="title"]');
+            if (titleElement) {
+                titleElement.textContent = i18n.t('Rail Map Painter');
+            }
+        }
         layoutRevision = resourceLayout.revision;
         scene.invalidate();
         lastFrame = -1;

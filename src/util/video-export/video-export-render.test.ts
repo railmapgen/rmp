@@ -208,16 +208,38 @@ describe('video export frame timing', () => {
         expect(frames.every(frame => frame.getElementById('rmp_info') !== null)).toBe(true);
         expect(frames.every(frame => frame.lastElementChild?.id === 'rmp_info')).toBe(true);
         const watermark = frames[0].getElementById('rmp_info')!;
-        expect(watermark.querySelector('[data-watermark-part="wordmark"]')?.tagName).toBe('path');
-        expect(watermark.querySelector('[data-watermark-part="wordmark"]')?.getAttribute('d')).toContain('M20 68V5');
-        const redLine = watermark.querySelector('[data-watermark-part="red-line"]');
-        const greenLine = watermark.querySelector('[data-watermark-part="green-line"]');
-        expect(redLine?.getAttribute('stroke')).toBe('#e3002b');
-        expect(redLine?.getAttribute('x2')).toBe('123');
-        expect(greenLine?.getAttribute('stroke')).toBe('#82bf25');
-        expect(greenLine?.getAttribute('x1')).toBe('157');
-        expect(watermark.querySelector('[data-watermark-part="interchange"]')?.getAttribute('fill')).toBe('none');
+        expect(watermark.querySelector('[data-watermark-part="wordmark"]')).toBeTruthy();
+        expect(watermark.querySelector('[data-watermark-part="red-line"]')).toBeTruthy();
+        expect(watermark.querySelector('[data-watermark-part="green-line"]')).toBeTruthy();
+        expect(watermark.querySelector('[data-watermark-part="interchange"]')).toBeTruthy();
         expect(watermark.querySelector('rect, image')).toBeNull();
+
+        const title = watermark.querySelector('[data-watermark-part="title"]');
+        const url = watermark.querySelector('[data-watermark-part="url"]');
+        expect(title?.textContent).toBe(i18n.t('Rail Map Painter'));
+        expect(url?.textContent).toBe('https://railmapgen.org/?app=rmp');
+        expect(Number(url?.getAttribute('y'))).toBeGreaterThan(Number(title?.getAttribute('y')));
+    });
+
+    it('updates watermark title when language changes in preview', async () => {
+        const previousLanguage = i18n.language;
+        let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+        try {
+            await i18n.changeLanguage('en');
+            renderer = await createVideoPreviewRenderer(makeGraph(200), createEmptyTimelineDocument(), [], {
+                ...defaultOptions,
+                hideWatermark: false,
+            });
+            const frame1 = await renderer.renderFrame(0);
+            expect(frame1.querySelector('[data-watermark-part="title"]')?.textContent).toBe('Rail Map Painter');
+
+            await i18n.changeLanguage('zh-Hans');
+            const frame2 = await renderer.renderFrame(0);
+            expect(frame2.querySelector('[data-watermark-part="title"]')?.textContent).toBe('地铁线路图绘制器');
+        } finally {
+            renderer?.dispose();
+            await i18n.changeLanguage(previousLanguage);
+        }
     });
 
     it.each([

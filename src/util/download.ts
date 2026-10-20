@@ -9,6 +9,7 @@ import { renderMapLayerForExport } from '../map/map-tile-controller';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize, transformedBoundingBox } from './helpers';
+import { getRmpWatermarkUrl } from './watermark';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -332,11 +333,7 @@ const generateRmpInfo = async (x: number, y: number) => {
     link.setAttribute('font-size', '20');
     link.setAttribute('x', '60');
     link.setAttribute('y', '50');
-    const origin = window.location.origin;
-    let url = 'https://railmapgen.org/';
-    if (origin.includes('github')) url = 'https://railmapgen.github.io/';
-    else if (origin.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
-    url += '?app=rmp';
+    const url = getRmpWatermarkUrl();
     link.appendChild(document.createTextNode(url));
 
     info.appendChild(logo);
@@ -345,3 +342,5 @@ const generateRmpInfo = async (x: number, y: number) => {
 
     return info;
 };
+
+export { getRmpWatermarkUrl };

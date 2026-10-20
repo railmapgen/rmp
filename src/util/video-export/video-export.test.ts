@@ -96,7 +96,7 @@ const edgeEntry = (refId: `line_${string}`, index: number): TimelineElementEntry
 });
 
 describe('video export watermark', () => {
-    it('keeps a small watermark fixed to the top-right corner when the camera moves', () => {
+    it('keeps the watermark fixed to the top-right corner when the camera moves', () => {
         const outputWidth = 1280;
         const outputHeight = 720;
         const originalViewBox = { x: -160, y: -90, width: 320, height: 180 };
@@ -117,10 +117,10 @@ describe('video export watermark', () => {
         const movedBounds = getPixelBounds(movedViewBox);
 
         expect(movedBounds).toEqual(originalBounds);
-        expect(originalBounds.top).toBe(20);
+        expect(originalBounds.top).toBe(32);
         expect(originalBounds.left + originalBounds.width).toBe(outputWidth - 20);
-        expect(originalBounds.width).toBeLessThan(outputWidth * 0.2);
-        expect(originalBounds.height).toBeLessThan(outputHeight * 0.1);
+        expect(originalBounds.width).toBeCloseTo(196);
+        expect(originalBounds.height).toBeCloseTo(119);
     });
 });
 
