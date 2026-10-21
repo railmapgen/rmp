@@ -330,7 +330,7 @@
                     "custom": "自訂",
                     "translateName": "翻譯站名到英文",
                     "translateNameEmpty": "請先填寫中文名稱。",
-                    "translateNameNotSubscribed": "意譯需要 RMP Cloud 訂閱。",
+                    "translateNameNotSubscribed": "意譯需要「$t(subscription.RMP_CLOUD.name)」訂閱。",
                     "translateNameFailed": "車站名稱翻譯失敗。"
                 },
                 "interchange": {
@@ -804,7 +804,7 @@
                     "linecapSquare": "方頭",
                     "dash": "虛線長度",
                     "gap": "間隔長度",
-                    "layerLimitWarning": "訂閱可解鎖額外線層。",
+                    "layerLimitWarning": "訂閱「$t(subscription.RMP_CLOUD.name)」可解鎖額外線層。",
                     "addLayer": "添加線層",
                     "copyLayer": "複製線層",
                     "moveLayerUp": "上移線層",
@@ -1169,7 +1169,7 @@
             "transparent": "透明背景",
             "scale": "縮放",
             "disabledScaleOptions": "影像對於此瀏覽器來說太大。",
-            "disabledScaleOptionsSolution": "<link1>訂閱</link1>並<link2>下載</link2>我們的桌面應用程式以呈現大型影像。",
+            "disabledScaleOptionsSolution": "<link1>訂閱「$t(subscription.RMP_EXPORT.name)」</link1>並<link2>下載</link2>我們的桌面應用程式以呈現大型影像。",
             "imageTooBig": "圖像太大，您的瀏覽器無法生成！",
             "isSystemFontsOnly": "僅用系統字體（字體顯示可能不一致）。",
             "shareInfo1": "當我分享此圖片時我會附上",
@@ -1189,12 +1189,10 @@
         },
         "settings": {
             "title": "設置",
-            "pro": "這是一個專業功能，需要带有訂閱的帳戶。",
-            "proWithTrial": "這是一個PRO功能，並提供有限的免費試用。",
             "proLimitExceed": {
                 "master": "大師節點超出了免費額度。",
                 "parallel": "平行線段超出了免費額度。",
-                "solution": "移除它們以解除此警告，或訂閱以解鎖更多功能！"
+                "solution": "移除超出額度的項目以解除此警告，或訂閱「$t(subscription.RMP_CLOUD.name)」以解除數量限制。"
             },
             "status": {
                 "title": "狀態",
@@ -1446,5 +1444,19 @@
                 }
             }
         }
+    },
+    "subscription": {
+        "RMP_CLOUD": {
+            "name": "地鐵綫路圖繪製器・出發進行",
+            "shortName": "出發進行"
+        },
+        "RMP_EXPORT": {
+            "name": "地鐵綫路圖繪製器・一度停車",
+            "shortName": "一度停車"
+        },
+        "required": "訂閱「{{subscription}}」即可解鎖此功能。",
+        "included": "你的「{{subscription}}」訂閱已包含此功能。",
+        "masterLimit": "免費可使用 {{count}} 個大師節點，訂閱「$t(subscription.RMP_CLOUD.name)」後不限數量。",
+        "parallelLimit": "免費可使用 {{count}} 條平行線段，訂閱「$t(subscription.RMP_CLOUD.name)」後不限數量。"
     }
 }

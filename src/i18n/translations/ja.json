@@ -332,7 +332,7 @@
                     "custom": "カスタム",
                     "translateName": "駅名を英語に翻訳",
                     "translateNameEmpty": "中国語名を入力してください。",
-                    "translateNameNotSubscribed": "意味翻訳には RMP Cloud が必要です。",
+                    "translateNameNotSubscribed": "意味翻訳には「$t(subscription.RMP_CLOUD.name)」の契約が必要です。",
                     "translateNameFailed": "駅名を翻訳できませんでした。"
                 },
                 "interchange": {
@@ -807,7 +807,7 @@
                     "linecapSquare": "スクエア",
                     "dash": "ダッシュ長",
                     "gap": "間隔長",
-                    "layerLimitWarning": "サブスクリプションで追加の線レイヤーを利用できます。",
+                    "layerLimitWarning": "「$t(subscription.RMP_CLOUD.name)」を契約すると追加のレイヤーを利用できます。",
                     "addLayer": "レイヤーを追加",
                     "copyLayer": "レイヤーを複製",
                     "moveLayerUp": "レイヤーを上へ移動",
@@ -1172,7 +1172,7 @@
             "transparent": "透明性",
             "scale": "スケール",
             "disabledScaleOptions": "画像がこのブラウザには大きすぎます。",
-            "disabledScaleOptionsSolution": "<link1>購読して</link1>デスクトップアプリを<link2>ダウンロードし</link2>、大きな画像を渲染してください。",
+            "disabledScaleOptionsSolution": "「$t(subscription.RMP_EXPORT.name)」を<link1>契約</link1>し、デスクトップアプリを<link2>ダウンロード</link2>すると、大きな画像を描画できます。",
             "imageTooBig": "画像が大きすぎてブラウザで生成できません！",
             "isSystemFontsOnly": "系統書体のみを使用してください（書体表示が異なる場合があります）。",
             "shareInfo1": "この画像を共有する際に、添付ファイル ",
@@ -1192,12 +1192,10 @@
         },
         "settings": {
             "title": "設定",
-            "pro": "これはPRO機能であり、サブスクリプションが必要です。",
-            "proWithTrial": "これはPRO機能で、無料の限定トライアルが利用可能です。",
             "proLimitExceed": {
                 "master": "大師節点が無料枠を超えています。",
                 "parallel": "並列路線が無料枠を超えています。",
-                "solution": "これらを削除して警告を解除するか、サブスクリプションに登録してさらに多くの機能を利用してください！"
+                "solution": "上限を超える項目を削除して警告を解除するか、「$t(subscription.RMP_CLOUD.name)」を契約して数量制限を解除してください。"
             },
             "status": {
                 "title": "ステータス",
@@ -1448,5 +1446,19 @@
                 }
             }
         }
+    },
+    "subscription": {
+        "RMP_CLOUD": {
+            "name": "地下鉄路線図画家・出発進行",
+            "shortName": "出発進行"
+        },
+        "RMP_EXPORT": {
+            "name": "地下鉄路線図画家・一旦停止",
+            "shortName": "一旦停止"
+        },
+        "required": "この機能を利用するには「{{subscription}}」の契約が必要です。",
+        "included": "この機能はご契約中の「{{subscription}}」に含まれています。",
+        "masterLimit": "大師節点は {{count}} 個まで無料です。「$t(subscription.RMP_CLOUD.name)」を契約すると個数制限がなくなります。",
+        "parallelLimit": "並列路線は {{count}} 本まで無料です。「$t(subscription.RMP_CLOUD.name)」を契約すると本数制限がなくなります。"
     }
 }

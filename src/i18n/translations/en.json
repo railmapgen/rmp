@@ -330,7 +330,7 @@
                     "custom": "Custom",
                     "translateName": "Translate station name to English",
                     "translateNameEmpty": "Enter a Chinese name first.",
-                    "translateNameNotSubscribed": "Semantic translation requires RMP Cloud.",
+                    "translateNameNotSubscribed": "Semantic translation requires a $t(subscription.RMP_CLOUD.name) subscription.",
                     "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
@@ -805,7 +805,7 @@
                     "linecapSquare": "Square",
                     "dash": "Dash",
                     "gap": "Gap",
-                    "layerLimitWarning": "Subscribe to unlock additional line layers.",
+                    "layerLimitWarning": "Subscribe to $t(subscription.RMP_CLOUD.name) to unlock additional layers.",
                     "addLayer": "Add layer",
                     "copyLayer": "Copy layer",
                     "moveLayerUp": "Move layer up",
@@ -1170,7 +1170,7 @@
             "transparent": "Transparency",
             "scale": "Scale",
             "disabledScaleOptions": "Image too large for this browser.",
-            "disabledScaleOptionsSolution": "<link1>Subscribe</link1> and <link2>download</link2> our desktop app to render large images.",
+            "disabledScaleOptionsSolution": "<link1>Subscribe to $t(subscription.RMP_EXPORT.name)</link1> and <link2>download</link2> our desktop app to render large images.",
             "imageTooBig": "The image is too big for your browser to generate!",
             "isSystemFontsOnly": "Use system font only (font display may vary).",
             "shareInfo1": "I will attach ",
@@ -1190,12 +1190,10 @@
         },
         "settings": {
             "title": "Settings",
-            "pro": "This is a PRO feature and an account with a subscription is required.",
-            "proWithTrial": "This is a PRO feature with a limited free trial available.",
             "proLimitExceed": {
                 "master": "Master nodes exceed the free tier.",
                 "parallel": "Parallel lines exceed the free tier.",
-                "solution": "Remove them to dismiss this warning, or subscribe to unlock more!"
+                "solution": "Remove the excess items to dismiss this warning, or subscribe to $t(subscription.RMP_CLOUD.name) to remove the limit."
             },
             "status": {
                 "title": "Status",
@@ -1447,5 +1445,19 @@
                 }
             }
         }
+    },
+    "subscription": {
+        "RMP_CLOUD": {
+            "name": "Rail Map Painter・Proceed Signal",
+            "shortName": "Proceed Signal"
+        },
+        "RMP_EXPORT": {
+            "name": "Rail Map Painter・Stop and Proceed",
+            "shortName": "Stop and Proceed"
+        },
+        "required": "Subscribe to {{subscription}} to unlock this feature.",
+        "included": "This feature is included in your {{subscription}} subscription.",
+        "masterLimit": "Up to {{count}} master nodes are free. Subscribe to $t(subscription.RMP_CLOUD.name) for unlimited master nodes.",
+        "parallelLimit": "Up to {{count}} parallel lines are free. Subscribe to $t(subscription.RMP_CLOUD.name) for unlimited parallel lines."
     }
 }

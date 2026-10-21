@@ -4,14 +4,12 @@ import {
     AccordionIcon,
     AccordionItem,
     AccordionPanel,
-    Badge,
     Box,
     Button,
     Checkbox,
     Flex,
     SystemStyleObject,
     Text,
-    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { LanguageCode } from '@railmapgen/rmg-translate';
@@ -34,6 +32,7 @@ import {
 import { setMode, setTheme } from '../../../redux/runtime/runtime-slice';
 import { usePaletteTheme } from '../../../util/hooks';
 import { canUseLineCombination, requiresSubscriptionForLinePath } from '../../../util/line-path-availability';
+import SubscriptionBadge from '../../subscription-badge';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import miscNodes from '../../svgs/nodes/misc-nodes';
 import stations from '../../svgs/stations/stations';
@@ -278,16 +277,7 @@ const ToolsPanel = () => {
                                         >
                                             {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
                                             {isTextShown && isProLinePath ? (
-                                                <Tooltip label={t('header.settings.pro')}>
-                                                    <Badge
-                                                        ml="1"
-                                                        color="gray.50"
-                                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                        mr="auto"
-                                                    >
-                                                        PRO
-                                                    </Badge>
-                                                </Tooltip>
+                                                <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
                                             ) : undefined}
                                         </Button>
                                     </Flex>
@@ -354,16 +344,7 @@ const ToolsPanel = () => {
                                     >
                                         {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
                                         {isTextShown && !!lineStyles[styleType].isPro ? (
-                                            <Tooltip label={t('header.settings.pro')}>
-                                                <Badge
-                                                    ml="1"
-                                                    color="gray.50"
-                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                    mr="auto"
-                                                >
-                                                    PRO
-                                                </Badge>
-                                            </Tooltip>
+                                            <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
                                         ) : undefined}
                                     </Button>
                                     {isTextShown && (
@@ -453,16 +434,14 @@ const ToolsPanel = () => {
                                     >
                                         {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
                                         {isTextShown && type === MiscNodeType.Master && (
-                                            <Tooltip label={t('header.settings.proWithTrial')}>
-                                                <Badge
-                                                    ml="1"
-                                                    color="gray.50"
-                                                    background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                                    mr="auto"
-                                                >
-                                                    PRO
-                                                </Badge>
-                                            </Tooltip>
+                                            <SubscriptionBadge
+                                                subscription="RMP_CLOUD"
+                                                description={t('subscription.masterLimit', {
+                                                    count: MAX_MASTER_NODE_FREE,
+                                                })}
+                                                ml="1"
+                                                mr="auto"
+                                            />
                                         )}
                                     </Button>
                                     {isTextShown && (
