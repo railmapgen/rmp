@@ -1,0 +1,20 @@
+{
+  "pullRequest": "https://github.com/railmapgen/rmp/pull/1599",
+  "sourceCommit": "9dd4898349e0f40179694d45d8aca2195041ad6e",
+  "capturedAt": "2026-10-21T14:22:22.541859+00:00",
+  "source": "Local Vite preview of the actual app",
+  "browser": "Chrome for Testing 156.0.8078.47, headless",
+  "language": "zh-Hans",
+  "accountState": "logged-out; RMP_CLOUD=false; RMP_EXPORT=false",
+  "data": "Bundled tutorial plus temporary local image and Bezier-line demo nodes",
+  "screenshots": [
+    "01-settings-light.png",
+    "03-settings-dark.png",
+    "04-tools-light.png",
+    "05-details-visibility-light.png",
+    "06-details-multiselect-light.png",
+    "07-images-light.png",
+    "08-export-light.png",
+    "09-export-dark.png"
+  ]
+}
