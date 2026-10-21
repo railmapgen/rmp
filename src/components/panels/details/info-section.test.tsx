@@ -109,7 +109,7 @@ describe('InfoSection visibility', () => {
         expect(mockStore.getState().runtime.refresh.edges).toBe(2);
     });
 
-    it('shows a policy-hidden line as export-hidden and locked with a Pro badge', () => {
+    it('shows a policy-hidden line as export-hidden with its required subscription', () => {
         renderSelectedLine(LinePathType.Bezier, true);
 
         const visibilityField = screen.getByRole('group', { name: 'Visible in export' });
@@ -120,7 +120,7 @@ describe('InfoSection visibility', () => {
         expect(visibleSwitch).toBeDisabled();
         expect(label).not.toBeNull();
         expect(within(label!).getByText('Visible in export')).toBeInTheDocument();
-        expect(within(label!).getByText('PRO')).toBeInTheDocument();
+        expect(within(label!).getByText('Proceed Signal')).toBeInTheDocument();
 
         fireEvent.click(visibleSwitch);
         expect(window.graph.getEdgeAttribute('line_policy_visibility', 'visible')).toBe(true);
@@ -134,7 +134,7 @@ describe('InfoSection visibility', () => {
 
         expect(visibleSwitch).not.toBeChecked();
         expect(visibleSwitch).toBeEnabled();
-        expect(within(visibilityField).queryByText('PRO')).not.toBeInTheDocument();
+        expect(within(visibilityField).queryByText('Proceed Signal')).not.toBeInTheDocument();
 
         fireEvent.click(visibleSwitch);
         expect(window.graph.getEdgeAttribute('line_policy_visibility', 'visible')).toBe(true);

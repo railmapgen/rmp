@@ -3,7 +3,6 @@ import {
     AlertDescription,
     AlertIcon,
     AlertTitle,
-    Badge,
     Box,
     Button,
     Card,
@@ -29,7 +28,6 @@ import {
     TabPanels,
     Tabs,
     Text,
-    Tooltip,
 } from '@chakra-ui/react';
 import { logger } from '@railmapgen/rmg-runtime';
 import { nanoid } from 'nanoid';
@@ -52,6 +50,7 @@ import {
     ImageList,
 } from '../../util/image';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
+import SubscriptionBadge from '../subscription-badge';
 
 export const ImagePanelModal = (props: {
     id: MiscNodeId;
@@ -228,31 +227,10 @@ export const ImagePanelModal = (props: {
                     <Tabs isLazy isFitted overflow="hidden" index={activeTab} onChange={idx => setActiveTab(idx)}>
                         <TabList>
                             <Tab>{t('panel.details.image.local')}</Tab>
-                            {RMP_EXPORT ? (
-                                <Tab>
-                                    {t('panel.details.image.server')}
-                                    <Badge
-                                        ml="1"
-                                        color="gray.50"
-                                        background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                    >
-                                        PRO
-                                    </Badge>
-                                </Tab>
-                            ) : (
-                                <Tooltip label={t('header.settings.pro')} hasArrow>
-                                    <Tab isDisabled>
-                                        {t('panel.details.image.server')}
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tab>
-                                </Tooltip>
-                            )}
+                            <Tab isDisabled={!RMP_EXPORT}>
+                                {t('panel.details.image.server')}
+                                <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
+                            </Tab>
                         </TabList>
 
                         <TabPanels overflow="hidden" h="100%">

@@ -52,6 +52,7 @@ import { normalizeRandomStationsNames } from '../../redux/state-migration';
 import { setKeepLastPath } from '../../redux/runtime/runtime-slice';
 import { isMacClient } from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel';
+import SubscriptionBadge from '../subscription-badge';
 import { MapStyleSection } from './map-style-section';
 import { MasterManager } from './master-manager';
 import { ChangeTypeModal } from './procedures/change-type-modal';
@@ -153,15 +154,13 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Badge ml="auto" colorScheme="green">
                                         New
                                     </Badge>
-                                    <Tooltip label={t('header.settings.proWithTrial')}>
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
+                                    <SubscriptionBadge
+                                        subscription="RMP_CLOUD"
+                                        description={t('subscription.parallelLimit', {
+                                            count: MAX_PARALLEL_LINES_FREE,
+                                        })}
+                                        ml="1"
+                                    />
                                     <Switch
                                         ml="1"
                                         isDisabled={isParallelLineDisabled}
@@ -174,15 +173,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Badge ml="auto" colorScheme="green">
                                         New
                                     </Badge>
-                                    <Tooltip label={t('header.settings.pro')}>
-                                        <Badge
-                                            color="gray.50"
-                                            ml="1"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
+                                    <SubscriptionBadge subscription="RMP_CLOUD" ml="1" />
                                     <Select
                                         size="xs"
                                         width="auto"
@@ -214,15 +205,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     <Text flex="1">
                                         {t('header.settings.preference.stationNameTranslationMode.title')}
                                     </Text>
-                                    <Tooltip label={t('header.settings.pro')}>
-                                        <Badge
-                                            color="gray.50"
-                                            ml="1"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
+                                    <SubscriptionBadge subscription="RMP_CLOUD" ml="1" />
                                     <Select
                                         size="xs"
                                         width="auto"
@@ -348,16 +331,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                     onClick={() => setIsChangeTypeOpen(true)}
                                 >
                                     {t('header.settings.procedures.changeType.title')}
-                                    <Tooltip label={t('header.settings.pro')}>
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                            mr="auto"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
+                                    <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
                                 </Button>
                                 <ChangeTypeModal
                                     isOpen={isChangeTypeOpen}

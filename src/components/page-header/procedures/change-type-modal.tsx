@@ -411,7 +411,10 @@ export const ChangeTypeModal = (props: {
                     <Button colorScheme="blue" variant="outline" mr="1" onClick={onClose}>
                         {t('cancel')}
                     </Button>
-                    <Tooltip label={t('header.settings.pro')} isOpen={!activeSubscriptions.RMP_CLOUD}>
+                    <Tooltip
+                        label={t('subscription.required', { subscription: t('subscription.RMP_CLOUD.name') })}
+                        isOpen={!activeSubscriptions.RMP_CLOUD}
+                    >
                         <Button
                             colorScheme="red"
                             mr="1"
