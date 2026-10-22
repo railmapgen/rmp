@@ -10,28 +10,42 @@ import {
     LineStyle,
     LineStyleComponentProps,
     LineStyleType,
+    StylePathGenerator,
 } from '../../../../constants/lines';
-import { buildClosedBezierChainPathD, buildSymmetricOutlineSideChains } from '../../../../util/bezier-outline-sides';
+import { Path, makeEmptyOpenPath } from '../../../../constants/path';
+import { makeSymmetricOutlineHollowPath } from '../../../../util/bezier-outline-sides';
 import { getOpenPathPrimitives } from '../../../../util/open-path-primitives';
 import { isOpenPath } from '../../../../util/path';
 import { ColorAttribute, ColorField } from '../../../panels/details/color-field';
 
+export const bjsubwayDottedPathGenerator: StylePathGenerator<BjsubwayDottedAttributes> = (
+    path: Path,
+    _type?: LinePathType,
+    _attrs?: BjsubwayDottedAttributes
+) => {
+    if (!isOpenPath(path)) {
+        return { main: makeEmptyOpenPath(), clip: makeEmptyOpenPath() };
+    }
+    const primitives = getOpenPathPrimitives(path);
+    const clip = makeSymmetricOutlineHollowPath(primitives, LINE_WIDTH / 2, 1.7);
+    return {
+        main: path,
+        clip,
+    };
+};
+
 const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>) => {
     const { id, path, styleAttrs, newLine, handlePointerDown } = props;
     const { color = defaultBjsubwayDottedAttributes.color } = styleAttrs ?? defaultBjsubwayDottedAttributes;
-    const clipId = `bjsubway-dotted-hollow-${React.useId()}`;
+    const clipId = `bjsubway-dotted-hollow-${id}-${React.useId()}`;
 
     // Reuse Shinkansen's reduced Bezier outlines, so inflected curves also remain safe to offset.
     // Clip the original dashes to a hollow vector outline without rasterizing a mask for every edge.
     // Graph refreshes can recreate an identical Path; cache by geometry so unchanged edges stay cheap.
-    const clipPathD = React.useMemo(() => {
-        if (!isOpenPath(path)) return '';
-        const primitives = getOpenPathPrimitives(path);
-        const outer = buildSymmetricOutlineSideChains(primitives, LINE_WIDTH / 2);
-        const inner = buildSymmetricOutlineSideChains(primitives, 1.7);
-        if (!outer.left.length || !inner.left.length) return '';
-        return `${buildClosedBezierChainPathD(outer.left, outer.right)} ${buildClosedBezierChainPathD(inner.left, inner.right)}`;
-    }, [path.kind, path.d]);
+    const paths = React.useMemo(
+        () => bjsubwayDottedPathGenerator(path, props.type, styleAttrs ?? defaultBjsubwayDottedAttributes),
+        [path.kind, path.d]
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),
@@ -45,7 +59,8 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
             pointerEvents={newLine ? 'none' : undefined}
         >
             <path
-                d={path.d}
+                id={`${LineStyleType.BjsubwayDotted}_main_${id}`}
+                d={paths.main.d}
                 fill="none"
                 stroke={color[2]}
                 strokeWidth={LINE_WIDTH}
@@ -54,7 +69,7 @@ const BjsubwayDotted = (props: LineStyleComponentProps<BjsubwayDottedAttributes>
             />
             <defs>
                 <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
-                    <path d={clipPathD} clipRule="evenodd" />
+                    <path id={`${LineStyleType.BjsubwayDotted}_clip_${id}`} d={paths.clip.d} clipRule="evenodd" />
                 </clipPath>
             </defs>
         </g>
@@ -91,6 +106,7 @@ const bjsubwayDotted: LineStyle<BjsubwayDottedAttributes> = {
     component: BjsubwayDotted,
     defaultAttrs: defaultBjsubwayDottedAttributes,
     attrsComponent: BJSubwayDottedAttrsComponent,
+    pathGenerator: bjsubwayDottedPathGenerator,
     metadata: {
         displayName: 'panel.details.lines.bjsubwayDotted.displayName',
         supportLinePathType: [

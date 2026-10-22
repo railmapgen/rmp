@@ -67,6 +67,7 @@ const offsetNodeTransforms = (id: NodeId, dx: number, dy: number) => {
 const updatePathDRecursive = (id: string, path: Path) => {
     const root = document.getElementById(id);
     root?.querySelectorAll<SVGPathElement>('path[d]').forEach(pathElement => {
+        if (pathElement.closest('defs, clipPath, mask, marker')) return;
         updatePathD(pathElement, path);
     });
 };
@@ -74,6 +75,9 @@ const updatePathDRecursive = (id: string, path: Path) => {
 const updatePathD = (elem: SVGPathElement, path: Path) => {
     elem.setAttribute('d', path.d);
 };
+
+const isSVGPathElement = (elem: globalThis.Element | null): elem is SVGPathElement =>
+    elem?.tagName.toLowerCase() === 'path';
 
 const isLineElement = (element: Element): element is LineElement => element.type === 'line' && !!element.line;
 
@@ -119,7 +123,7 @@ export const moveNodesAndRedrawLines = (
                 );
                 for (const [key, value] of Object.entries(path)) {
                     const elem = document.getElementById(`${style}_${key}_${id}`);
-                    if (elem instanceof SVGPathElement) updatePathD(elem, value);
+                    if (isSVGPathElement(elem)) updatePathD(elem, value);
                 }
             } else {
                 updatePathDRecursive(`${id}.pre`, line.path);
