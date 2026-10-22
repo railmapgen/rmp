@@ -436,7 +436,7 @@ export default function DownloadActions() {
                                     <AlertTitle>{t('header.download.disabledScaleOptions')}</AlertTitle>
                                     <AlertDescription>
                                         {t('subscription.required', {
-                                            subscription: t('subscription.RMP_EXPORT.name'),
+                                            subscription: t('RMP_EXPORT'),
                                         })}
                                     </AlertDescription>
                                 </Box>

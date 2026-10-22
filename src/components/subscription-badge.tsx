@@ -21,7 +21,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
             RMP_EXPORT: { bg: '#282746', color: '#C7D2FE', borderColor: '#56558A' },
         }
     );
-    const name = t(`subscription.${subscription}.name`);
+    const name = t(subscription);
     const label = isSubscribed
         ? t('subscription.included', { subscription: name })
         : (description ?? t('subscription.required', { subscription: name }));
@@ -41,7 +41,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                 tabIndex={0}
                 {...props}
             >
-                {t(`subscription.${subscription}.shortName`)}
+                {t(`${subscription}_SHORT_NAME`)}
             </Badge>
         </Tooltip>
     );

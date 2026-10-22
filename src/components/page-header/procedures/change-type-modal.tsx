@@ -412,7 +412,7 @@ export const ChangeTypeModal = (props: {
                         {t('cancel')}
                     </Button>
                     <Tooltip
-                        label={t('subscription.required', { subscription: t('subscription.RMP_CLOUD.name') })}
+                        label={t('subscription.required', { subscription: t('RMP_CLOUD') })}
                         isOpen={!activeSubscriptions.RMP_CLOUD}
                     >
                         <Button
