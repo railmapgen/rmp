@@ -14,6 +14,7 @@ import { isMapZoomed } from '../../map/map-config';
 import * as mapTileController from '../../map/map-tile-controller';
 import type { LiveViewport } from '../../redux/viewport/viewport-slice';
 import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../../constants/timeline';
+import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { makeRenderReadySVGElement } from '../download';
 import { calculateCanvasSize } from '../helpers';
 import * as canvasHelpers from '../helpers';
@@ -37,7 +38,10 @@ vi.mock('./video-encoder', async importOriginal => ({
     ...(await importOriginal<typeof import('./video-encoder')>()),
     createVideoFrameWriter: vi.fn(async () => ({ addFrame, complete, dispose: vi.fn() })),
 }));
-vi.mock('../download', () => ({ makeRenderReadySVGElement: vi.fn() }));
+vi.mock('../download', async importOriginal => ({
+    ...(await importOriginal<typeof import('../download')>()),
+    makeRenderReadySVGElement: vi.fn(),
+}));
 vi.mock('../fonts', async importOriginal => ({
     ...(await importOriginal<typeof import('../fonts')>()),
     waitForFonts: vi.fn(async () => undefined),
@@ -287,7 +291,7 @@ describe('video export frame timing', () => {
     });
 });
 
-const authoredTimeline = (...track: TimelineEntry[]): TimelineDocument => ({ version: 1, track });
+const authoredTimeline = (...track: TimelineEntry[]): TimelineDocument => ({ version: 2, track });
 const nodeEntry: TimelineEntry = { id: 'enter_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true };
 const edgeEntry: TimelineEntry = {
     id: 'enter_ab',
@@ -330,7 +334,373 @@ const mockGeographicMap = (updateMapViewport = vi.fn<(viewport: LiveViewport) =>
         });
 };
 
+describe('fixed timeline resources', () => {
+    it('preserves the existing drawing schedule when adding a fixed background outside the animated track', async () => {
+        const graph = makeGraph(200);
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        const original = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const fixed = await createVideoPreviewRenderer(
+            graph,
+            { ...timeline, fixedResources: ['stn_c'] },
+            [],
+            defaultOptions
+        );
+        expect(fixed.duration).toBe(original.duration);
+        expect(fixed.cursorTimes).toEqual(original.cursorTimes);
+        const originalFrame = await original.renderFrame(0.5);
+        const fixedFrame = await fixed.renderFrame(0.5);
+        expect(fixedFrame.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray')).toBe(
+            originalFrame.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray')
+        );
+        expect(fixedFrame.getElementById('stn_c')?.getAttribute('opacity')).toBe('1');
+        original.dispose();
+        fixed.dispose();
+    });
+
+    it('keeps fixed nodes and edges fully visible through duplicate entrance and exit clips', async () => {
+        const graph = makeGraph(200);
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+        const original = structuredClone(graph.export());
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { ...nodeEntry, id: 'enter_b', refId: 'stn_b' },
+            { id: 'wait', kind: 'pause', position: 'after', duration: 1 },
+            { ...edgeEntry, id: 'exit_edge', phase: 'exit' },
+            { ...nodeEntry, id: 'exit_node', phase: 'exit' }
+        );
+        timeline.fixedResources = ['stn_a', 'line_ab'];
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        for (const time of [0, 0.2, 1, renderer.duration, 0]) {
+            const frame = await renderer.renderFrame(time);
+            expect(frame.getElementById('stn_a')?.getAttribute('opacity')).toBe('1');
+            const fixedLine = frame.getElementById('line_ab')?.querySelector('path');
+            expect(fixedLine).not.toBeNull();
+            expect(fixedLine?.getAttribute('stroke-dasharray')).toBeNull();
+            expect(frame.getElementById('stn_c')).toBeNull();
+        }
+        const animated = await renderer.renderFrame(0.2);
+        expect(Number(animated.getElementById('stn_b')?.getAttribute('opacity'))).toBeCloseTo(0.5);
+        expect(renderer.cursorTimes.slice(0, 3)).toEqual([0, 0, 0]);
+        expect(graph.export()).toEqual(original);
+        renderer.dispose();
+    });
+
+    it('previews and exports fixed-only projects from time zero without revealing other resources', async () => {
+        const graph = makeGraph(200);
+        const timeline = { ...createEmptyTimelineDocument(), fixedResources: ['stn_a'] as const };
+        const document: TimelineDocument = { ...timeline, fixedResources: [...timeline.fixedResources] };
+        const renderer = await createVideoPreviewRenderer(graph, document, [], defaultOptions);
+        expect(renderer.cursorTimes).toEqual([0]);
+        expect(renderer.duration).toBeCloseTo(61 / 30);
+        const initial = await renderer.renderFrame(0);
+        const final = await renderer.renderFrame(renderer.duration);
+        expect(initial.getAttribute('viewBox')).toBe(final.getAttribute('viewBox'));
+        for (const frame of [initial, final]) {
+            expect(frame.getElementById('stn_a')?.getAttribute('opacity')).toBe('1');
+            expect(frame.getElementById('stn_b')).toBeNull();
+            expect(frame.getElementById('line_ab')).toBeNull();
+        }
+        renderer.dispose();
+        await exportVideo(graph, document, [], defaultOptions, 'white');
+        expect(addFrame).toHaveBeenCalledTimes(61);
+        expect(
+            renderedSVGs.slice(2).every(frame => frame.getElementById('stn_a') && !frame.getElementById('line_ab'))
+        ).toBe(true);
+    });
+
+    it('includes fixed lines in full geographic lengths, appeared history and the shared minimap from frame zero', async () => {
+        mockGeographicMap();
+        vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,bWFw');
+        const graph = makeGraph(200);
+        graph.setAttribute('lineDefinitions', [
+            {
+                id: 'fixed-line',
+                edgeIds: ['line_ab'],
+                name: ['Fixed', ''],
+                lineNumber: 'F',
+                openingDate: '2020-01-01',
+                operator: '',
+                status: 'operating',
+                notes: '',
+                exportStartStationId: 'stn_a',
+            },
+        ]);
+        const network = createTimelineOverlayModule('line-length', 'top-left', 'network');
+        const current = createTimelineOverlayModule('line-length', 'top-left', 'current');
+        current.settings.scope = 'currentLine';
+        const identity = createTimelineOverlayModule('line-identity', 'bottom-left', 'identity');
+        identity.settings.showAppearedLines = true;
+        const timeline: TimelineDocument = {
+            ...createEmptyTimelineDocument(),
+            fixedResources: ['stn_a', 'stn_b', 'line_ab'],
+            overlayModules: [network, current, identity, createTimelineOverlayModule('minimap', 'bottom-right', 'map')],
+        };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, geographicEnvironment);
+        const initial = await renderer.renderFrame(0);
+        const networkLength = initial.querySelector('[data-video-length-scope="network"]')!.textContent;
+        expect(parseFloat(networkLength!)).toBeGreaterThan(0);
+        expect(initial.querySelector('[data-video-length-scope="currentLine"]')!.textContent).toBe(networkLength);
+        expect(initial.querySelector('[data-video-appeared-line]')?.getAttribute('data-video-appeared-line')).toBe(
+            'fixed-line'
+        );
+        const reference = initial.querySelector('[data-video-minimap] use')!.getAttribute('href')!.slice(1);
+        expect(initial.getElementById(reference)?.querySelector('[id="line_ab"]')).not.toBeNull();
+        expect(
+            (await renderer.renderFrame(renderer.duration)).querySelector('[data-video-length-scope="network"]')!
+                .textContent
+        ).toBe(networkLength);
+        renderer.dispose();
+    });
+
+    it('retains positional keyframes on fixed nodes while keeping their visibility and line drawing complete', async () => {
+        const timeline = authoredTimeline(
+            { id: 'origin', kind: 'keyframe', refId: 'stn_b', x: 200, y: 0 },
+            { id: 'wait', kind: 'pause', position: 'after', duration: 2 },
+            { id: 'move', kind: 'keyframe', refId: 'stn_b', x: 400, y: 100 }
+        );
+        timeline.fixedResources = ['stn_b', 'line_ab'];
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
+        const initial = await renderer.renderFrame(0);
+        const initialPath = initial.getElementById('line_ab')?.querySelector('path')?.getAttribute('d');
+        const final = await renderer.renderFrame(renderer.duration);
+        expect(final.getElementById('stn_b')?.getAttribute('transform')).toBe('translate(400, 100)');
+        expect(final.getElementById('stn_b')?.getAttribute('opacity')).toBe('1');
+        expect(final.getElementById('line_ab')?.querySelector('path')?.getAttribute('d')).not.toBe(initialPath);
+        expect(final.getElementById('line_ab')?.querySelector('path')?.getAttribute('stroke-dasharray')).toBeNull();
+        const restored = await renderer.renderFrame(0);
+        expect(restored.getElementById('stn_b')?.getAttribute('transform')).toBe('translate(200, 0)');
+        renderer.dispose();
+    });
+});
+
 describe('geographic timeline overlays and frame coverage', () => {
+    it('keeps independent current-line and network lengths and derives appeared lines on every seek', async () => {
+        mockGeographicMap();
+        const graph = makeGraph(200);
+        graph.addNode('stn_c', { ...structuredClone(graph.getNodeAttributes('stn_b')), x: 400 });
+        graph.addDirectedEdgeWithKey('line_bc', 'stn_b', 'stn_c', structuredClone(graph.getEdgeAttributes('line_ab')));
+        graph.setAttribute(
+            'lineDefinitions',
+            ['line_ab', 'line_bc'].map((edge, index) => ({
+                id: `logical_${index}`,
+                edgeIds: [edge],
+                name: [`Line ${index + 1}`, ''],
+                lineNumber: String(index + 1),
+                openingDate: `200${index}-01-01`,
+                operator: '',
+                status: 'operating',
+                notes: '',
+                exportStartStationId: 'stn_a',
+            }))
+        );
+        const network = createTimelineOverlayModule('line-length', 'top-left', 'network');
+        const current = createTimelineOverlayModule('line-length', 'bottom-left', 'current');
+        current.settings.scope = 'currentLine';
+        const identity = createTimelineOverlayModule('line-identity', 'bottom-right', 'identity');
+        identity.settings.showAppearedLines = true;
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            { ...edgeEntry, id: 'second', refId: 'line_bc' },
+            { ...edgeEntry, id: 'exit', phase: 'exit' }
+        );
+        timeline.overlayModules = [network, current, identity];
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, geographicEnvironment);
+        const full = await renderer.renderFrame(renderer.cursorTimes[3]);
+        const read = (scope: string) =>
+            parseFloat(full.querySelector(`[data-video-length-scope="${scope}"]`)!.textContent!);
+        expect(read('network')).toBeCloseTo(read('currentLine') * 2, 0);
+        expect(
+            [...full.querySelectorAll('[data-video-appeared-line]')].map(item =>
+                item.getAttribute('data-video-appeared-line')
+            )
+        ).toEqual(['logical_0', 'logical_1']);
+        expect(
+            (await renderer.renderFrame(renderer.duration)).querySelectorAll('[data-video-appeared-line]')
+        ).toHaveLength(2);
+        const early = await renderer.renderFrame(renderer.cursorTimes[2]);
+        expect(
+            [...early.querySelectorAll('[data-video-appeared-line]')].map(item =>
+                item.getAttribute('data-video-appeared-line')
+            )
+        ).toEqual(['logical_0']);
+        expect((await renderer.renderFrame(0)).querySelectorAll('[data-video-appeared-line]')).toHaveLength(0);
+        renderer.dispose();
+    });
+
+    it('shares one full-map cache across minimaps using the main preview map source and detail level', async () => {
+        const load = mockGeographicMap();
+        vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,bWFw');
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'bottom-left', 'map')];
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            timeline,
+            [],
+            defaultOptions,
+            geographicEnvironment
+        );
+        const first = await renderer.renderFrame(0.5);
+        const bounds = first.querySelector('[data-video-minimap]')!.getAttribute('viewBox');
+        const worldId = first.querySelector('use')!.getAttribute('href')!.slice(1);
+        expect(first.getElementById(worldId)).toBe(first.querySelector('[data-editor-layer]'));
+        expect(first.querySelector('[data-video-minimap] image')?.getAttribute('href')).toBe(
+            'data:image/png;base64,bWFw'
+        );
+        // Main scene and thumbnail both inherit the same source controller's level.
+        expect(load).toHaveBeenCalledTimes(2);
+        expect(load.mock.calls[1][0]).toBe(load.mock.calls[0][0]);
+        expect(load.mock.calls.every(call => call.length === 3)).toBe(true);
+        expect(vi.mocked(renderVideoSVGToCanvas).mock.calls[0][2]).toBe(true);
+        renderer.setOverlayModules([
+            ...timeline.overlayModules,
+            createTimelineOverlayModule('minimap', 'bottom-right', 'map2'),
+        ]);
+        const second = await renderer.renderFrame(renderer.duration);
+        expect(second.querySelector('[data-video-minimap]')?.getAttribute('viewBox')).toBe(bounds);
+        expect(second.querySelectorAll('[data-video-minimap] image')).toHaveLength(2);
+        expect(load).toHaveBeenCalledTimes(2);
+        expect(HTMLCanvasElement.prototype.toDataURL).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
+    it('uses an opaque white miniature in the ordinary preview without a geographic basemap', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'bottom-left', 'map')];
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
+        const frame = await renderer.renderFrame(0.5);
+        expect(frame.querySelector('[data-video-minimap-background]')?.getAttribute('fill')).toBe('#fff');
+        renderer.dispose();
+    });
+
+    it('preserves the geographic map stylesheet scope and custom colors when rasterizing the miniature', async () => {
+        mockGeographicMap().mockImplementation(async (_source, target, bounds) => {
+            const tile = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            tile.classList.add('rmp-map-tile');
+            tile.setAttribute('data-level', 'zoomed');
+            tile.setAttribute('viewBox', '0 0 256 256');
+            tile.setAttribute('x', String(bounds.xMin));
+            tile.setAttribute('y', String(bounds.yMin));
+            tile.setAttribute('width', String(bounds.xMax - bounds.xMin));
+            tile.setAttribute('height', String(bounds.yMax - bounds.yMin));
+            const water = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            water.setAttribute('class', 'area-water');
+            water.setAttribute('d', 'M 0 0 H 128 V 128 H 0 Z');
+            const road = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            road.setAttribute('class', 'road road-local detail');
+            road.setAttribute('d', 'M 0 200 L 256 200');
+            tile.append(water, road);
+            target.replaceChildren(tile);
+        });
+        vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,bWFw');
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.local.color = '#123abc';
+        mapStyle.roads.local.enabled = false;
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'bottom-left', 'map')];
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions, {
+            ...geographicEnvironment,
+            mapStyle,
+        });
+        const styleHost = document.createElement('style');
+        try {
+            const frame = await renderer.renderFrame(0.5);
+            const rasterSvg = vi.mocked(renderVideoSVGToCanvas).mock.calls[0][0];
+            const water = rasterSvg.querySelector('.area-water')!;
+            const road = rasterSvg.querySelector('.road-local.detail')!;
+            expect(water.matches('[data-map-layer] .rmp-map-tile .area-water')).toBe(true);
+            expect(road.matches('[data-map-layer] .rmp-map-tile .road.detail')).toBe(true);
+            styleHost.textContent = rasterSvg.querySelector('style')!.textContent;
+            document.head.append(styleHost);
+            const rules = Array.from(styleHost.sheet!.cssRules).filter(
+                (rule): rule is CSSStyleRule => 'selectorText' in rule
+            );
+            const roadRules = rules.filter(rule => road.matches(rule.selectorText));
+            expect(roadRules.some(rule => rule.style.getPropertyValue('fill') === 'none')).toBe(true);
+            expect(roadRules.some(rule => rule.style.getPropertyValue('stroke') === '#123abc')).toBe(true);
+            expect(roadRules.some(rule => rule.style.getPropertyValue('display') === 'none')).toBe(true);
+            const waterRules = rules.filter(rule => water.matches(rule.selectorText));
+            expect(waterRules.some(rule => rule.style.getPropertyValue('fill') === '#aacfe0')).toBe(true);
+            expect(waterRules.some(rule => rule.style.getPropertyValue('fill-opacity') === '0.48')).toBe(true);
+            expect(frame.querySelector('[data-video-minimap-background]')?.getAttribute('fill')).toBe('#fff');
+            expect(frame.querySelector('[data-video-minimap] image')).not.toBeNull();
+        } finally {
+            styleHost.remove();
+            renderer.dispose();
+        }
+    });
+
+    it.each([
+        { format: 'webm' as const, isTransparent: true, expected: 'none', alpha: true },
+        { format: 'webm' as const, isTransparent: false, expected: '#123456', alpha: false },
+        { format: 'mp4' as const, isTransparent: true, expected: '#123456', alpha: false },
+    ])('matches miniature and output backgrounds for $format with transparency=$isTransparent', async params => {
+        mockGeographicMap();
+        vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue('data:image/png;base64,bWFw');
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'bottom-left', 'map')];
+        await exportVideo(
+            makeGraph(200),
+            timeline,
+            [],
+            { ...defaultOptions, format: params.format, isTransparent: params.isTransparent },
+            '#123456',
+            undefined,
+            geographicEnvironment
+        );
+        const frames = renderedSVGs.filter(frame => frame.querySelector('[data-video-minimap]'));
+        expect(frames.length).toBeGreaterThan(1);
+        expect(
+            frames.every(
+                frame =>
+                    frame.querySelector('[data-video-minimap-background]')?.getAttribute('fill') === params.expected
+            )
+        ).toBe(true);
+        // The shared basemap keeps alpha even for opaque output; the frame supplies its own background.
+        const thumbnail = vi
+            .mocked(renderVideoSVGToCanvas)
+            .mock.calls.find(([svg]) => svg.getAttribute('width') === '360');
+        expect(thumbnail?.[2]).toBe(true);
+        const outputFrames = vi
+            .mocked(renderVideoSVGToCanvas)
+            .mock.calls.filter(([svg]) => svg.querySelector('[data-video-minimap]'));
+        expect(outputFrames.every(call => call[2] === params.alpha && call[3] === '#123456')).toBe(true);
+    });
+
+    it('blocks subscriber-only saved overlays before allocating export resources while allowing preview', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'top-right', 'pro')];
+        const createSource = vi.spyOn(videoExportCanvas, 'createVideoExportCanvas');
+        await expect(exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white')).rejects.toThrow();
+        expect(createSource).not.toHaveBeenCalled();
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
+        expect((await renderer.renderFrame(0.5)).querySelector('[data-overlay-region="top-right"]')).not.toBeNull();
+        renderer.dispose();
+    });
+
+    it('hot-updates module layouts without rebuilding geometry and reserves invisible edit placeholders', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [];
+        const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
+        const initial = await renderer.renderPreviewFrame(0.5);
+        const path = initial.getElementById('line_ab')!.querySelector('path');
+        const timing = renderer.cursorTimes;
+        renderer.setOverlayModules([createTimelineOverlayModule('date', 'bottom-left', 'empty-date')]);
+        renderer.setOverlayEditing(true);
+        const editing = await renderer.renderPreviewFrame(0.5);
+        expect(renderer.getOverlayLayout()).toMatchObject([{ id: 'empty-date', region: 'bottom-left', empty: true }]);
+        expect(editing.querySelector('[data-overlay-module-id="empty-date"]')).toBeNull();
+        expect(editing.getElementById('line_ab')!.querySelector('path')).toBe(path);
+        expect(renderer.cursorTimes).toBe(timing);
+        renderer.setOverlayEditing(false);
+        await renderer.renderPreviewFrame(0.5);
+        expect(renderer.getOverlayLayout()).toEqual([]);
+        expect(makeRenderReadySVGElement).toHaveBeenCalledOnce();
+        renderer.dispose();
+    });
+
     it.each(['hidden', 'unavailable'])(
         'does not count %s lines that are omitted from the rendered map',
         async reason => {
@@ -338,7 +708,7 @@ describe('geographic timeline overlays and frame coverage', () => {
             const graph = makeGraph(200);
             if (reason === 'hidden') graph.setEdgeAttribute('line_ab', 'visible', false);
             const timeline = authoredTimeline(nodeEntry, edgeEntry);
-            timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+            timeline.overlayModules = [createTimelineOverlayModule('line-length', 'top-left', 'network')];
             const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, {
                 ...geographicEnvironment,
                 isSubscriber: reason !== 'unavailable',
@@ -364,9 +734,10 @@ describe('geographic timeline overlays and frame coverage', () => {
         timeline.settings = {
             ...createEmptyTimelineDocument().settings!,
             autoChangeStationType: false,
-            showLineLength: true,
-            lineLengthUnit: unit,
         };
+        const lengthModule = createTimelineOverlayModule('line-length', 'top-left', 'network');
+        lengthModule.settings.unit = unit;
+        timeline.overlayModules = [lengthModule];
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions, geographicEnvironment);
         const readLength = async (time: number) => {
             const svg = await renderer.renderPreviewFrame(time);
@@ -386,9 +757,9 @@ describe('geographic timeline overlays and frame coverage', () => {
         renderer.dispose();
     });
 
-    it('omits geographic length from ordinary map videos despite an enabled saved setting', async () => {
+    it('omits geographic length from ordinary map videos when a length module is configured', async () => {
         const timeline = authoredTimeline(nodeEntry, edgeEntry);
-        timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+        timeline.overlayModules = [createTimelineOverlayModule('line-length', 'top-left', 'network')];
         const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
         expect((await renderer.renderFrame(renderer.duration)).querySelector('[data-video-total-length]')).toBeNull();
         renderer.dispose();
@@ -403,7 +774,7 @@ describe('geographic timeline overlays and frame coverage', () => {
             { id: 'wait', kind: 'pause', position: 'after', duration: 2 },
             { id: 'move', kind: 'keyframe', refId: 'stn_b', x: 400, y: 0 }
         );
-        timeline.settings = { ...createEmptyTimelineDocument().settings!, showLineLength: true };
+        timeline.overlayModules = [createTimelineOverlayModule('line-length', 'top-left', 'network')];
         const renderer = await createVideoPreviewRenderer(
             makeGraph(200),
             timeline,
@@ -1202,10 +1573,6 @@ describe('shared real-time preview renderer', () => {
                 cameraZoom: 2,
                 speedMultiplier,
                 autoChangeStationType: false,
-                showYear: false,
-                showLineName: false,
-                showLineLength: false,
-                lineLengthUnit: 'km' as const,
             };
             const drawingSeconds = 2 / speedMultiplier;
             for (const fps of [15, 60]) {
@@ -1273,10 +1640,6 @@ describe('shared real-time preview renderer', () => {
             cameraZoom: 2,
             speedMultiplier: 1,
             autoChangeStationType: true,
-            showYear: false,
-            showLineName: false,
-            showLineLength: false,
-            lineLengthUnit: 'km' as const,
         };
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
         const beforeClosing = renderer.cursorTimes[3] - 1 / defaultOptions.fps;
@@ -1503,11 +1866,11 @@ describe('shared real-time preview renderer', () => {
             cameraZoom: 2,
             speedMultiplier: 2,
             autoChangeStationType: false,
-            showYear: true,
-            showLineName: true,
-            showLineLength: false,
-            lineLengthUnit: 'km' as const,
         };
+        timeline.overlayModules = [
+            createTimelineOverlayModule('date', 'top-left', 'date'),
+            createTimelineOverlayModule('line-identity', 'top-left', 'line'),
+        ];
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
         expect(renderer.duration).toBeCloseTo(2 + 1 / 30);
         const svg = await renderer.renderFrame(0.5);
@@ -1517,7 +1880,7 @@ describe('shared real-time preview renderer', () => {
         const labels = overlay.querySelectorAll('text');
         expect(labels[1].textContent).toBe('10-01');
         expect(Number(labels[1].getAttribute('y'))).toBeGreaterThan(Number(labels[0].getAttribute('y')));
-        expect(Number(labels[2].getAttribute('y'))).toBeGreaterThan(Number(labels[1].getAttribute('y')));
+        expect(renderer.getOverlayLayout()[1].y).toBeGreaterThan(renderer.getOverlayLayout()[0].y);
         expect(Number(labels[2].getAttribute('font-size'))).toBeGreaterThan(
             Number(labels[3].getAttribute('font-size'))
         );

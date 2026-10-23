@@ -1,4 +1,4 @@
-import { combineReducers, configureStore, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { combineReducers, configureStore, createSlice, PayloadAction, UnknownAction } from '@reduxjs/toolkit';
 import { enableMapSet } from 'immer';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import { Id } from '../constants/constants';
@@ -10,6 +10,7 @@ import { normalizeTimelineDocument } from '../util/timeline';
 import type { VideoExportOptions } from '../util/video-export/video-export';
 import { timelineProjectDB } from './timeline-project-db';
 import { TimelineProjectRecord, TimelineProjectRevision, TimelineProjectSummary } from './timeline-project';
+import { upgradeTimelineProject } from './timeline-project-upgrade';
 
 enableMapSet();
 
@@ -36,8 +37,7 @@ const projectSlice = createSlice({
             state.ready = true;
         },
         openProject: (state, action: PayloadAction<TimelineProjectRecord>) => {
-            const active = JSON.parse(JSON.stringify(action.payload)) as TimelineProjectRecord;
-            active.revision.timeline = normalizeTimelineDocument(active.revision.timeline);
+            const active = upgradeTimelineProject(action.payload) as unknown as TimelineProjectRecord;
             state.active = active;
             state.past = [];
             state.future = [];
@@ -100,6 +100,8 @@ const projectSlice = createSlice({
 });
 
 interface RuntimeState {
+    annotationEditing: boolean;
+    fixedResourceEditing: boolean;
     cursor: number;
     selected: Set<Id>;
     viewport?: { x: number; y: number; zoom: number };
@@ -110,8 +112,27 @@ interface RuntimeState {
 }
 const runtimeSlice = createSlice({
     name: 'timelineRuntime',
-    initialState: { cursor: 0, selected: new Set<Id>() } as RuntimeState,
+    initialState: {
+        cursor: 0,
+        selected: new Set<Id>(),
+        annotationEditing: false,
+        fixedResourceEditing: false,
+    } as RuntimeState,
     reducers: {
+        setAnnotationEditing: (state, action: PayloadAction<boolean>) => {
+            state.annotationEditing = action.payload;
+            if (action.payload) {
+                state.fixedResourceEditing = false;
+                state.selected = new Set();
+            }
+        },
+        setFixedResourceEditing: (state, action: PayloadAction<boolean>) => {
+            state.fixedResourceEditing = action.payload;
+            if (action.payload) {
+                state.annotationEditing = false;
+                state.selected = new Set();
+            }
+        },
         setCursor: (state, action: PayloadAction<number>) => {
             state.cursor = Math.max(0, Math.floor(action.payload));
         },
@@ -125,19 +146,61 @@ const runtimeSlice = createSlice({
             state.videoOptions = action.payload;
         },
         clearRuntime: state => {
+            state.annotationEditing = false;
+            state.fixedResourceEditing = false;
             state.cursor = 0;
             state.selected = new Set();
             state.viewport = undefined;
             state.videoOptions = undefined;
         },
     },
+    extraReducers: builder => {
+        builder.addCase(projectSlice.actions.openProject, state => {
+            state.annotationEditing = false;
+            state.fixedResourceEditing = false;
+        });
+        builder.addCase(projectSlice.actions.closeProject, state => {
+            state.annotationEditing = false;
+            state.fixedResourceEditing = false;
+        });
+    },
 });
 
-const reducer = combineReducers({
+const combinedReducer = combineReducers({
     account: accountReducer,
     project: projectSlice.reducer,
     runtime: runtimeSlice.reducer,
 });
+const revisionContentKey = (revision: TimelineProjectRevision) =>
+    JSON.stringify({ ...revision, timeline: { ...revision.timeline, overlayModules: undefined } });
+
+// Layout editing can only change annotations, including through delayed callbacks.
+const reducer = (state: ReturnType<typeof combinedReducer> | undefined, action: UnknownAction) => {
+    const current = state?.project.active?.revision;
+    if (
+        state?.runtime.fixedResourceEditing &&
+        (projectSlice.actions.replaceTimeline.match(action) ||
+            projectSlice.actions.commitRevision.match(action) ||
+            projectSlice.actions.undo.match(action) ||
+            projectSlice.actions.redo.match(action) ||
+            projectSlice.actions.setProjectName.match(action))
+    )
+        return state;
+    if (state?.runtime.annotationEditing && current) {
+        let candidate: TimelineProjectRevision | undefined;
+        if (projectSlice.actions.replaceTimeline.match(action)) {
+            candidate = { ...current, timeline: normalizeTimelineDocument(action.payload) };
+        } else if (
+            projectSlice.actions.commitRevision.match(action) ||
+            projectSlice.actions.undo.match(action) ||
+            projectSlice.actions.redo.match(action)
+        ) {
+            return state;
+        }
+        if (candidate && revisionContentKey(candidate) !== revisionContentKey(current)) return state;
+    }
+    return combinedReducer(state, action);
+};
 export const createTimelineStore = () =>
     configureStore({
         reducer,
@@ -162,7 +225,15 @@ export const {
     redo,
     setError,
 } = projectSlice.actions;
-export const { setCursor, setSelected, setViewport, setVideoOptions, clearRuntime } = runtimeSlice.actions;
+export const {
+    setAnnotationEditing,
+    setFixedResourceEditing,
+    setCursor,
+    setSelected,
+    setViewport,
+    setVideoOptions,
+    clearRuntime,
+} = runtimeSlice.actions;
 
 let unsubscribePersistence: (() => void) | undefined;
 let accountInitialized = false;

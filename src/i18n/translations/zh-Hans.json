@@ -1016,17 +1016,15 @@
                 "playback": "播放效果",
                 "overlays": "画面标注",
                 "lineInformation": "线路信息",
-                "showYear": "显示年份",
-                "showYearHint": "在视频左上角显示当前线路的开通年份。",
-                "showLineName": "标注线路名称",
-                "showLineNameHint": "在年份下方显示线路标志色、中文名称和英文名称。",
-                "showLineLength": "标注线路长度",
                 "showLineLengthMapOnly": "仅开启真实地理地图时可用。",
-                "lineLengthUnit": "长度单位",
                 "savedWithProject": "随当前编年器项目保存",
                 "done": "完成",
                 "cameraZoom": "放大倍率",
-                "cameraZoomFull": "全屏（Full）"
+                "cameraZoomFull": "全屏（Full）",
+                    "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
+                    "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
+                    "chooseFixedResources": "选择固定资源",
+                    "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
             },
             "lineLabels": {
                 "title": "线路标签信息",
@@ -1052,7 +1050,74 @@
             "previewFailed": "预览加载失败",
             "audioDuration": "资源时长：{{duration}} 秒",
             "audioTiming": "编辑音乐时间",
-            "retryPreview": "重新加载"
+            "retryPreview": "重新加载",
+            "fixedResources": {
+                "title": "固定资源",
+                "hint": "点按节点或线路区段可加入选择，再次点按可移除。",
+                "selectedCount": "已选择 {{count}} 个资源",
+                "doneNoticeTitle": "固定资源已更新",
+                "doneNotice": "固定资源会从首帧起持续显示至视频结束，对应的出现和退出片段已从轨道移除。取消固定不会恢复原有片段，可按正常流程重新添加到轨道。",
+                "done": "完成",
+                "previewLabel": "固定资源预览"
+            },
+            "overlayEditor": {
+                "editPositions": "修改元素位置",
+                "title": "画面标注布局",
+                "settingsHint": "在预览区域添加、排列并独立设置画面标注。",
+                "hint": "点击预览中的模块可修改设置。通过虚线加号添加模块，拖动模块可调整顺序或移动到其他角落。",
+                "addToRegion": "添加到{{region}}",
+                "closeCatalog": "关闭模块列表",
+                "addModule": "添加模块",
+                "subscriberLocked": "此区域仅订阅用户可编辑。已有模块可以移到免费区域。",
+                "subscriptionExport": "右上角区域需要订阅。请将其中的模块移到其他区域，或恢复订阅后导出。",
+                "region": "显示区域",
+                "moveUp": "上移",
+                "moveDown": "下移",
+                "remove": "删除模块",
+                "timedTextHint": "文字内容与出现时间由文字轨道控制。",
+                "trackLocked": "调整画面标注期间，轨道内容已锁定。",
+                "regions": {
+                    "top-left": "左上角",
+                    "top-right": "右上角",
+                    "bottom-left": "左下角",
+                    "bottom-right": "右下角"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "时间",
+                    "lineIdentity": "线路标识",
+                    "lineLength": "线路长度",
+                    "minimap": "地图缩略",
+                    "timedText": "时间轴文字"
+                },
+                "fields": {
+                    "showMonthDay": "时间内容",
+                    "dateLayout": "日期布局",
+                    "showAppearedLines": "在下方显示所有已出现过的线路",
+                    "lengthScope": "长度统计",
+                    "unit": "长度单位",
+                    "size": "小窗大小",
+                    "fontSize": "文字大小",
+                    "alignment": "文字对齐"
+                },
+                "options": {
+                    "yearOnly": "仅年份",
+                    "yearMonthDay": "年月日",
+                    "singleLine": "单行",
+                    "doubleLine": "双行",
+                    "network": "全网累计总长",
+                    "currentLine": "当前线路累计长度",
+                    "km": "公里（km）",
+                    "mi": "英里（mi）",
+                    "small": "小",
+                    "medium": "中",
+                    "large": "大",
+                    "left": "左对齐",
+                    "center": "居中",
+                    "right": "右对齐"
+                }
+            }
         },
         "mapToggle": {
             "show": "显示地理地图",

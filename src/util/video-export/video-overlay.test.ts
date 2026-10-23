@@ -1,80 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createTestLineGraph } from '../../test-utils';
-import { createVideoLineOverlay, getVideoLineAnnotation, getVideoLineLabel } from './video-overlay';
+import { getVideoLineAnnotation, getVideoLineLabel } from './video-overlay';
 
-const annotation = {
-    year: '1999',
-    monthDay: '10-01',
-    name: ['地铁一号线', 'Metro Line 1'] as [string, string],
-    color: '#e82f37',
-};
-const viewBox = { x: -200, y: -100, width: 640, height: 360 };
-
-describe('video year and line annotation', () => {
-    it('places total length below line metadata and above labels, with or without metadata', () => {
-        for (const showLineName of [true, false]) {
-            const overlay = createVideoLineOverlay(
-                annotation,
-                { showYear: false, showLineName },
-                viewBox,
-                [{ id: 'caption', text: 'Caption' }],
-                '123.4km'
-            )!;
-            const length = overlay.querySelector('[data-video-total-length]')!;
-            const caption = overlay.querySelector('[data-video-label]')!;
-            expect(length.textContent).toBe('123.4km');
-            expect(Number(caption.getAttribute('y'))).toBeGreaterThan(Number(length.getAttribute('y')));
-            if (showLineName) {
-                const names = [...overlay.querySelectorAll('text')].filter(
-                    text => !text.hasAttribute('data-video-total-length') && !text.hasAttribute('data-video-label')
-                );
-                expect(Number(length.getAttribute('y'))).toBeGreaterThan(Number(names.at(-1)!.getAttribute('y')));
-            }
-        }
-        const standalone = createVideoLineOverlay(
-            undefined,
-            { showYear: false, showLineName: false },
-            viewBox,
-            [],
-            '0.0mi'
-        )!;
-        expect(standalone.textContent).toBe('0.0mi');
-        expect(Number(standalone.querySelector('rect')!.getAttribute('height'))).toBeGreaterThan(0);
-    });
-    it.each([true, false])('shows standalone labels with both metadata switches disabled (annotation=%s)', present => {
-        const overlay = createVideoLineOverlay(
-            present ? annotation : undefined,
-            { showYear: false, showLineName: false },
-            viewBox,
-            [{ id: 'caption', text: '通车纪念\nA < B & C' }]
-        )!;
-        expect([...overlay.querySelectorAll('[data-video-label]')].map(text => text.textContent)).toEqual([
-            '通车纪念',
-            'A < B & C',
-        ]);
-        expect(overlay.querySelectorAll('text')).toHaveLength(2);
-        expect(overlay.querySelector('script')).toBeNull();
-        expect(overlay.querySelector('line')).toBeNull();
-    });
-
-    it('places multiple labels below bilingual line metadata and wraps long text within the panel', () => {
-        const overlay = createVideoLineOverlay(annotation, { showYear: true, showLineName: true }, viewBox, [
-            { id: 'first', text: '第一段文字' },
-            { id: 'second', text: 'Long label '.repeat(120) },
-        ])!;
-        const labels = overlay.querySelectorAll('[data-video-label]');
-        const names = [...overlay.querySelectorAll('text')].filter(text => !text.hasAttribute('data-video-label'));
-        expect(Number(labels[0].getAttribute('y'))).toBeGreaterThan(Number(names.at(-1)!.getAttribute('y')));
-        expect(labels[0].textContent).toBe('第一段文字');
-        expect(labels.length).toBeGreaterThan(2);
-        expect(labels[labels.length - 1].textContent).toMatch(/…$/);
-        const rect = overlay.querySelector('rect')!;
-        expect(Number(rect.getAttribute('width'))).toBeLessThanOrEqual(690);
-        expect(Number(rect.getAttribute('height'))).toBeLessThanOrEqual(666);
-        expect(Number(labels[labels.length - 1].getAttribute('y'))).toBeLessThan(
-            27 + Number(rect.getAttribute('height'))
-        );
-    });
+describe('video line annotation metadata', () => {
     it('uses Timeline label overrides while retaining the imported metadata and map color', () => {
         const graph = createTestLineGraph([['A', 'B']]);
         const line = graph.getAttribute('lineDefinitions')![0];
@@ -117,48 +45,5 @@ describe('video year and line annotation', () => {
             monthDay: '',
             color: '#123456',
         });
-    });
-
-    it.each([
-        [true, true, '199910-01地铁一号线Metro Line 1'],
-        [true, false, '199910-01'],
-        [false, true, '地铁一号线Metro Line 1'],
-        [false, false, undefined],
-    ])('respects year=%s and line=%s independently', (showYear, showLineName, text) => {
-        const overlay = createVideoLineOverlay(annotation, { showYear, showLineName }, viewBox);
-        expect(overlay?.textContent).toBe(text);
-    });
-
-    it('anchors the card to screen coordinates through changes in camera scale', () => {
-        const settings = { showYear: true, showLineName: true };
-        const overlay = createVideoLineOverlay(annotation, settings, viewBox)!;
-        const wide = createVideoLineOverlay(annotation, settings, { x: 100, y: 30, width: 1280, height: 720 })!;
-        expect(overlay.getAttribute('transform')).toBe('translate(-200, -100) scale(0.5)');
-        expect(wide.getAttribute('transform')).toBe('translate(100, 30) scale(1)');
-        expect(overlay.querySelector('rect[width="7"]')?.getAttribute('fill')).toBe(annotation.color);
-    });
-
-    it('uses an English-only name without adding an empty second label', () => {
-        const overlay = createVideoLineOverlay(
-            { ...annotation, name: ['', 'Metro'] },
-            { showYear: false, showLineName: true },
-            viewBox
-        )!;
-        expect(overlay.querySelectorAll('text')).toHaveLength(1);
-        expect(overlay.textContent).toBe('Metro');
-    });
-
-    it('omits empty metadata and safely renders punctuation in line names', () => {
-        expect(createVideoLineOverlay(undefined, { showYear: true, showLineName: true }, viewBox)).toBeUndefined();
-        expect(
-            createVideoLineOverlay({ ...annotation, year: '' }, { showYear: true, showLineName: false }, viewBox)
-        ).toBeUndefined();
-        const overlay = createVideoLineOverlay(
-            { ...annotation, name: ['<线路 & 名称>', 'A > B'] },
-            { showYear: false, showLineName: true },
-            viewBox
-        )!;
-        expect(overlay.textContent).toBe('<线路 & 名称>A > B');
-        expect(overlay.querySelectorAll('text')).toHaveLength(2);
     });
 });

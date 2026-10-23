@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { createTimelineOverlayModule } from '../constants/timeline-overlays';
 import { TimelineProjectDB } from './timeline-project-db';
 import { TimelineProjectRecord } from './timeline-project';
 
@@ -11,7 +12,7 @@ const makeDB = () => new TimelineProjectDB(`RmpTimelineDB-test-${Date.now()}-${M
 const makeProject = (id: string, zoom = 100): TimelineProjectRecord => ({
     id,
     name: `Project ${id}`,
-    version: 1,
+    version: 2,
     createdAt: 1,
     updatedAt: zoom,
     revision: {
@@ -26,6 +27,48 @@ const makeProject = (id: string, zoom = 100): TimelineProjectRecord => ({
 });
 
 describe('TimelineProjectDB', () => {
+    it('atomically upgrades a legacy project and retains its first original backup across reopenings', async () => {
+        const db = makeDB();
+        const legacy = {
+            ...makeProject('legacy'),
+            version: 1,
+            revision: {
+                ...makeProject('legacy').revision,
+                timeline: {
+                    version: 1,
+                    track: [],
+                    settings: { showYear: true, showLineLength: true, lineLengthUnit: 'mi' },
+                },
+            },
+        };
+        await db.createProject(legacy as unknown as TimelineProjectRecord, []);
+        const upgraded = (await db.getProject('legacy'))!;
+        expect(upgraded.version).toBe(2);
+        expect(upgraded.revision.timeline.version).toBe(2);
+        expect(upgraded.revision.timeline.overlayModules?.map(module => module.type)).toEqual([
+            'date',
+            'line-length',
+            'timed-text',
+        ]);
+        expect(await db.getProjectUpgradeBackup('legacy')).toEqual(legacy);
+        upgraded.revision.timeline.overlayModules = [createTimelineOverlayModule('minimap', 'top-right')];
+        await db.saveProject(upgraded);
+        expect((await db.getProject('legacy'))?.revision.timeline.overlayModules).toEqual(
+            upgraded.revision.timeline.overlayModules
+        );
+        expect(await db.getProjectUpgradeBackup('legacy')).toEqual(legacy);
+        await db.deleteProject('legacy');
+        expect(await db.getProjectUpgradeBackup('legacy')).toBeUndefined();
+    });
+
+    it('refuses future versions without creating an upgrade backup', async () => {
+        const db = makeDB();
+        await db.createProject({ ...makeProject('future'), version: 999 } as unknown as TimelineProjectRecord, []);
+        await expect(db.getProject('future')).rejects.toThrow('Unsupported Timeline project version');
+        expect(await db.getProjectUpgradeBackup('future')).toBeUndefined();
+        expect((await db.listProjects())[0].version).toBe(999);
+    });
+
     it('creates, lists, renames and deletes independent projects and assets', async () => {
         const db = makeDB();
         await db.createProject(makeProject('one'), [{ kind: 'image', id: 'shared-id', blob: new Blob(['one']) }]);

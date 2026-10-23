@@ -8,6 +8,8 @@ import { useSvgRenderContext } from '../svg-render-context';
 
 interface TimelineSvgCanvasProps {
     selectedId?: Id;
+    selectedIds?: Set<Id>;
+    visibleIds?: Set<Id>;
     highlightedIds?: Set<Id>;
     onSelect: (id: Id) => void;
     graph: TimelineGraph;
@@ -17,6 +19,8 @@ interface TimelineSvgCanvasProps {
 
 export default function TimelineSvgCanvas({
     selectedId,
+    selectedIds,
+    visibleIds,
     highlightedIds,
     onSelect,
     graph,
@@ -24,16 +28,24 @@ export default function TimelineSvgCanvas({
     isSubscriber,
 }: TimelineSvgCanvasProps) {
     const { fontRevision } = useSvgRenderContext();
-    const elements = React.useMemo(() => [...getLines(graph), ...getNodes(graph)], [graph]);
-    const selected = React.useMemo(() => (selectedId ? new Set<Id>([selectedId]) : new Set<Id>()), [selectedId]);
+    const elements = React.useMemo(
+        () => [...getLines(graph), ...getNodes(graph)].filter(element => !visibleIds || visibleIds.has(element.id)),
+        [graph, visibleIds]
+    );
+    const selected = React.useMemo(
+        () => selectedIds ?? (selectedId ? new Set<Id>([selectedId]) : new Set<Id>()),
+        [selectedId, selectedIds]
+    );
 
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+        if (e.button !== 0) return;
         onSelect(node);
     });
 
     const handleEdgePointerDown = useEvent((edge: LineId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
+        if (e.button !== 0) return;
         onSelect(edge);
     });
 

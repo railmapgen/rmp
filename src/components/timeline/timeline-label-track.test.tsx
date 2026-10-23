@@ -8,7 +8,7 @@ import { createTimelineTrackTimeScale, getTimelineTrackLayout } from './timeline
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 const timeline: TimelineDocument = {
-    version: 1,
+    version: 2,
     track: [
         { id: 'a', kind: 'pause', duration: 1, position: 'after' },
         { id: 'b', kind: 'pause', duration: 10, position: 'after' },
@@ -62,6 +62,35 @@ afterEach(() => {
 });
 
 describe('Timeline label lane', () => {
+    it('keeps timed text visible while locking its content, timing and removal', () => {
+        const onChange = vi.fn();
+        const { container } = render(
+            <ChakraProvider>
+                <TimelineLabelTrack
+                    document={timeline}
+                    timing={timing}
+                    totalWidth={totalWidth}
+                    timeScale={timeScale}
+                    onChange={onChange}
+                    readOnly
+                />
+            </ChakraProvider>
+        );
+        const clip = screen.getByRole('button', { name: 'Label: Caption' });
+        fireEvent.doubleClick(clip);
+        fireEvent.keyDown(clip, { key: 'Enter' });
+        fireEvent.keyDown(clip, { key: 'Delete' });
+        fireEvent.contextMenu(clip);
+        const lane = container.querySelector('[data-label-track]') as HTMLDivElement;
+        lane.getBoundingClientRect = () => ({ left: 0, width: 1000 }) as DOMRect;
+        capture(clip);
+        fireEvent.pointerDown(clip, { button: 0, pointerId: 1, clientX: 200 });
+        fireEvent.pointerMove(lane, { pointerId: 1, clientX: 350 });
+        fireEvent.pointerUp(lane, { pointerId: 1, clientX: 350 });
+        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(screen.queryByRole('menu')).toBeNull();
+        expect(onChange).not.toHaveBeenCalled();
+    });
     it('edits multiline text through the label-only context menu and saves once', () => {
         const onChange = vi.fn();
         const parentPointerDown = vi.fn();

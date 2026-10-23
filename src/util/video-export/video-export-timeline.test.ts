@@ -39,7 +39,7 @@ const keyframe = (id: string, x: number, y: number): TimelineEntry => ({
 const playback = (track: TimelineEntry[], speed = 1) =>
     createVideoTimelinePlayback(
         makeGraph(),
-        { version: 1, track },
+        { version: 2, track },
         new Map<LineId, number>([
             ['line_ab', 200],
             ['line_bc', 200],
@@ -112,7 +112,7 @@ describe('authored video timeline playback', () => {
             track.push(keyframe(`move-${index}`, index * 10 + 10, -index * 10 - 10));
         }
         track.push({ id: 'final-hold', kind: 'pause', position: 'after', duration: 3 });
-        const animation = createVideoTimelinePlayback(graph, { version: 1, track }, new Map(), new Map(), {
+        const animation = createVideoTimelinePlayback(graph, { version: 2, track }, new Map(), new Map(), {
             fps: 30,
             drawingSpeed: 100,
             nodeSeconds: 0.2,

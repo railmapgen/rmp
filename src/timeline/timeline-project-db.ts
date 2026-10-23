@@ -1,10 +1,13 @@
+import { TIMELINE_DOCUMENT_VERSION } from '../constants/timeline';
 import {
     makeTimelineAssetKey,
     TimelineAssetKind,
     TimelineAssetRecord,
     TimelineProjectRecord,
     TimelineProjectSummary,
+    TIMELINE_PROJECT_VERSION,
 } from './timeline-project';
+import { upgradeTimelineProject } from './timeline-project-upgrade';
 
 const DB_NAME = 'RmpTimelineDB';
 const DB_VERSION = 1;
@@ -12,6 +15,7 @@ const PROJECTS = 'projects';
 const ASSETS = 'assets';
 const META = 'meta';
 const LAST_PROJECT_ID = 'lastProjectId';
+export const makeTimelineProjectBackupKey = (id: string) => `projectUpgradeBackup:${id}`;
 
 const requestResult = <T>(request: IDBRequest<T>) =>
     new Promise<T>((resolve, reject) => {
@@ -82,12 +86,46 @@ export class TimelineProjectDB {
     }
 
     async getProject(id: string): Promise<TimelineProjectRecord | undefined> {
+        return this.enqueue(id, async () => {
+            const db = await this.getDB();
+            // Keep the original backup and upgraded project in one atomic transaction.
+            const transaction = db.transaction([PROJECTS, META], 'readwrite');
+            const done = transactionDone(transaction);
+            try {
+                const store = transaction.objectStore(PROJECTS);
+                const original = await requestResult(store.get(id) as IDBRequest<TimelineProjectRecord | undefined>);
+                if (!original) {
+                    await done;
+                    return undefined;
+                }
+                const upgraded = upgradeTimelineProject(original) as unknown as TimelineProjectRecord;
+                if (
+                    original.version !== TIMELINE_PROJECT_VERSION ||
+                    original.revision.timeline?.version !== TIMELINE_DOCUMENT_VERSION
+                ) {
+                    const meta = transaction.objectStore(META);
+                    const backupKey = makeTimelineProjectBackupKey(id);
+                    const backup = await requestResult(meta.get(backupKey));
+                    if (backup === undefined) meta.put(structuredClone(original), backupKey);
+                }
+                if (JSON.stringify(original) !== JSON.stringify(upgraded)) store.put(upgraded);
+                await done;
+                return upgraded;
+            } catch (error) {
+                try {
+                    transaction.abort();
+                } catch {
+                    /* A completed transaction cannot be aborted. */
+                }
+                await done.catch(() => undefined);
+                throw error;
+            }
+        });
+    }
+
+    async getProjectUpgradeBackup(id: string): Promise<unknown> {
         const db = await this.getDB();
-        return requestResult(
-            db.transaction(PROJECTS, 'readonly').objectStore(PROJECTS).get(id) as IDBRequest<
-                TimelineProjectRecord | undefined
-            >
-        );
+        return requestResult(db.transaction(META, 'readonly').objectStore(META).get(makeTimelineProjectBackupKey(id)));
     }
 
     async getLastProjectId(): Promise<string | undefined> {
@@ -187,6 +225,7 @@ export class TimelineProjectDB {
                 cursor.continue();
             };
             const meta = transaction.objectStore(META);
+            meta.delete(makeTimelineProjectBackupKey(id));
             const last = await requestResult(meta.get(LAST_PROJECT_ID) as IDBRequest<string | undefined>);
             if (last === id) meta.delete(LAST_PROJECT_ID);
             await transactionDone(transaction);

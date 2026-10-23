@@ -12,6 +12,7 @@ import * as lineExport from '../../util/line-export';
 import { CURRENT_VERSION } from '../../util/save';
 import i18n from '../../i18n/config';
 import { createTimelineStore, setLastProjectId, setProjects } from '../../timeline/timeline-store';
+import { timelineProjectDB } from '../../timeline/timeline-project-db';
 import TimelineProjectHome from './timeline-project-home';
 
 beforeAll(() => {
@@ -37,6 +38,39 @@ afterEach(() => {
 });
 
 describe('TimelineProjectHome', () => {
+    it.each(['Unsupported Timeline project version: 999', 'Unable to back up the original project'])(
+        'shows an opening error without opening or replacing the last project: %s',
+        async message => {
+            await i18n.changeLanguage('en');
+            const store = createTimelineStore();
+            store.dispatch(
+                setProjects([{ id: 'future', name: 'Saved project', version: 2, createdAt: 1, updatedAt: 1 }])
+            );
+            store.dispatch(setLastProjectId('previous'));
+            const getSpy = vi.spyOn(timelineProjectDB, 'getProject').mockRejectedValue(new Error(message));
+            const lastSpy = vi.spyOn(timelineProjectDB, 'setLastProjectId');
+            render(
+                <I18nextProvider i18n={i18n}>
+                    <Provider store={store}>
+                        <RmgThemeProvider>
+                            <TimelineProjectHome />
+                        </RmgThemeProvider>
+                    </Provider>
+                </I18nextProvider>
+            );
+            try {
+                fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+                expect(await screen.findByRole('alert')).toHaveTextContent(message);
+                expect(store.getState().project.active).toBeUndefined();
+                expect(store.getState().project.lastProjectId).toBe('previous');
+                expect(lastSpy).not.toHaveBeenCalled();
+            } finally {
+                getSpy.mockRestore();
+                lastSpy.mockRestore();
+            }
+        }
+    );
+
     it('shows a loading animation while current RMP line information is prepared', async () => {
         await i18n.changeLanguage('en');
         const graph = createTestLineGraph([['A', 'B']]);
@@ -123,7 +157,7 @@ describe('TimelineProjectHome', () => {
                 {
                     id: 'project-1',
                     name: 'Test project',
-                    version: 1,
+                    version: 2,
                     createdAt: 1,
                     updatedAt: 1,
                 },
@@ -170,7 +204,7 @@ describe('TimelineProjectHome', () => {
                 {
                     id: 'p1',
                     name: 'Project 1',
-                    version: 1,
+                    version: 2,
                     createdAt: 1,
                     updatedAt: 1,
                 },

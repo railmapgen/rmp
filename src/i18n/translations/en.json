@@ -1017,17 +1017,15 @@
                 "playback": "Playback",
                 "overlays": "Video labels",
                 "lineInformation": "Line information",
-                "showYear": "Show year",
-                "showYearHint": "Display the current opening year in the upper-left corner.",
-                "showLineName": "Label line names",
-                "showLineNameHint": "Display the line color, Chinese name, and English name below the year.",
-                "showLineLength": "Label line length",
                 "showLineLengthMapOnly": "Available with the geographic map enabled.",
-                "lineLengthUnit": "Length unit",
                 "savedWithProject": "Saved with this Chronicle project",
                 "done": "Done",
                 "cameraZoom": "Zoom",
-                "cameraZoomFull": "Full"
+                "cameraZoomFull": "Full",
+                    "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
+                    "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
+                    "chooseFixedResources": "Choose fixed resources",
+                    "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
             },
             "lineLabels": {
                 "title": "Line label information",
@@ -1053,7 +1051,74 @@
             "previewFailed": "Unable to load preview",
             "audioDuration": "Source duration: {{duration}} seconds",
             "audioTiming": "Edit audio timing",
-            "retryPreview": "Reload preview"
+            "retryPreview": "Reload preview",
+            "fixedResources": {
+                "title": "Fixed resources",
+                "hint": "Click a node or line section once to add it; click again to remove it.",
+                "selectedCount": "{{count}} selected",
+                "doneNoticeTitle": "Fixed resources updated",
+                "doneNotice": "Fixed resources stay visible from the first frame throughout the video. Their enter and exit clips have been removed from the track. Removing a fixed resource from this selection does not restore its old clips; you can add it to the track again.",
+                "done": "Done",
+                "previewLabel": "Fixed resource preview"
+            },
+            "overlayEditor": {
+                "editPositions": "Edit element positions",
+                "title": "Annotation layout",
+                "settingsHint": "Add, arrange and configure annotations in the preview.",
+                "hint": "Choose a module in the preview to change its settings. Use the dashed + buttons to add modules, and drag modules to reorder or move between corners.",
+                "addToRegion": "Add to {{region}}",
+                "closeCatalog": "Close module catalog",
+                "addModule": "Add module",
+                "subscriberLocked": "This corner requires a subscription. Existing modules can be moved to a free corner.",
+                "subscriptionExport": "The top-right corner requires a subscription. Move its modules to another corner or restore your subscription before exporting.",
+                "region": "Position",
+                "moveUp": "Move up",
+                "moveDown": "Move down",
+                "remove": "Remove module",
+                "timedTextHint": "Text and appearance times are controlled by the label track.",
+                "trackLocked": "Tracks are locked while editing annotation positions.",
+                "regions": {
+                    "top-left": "Top left",
+                    "top-right": "Top right",
+                    "bottom-left": "Bottom left",
+                    "bottom-right": "Bottom right"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "Date",
+                    "lineIdentity": "Line identification",
+                    "lineLength": "Line length",
+                    "minimap": "Minimap",
+                    "timedText": "Timeline text"
+                },
+                "fields": {
+                    "showMonthDay": "Date content",
+                    "dateLayout": "Date layout",
+                    "showAppearedLines": "Show previously appeared lines below",
+                    "lengthScope": "Length statistic",
+                    "unit": "Unit",
+                    "size": "Size",
+                    "fontSize": "Font size",
+                    "alignment": "Text alignment"
+                },
+                "options": {
+                    "yearOnly": "Year only",
+                    "yearMonthDay": "Year, month and day",
+                    "singleLine": "Single line",
+                    "doubleLine": "Two lines",
+                    "network": "Visible network total",
+                    "currentLine": "Visible current line",
+                    "km": "km",
+                    "mi": "mi",
+                    "small": "Small",
+                    "medium": "Medium",
+                    "large": "Large",
+                    "left": "Left",
+                    "center": "Center",
+                    "right": "Right"
+                }
+            }
         },
         "mapToggle": {
             "show": "Show geographic map",

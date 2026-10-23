@@ -1,6 +1,7 @@
 import { Id, LineId, NodeId } from './constants';
+import { getTimelineOverlayModules, type TimelineOverlayModule } from './timeline-overlays';
 
-export const TIMELINE_DOCUMENT_VERSION = 1;
+export const TIMELINE_DOCUMENT_VERSION = 2;
 
 export type TimelinePhase = 'enter' | 'exit';
 
@@ -78,20 +79,12 @@ export interface TimelineSettings {
     speedMultiplier: number;
     cameraZoom: TimelineCameraZoom;
     autoChangeStationType: boolean;
-    showYear: boolean;
-    showLineName: boolean;
-    showLineLength: boolean;
-    lineLengthUnit: TimelineLengthUnit;
 }
 
 export const DEFAULT_TIMELINE_SETTINGS: TimelineSettings = {
     speedMultiplier: 1,
     cameraZoom: 2,
     autoChangeStationType: true,
-    showYear: false,
-    showLineName: false,
-    showLineLength: false,
-    lineLengthUnit: 'km',
 };
 
 export interface TimelineDocument {
@@ -100,16 +93,25 @@ export interface TimelineDocument {
     audioTrack?: TimelineAudioEntry[];
     labelTrack?: TimelineLabelEntry[];
     settings?: TimelineSettings;
+    overlayModules?: TimelineOverlayModule[];
+    /** Drawing resources visible throughout playback, outside the enter/exit track. */
+    fixedResources?: Id[];
 }
 
 export const getTimelineSettings = (document: TimelineDocument): TimelineSettings => {
-    const settings = { ...DEFAULT_TIMELINE_SETTINGS, ...document.settings };
+    const settings = document.settings;
     return {
-        ...settings,
-        cameraZoom: isTimelineCameraZoom(settings.cameraZoom)
+        speedMultiplier:
+            typeof settings?.speedMultiplier === 'number' && Number.isFinite(settings.speedMultiplier)
+                ? Math.max(0.5, Math.min(2, settings.speedMultiplier))
+                : DEFAULT_TIMELINE_SETTINGS.speedMultiplier,
+        cameraZoom: isTimelineCameraZoom(settings?.cameraZoom)
             ? settings.cameraZoom
             : DEFAULT_TIMELINE_SETTINGS.cameraZoom,
-        lineLengthUnit: settings.lineLengthUnit === 'mi' ? 'mi' : 'km',
+        autoChangeStationType:
+            typeof settings?.autoChangeStationType === 'boolean'
+                ? settings.autoChangeStationType
+                : DEFAULT_TIMELINE_SETTINGS.autoChangeStationType,
     };
 };
 
@@ -117,6 +119,8 @@ export const createEmptyTimelineDocument = (): TimelineDocument => ({
     version: TIMELINE_DOCUMENT_VERSION,
     track: [],
     settings: { ...DEFAULT_TIMELINE_SETTINGS },
+    overlayModules: getTimelineOverlayModules({}),
+    fixedResources: [],
 });
 
 export const isNodeTimelineEntry = (id: Id): id is NodeId => !id.startsWith('line_');

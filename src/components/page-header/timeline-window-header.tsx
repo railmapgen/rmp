@@ -83,6 +83,10 @@ export default function TimelineWindowHeader() {
     const { t } = useTranslation();
     const dispatch = useTimelineDispatch();
     const active = useTimelineSelector(state => state.project.active);
+    const fixedResourceEditing = useTimelineSelector(state => state.runtime.fixedResourceEditing);
+    const editingLocked = useTimelineSelector(
+        state => state.runtime.annotationEditing || state.runtime.fixedResourceEditing
+    );
     const canUndo = useTimelineSelector(state => state.project.past.length > 0);
     const canRedo = useTimelineSelector(state => state.project.future.length > 0);
     const runtimeViewport = useTimelineSelector(state => state.runtime.viewport);
@@ -98,6 +102,20 @@ export default function TimelineWindowHeader() {
     const [pendingSync, setPendingSync] = React.useState<PendingTimelineSync>();
     const [syncBusy, setSyncBusy] = React.useState(false);
     const syncBusyRef = React.useRef(false);
+    const editingRef = React.useRef(editingLocked);
+    const fixedEditingRef = React.useRef(fixedResourceEditing);
+    fixedEditingRef.current = fixedResourceEditing;
+    const editingGeneration = React.useRef(0);
+    if (editingRef.current !== editingLocked) editingGeneration.current++;
+    editingRef.current = editingLocked;
+    React.useEffect(() => {
+        if (!editingLocked) return;
+        setPendingSync(undefined);
+        setFilesMenuPage('root');
+    }, [editingLocked]);
+    React.useEffect(() => {
+        if (fixedResourceEditing) setIsRenameOpen(false);
+    }, [fixedResourceEditing]);
     const viewportWidth = windowWidth ?? Number.POSITIVE_INFINITY;
     const isCompactHeaderText = viewportWidth < COMPACT_HEADER_TEXT_WIDTH;
     const shouldStackHeader = viewportWidth < STACKED_HEADER_WIDTH;
@@ -123,13 +141,14 @@ export default function TimelineWindowHeader() {
     };
 
     const openRename = () => {
-        if (!active) return;
+        if (fixedEditingRef.current || !active) return;
         setRenameName(active.name);
         setIsRenameOpen(true);
     };
 
     const handleRename = async () => {
-        if (!active) return;
+        if (fixedEditingRef.current || !active) return;
+        const generation = editingGeneration.current;
         const name = renameName.trim();
         if (!name) return;
         if (name === active.name) {
@@ -138,6 +157,7 @@ export default function TimelineWindowHeader() {
         }
         try {
             const renamed = await timelineProjectDB.renameProject(active.id, name);
+            if (fixedEditingRef.current || generation !== editingGeneration.current) return;
             dispatch(setProjectName(renamed.name));
             await refreshTimelineProjects();
             setIsRenameOpen(false);
@@ -157,12 +177,14 @@ export default function TimelineWindowHeader() {
     };
 
     const handleSync = async (source: () => Promise<string>) => {
-        if (!active || syncBusyRef.current) return;
+        if (editingRef.current || !active || syncBusyRef.current) return;
+        const generation = editingGeneration.current;
         syncBusyRef.current = true;
         setSyncBusy(true);
         dispatch(setError(undefined));
         try {
             const prepared = await prepareTimelineProjectSync(await source(), active.revision);
+            if (editingRef.current || generation !== editingGeneration.current) return;
             setPendingSync(prepared);
         } catch (cause) {
             dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
@@ -173,11 +195,13 @@ export default function TimelineWindowHeader() {
     };
 
     const confirmSync = async (applyLineInformation: boolean) => {
-        if (!active || !pendingSync || syncBusyRef.current) return;
+        if (editingRef.current || !active || !pendingSync || syncBusyRef.current) return;
+        const generation = editingGeneration.current;
         syncBusyRef.current = true;
         setSyncBusy(true);
         try {
             if (applyLineInformation) await yieldLineCalculation();
+            if (editingRef.current || generation !== editingGeneration.current) return;
             const revision = {
                 ...pendingSync.revision,
                 timeline: applyLineInformation
@@ -186,6 +210,7 @@ export default function TimelineWindowHeader() {
             };
             const next = { ...active, revision, updatedAt: Date.now() };
             await timelineProjectDB.saveProjectWithAssets(next, pendingSync.assets);
+            if (editingRef.current || generation !== editingGeneration.current) return;
             dispatch(commitRevision(revision));
             dispatch(
                 setViewport({
@@ -266,6 +291,7 @@ export default function TimelineWindowHeader() {
                                                         variant="ghost"
                                                         fontWeight="normal"
                                                         leftIcon={<MdSync />}
+                                                        isDisabled={editingLocked}
                                                         rightIcon={<MdChevronRight />}
                                                         onClick={() => setFilesMenuPage('importRmp')}
                                                     >
@@ -279,6 +305,7 @@ export default function TimelineWindowHeader() {
                                                         variant="ghost"
                                                         fontWeight="normal"
                                                         leftIcon={<MdEdit />}
+                                                        isDisabled={fixedResourceEditing}
                                                         onClick={() => {
                                                             closeFilesMenu();
                                                             openRename();
@@ -345,7 +372,7 @@ export default function TimelineWindowHeader() {
                                 type="file"
                                 accept=".json,application/json"
                                 hidden
-                                disabled={syncBusy}
+                                disabled={editingLocked || syncBusy}
                                 onChange={event => {
                                     const file = event.target.files?.[0];
                                     if (file) void handleSync(() => file.text());
@@ -383,7 +410,7 @@ export default function TimelineWindowHeader() {
                                 variant="ghost"
                                 aria-label={t('header.undo')}
                                 icon={<MdUndo />}
-                                isDisabled={!canUndo}
+                                isDisabled={editingLocked || !canUndo}
                                 onClick={() => dispatch(undo())}
                             />
                             <IconButton
@@ -391,7 +418,7 @@ export default function TimelineWindowHeader() {
                                 variant="ghost"
                                 aria-label={t('header.redo')}
                                 icon={<MdRedo />}
-                                isDisabled={!canRedo}
+                                isDisabled={editingLocked || !canRedo}
                                 onClick={() => dispatch(redo())}
                             />
                             <IconButton

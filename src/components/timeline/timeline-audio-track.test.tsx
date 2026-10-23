@@ -24,7 +24,7 @@ const preparePointerCapture = (element: HTMLDivElement) => {
     element.releasePointerCapture = vi.fn();
 };
 const timeline: TimelineDocument = {
-    version: 1,
+    version: 2,
     track: [],
     audioTrack: [
         {
@@ -94,6 +94,28 @@ afterEach(() => {
 });
 
 describe('Timeline audio seconds editor', () => {
+    it('cancels an active audio drag when layout editing locks the track', async () => {
+        const onChange = vi.fn();
+        const { container, rerender } = renderTrack({ onChange });
+        await waitFor(() => expect(mocks.getAudio).toHaveBeenCalledOnce());
+        const lane = container.querySelector('[data-audio-track]') as HTMLDivElement;
+        lane.getBoundingClientRect = () => ({ left: 0, width: 1000 }) as DOMRect;
+        const handle = container.querySelector('[data-audio-handle="start"]') as HTMLDivElement;
+        preparePointerCapture(handle);
+        fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 62.5 });
+        fireEvent.pointerMove(lane, { pointerId: 1, clientX: 112.5 });
+        rerender(
+            <ChakraProvider>
+                <TimelineAudioTrack {...props} onChange={onChange} readOnly />
+            </ChakraProvider>
+        );
+        fireEvent.pointerUp(lane, { pointerId: 1, clientX: 112.5 });
+        expect(onChange).not.toHaveBeenCalled();
+        expect(
+            screen.getByRole('button', { name: 'header.timelinePage.audioTiming: song.wav' }).hasAttribute('disabled')
+        ).toBe(true);
+        expect(container.querySelector('input[type="file"]')!.hasAttribute('disabled')).toBe(true);
+    });
     it('drags a handle continuously in seconds rather than snapping to visual cards', async () => {
         const onChange = vi.fn();
         const { container } = renderTrack({ onChange });
@@ -281,5 +303,36 @@ describe('Timeline audio seconds editor', () => {
         expect(restored.blobId).not.toBe('old-blob');
         expect(restored).toMatchObject({ name: 'restored.wav', startTime: 1.25, endTime: 8.75 });
         expect(mocks.saveAudio).toHaveBeenCalledWith(restored.blobId, expect.any(File), 'restored.wav');
+    });
+
+    it('discards an audio restoration that spans entering and leaving layout editing', async () => {
+        mocks.getAudio.mockResolvedValue(undefined);
+        let completeSave!: () => void;
+        mocks.saveAudio.mockImplementationOnce(
+            () =>
+                new Promise<void>(resolve => {
+                    completeSave = resolve;
+                })
+        );
+        const onChange = vi.fn();
+        const { container, rerender } = renderTrack({ onChange });
+        await screen.findByText('header.timelinePage.audioMissing');
+        fireEvent.click(container.querySelector('[title="song.wav"]')!);
+        fireEvent.change(container.querySelector('input[type="file"]')!, {
+            target: { files: [new File(['sound'], 'restored.wav', { type: 'audio/wav' })] },
+        });
+        expect(mocks.saveAudio).toHaveBeenCalledOnce();
+        rerender(
+            <ChakraProvider>
+                <TimelineAudioTrack {...props} onChange={onChange} readOnly />
+            </ChakraProvider>
+        );
+        rerender(
+            <ChakraProvider>
+                <TimelineAudioTrack {...props} onChange={onChange} />
+            </ChakraProvider>
+        );
+        await act(async () => completeSave());
+        expect(onChange).not.toHaveBeenCalled();
     });
 });

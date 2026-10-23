@@ -51,7 +51,7 @@ vi.mock('react-i18next', async importOriginal => {
 });
 
 const defaultProps = {
-    document: { version: 1 as const, track: [] },
+    document: { version: 2 as const, track: [] },
     missingNodeCount: 0,
     missingEdgeCount: 0,
     isCoverageComplete: true,
@@ -77,11 +77,75 @@ describe('TimelineTrackPanel', () => {
         vi.clearAllMocks();
     });
 
+    it('marks fixed resources as already added rather than offering an ineffective insertion', () => {
+        const onDocumentChange = vi.fn();
+        renderPanel({
+            selectedId: 'stn_fixed',
+            document: { version: 2, track: [], fixedResources: ['stn_fixed'] },
+            onDocumentChange,
+        });
+        const add = screen.getByRole('button', { name: 'header.timelinePage.alreadyAdded' });
+        expect(add.hasAttribute('disabled')).toBe(true);
+        fireEvent.click(add);
+        expect(onDocumentChange).not.toHaveBeenCalled();
+    });
+
+    it('locks all track mutations while preserving seeking, playback, and cursor controls', () => {
+        const onDocumentChange = vi.fn();
+        const onSeek = vi.fn();
+        const onCursorChange = vi.fn();
+        const onTogglePlayback = vi.fn();
+        const { container } = renderPanel({
+            readOnly: true,
+            selectedId: 'stn_c',
+            document: {
+                version: 2,
+                track: [
+                    { id: 'a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+                    { id: 'pause', kind: 'pause', position: 'after', duration: 2 },
+                ],
+                labelTrack: [{ id: 'text', kind: 'label', text: 'Caption', startSlot: 0, endSlot: 2 }],
+                audioTrack: [{ id: 'music', kind: 'audio', name: 'Music', blobId: 'blob', startSlot: 0, endSlot: 2 }],
+            },
+            timing: { duration: 20, cursorTimes: [0, 10, 20] },
+            playbackTime: 5,
+            onDocumentChange,
+            onSeek,
+            onCursorChange,
+            onTogglePlayback,
+        });
+        expect(screen.getByRole('button', { name: 'Add selected' }).hasAttribute('disabled')).toBe(true);
+        expect(screen.getByRole('button', { name: 'header.timelinePage.showAnimation' }).hasAttribute('disabled')).toBe(
+            true
+        );
+        fireEvent.contextMenu(container.querySelector('[data-timeline-card]')!);
+        expect(screen.queryByText('header.timelinePage.toggleAnimation')).toBeNull();
+        const label = screen.getByRole('button', { name: 'Label: Caption' });
+        fireEvent.doubleClick(label);
+        fireEvent.keyDown(label, { key: 'Delete' });
+        expect(screen.queryByRole('dialog')).toBeNull();
+        expect(container.querySelector('[data-timeline-locked-glass]')).not.toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'header.timelinePage.playPreview' }));
+        expect(onTogglePlayback).toHaveBeenCalledOnce();
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'header.timelinePage.playbackPosition' }), {
+            key: 'ArrowRight',
+        });
+        expect(onSeek).toHaveBeenLastCalledWith(5.01);
+        fireEvent.click(container.querySelectorAll('[data-timeline-cursor]')[1]);
+        expect(onCursorChange).toHaveBeenLastCalledWith(1);
+        const ruler = container.querySelector('[data-timeline-ruler]') as HTMLDivElement;
+        ruler.getBoundingClientRect = () => ({ left: 0, width: 1000 }) as DOMRect;
+        ruler.setPointerCapture = vi.fn();
+        fireEvent.pointerDown(ruler, { button: 0, pointerId: 2, clientX: 500 });
+        expect(onSeek.mock.calls.length).toBeGreaterThan(1);
+        expect(onDocumentChange).not.toHaveBeenCalled();
+    });
+
     it('keeps labels visible and editable before visual entries are added', () => {
         const onDocumentChange = vi.fn();
         const { container } = renderPanel({
             document: {
-                version: 1,
+                version: 2,
                 track: [],
                 labelTrack: [{ id: 'label', kind: 'label', text: 'Caption', startSlot: 0, endSlot: 1 }],
             },
@@ -102,7 +166,7 @@ describe('TimelineTrackPanel', () => {
 
     it('keeps cached card actions current after callback, document and selection changes', () => {
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'b', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
@@ -164,7 +228,7 @@ describe('TimelineTrackPanel', () => {
 
     it('reorders cached cards on drag and saves through the latest callback', () => {
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: ['a', 'b', 'c'].map(id => ({
                 id,
                 kind: 'node',
@@ -190,7 +254,7 @@ describe('TimelineTrackPanel', () => {
 
     it('moves every selected card together while keeping their relative order', () => {
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: ['a', 'b', 'c', 'd'].map(id => ({
                 id,
                 kind: 'node',
@@ -220,7 +284,7 @@ describe('TimelineTrackPanel', () => {
 
     it('keeps range selection and context actions live after playback updates', () => {
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: ['a', 'b', 'c'].map(id => ({
                 id,
                 kind: 'node',
@@ -286,7 +350,7 @@ describe('TimelineTrackPanel', () => {
         const onCursorChange = vi.fn();
         renderPanel({
             document: {
-                version: 1,
+                version: 2,
                 track: [
                     { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                     { id: 'clip_b', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
@@ -336,7 +400,7 @@ describe('TimelineTrackPanel', () => {
         const onSelectEntry = vi.fn();
         const { container } = renderPanel({
             document: {
-                version: 1,
+                version: 2,
                 track: [{ id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true }],
             },
             timing: { duration: 20, cursorTimes: [0, 20] },
@@ -372,7 +436,7 @@ describe('TimelineTrackPanel', () => {
         const onSeek = vi.fn();
         const { container } = renderPanel({
             document: {
-                version: 1,
+                version: 2,
                 track: [
                     { id: 'a', kind: 'pause', duration: 1, position: 'after' },
                     { id: 'b', kind: 'pause', duration: 10, position: 'after' },
@@ -407,7 +471,7 @@ describe('TimelineTrackPanel', () => {
         const onDocumentChange = vi.fn();
         const onCursorChange = vi.fn();
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'enter_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 },
@@ -431,7 +495,7 @@ describe('TimelineTrackPanel', () => {
     it('opens card scale popover and adjusts card sizes with the slider and zoom buttons', () => {
         const onCardWidthChange = vi.fn();
         const timelineDoc: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'b', kind: 'pause', duration: 1, position: 'after' },

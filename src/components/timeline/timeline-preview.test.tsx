@@ -4,6 +4,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { createEmptyTimelineDocument } from '../../constants/timeline';
+import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { render } from '../../test-utils';
 import { videoPreviewDefaultOptions } from '../../util/video-export/video-export';
@@ -15,6 +16,9 @@ const mocks = vi.hoisted(() => ({
     renderPreviewFrame: vi.fn(),
     dispose: vi.fn(),
     setLabelTrack: vi.fn(),
+    setOverlayModules: vi.fn(),
+    setOverlayEditing: vi.fn(),
+    getOverlayLayout: vi.fn(() => []),
     subscribeLayoutInvalidation: vi.fn(),
     unsubscribeLayout: vi.fn(),
 }));
@@ -72,11 +76,24 @@ describe('TimelinePreview video frames', () => {
             renderPreviewFrame: mocks.renderPreviewFrame,
             dispose: mocks.dispose,
             setLabelTrack: mocks.setLabelTrack,
+            setOverlayModules: mocks.setOverlayModules,
+            setOverlayEditing: mocks.setOverlayEditing,
+            getOverlayLayout: mocks.getOverlayLayout,
             subscribeLayoutInvalidation: mocks.subscribeLayoutInvalidation,
         });
     });
 
     afterEach(() => vi.unstubAllGlobals());
+
+    it('prepares fixed-only documents and rebuilds when the fixed selection changes', async () => {
+        const fixed = { ...createEmptyTimelineDocument(), fixedResources: ['stn_a' as const] };
+        const { container, rerender } = render(<TimelinePreview {...props} document={fixed} />);
+        await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
+        expect(mocks.prepare.mock.calls[0][1]).toMatchObject({ track: [], fixedResources: ['stn_a'] });
+        rerender(<TimelinePreview {...props} document={{ ...fixed, fixedResources: ['stn_b'] }} />);
+        await waitFor(() => expect(mocks.prepare).toHaveBeenCalledTimes(2));
+        expect(mocks.prepare.mock.calls[1][1].fixedResources).toEqual(['stn_b']);
+    });
 
     it('rebuilds video geometry when Export access changes', async () => {
         const { container, rerender } = render(<TimelinePreview {...props} />);
@@ -228,6 +245,39 @@ describe('TimelinePreview video frames', () => {
         expect(mocks.prepare.mock.calls[0][4].getImage).toBe(getImage);
     });
 
+    it('edits module layout at the current time without rebuilding geometry or timing', async () => {
+        const onTimingChange = vi.fn();
+        const { container, rerender } = render(<TimelinePreview {...props} time={4} onTimingChange={onTimingChange} />);
+        await waitFor(() => expect(container.querySelector('svg')).toBe(scene));
+        const timingCalls = onTimingChange.mock.calls.length;
+        const date = createTimelineOverlayModule('date', 'bottom-right', 'date');
+        rerender(
+            <TimelinePreview
+                {...props}
+                time={4}
+                document={{ ...timeline, overlayModules: [date] }}
+                overlayEditing
+                onTimingChange={onTimingChange}
+            />
+        );
+        await waitFor(() => expect(mocks.setOverlayModules).toHaveBeenLastCalledWith([date]));
+        expect(mocks.setOverlayEditing).toHaveBeenLastCalledWith(true);
+        expect(mocks.prepare).toHaveBeenCalledOnce();
+        expect(onTimingChange).toHaveBeenCalledTimes(timingCalls);
+        expect(container.querySelector('svg')).toBe(scene);
+        expect(scene.getAttribute('data-time')).toBe('4');
+    });
+
+    it('offers all four region entries and selectable placeholders before a visual track exists', () => {
+        const { container } = render(
+            <TimelinePreview {...props} document={createEmptyTimelineDocument()} overlayEditing />
+        );
+        expect(container.querySelectorAll('[data-overlay-add-region]')).toHaveLength(4);
+        expect(container.querySelector('[data-overlay-add-region="top-right"]')).toBeDisabled();
+        expect(container.querySelector('[data-overlay-handle]')).not.toBeNull();
+        expect(mocks.prepare).not.toHaveBeenCalled();
+    });
+
     it('updates labels at the current frame without rebuilding geometry or resetting playback timing', async () => {
         const onTimingChange = vi.fn();
         const { container, rerender } = render(<TimelinePreview {...props} time={2} onTimingChange={onTimingChange} />);
@@ -312,6 +362,31 @@ describe('TimelinePreview video frames', () => {
         fireEvent.pointerMove(host, { pointerId: 1, clientX: 60, clientY: 80 });
         fireEvent.pointerUp(host, { pointerId: 1, clientX: 60, clientY: 80 });
         expect(onKeyframeMove).toHaveBeenCalledWith('key', 40, 60);
+    });
+
+    it('cancels an active keyframe drag when annotation editing begins and continues rendering', async () => {
+        const onKeyframeMove = vi.fn();
+        const keyframe = { id: 'key', kind: 'keyframe' as const, refId: 'stn_a' as const, x: 10, y: 20 };
+        const { rerender } = render(
+            <TimelinePreview {...props} editableKeyframe={keyframe} onKeyframeMove={onKeyframeMove} />
+        );
+        await waitFor(() => expect(scene.parentElement).not.toBeNull());
+        scene.getScreenCTM = () => ({ inverse: () => ({}) }) as DOMMatrix;
+        scene.createSVGPoint = () => {
+            const point = { x: 0, y: 0, matrixTransform: () => ({ x: point.x, y: point.y }) };
+            return point as unknown as DOMPoint;
+        };
+        const host = scene.parentElement!;
+        host.setPointerCapture = vi.fn();
+        host.hasPointerCapture = () => true;
+        host.releasePointerCapture = vi.fn();
+        fireEvent.pointerDown(scene.querySelector('circle')!, { button: 0, pointerId: 1, clientX: 0, clientY: 0 });
+        fireEvent.pointerMove(host, { pointerId: 1, clientX: 30, clientY: 40 });
+        rerender(<TimelinePreview {...props} time={2} overlayEditing onKeyframeMove={onKeyframeMove} />);
+        await waitFor(() => expect(scene.getAttribute('data-time')).toBe('2'));
+        expect(scene.querySelector('g')?.getAttribute('transform')).toBe('translate(10,20)');
+        fireEvent.pointerUp(host, { pointerId: 1 });
+        expect(onKeyframeMove).not.toHaveBeenCalled();
     });
 
     it('restores a cancelled keyframe drag even when playback stays in the cached frame', async () => {

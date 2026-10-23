@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { getTimelineSettings } from '../../constants/timeline';
+import { hasSubscriberOnlyTimelineOverlays } from '../../constants/timeline-overlays';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
 import { setError, setVideoOptions, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
 import { exportVideo, VideoExportOptions, VideoExportResolution } from '../../util/video-export/video-export';
@@ -62,10 +63,16 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const { t } = useTranslation();
     const mapEnabled = active.revision.mapEnabled;
     const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
-    const unavailableLineCount = React.useMemo(
-        () => getUnavailableLineIds(graph, mapEnabled, isSubscriber).size,
-        [graph, mapEnabled, isSubscriber]
-    );
+    const hasLockedOverlays = !isSubscriber && hasSubscriberOnlyTimelineOverlays(timeline);
+    const unavailableLineCount = React.useMemo(() => {
+        const unavailable = getUnavailableLineIds(graph, mapEnabled, isSubscriber);
+        if (!timeline.fixedResources?.length) return unavailable.size;
+        const renderedIds = new Set([
+            ...timeline.fixedResources,
+            ...timeline.track.flatMap(entry => (entry.kind === 'edge' ? [entry.refId] : [])),
+        ]);
+        return [...unavailable].filter(id => renderedIds.has(id)).length;
+    }, [graph, mapEnabled, isSubscriber, timeline.fixedResources, timeline.track]);
     const [isTransparent, setIsTransparent] = React.useState(savedVideoOptions?.isTransparent ?? false);
     const [isSystemFontsOnly, setIsSystemFontsOnly] = React.useState(savedVideoOptions?.isSystemFontsOnly ?? false);
 
@@ -104,7 +111,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     };
 
     const handleVideoExport = async () => {
-        if (unavailableLineCount > 0 || exportController.current) return;
+        if (unavailableLineCount > 0 || hasLockedOverlays || exportController.current) return;
         const controller = new AbortController();
         exportController.current = controller;
         setIsVideoGenerating(true);
@@ -126,10 +133,6 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 resolution: videoResolution,
                 isTransparent,
                 autoChangeStationType: settings.autoChangeStationType,
-                showYear: settings.showYear,
-                showLineName: settings.showLineName,
-                showLineLength: settings.showLineLength,
-                lineLengthUnit: settings.lineLengthUnit,
                 isSystemFontsOnly,
                 quality: videoQuality,
                 hideWatermark: isAttachSelected,
@@ -252,6 +255,14 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                 <ModalCloseButton isDisabled={isVideoGenerating} />
 
                 <ModalBody>
+                    {hasLockedOverlays && (
+                        <Alert status="warning" mb={4}>
+                            <AlertIcon />
+                            <AlertDescription>
+                                {t('header.timelinePage.overlayEditor.subscriptionExport')}
+                            </AlertDescription>
+                        </Alert>
+                    )}
                     {unavailableLineCount > 0 && (
                         <Alert status="warning" mb={4}>
                             <AlertIcon />
@@ -383,8 +394,12 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                         )}
                         <Box>
                             <Tooltip
-                                label={t('header.download.videoExport.unavailableLines')}
-                                isDisabled={unavailableLineCount === 0}
+                                label={t(
+                                    hasLockedOverlays
+                                        ? 'header.timelinePage.overlayEditor.subscriptionExport'
+                                        : 'header.download.videoExport.unavailableLines'
+                                )}
+                                isDisabled={unavailableLineCount === 0 && !hasLockedOverlays}
                                 hasArrow
                             >
                                 <span>
@@ -393,7 +408,11 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                                         colorScheme="teal"
                                         variant="outline"
                                         size="sm"
-                                        isDisabled={!isTermsAndConditionsSelected || unavailableLineCount > 0}
+                                        isDisabled={
+                                            !isTermsAndConditionsSelected ||
+                                            unavailableLineCount > 0 ||
+                                            hasLockedOverlays
+                                        }
                                         isLoading={isVideoGenerating}
                                         onClick={handleVideoExport}
                                     >

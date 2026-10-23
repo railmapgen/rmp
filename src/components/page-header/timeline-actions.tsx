@@ -31,12 +31,24 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
     const { t } = useTranslation();
     const dispatch = useTimelineDispatch();
     const timeline = useTimelineSelector(state => state.project.active!.revision.timeline);
+    const editingLocked = useTimelineSelector(
+        state => state.runtime.annotationEditing || state.runtime.fixedResourceEditing
+    );
     const selected = useTimelineSelector(state => state.runtime.selected);
     const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
     const { graph, saveAudio } = useTimelineProjectContext();
     const audioInputRef = React.useRef<HTMLInputElement>(null);
     const insertMenu = useDisclosure();
     const editMenu = useDisclosure();
+    const editingRef = React.useRef(editingLocked);
+    const editingGeneration = React.useRef(0);
+    if (editingRef.current !== editingLocked) editingGeneration.current++;
+    editingRef.current = editingLocked;
+    React.useEffect(() => {
+        if (!editingLocked) return;
+        insertMenu.onClose();
+        editMenu.onClose();
+    }, [editingLocked, insertMenu.onClose, editMenu.onClose]);
 
     const selectedElementId = React.useMemo(() => {
         if (selected.size !== 1) return undefined;
@@ -69,14 +81,14 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
     );
 
     const handleInsertKeyframe = () => {
-        if (!selectedNodeId) return;
+        if (editingRef.current || !selectedNodeId) return;
 
         const { document, cursor } = insertKeyframeEntry(timeline, graph, selectedNodeId, timelineCursor);
         dispatch(replaceTimeline(document));
         dispatch(setCursor(cursor));
     };
     const handleInsertExit = () => {
-        if (!selectedElementId) return;
+        if (editingRef.current || !selectedElementId) return;
 
         const { document, cursor } = insertTimelineExitEntry(timeline, selectedElementId, timelineCursor);
         if (document === timeline) return;
@@ -84,12 +96,13 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
         dispatch(setCursor(cursor));
     };
     const handleInsertPause = (position: 'before' | 'after') => {
+        if (editingRef.current) return;
         const { document, cursor } = insertTimelinePause(timeline, position, timelineCursor);
         dispatch(replaceTimeline(document));
         dispatch(setCursor(cursor));
     };
     const handleToggleSelectedNodeAnimation = () => {
-        if (!canAdjustAnimation) return;
+        if (editingRef.current || !canAdjustAnimation) return;
         const showAnimation = !areSelectedNodeAnimationsShown;
         const document = {
             ...timeline,
@@ -102,9 +115,11 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
     const handleAudio = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         event.target.value = '';
-        if (!file) return;
+        if (editingRef.current || !file) return;
+        const generation = editingGeneration.current;
         const id = `audio_${nanoid(12)}`;
         await saveAudio(id, file, file.name);
+        if (editingRef.current || generation !== editingGeneration.current) return;
         dispatch(
             replaceTimeline({
                 ...timeline,
@@ -127,12 +142,13 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
         <>
             <Popover
                 isOpen={insertMenu.isOpen}
-                onOpen={insertMenu.onOpen}
+                onOpen={() => !editingRef.current && insertMenu.onOpen()}
                 onClose={insertMenu.onClose}
                 placement="bottom-start"
             >
                 <PopoverTrigger>
                     <Button
+                        isDisabled={editingLocked}
                         size="sm"
                         variant="ghost"
                         leftIcon={<MdAdd />}
@@ -153,6 +169,7 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
                                     fontWeight="normal"
                                     leftIcon={<MdLabel />}
                                     onClick={() => {
+                                        if (editingRef.current) return;
                                         insertMenu.onClose();
                                         dispatch(
                                             replaceTimeline(insertTimelineLabel(timeline, 'Label', timelineCursor))
@@ -233,15 +250,23 @@ export default function TimelineActions({ compact = false }: TimelineActionsProp
                     </PopoverContent>
                 </Portal>
             </Popover>
-            <input ref={audioInputRef} type="file" accept="audio/*" hidden onChange={handleAudio} />
+            <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                hidden
+                disabled={editingLocked}
+                onChange={handleAudio}
+            />
             <Popover
                 isOpen={editMenu.isOpen}
-                onOpen={editMenu.onOpen}
+                onOpen={() => !editingRef.current && editMenu.onOpen()}
                 onClose={editMenu.onClose}
                 placement="bottom-start"
             >
                 <PopoverTrigger>
                     <Button
+                        isDisabled={editingLocked}
                         size="sm"
                         variant="ghost"
                         leftIcon={<MdEdit />}

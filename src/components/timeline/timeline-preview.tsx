@@ -2,12 +2,22 @@ import { Alert, AlertIcon, Box, Button, Flex, Spinner, Text } from '@chakra-ui/r
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { TimelineDocument, TimelineKeyframeEntry, TimelineLabelEntry } from '../../constants/timeline';
+import {
+    getTimelineOverlayModules,
+    TimelineOverlayModule,
+    TimelineOverlayRegion,
+} from '../../constants/timeline-overlays';
 import { MapStyle } from '../../map/map-style';
 import { TimelineGraph } from '../../timeline/timeline-project-context';
 import { TextLanguage } from '../../util/fonts';
 import { TimelinePlaybackTiming } from '../../util/timeline-playback';
 import { createVideoPreviewRenderer, VideoExportOptions } from '../../util/video-export/video-export';
+import {
+    getEmptyTimelineOverlayLayout,
+    type TimelineOverlayLayoutItem,
+} from '../../util/video-export/video-overlay-modules';
 import { fitVideoPreviewFrame } from './timeline-preview-layout';
+import TimelineOverlayCanvasControls from './timeline-overlay-canvas-controls';
 
 interface TimelinePreviewProps {
     document: TimelineDocument;
@@ -24,6 +34,14 @@ interface TimelinePreviewProps {
     getImage?: (id: string) => Promise<string | undefined>;
     editableKeyframe?: TimelineKeyframeEntry;
     onKeyframeMove: (entryId: string, x: number, y: number) => void;
+    overlayEditing?: boolean;
+    selectedOverlayModuleId?: string;
+    onSelectOverlayModule?: (id: string) => void;
+    onAddOverlayModule?: (region: TimelineOverlayRegion) => void;
+    onMoveOverlayModule?: (id: string, region: TimelineOverlayRegion, index: number) => void;
+    previewOverlayModules?: readonly TimelineOverlayModule[];
+    onPreviewOverlayModuleMove?: (id: string, region: TimelineOverlayRegion, index: number) => void;
+    onCancelOverlayModuleMove?: () => void;
 }
 
 /** Display the same prepared SVG frames that the video encoder consumes. */
@@ -42,8 +60,17 @@ export default function TimelinePreview({
     getImage,
     editableKeyframe,
     onKeyframeMove,
+    overlayEditing = false,
+    selectedOverlayModuleId,
+    onSelectOverlayModule,
+    onAddOverlayModule,
+    onMoveOverlayModule,
+    previewOverlayModules,
+    onPreviewOverlayModuleMove,
+    onCancelOverlayModuleMove,
 }: TimelinePreviewProps) {
     const { t } = useTranslation();
+    const hasVisualResources = timeline.track.length > 0 || (timeline.fixedResources?.length ?? 0) > 0;
     const containerRef = React.useRef<HTMLDivElement>(null);
     const latestTime = React.useRef(time);
     latestTime.current = time;
@@ -51,6 +78,18 @@ export default function TimelinePreview({
     const latestLabels = React.useRef(timeline.labelTrack);
     latestLabels.current = timeline.labelTrack;
     const updateLabelsRef = React.useRef<(labels: readonly TimelineLabelEntry[]) => void>(() => {});
+    const overlayKey = JSON.stringify(previewOverlayModules ?? getTimelineOverlayModules(timeline));
+    const modules = React.useMemo(
+        () => [...(previewOverlayModules ?? getTimelineOverlayModules(timeline))],
+        [overlayKey]
+    );
+    const latestModules = React.useRef(modules);
+    latestModules.current = modules;
+    const latestEditing = React.useRef(overlayEditing);
+    latestEditing.current = overlayEditing;
+    const updateModulesRef = React.useRef<(modules: readonly TimelineOverlayModule[]) => void>(() => {});
+    const updateEditingRef = React.useRef<(editing: boolean) => void>(() => {});
+    const [overlayLayout, setOverlayLayout] = React.useState<TimelineOverlayLayoutItem[]>([]);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string>();
     const [reload, setReload] = React.useState(0);
@@ -78,11 +117,22 @@ export default function TimelinePreview({
     }, []);
     // Audio edits do not rebuild the visual schedule or its geometry.
     const visualKey = React.useMemo(
-        () => JSON.stringify({ version: timeline.version, track: timeline.track, settings: timeline.settings }),
-        [timeline.version, timeline.track, timeline.settings]
+        () =>
+            JSON.stringify({
+                version: timeline.version,
+                track: timeline.track,
+                fixedResources: timeline.fixedResources,
+                settings: timeline.settings,
+            }),
+        [timeline.version, timeline.track, timeline.fixedResources, timeline.settings]
     );
     const visualDocument = React.useMemo(
-        () => ({ version: timeline.version, track: timeline.track, settings: timeline.settings }),
+        () => ({
+            version: timeline.version,
+            track: timeline.track,
+            fixedResources: timeline.fixedResources,
+            settings: timeline.settings,
+        }),
         [visualKey]
     );
 
@@ -147,6 +197,10 @@ export default function TimelinePreview({
                         pending = true;
                         continue;
                     }
+                    const nextLayout = renderer.getOverlayLayout?.() ?? [];
+                    setOverlayLayout(current =>
+                        JSON.stringify(current) === JSON.stringify(nextLayout) ? current : nextLayout
+                    );
                     const container = containerRef.current;
                     if (container && frame.parentNode !== container) {
                         frame.removeAttribute('id');
@@ -174,7 +228,15 @@ export default function TimelinePreview({
             renderer?.setLabelTrack(labels);
             void renderLatest(true);
         };
-        if (visualDocument.track.length === 0) {
+        updateModulesRef.current = nextModules => {
+            renderer?.setOverlayModules?.(nextModules);
+            void renderLatest(true);
+        };
+        updateEditingRef.current = editing => {
+            renderer?.setOverlayEditing?.(editing);
+            void renderLatest(true);
+        };
+        if (visualDocument.track.length === 0 && !visualDocument.fixedResources?.length) {
             containerRef.current?.replaceChildren();
             setLoading(false);
             onTimingChange({ duration: 0, cursorTimes: [0] });
@@ -206,6 +268,8 @@ export default function TimelinePreview({
                 onTimingChange({ duration: prepared.duration, cursorTimes: prepared.cursorTimes });
                 unsubscribeLayout = prepared.subscribeLayoutInvalidation?.(() => void renderLatest(true));
                 prepared.setLabelTrack(latestLabels.current ?? []);
+                prepared.setOverlayModules?.(latestModules.current);
+                prepared.setOverlayEditing?.(latestEditing.current);
                 void renderLatest();
             })
             .catch(cause => {
@@ -222,6 +286,8 @@ export default function TimelinePreview({
             renderer?.dispose();
             requestRenderRef.current = () => {};
             updateLabelsRef.current = () => {};
+            updateModulesRef.current = () => {};
+            updateEditingRef.current = () => {};
         };
     }, [
         graph,
@@ -237,6 +303,18 @@ export default function TimelinePreview({
         getImage,
         reload,
     ]);
+
+    React.useEffect(() => updateModulesRef.current(modules), [modules]);
+    React.useEffect(() => updateEditingRef.current(overlayEditing), [overlayEditing]);
+    React.useEffect(() => {
+        const drag = dragRef.current;
+        if (!drag || (!overlayEditing && editableKeyframe?.id === drag.entry.id)) return;
+        dragRef.current = undefined;
+        drag.group.setAttribute('transform', drag.transform);
+        const container = containerRef.current;
+        if (container?.hasPointerCapture?.(drag.pointerId)) container.releasePointerCapture(drag.pointerId);
+        requestRenderRef.current(true);
+    }, [overlayEditing, editableKeyframe?.id]);
 
     React.useEffect(() => requestRenderRef.current(), [time]);
     React.useEffect(() => updateLabelsRef.current(timeline.labelTrack ?? []), [timeline.labelTrack]);
@@ -309,6 +387,20 @@ export default function TimelinePreview({
                     onPointerCancel={event => finishDrag(event, false)}
                     onLostPointerCapture={event => finishDrag(event, false)}
                 />
+                <TimelineOverlayCanvasControls
+                    modules={modules}
+                    layout={
+                        !hasVisualResources && overlayEditing ? getEmptyTimelineOverlayLayout(modules) : overlayLayout
+                    }
+                    editing={overlayEditing}
+                    isSubscriber={isSubscriber}
+                    selectedId={selectedOverlayModuleId}
+                    onSelect={onSelectOverlayModule}
+                    onAdd={onAddOverlayModule}
+                    onMove={onMoveOverlayModule}
+                    onPreviewMove={onPreviewOverlayModuleMove}
+                    onCancelMove={onCancelOverlayModuleMove}
+                />
                 {loading && (
                     <Flex position="absolute" inset={0} align="center" justify="center" gap={3} bg="whiteAlpha.800">
                         <Spinner color="purple.500" size="sm" />
@@ -329,7 +421,7 @@ export default function TimelinePreview({
                         </Alert>
                     </Flex>
                 )}
-                {!loading && !error && timeline.track.length === 0 && (
+                {!loading && !error && !hasVisualResources && (
                     <Flex position="absolute" inset={0} align="center" justify="center" color="gray.500" p={8}>
                         <Text fontSize="sm" textAlign="center">
                             {t('header.timelinePage.empty')}

@@ -2,7 +2,13 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from '../constants/constants';
-import { createEmptyTimelineDocument, DEFAULT_TIMELINE_SETTINGS, TimelineDocument } from '../constants/timeline';
+import {
+    createEmptyTimelineDocument,
+    DEFAULT_TIMELINE_SETTINGS,
+    getTimelineSettings,
+    TimelineDocument,
+} from '../constants/timeline';
+import { createTimelineOverlayModule } from '../constants/timeline-overlays';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import {
     appendTimelineEntry,
@@ -18,10 +24,12 @@ import {
     insertKeyframeEntry,
     moveTimelineEntries,
     moveTimelineEntry,
+    moveTimelineOverlayModule,
     normalizeTimelineDocument,
     insertTimelineLabel,
     removeTimelineEntry,
     updateKeyframePosition,
+    upgradeTimelineDocument,
 } from './timeline';
 
 const makeGraph = () => {
@@ -55,7 +63,27 @@ const makeGraph = () => {
     return graph;
 };
 
-const emptyDocument = (): TimelineDocument => ({ version: 1, track: [] });
+const emptyDocument = (): TimelineDocument => ({ version: 2, track: [] });
+
+describe('timeline overlay moves', () => {
+    const a = createTimelineOverlayModule('date', 'top-left', 'a');
+    const b = createTimelineOverlayModule('date', 'top-left', 'b');
+    const c = createTimelineOverlayModule('minimap', 'bottom-right', 'c');
+    it('uses region-local order and keeps instance settings intact', () => {
+        expect(moveTimelineOverlayModule([a, b, c], 'a', 'top-left', 1, false)).toEqual([b, a, c]);
+        expect(moveTimelineOverlayModule([a, b, c], 'c', 'top-left', 1, false)).toEqual([
+            a,
+            { ...c, region: 'top-left' },
+            b,
+        ]);
+    });
+    it('prevents a free account from dropping into the top-right corner but allows moving out', () => {
+        expect(moveTimelineOverlayModule([a, b], 'a', 'top-right', 0, false)).toEqual([a, b]);
+        expect(moveTimelineOverlayModule([{ ...a, region: 'top-right' }], 'a', 'bottom-left', 0, false)).toEqual([
+            { ...a, region: 'bottom-left' },
+        ]);
+    });
+});
 
 describe('timeline colour identity', () => {
     const makeColoredPath = (first: Theme, second: Theme) => {
@@ -312,9 +340,11 @@ describe('timeline utilities', () => {
 
     it('normalizeTimelineDocument should fallback to an empty document', () => {
         expect(normalizeTimelineDocument(undefined)).toEqual(createEmptyTimelineDocument());
-        expect(normalizeTimelineDocument({ version: 1, track: [{} as never] })).toEqual({
-            version: 1,
+        expect(normalizeTimelineDocument({ version: 2, track: [{} as never] })).toEqual({
+            version: 2,
             track: [],
+            overlayModules: createEmptyTimelineDocument().overlayModules,
+            fixedResources: [],
         });
     });
 
@@ -323,55 +353,80 @@ describe('timeline utilities', () => {
             cameraZoom: 8 as const,
             speedMultiplier: 1.7,
             autoChangeStationType: false,
-            showYear: true,
-            showLineName: true,
-            showLineLength: false,
-            lineLengthUnit: 'km' as const,
         };
-        expect(normalizeTimelineDocument({ version: 1, track: [], settings }).settings).toEqual(settings);
+        expect(normalizeTimelineDocument({ version: 2, track: [], settings }).settings).toEqual(settings);
         expect(
             normalizeTimelineDocument({
-                version: 1,
+                version: 2,
                 track: [],
                 settings: { ...settings, showLineLength: true, lineLengthUnit: 'mi' },
             }).settings
-        ).toMatchObject({ showLineLength: true, lineLengthUnit: 'mi' });
-        expect(
-            normalizeTimelineDocument({
-                version: 1,
-                track: [],
-                settings: { ...settings, lineLengthUnit: 'invalid' } as never,
-            }).settings?.lineLengthUnit
-        ).toBe('km');
-        const legacySettings = { ...settings } as Partial<typeof settings>;
-        delete legacySettings.showLineLength;
-        delete legacySettings.lineLengthUnit;
-        expect(
-            normalizeTimelineDocument({ version: 1, track: [], settings: legacySettings as never }).settings
         ).toEqual(settings);
         expect(
             normalizeTimelineDocument({
-                version: 1,
+                version: 2,
+                track: [],
+                settings: { ...settings, lineLengthUnit: 'invalid' } as never,
+            }).settings
+        ).toEqual(settings);
+        expect(
+            normalizeTimelineDocument({
+                version: 2,
                 track: [],
                 settings: { speedMultiplier: Number.NaN, autoChangeStationType: undefined } as never,
             }).settings
         ).toEqual(DEFAULT_TIMELINE_SETTINGS);
         expect(
-            normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, speedMultiplier: 10 } })
+            normalizeTimelineDocument({ version: 2, track: [], settings: { ...settings, speedMultiplier: 10 } })
                 .settings?.speedMultiplier
         ).toBe(2);
         for (const cameraZoom of [1, 2, 4, 8, 16]) {
             expect(
-                normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, cameraZoom } } as never)
+                normalizeTimelineDocument({ version: 2, track: [], settings: { ...settings, cameraZoom } } as never)
                     .settings?.cameraZoom
             ).toBe(cameraZoom);
         }
         for (const cameraZoom of [0, 3, 100, '4', Number.NaN]) {
             expect(
-                normalizeTimelineDocument({ version: 1, track: [], settings: { ...settings, cameraZoom } } as never)
+                normalizeTimelineDocument({ version: 2, track: [], settings: { ...settings, cameraZoom } } as never)
                     .settings?.cameraZoom
             ).toBe(DEFAULT_TIMELINE_SETTINGS.cameraZoom);
         }
+    });
+
+    it('confines legacy annotation flags to the v1 upgrade while current settings expose playback only', () => {
+        const legacy = {
+            version: 1,
+            track: [],
+            settings: {
+                speedMultiplier: 1.5,
+                cameraZoom: 4,
+                autoChangeStationType: false,
+                showYear: true,
+                showLineName: true,
+                showLineLength: true,
+                lineLengthUnit: 'mi',
+            },
+        };
+        const playback = { speedMultiplier: 1.5, cameraZoom: 4, autoChangeStationType: false };
+        const upgraded = upgradeTimelineDocument(legacy);
+        expect(upgraded.settings).toEqual(playback);
+        expect(upgradeTimelineDocument(upgraded)).toEqual(upgraded);
+        const migrated = normalizeTimelineDocument(legacy);
+        expect(migrated.settings).toEqual(playback);
+        expect(migrated.overlayModules?.map(module => [module.id, module.type])).toEqual([
+            ['timeline_overlay_legacy_date', 'date'],
+            ['timeline_overlay_legacy_line', 'line-identity'],
+            ['timeline_overlay_legacy_length', 'line-length'],
+            ['timeline_overlay_timed_text', 'timed-text'],
+        ]);
+        expect(migrated.overlayModules?.[2].settings).toEqual({ scope: 'network', unit: 'mi' });
+        expect(normalizeTimelineDocument(migrated)).toEqual(migrated);
+        expect(getTimelineSettings({ ...migrated, settings: legacy.settings as never })).toEqual(playback);
+        const current = normalizeTimelineDocument({ ...legacy, version: 2 });
+        expect(current.settings).toEqual(playback);
+        expect(current.overlayModules?.map(module => module.type)).toEqual(['timed-text']);
+        expect(normalizeTimelineDocument({ ...legacy, overlayModules: [] }).overlayModules).toEqual([]);
     });
 
     it('keeps precise audio times and falls back to slots when times are invalid', () => {
@@ -385,9 +440,9 @@ describe('timeline utilities', () => {
             startTime: 0.125,
             endTime: 4.75,
         };
-        expect(normalizeTimelineDocument({ version: 1, track: [], audioTrack: [clip] }).audioTrack).toEqual([clip]);
+        expect(normalizeTimelineDocument({ version: 2, track: [], audioTrack: [clip] }).audioTrack).toEqual([clip]);
         const invalid = normalizeTimelineDocument({
-            version: 1,
+            version: 2,
             track: [],
             audioTrack: [{ ...clip, startTime: -1, endTime: Number.POSITIVE_INFINITY }],
         }).audioTrack![0];
@@ -396,7 +451,7 @@ describe('timeline utilities', () => {
         expect(invalid).toMatchObject({ startSlot: 1, endSlot: 3 });
         expect(
             normalizeTimelineDocument({
-                version: 1,
+                version: 2,
                 track: [],
                 audioTrack: [{ ...clip, startTime: 5, endTime: 2 }],
             }).audioTrack![0].endTime
@@ -405,7 +460,7 @@ describe('timeline utilities', () => {
 
     it('normalizeTimelineDocument should fill advanced entry defaults and discard legacy mode', () => {
         const normalized = normalizeTimelineDocument({
-            version: 1,
+            version: 2,
             mode: 'pro',
             track: [
                 { id: 'clip_1', kind: 'node', refId: 'stn_a' },
@@ -420,7 +475,7 @@ describe('timeline utilities', () => {
 
     it('normalizeTimelineDocument should preserve pause entries without a ref', () => {
         const normalized = normalizeTimelineDocument({
-            version: 1,
+            version: 2,
             track: [{ id: 'pause_1', kind: 'pause', position: 'after', duration: 2 }],
         });
 
@@ -442,7 +497,7 @@ describe('timeline utilities', () => {
     it('should report only graph entries that are not already on the timeline', () => {
         const graph = makeGraph();
         const coverage = getTimelineCoverage(graph, {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'clip_1', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_deleted', kind: 'edge', refId: 'line_deleted', phase: 'enter', showAnimation: true },
@@ -459,7 +514,7 @@ describe('timeline utilities', () => {
     it('should mark coverage complete when every current graph entry is on the timeline', () => {
         const graph = makeGraph();
         const coverage = getTimelineCoverage(graph, {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'clip_1', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'clip_2', kind: 'node', refId: 'stn_b', phase: 'enter', showAnimation: true },
@@ -477,7 +532,7 @@ describe('timeline utilities', () => {
     it('should compute visibility and keyframe positions at the cursor', () => {
         const graph = makeGraph();
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
                 { id: 'key_a1', kind: 'keyframe', refId: 'stn_a', x: 30, y: 40 },
@@ -523,7 +578,7 @@ describe('timeline utilities', () => {
     it('should keep a visible line when its stations are not visible', () => {
         const graph = makeGraph();
         const document: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [{ id: 'line_ab', kind: 'edge', refId: 'line_ab', phase: 'enter', showAnimation: true }],
         };
 

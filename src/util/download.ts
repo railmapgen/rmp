@@ -9,7 +9,6 @@ import { renderMapLayerForExport } from '../map/map-tile-controller';
 import { makeBase64EncodedFontsStyle, TextLanguage } from './fonts';
 import { findNodesExist } from './graph';
 import { calculateCanvasSize, transformedBoundingBox } from './helpers';
-import { getRmpWatermarkUrl } from './watermark';
 
 export const downloadAs = (filename: string, type: string, data: any) => {
     const blob = new Blob([data], { type });
@@ -304,6 +303,15 @@ const findRmpInfoPosition = (
     return candidates[0];
 };
 
+export const getRmpWatermarkUrl = (): string => {
+    const origin = typeof window !== 'undefined' ? (window.location?.origin ?? '') : '';
+    let url = 'https://railmapgen.org/';
+    if (origin.includes('github')) url = 'https://railmapgen.github.io/';
+    else if (origin.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
+    url += '?app=rmp';
+    return url;
+};
+
 const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('transform', `translate(${x}, ${y})`);
@@ -342,5 +350,3 @@ const generateRmpInfo = async (x: number, y: number) => {
 
     return info;
 };
-
-export { getRmpWatermarkUrl };

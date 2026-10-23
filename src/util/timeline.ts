@@ -13,11 +13,10 @@ import {
 } from '../constants/constants';
 import {
     createEmptyTimelineDocument,
-    DEFAULT_TIMELINE_SETTINGS,
+    getTimelineSettings,
     isElementEntry,
     isNodeTimelineEntry,
     isPauseEntry,
-    isTimelineCameraZoom,
     TimelineDocument,
     TimelineAudioEntry,
     TimelineLabelEntry,
@@ -29,10 +28,38 @@ import {
     TimelinePausePosition,
     TimelinePhase,
     TimelineSettings,
+    TIMELINE_DOCUMENT_VERSION,
 } from '../constants/timeline';
+import {
+    createTimelineOverlayModule,
+    getTimelineOverlayModules,
+    TimelineOverlayModule,
+    TimelineOverlayRegion,
+} from '../constants/timeline-overlays';
 import { getThemeKey } from './line-definitions';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
+
+/** Move at a region-local insertion index; callers commit only after the drop completes. */
+export const moveTimelineOverlayModule = (
+    modules: readonly TimelineOverlayModule[],
+    id: string,
+    region: TimelineOverlayRegion,
+    index: number,
+    isSubscriber: boolean
+): TimelineOverlayModule[] => {
+    const module = modules.find(item => item.id === id);
+    if (!module || (region === 'top-right' && !isSubscriber)) return [...modules];
+    const remaining = modules.filter(item => item.id !== id);
+    const siblings = remaining.filter(item => item.region === region);
+    const target = siblings[Math.max(0, Math.min(siblings.length, index))];
+    const position = target
+        ? remaining.findIndex(item => item.id === target.id)
+        : siblings.length
+          ? remaining.findIndex(item => item.id === siblings[siblings.length - 1].id) + 1
+          : remaining.length;
+    return [...remaining.slice(0, position), { ...module, region }, ...remaining.slice(position)];
+};
 
 export interface TimelineCoverage {
     missingNodeIds: NodeId[];
@@ -88,6 +115,7 @@ export const insertTimelineExitEntry = (
     refId: Id,
     index: number
 ): { document: TimelineDocument; cursor: number } => {
+    if (doc.fixedResources?.includes(refId)) return { document: doc, cursor: index };
     const enterIndex = doc.track.findIndex(
         entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'enter'
     );
@@ -166,7 +194,7 @@ export const insertKeyframeEntry = (
     const enterIndex = track.findIndex(
         entry => isElementEntry(entry) && entry.refId === refId && entry.phase === 'enter'
     );
-    if (enterIndex === -1) {
+    if (enterIndex === -1 && !doc.fixedResources?.includes(refId)) {
         track.splice(cursor, 0, createTimelineEntry(refId));
         cursor += 1;
     } else {
@@ -182,6 +210,7 @@ export const insertKeyframeEntry = (
 };
 
 export const insertTimelineEntry = (doc: TimelineDocument, refId: Id, index: number): TimelineDocument => {
+    if (doc.fixedResources?.includes(refId)) return doc;
     if (doc.track.some(entry => isElementEntry(entry) && entry.refId === refId)) return doc;
 
     const insertionIndex = Math.max(0, Math.min(index, doc.track.length));
@@ -198,24 +227,61 @@ export const appendTimelineEntry = (doc: TimelineDocument, refId: Id): TimelineD
     return insertTimelineEntry(doc, refId, doc.track.length);
 };
 
+export const normalizeTimelineFixedResources = (value: unknown): Id[] =>
+    Array.isArray(value)
+        ? [...new Set(value.filter((id): id is Id => typeof id === 'string' && /^(stn_|misc_node_|line_).+/.test(id)))]
+        : [];
+
+/** Retain clip anchors at the same insertion boundaries when visual entries disappear. */
+export const filterTimelineTrack = (
+    doc: TimelineDocument,
+    predicate: (entry: TimelineEntry, index: number) => boolean
+): TimelineDocument => {
+    const retainedBefore = [0];
+    const track = doc.track.filter((entry, index) => {
+        const keep = predicate(entry, index);
+        retainedBefore.push(retainedBefore[index] + Number(keep));
+        return keep;
+    });
+    if (track.length === doc.track.length) return doc;
+    const mapSlot = (slot: number) =>
+        retainedBefore[Math.max(0, Math.min(doc.track.length, Number.isFinite(slot) ? Math.round(slot) : 0))];
+    const rebase = <T extends TimelineAudioEntry | TimelineLabelEntry>(entries: T[] | undefined): T[] | undefined =>
+        entries?.map(entry => {
+            const startSlot = mapSlot(entry.startSlot);
+            return { ...entry, startSlot, endSlot: Math.max(startSlot, mapSlot(entry.endSlot)) };
+        });
+    const audioTrack = rebase(doc.audioTrack);
+    const labelTrack = rebase(doc.labelTrack);
+    return { ...doc, track, ...(audioTrack ? { audioTrack } : {}), ...(labelTrack ? { labelTrack } : {}) };
+};
+
+/** Selecting fixed resources is one undoable edit; deselection does not recreate earlier track cards. */
+export const setTimelineFixedResources = (doc: TimelineDocument, ids: Iterable<Id>): TimelineDocument => {
+    const fixedResources = normalizeTimelineFixedResources([...ids]);
+    const fixed = new Set(fixedResources);
+    return filterTimelineTrack({ ...doc, fixedResources }, entry => !isElementEntry(entry) || !fixed.has(entry.refId));
+};
+
 export const removeTimelineEntry = (doc: TimelineDocument, entryId: string): TimelineDocument => {
     const removedEntry = doc.track.find(entry => entry.id === entryId);
     if (!removedEntry) return doc;
 
     // Exit phases and keyframes depend on the enter card and are removed in the same undoable edit.
     const removeDependents = isElementEntry(removedEntry) && removedEntry.phase === 'enter';
-    return {
-        ...doc,
-        track: doc.track.filter(entry =>
-            removeDependents ? isPauseEntry(entry) || entry.refId !== removedEntry.refId : entry.id !== entryId
-        ),
-    };
+    return filterTimelineTrack(doc, entry =>
+        removeDependents ? isPauseEntry(entry) || entry.refId !== removedEntry.refId : entry.id !== entryId
+    );
 };
 
-const isElementPlacementValid = (track: TimelineEntry[], entry: TimelineEntry): boolean => {
+const isElementPlacementValid = (
+    track: TimelineEntry[],
+    entry: TimelineEntry,
+    fixedResources: readonly Id[] = []
+): boolean => {
     if (isPauseEntry(entry)) return true;
 
-    let visible = false;
+    let visible = fixedResources.includes(entry.refId);
     for (const candidate of track) {
         if (isPauseEntry(candidate)) continue;
         if (candidate.refId !== entry.refId) continue;
@@ -236,7 +302,7 @@ export const moveTimelineEntry = (doc: TimelineDocument, fromIndex: number, toIn
     const track = [...doc.track];
     const [entry] = track.splice(fromIndex, 1);
     track.splice(toIndex, 0, entry);
-    if (!isElementPlacementValid(track, entry)) return doc;
+    if (!isElementPlacementValid(track, entry, doc.fixedResources)) return doc;
 
     return {
         ...doc,
@@ -259,7 +325,7 @@ export const moveTimelineEntries = (
     const track = [...remaining.slice(0, at), ...block, ...remaining.slice(at)];
 
     if (track.every((entry, index) => entry === doc.track[index])) return doc;
-    if (!block.every(entry => isElementPlacementValid(track, entry))) return doc;
+    if (!block.every(entry => isElementPlacementValid(track, entry, doc.fixedResources))) return doc;
 
     return {
         ...doc,
@@ -312,36 +378,85 @@ const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undef
     return undefined;
 };
 
-export type TimelineDocumentLike = Partial<Omit<TimelineDocument, 'track'>> & { track?: unknown };
+export type TimelineDocumentLike = Partial<
+    Omit<TimelineDocument, 'track' | 'version' | 'overlayModules' | 'fixedResources' | 'settings'>
+> & {
+    track?: unknown;
+    version?: number;
+    overlayModules?: unknown;
+    fixedResources?: unknown;
+    settings?: unknown;
+};
 
-export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): TimelineDocument => {
-    if (!doc || !Array.isArray(doc.track)) return createEmptyTimelineDocument();
+/** Sequential content migrations, independent of the painter's save versions. */
+export const TIMELINE_DOCUMENT_UPGRADE_COLLECTION: Record<number, (doc: TimelineDocumentLike) => TimelineDocumentLike> =
+    {
+        1: doc => {
+            const modules: TimelineOverlayModule[] = [];
+            if (!Array.isArray(doc.overlayModules)) {
+                const settings =
+                    doc.settings && typeof doc.settings === 'object' ? (doc.settings as Record<string, unknown>) : {};
+                if (settings.showYear === true)
+                    modules.push(createTimelineOverlayModule('date', 'top-left', 'timeline_overlay_legacy_date'));
+                if (settings.showLineName === true)
+                    modules.push(
+                        createTimelineOverlayModule('line-identity', 'top-left', 'timeline_overlay_legacy_line')
+                    );
+                if (settings.showLineLength === true) {
+                    const length = createTimelineOverlayModule(
+                        'line-length',
+                        'top-left',
+                        'timeline_overlay_legacy_length'
+                    );
+                    length.settings.unit = settings.lineLengthUnit === 'mi' ? 'mi' : 'km';
+                    modules.push(length);
+                }
+            }
+            return {
+                ...doc,
+                version: 2,
+                settings: getTimelineSettings({
+                    version: TIMELINE_DOCUMENT_VERSION,
+                    track: [],
+                    settings: doc.settings as TimelineSettings | undefined,
+                }),
+                overlayModules: [...modules, ...getTimelineOverlayModules(doc)],
+            };
+        },
+    };
+
+export const upgradeTimelineDocument = (source: TimelineDocumentLike): TimelineDocumentLike => {
+    let doc = source;
+    let version = doc.version ?? 1;
+    if (!Number.isInteger(version) || version < 1 || version > TIMELINE_DOCUMENT_VERSION) {
+        throw new Error(`Unsupported Timeline document version: ${version}`);
+    }
+    while (version < TIMELINE_DOCUMENT_VERSION) {
+        const upgrade = TIMELINE_DOCUMENT_UPGRADE_COLLECTION[version];
+        if (!upgrade) throw new Error(`Unsupported Timeline document version: ${version}`);
+        doc = upgrade(doc);
+        const nextVersion = doc.version;
+        if (nextVersion === undefined || nextVersion <= version) throw new Error('Invalid Timeline document upgrade');
+        version = nextVersion;
+    }
+    return doc;
+};
+
+export const normalizeTimelineDocument = (source?: TimelineDocumentLike | null): TimelineDocument => {
+    if (!source) return createEmptyTimelineDocument();
+    const doc = upgradeTimelineDocument(source);
+    if (!Array.isArray(doc.track)) return createEmptyTimelineDocument();
 
     const normalized: TimelineDocument = {
-        version: 1,
+        version: TIMELINE_DOCUMENT_VERSION,
         track: (doc.track as RawTimelineEntry[])
             .map(entry => normalizeTimelineEntry(entry))
             .filter((entry): entry is TimelineEntry => !!entry),
+        overlayModules: getTimelineOverlayModules(doc),
+        fixedResources: normalizeTimelineFixedResources(doc.fixedResources),
     };
     if (doc.settings && typeof doc.settings === 'object') {
-        const settings = doc.settings as Partial<TimelineSettings>;
-        normalized.settings = {
-            cameraZoom: isTimelineCameraZoom(settings.cameraZoom)
-                ? settings.cameraZoom
-                : DEFAULT_TIMELINE_SETTINGS.cameraZoom,
-            speedMultiplier:
-                typeof settings.speedMultiplier === 'number' && Number.isFinite(settings.speedMultiplier)
-                    ? Math.max(0.5, Math.min(2, settings.speedMultiplier))
-                    : DEFAULT_TIMELINE_SETTINGS.speedMultiplier,
-            autoChangeStationType:
-                typeof settings.autoChangeStationType === 'boolean'
-                    ? settings.autoChangeStationType
-                    : DEFAULT_TIMELINE_SETTINGS.autoChangeStationType,
-            showYear: settings.showYear === true,
-            showLineName: settings.showLineName === true,
-            showLineLength: settings.showLineLength === true,
-            lineLengthUnit: settings.lineLengthUnit === 'mi' ? 'mi' : 'km',
-        };
+        normalized.settings = getTimelineSettings({ ...normalized, settings: doc.settings as TimelineSettings });
     }
     const audioTrack = (doc as { audioTrack?: unknown }).audioTrack;
     if (Array.isArray(audioTrack)) {
@@ -414,11 +529,14 @@ export const normalizeTimelineDocument = (doc?: TimelineDocumentLike | null): Ti
                 return clip;
             });
     }
-    return normalized;
+    return setTimelineFixedResources(normalized, normalized.fixedResources ?? []);
 };
 
 export const getTimelineCoverage = (graph: TimelineGraph, doc: TimelineDocument): TimelineCoverage => {
-    const addedRefs = new Set<Id>(doc.track.filter(isElementEntry).map(entry => entry.refId));
+    const addedRefs = new Set<Id>([
+        ...(doc.fixedResources ?? []),
+        ...doc.track.filter(isElementEntry).map(entry => entry.refId),
+    ]);
     const missingNodeIds = graph.nodes().filter(node => !addedRefs.has(node as NodeId)) as NodeId[];
     const missingEdgeIds = graph.edges().filter(edge => !addedRefs.has(edge as LineId)) as LineId[];
     const missingIds = [...missingNodeIds, ...missingEdgeIds];
@@ -632,7 +750,8 @@ export const getTimelinePreviewState = (
     doc: TimelineDocument,
     cursor: number
 ): TimelinePreviewState => {
-    const visibleIds = new Set<Id>();
+    const visibleIds = new Set<Id>(doc.fixedResources ?? []);
+    const fixedIds = new Set(doc.fixedResources ?? []);
     const keyframesByRef = new Map<NodeId, TimelineKeyframeAt[]>();
 
     doc.track.forEach((entry, index) => {
@@ -643,7 +762,7 @@ export const getTimelinePreviewState = (
             return;
         }
 
-        if (index < cursor && isElementEntry(entry)) {
+        if (index < cursor && isElementEntry(entry) && !fixedIds.has(entry.refId)) {
             if (entry.phase === 'enter') visibleIds.add(entry.refId);
             else visibleIds.delete(entry.refId);
         }
@@ -693,7 +812,10 @@ export const findShortestPathByLine = (
 };
 
 export const insertTimelineEntries = (doc: TimelineDocument, refIds: Id[], index: number): TimelineDocument => {
-    const existingRefs = new Set<Id>(doc.track.filter(isElementEntry).map(entry => entry.refId));
+    const existingRefs = new Set<Id>([
+        ...(doc.fixedResources ?? []),
+        ...doc.track.filter(isElementEntry).map(entry => entry.refId),
+    ]);
     const entries = refIds
         .filter(refId => {
             if (existingRefs.has(refId)) return false;

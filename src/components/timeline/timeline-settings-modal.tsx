@@ -11,14 +11,12 @@ import {
     ModalHeader,
     ModalOverlay,
     Stack,
-    Switch,
     Text,
-    Tooltip,
     useColorModeValue,
 } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { useTranslation } from 'react-i18next';
-import { MdEdit } from 'react-icons/md';
+import { MdEdit, MdPushPin } from 'react-icons/md';
 import {
     getTimelineSettings,
     isTimelineCameraZoom,
@@ -34,15 +32,18 @@ interface TimelineSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     onOpenLineInformation?: () => void;
+    onEditOverlayModules?: () => void;
+    onEditFixedResources?: () => void;
 }
 
 export default function TimelineSettingsModal({
     document,
-    mapEnabled = false,
     onDocumentChange,
     isOpen,
     onClose,
     onOpenLineInformation,
+    onEditOverlayModules,
+    onEditFixedResources,
 }: TimelineSettingsModalProps) {
     const { t } = useTranslation();
     const settings = getTimelineSettings(document);
@@ -88,55 +89,6 @@ export default function TimelineSettingsModal({
             onChange: autoChangeStationType => updateSettings({ autoChangeStationType }),
         },
     ];
-    const overlayFields: RmgFieldsField[] = [
-        {
-            type: 'switch',
-            label: t('header.timelinePage.settings.showYear'),
-            isChecked: settings.showYear,
-            minW: 'full',
-            oneLine: true,
-            onChange: showYear => updateSettings({ showYear }),
-        },
-        {
-            type: 'switch',
-            label: t('header.timelinePage.settings.showLineName'),
-            isChecked: settings.showLineName,
-            minW: 'full',
-            oneLine: true,
-            onChange: showLineName => updateSettings({ showLineName }),
-        },
-        {
-            type: 'custom',
-            label: t('header.timelinePage.settings.showLineLength'),
-            minW: 'full',
-            oneLine: true,
-            component: (
-                <Tooltip
-                    label={t('header.timelinePage.settings.showLineLengthMapOnly')}
-                    isDisabled={mapEnabled}
-                    hasArrow
-                >
-                    <Box as="span" display="inline-flex" tabIndex={mapEnabled ? undefined : 0}>
-                        <Switch
-                            isChecked={mapEnabled && settings.showLineLength}
-                            isDisabled={!mapEnabled}
-                            onChange={({ target: { checked } }) => updateSettings({ showLineLength: checked })}
-                        />
-                    </Box>
-                </Tooltip>
-            ),
-        },
-        {
-            type: 'select',
-            label: t('header.timelinePage.settings.lineLengthUnit'),
-            value: settings.lineLengthUnit,
-            options: { km: 'km', mi: 'mi' },
-            isDisabled: !mapEnabled || !settings.showLineLength,
-            minW: 'full',
-            onChange: value => updateSettings({ lineLengthUnit: value === 'mi' ? 'mi' : 'km' }),
-        },
-    ];
-
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="lg" isCentered scrollBehavior="inside">
             <ModalOverlay backdropFilter="blur(3px)" />
@@ -154,25 +106,68 @@ export default function TimelineSettingsModal({
                             <RmgFields fields={playbackFields} />
                         </Box>
                         <Box bg={panelBackground} borderRadius="lg" p={3}>
-                            <HStack justify="space-between" mb={2}>
-                                <Text fontSize="sm" fontWeight="semibold" color={mutedColor}>
-                                    {t('header.timelinePage.settings.overlays')}
-                                </Text>
-                                <Button
-                                    size="xs"
-                                    variant="outline"
-                                    colorScheme="teal"
-                                    leftIcon={<MdEdit />}
-                                    isDisabled={!onOpenLineInformation}
-                                    onClick={() => {
-                                        onClose();
-                                        onOpenLineInformation?.();
-                                    }}
-                                >
-                                    {t('header.timelinePage.settings.lineInformation')}
-                                </Button>
-                            </HStack>
-                            <RmgFields fields={overlayFields} />
+                            <Text fontSize="sm" fontWeight="semibold" color={mutedColor} mb={3}>
+                                {t('header.timelinePage.settings.overlays')}
+                            </Text>
+                            <Stack spacing={3}>
+                                <HStack justify="space-between" spacing={4}>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        {t('header.timelinePage.settings.lineInformationHint')}
+                                    </Text>
+                                    <Button
+                                        size="xs"
+                                        variant="outline"
+                                        colorScheme="teal"
+                                        flexShrink={0}
+                                        leftIcon={<MdEdit />}
+                                        isDisabled={!onOpenLineInformation}
+                                        onClick={() => {
+                                            onClose();
+                                            onOpenLineInformation?.();
+                                        }}
+                                    >
+                                        {t('header.timelinePage.settings.lineInformation')}
+                                    </Button>
+                                </HStack>
+                                <HStack justify="space-between" spacing={4}>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        {t('header.timelinePage.settings.editPositionsHint')}
+                                    </Text>
+                                    <Button
+                                        size="xs"
+                                        variant="outline"
+                                        colorScheme="teal"
+                                        flexShrink={0}
+                                        leftIcon={<MdEdit />}
+                                        isDisabled={!onEditOverlayModules}
+                                        onClick={() => {
+                                            onClose();
+                                            onEditOverlayModules?.();
+                                        }}
+                                    >
+                                        {t('header.timelinePage.overlayEditor.editPositions')}
+                                    </Button>
+                                </HStack>
+                                <HStack justify="space-between" spacing={4}>
+                                    <Text fontSize="xs" color={mutedColor}>
+                                        {t('header.timelinePage.settings.fixedResourcesHint')}
+                                    </Text>
+                                    <Button
+                                        size="xs"
+                                        colorScheme="teal"
+                                        variant="outline"
+                                        flexShrink={0}
+                                        leftIcon={<MdPushPin />}
+                                        isDisabled={!onEditFixedResources}
+                                        onClick={() => {
+                                            onClose();
+                                            onEditFixedResources?.();
+                                        }}
+                                    >
+                                        {t('header.timelinePage.settings.chooseFixedResources')}
+                                    </Button>
+                                </HStack>
+                            </Stack>
                         </Box>
                     </Stack>
                 </ModalBody>

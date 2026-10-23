@@ -112,3 +112,19 @@ If there were changes in the attributes, you should refer to the next example:
 ```
 
 Finally, run `npm test` in the root directory to ensure that everything works as expected!
+
+## Timeline project versions
+
+Timeline projects have their own save format, independent of the painter's `CURRENT_VERSION`. The project envelope version is defined by `TIMELINE_PROJECT_VERSION` in `src/timeline/timeline-project.ts`, and the document version by `TIMELINE_DOCUMENT_VERSION` in `src/constants/timeline.ts`. Use these constants as the source of truth for current versions. Do not change the painter save version for a Timeline-only format change.
+
+Ordered annotation instances are stored in `timeline.overlayModules`. Module types, defaults, settings normalization and editor field descriptions are registered in `src/constants/timeline-overlays.ts`. An explicitly empty module array remains empty. New projects include a timed-text module; caption text and timing continue to live in `labelTrack`.
+
+Legacy annotation flags are read only by their corresponding document migration. `TimelineSettings` contains playback settings only; normalization discards obsolete annotation fields so they are not written back into normalized saves.
+
+When changing this format:
+
+1. Increment the applicable project/document version and add a sequential migration keyed by the previous version to `TIMELINE_PROJECT_UPGRADE_COLLECTION` in `src/timeline/timeline-project-upgrade.ts` or `TIMELINE_DOCUMENT_UPGRADE_COLLECTION` in `src/util/timeline.ts`.
+2. Keep migration instance IDs deterministic. Preserve track timing, imported graph data, module order, per-instance settings and subscriber-only regions. Account access must not remove saved content during normalization.
+3. Test legacy upgrades, repeated normalization, portable file round trips, local reopening, and rejection of newer unsupported versions.
+
+Portable imports and local project opening share the project upgrade chain. Before a local record is upgraded, `TimelineProjectDB.getProject` stores its original value once under `projectUpgradeBackup:<project-id>` in the IndexedDB `meta` store. The backup and upgraded record are committed atomically; `getProjectUpgradeBackup` reads the original. Reopening does not replace it, and deleting the project removes it. IndexedDB's `DB_VERSION` only needs to change when its stores or indexes change.

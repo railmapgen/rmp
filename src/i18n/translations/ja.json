@@ -1019,17 +1019,15 @@
                 "playback": "再生",
                 "overlays": "動画のラベル",
                 "lineInformation": "路線情報",
-                "showYear": "年を表示",
-                "showYearHint": "現在の路線の開業年を動画の左上に表示します。",
-                "showLineName": "路線名を表示",
-                "showLineNameHint": "年の下に路線色、中国語名、英語名を表示します。",
-                "showLineLength": "路線の長さを表示",
                 "showLineLengthMapOnly": "地理地図を有効にした場合のみ利用できます。",
-                "lineLengthUnit": "長さの単位",
                 "savedWithProject": "この編年器プロジェクトに保存",
                 "done": "完了",
                 "cameraZoom": "ズーム",
-                "cameraZoomFull": "全体（Full）"
+                "cameraZoomFull": "全体（Full）",
+                    "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
+                    "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
+                    "chooseFixedResources": "固定リソースを選択",
+                    "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
             },
             "lineLabels": {
                 "title": "路線ラベル情報",
@@ -1055,7 +1053,74 @@
             "previewFailed": "プレビューを読み込めません",
             "audioDuration": "音声の長さ：{{duration}} 秒",
             "audioTiming": "音声の時間を編集",
-            "retryPreview": "プレビューを再読み込み"
+            "retryPreview": "プレビューを再読み込み",
+            "fixedResources": {
+                "title": "固定リソース",
+                "hint": "ノードまたは路線区間をクリックして追加し、もう一度クリックすると解除します。",
+                "selectedCount": "{{count}} 個を選択中",
+                "doneNoticeTitle": "固定リソースを更新しました",
+                "doneNotice": "固定リソースは最初のフレームから動画の最後まで常に表示され、対応する出現・退出クリップはトラックから削除されました。固定を解除しても以前のクリップは復元されません。通常の操作でトラックに再追加できます。",
+                "done": "完了",
+                "previewLabel": "固定リソースのプレビュー"
+            },
+            "overlayEditor": {
+                "editPositions": "要素の位置を編集",
+                "title": "注釈の配置",
+                "settingsHint": "プレビューで注釈を追加、配置し、個別に設定します。",
+                "hint": "プレビューのモジュールを選ぶと設定できます。破線の＋で追加し、ドラッグで並べ替えや隅への移動ができます。",
+                "addToRegion": "{{region}}に追加",
+                "closeCatalog": "モジュール一覧を閉じる",
+                "addModule": "モジュールを追加",
+                "subscriberLocked": "この領域の編集にはサブスクリプションが必要です。既存のモジュールは無料領域へ移動できます。",
+                "subscriptionExport": "右上の領域にはサブスクリプションが必要です。モジュールを他の領域へ移動するか、契約を再開してから書き出してください。",
+                "region": "表示位置",
+                "moveUp": "上へ移動",
+                "moveDown": "下へ移動",
+                "remove": "モジュールを削除",
+                "timedTextHint": "文字と表示時間はテキストトラックで設定します。",
+                "trackLocked": "注釈の配置編集中はトラックがロックされています。",
+                "regions": {
+                    "top-left": "左上",
+                    "top-right": "右上",
+                    "bottom-left": "左下",
+                    "bottom-right": "右下"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "日付",
+                    "lineIdentity": "路線表示",
+                    "lineLength": "路線長",
+                    "minimap": "ミニマップ",
+                    "timedText": "タイムライン文字"
+                },
+                "fields": {
+                    "showMonthDay": "日付の表示内容",
+                    "dateLayout": "日付のレイアウト",
+                    "showAppearedLines": "下に表示済みの路線を一覧表示",
+                    "lengthScope": "長さの集計",
+                    "unit": "単位",
+                    "size": "小窓の大きさ",
+                    "fontSize": "文字サイズ",
+                    "alignment": "文字揃え"
+                },
+                "options": {
+                    "yearOnly": "年のみ",
+                    "yearMonthDay": "年月日",
+                    "singleLine": "1行",
+                    "doubleLine": "2行",
+                    "network": "表示中の全路線の合計",
+                    "currentLine": "現在の路線の表示済み延長",
+                    "km": "km",
+                    "mi": "mi",
+                    "small": "小",
+                    "medium": "中",
+                    "large": "大",
+                    "left": "左揃え",
+                    "center": "中央揃え",
+                    "right": "右揃え"
+                }
+            }
         },
         "mapToggle": {
             "show": "地理地図を表示",

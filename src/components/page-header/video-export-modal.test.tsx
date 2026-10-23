@@ -7,12 +7,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { createEmptyTimelineDocument } from '../../constants/timeline';
+import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { createTestLineGraph, render } from '../../test-utils';
 import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
-import { createTimelineStore, openProject, setVideoOptions } from '../../timeline/timeline-store';
+import { createTimelineStore, openProject, replaceTimeline, setVideoOptions } from '../../timeline/timeline-store';
 import { exportVideo } from '../../util/video-export/video-export';
 import {
     downloadVideoExportResult,
@@ -45,7 +46,7 @@ const renderDefaultModal = (
     const record: TimelineProjectRecord = {
         id: 'video-export-result-test',
         name: 'Video export test',
-        version: 1,
+        version: 2,
         createdAt: 1,
         updatedAt: 1,
         revision: {
@@ -81,7 +82,7 @@ describe('VideoExportModal Timeline settings', () => {
         const record: TimelineProjectRecord = {
             id: 'video-export-test',
             name: 'Video export test',
-            version: 1,
+            version: 2,
             createdAt: 1,
             updatedAt: 1,
             revision: {
@@ -93,14 +94,18 @@ describe('VideoExportModal Timeline settings', () => {
                 svgViewBoxMin: { x: 0, y: 0 },
                 timeline: {
                     ...createEmptyTimelineDocument(),
+                    overlayModules: [
+                        createTimelineOverlayModule('date', 'top-left', 'date'),
+                        createTimelineOverlayModule('line-identity', 'top-left', 'identity'),
+                        {
+                            ...createTimelineOverlayModule('line-length', 'bottom-left', 'length'),
+                            settings: { scope: 'network', unit: 'mi' },
+                        },
+                    ],
                     settings: {
                         cameraZoom: 8,
                         speedMultiplier: 1.7,
                         autoChangeStationType: false,
-                        showYear: true,
-                        showLineName: true,
-                        showLineLength: true,
-                        lineLengthUnit: 'mi',
                     },
                 },
             },
@@ -156,10 +161,7 @@ describe('VideoExportModal Timeline settings', () => {
         const options = vi.mocked(exportVideo).mock.calls[0][3];
         expect(options.speedMultiplier).toBe(1.7);
         expect(options.autoChangeStationType).toBe(false);
-        expect(options.showYear).toBe(true);
-        expect(options.showLineName).toBe(true);
-        expect(options.showLineLength).toBe(true);
-        expect(options.lineLengthUnit).toBe('mi');
+        expect(vi.mocked(exportVideo).mock.calls[0][1].overlayModules).toEqual(record.revision.timeline.overlayModules);
         expect(vi.mocked(exportVideo).mock.calls[0][1].settings?.cameraZoom).toBe(8);
         expect(options).not.toHaveProperty('scale');
         expect(options).not.toHaveProperty('fullscreenScale');
@@ -183,6 +185,68 @@ describe('VideoExportModal Timeline settings', () => {
 });
 
 describe('VideoExportModal subscription policy', () => {
+    it('checks only rendered lines when fixed resources replace whole-project fallback playback', async () => {
+        const graph = createTestLineGraph([['A', 'B']]);
+        graph.replaceEdgeAttributes('line_0', {
+            type: LinePathType.Bezier,
+            [LinePathType.Bezier]: structuredClone(linePaths[LinePathType.Bezier].defaultAttrs),
+            style: LineStyleType.GzmtrVirtualInt,
+            [LineStyleType.GzmtrVirtualInt]: structuredClone(lineStyles[LineStyleType.GzmtrVirtualInt].defaultAttrs),
+            visible: true,
+            zIndex: 0,
+            reconcileId: '',
+            parallelIndex: -1,
+        });
+        const { store } = renderDefaultModal(graph);
+        const timeline = store.getState().project.active!.revision.timeline;
+        const button = () => document.getElementById('video_export_button')!;
+        expect(button()).toBeDisabled();
+        act(() => store.dispatch(replaceTimeline({ ...timeline, fixedResources: ['stn_A'] })));
+        expect(button()).toBeEnabled();
+        act(() => store.dispatch(replaceTimeline({ ...timeline, fixedResources: ['line_0'] })));
+        expect(button()).toBeDisabled();
+        act(() =>
+            store.dispatch(
+                replaceTimeline({
+                    ...timeline,
+                    fixedResources: ['stn_A'],
+                    track: [{ id: 'line', kind: 'edge', refId: 'line_0', phase: 'enter', showAnimation: true }],
+                })
+            )
+        );
+        expect(button()).toBeDisabled();
+        act(() => store.dispatch(replaceTimeline({ ...timeline, fixedResources: ['stn_A'] })));
+        expect(button()).toBeEnabled();
+        fireEvent.click(button());
+        await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
+        expect(vi.mocked(exportVideo).mock.calls[0][1].fixedResources).toEqual(['stn_A']);
+    });
+
+    it('preserves saved top-right modules, blocks non-subscriber export and unlocks when subscribed or moved', async () => {
+        const { store } = renderDefaultModal();
+        await waitFor(() => expect(document.getElementById('agree_terms_video')).toBeInTheDocument());
+        const module = createTimelineOverlayModule('date', 'top-right', 'subscriber-date');
+        const timeline = store.getState().project.active!.revision.timeline;
+        act(() => store.dispatch(replaceTimeline({ ...timeline, overlayModules: [module] })));
+        expect(document.getElementById('agree_terms_video')).toBeChecked();
+        const button = () => document.getElementById('video_export_button')!;
+        expect(button()).toBeDisabled();
+        fireEvent.click(button());
+        expect(exportVideo).not.toHaveBeenCalled();
+        expect(prepareVideoExportDestination).not.toHaveBeenCalled();
+        expect(store.getState().project.active!.revision.timeline.overlayModules).toEqual([module]);
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+        await waitFor(() => expect(button()).not.toBeDisabled());
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: false })));
+        expect(button()).toBeDisabled();
+        act(() =>
+            store.dispatch(replaceTimeline({ ...timeline, overlayModules: [{ ...module, region: 'bottom-right' }] }))
+        );
+        expect(button()).not.toBeDisabled();
+        fireEvent.click(button());
+        await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
+    });
+
     it('shows the line restriction tooltip only while a line is unavailable', async () => {
         const { store, unmount } = renderDefaultModal(createTestLineGraph([['A', 'B']]));
         const exportTrigger = document.getElementById('video_export_button')!.parentElement!;

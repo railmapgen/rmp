@@ -121,12 +121,20 @@ export default function TimelineProjectHome() {
     };
 
     const handleOpen = async (id: string) => {
-        const record = await timelineProjectDB.getProject(id);
-        if (!record) return;
-        await timelineProjectDB.setLastProjectId(id);
-        dispatch(clearRuntime());
-        dispatch(setLastProjectId(id));
-        dispatch(openProject(record));
+        setBusy(true);
+        dispatch(setError(undefined));
+        try {
+            const record = await timelineProjectDB.getProject(id);
+            if (!record) return;
+            await timelineProjectDB.setLastProjectId(id);
+            dispatch(clearRuntime());
+            dispatch(setLastProjectId(id));
+            dispatch(openProject(record));
+        } catch (cause) {
+            dispatch(setError(cause instanceof Error ? cause.message : String(cause)));
+        } finally {
+            setBusy(false);
+        }
     };
 
     const openRename = (id: string, currentName: string) => {

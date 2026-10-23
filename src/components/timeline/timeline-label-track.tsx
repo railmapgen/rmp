@@ -26,6 +26,7 @@ interface TimelineLabelTrackProps {
     timing?: TimelinePlaybackTiming;
     timeScale?: TimelineTrackTimeScale;
     onChange: (document: TimelineDocument) => void;
+    readOnly?: boolean;
 }
 
 const ROW_HEIGHT = 28;
@@ -36,6 +37,7 @@ export default function TimelineLabelTrack({
     timing,
     timeScale,
     onChange,
+    readOnly = false,
 }: TimelineLabelTrackProps) {
     const { t } = useTranslation();
     const entries = document.labelTrack ?? [];
@@ -51,7 +53,9 @@ export default function TimelineLabelTrack({
         totalWidth,
         timing,
         timeScale,
+        readOnly,
         onCommit: (entryId, start, end) => {
+            if (readOnly) return;
             const startTime = Math.max(0, Math.min(duration, Math.round(start * 1e6) / 1e6));
             const endTime = Math.max(startTime, Math.min(duration, Math.round(end * 1e6) / 1e6));
             onChange({
@@ -60,6 +64,11 @@ export default function TimelineLabelTrack({
             });
         },
     });
+    React.useEffect(() => {
+        if (!readOnly) return;
+        setContextMenu(undefined);
+        setEditingId(undefined);
+    }, [readOnly]);
     React.useEffect(() => {
         if (!contextMenu) return;
         const closeOutside = (event: PointerEvent) => {
@@ -76,15 +85,18 @@ export default function TimelineLabelTrack({
         };
     }, [contextMenu]);
     const edit = (entry: TimelineLabelEntry) => {
+        if (readOnly) return;
         setContextMenu(undefined);
         setText(entry.text);
         setEditingId(entry.id);
     };
     const remove = (entryId: string) => {
+        if (readOnly) return;
         setContextMenu(undefined);
         onChange({ ...document, labelTrack: entries.filter(entry => entry.id !== entryId) });
     };
     const save = () => {
+        if (readOnly) return;
         const entry = entries.find(entry => entry.id === editingId);
         if (entry && entry.text !== text)
             onChange({
@@ -145,9 +157,11 @@ export default function TimelineLabelTrack({
                                 color="white"
                                 borderRadius="md"
                                 cursor={
-                                    draft?.entryId === entry.id && dragRef.current?.mode === 'move'
-                                        ? 'grabbing'
-                                        : 'grab'
+                                    readOnly
+                                        ? 'default'
+                                        : draft?.entryId === entry.id && dragRef.current?.mode === 'move'
+                                          ? 'grabbing'
+                                          : 'grab'
                                 }
                                 userSelect="none"
                                 style={{ touchAction: 'none' }}
@@ -171,6 +185,7 @@ export default function TimelineLabelTrack({
                                 onContextMenu={event => {
                                     event.preventDefault();
                                     event.stopPropagation();
+                                    if (readOnly) return;
                                     setContextMenu({
                                         entryId: entry.id,
                                         x: Math.max(0, Math.min(event.clientX, window.innerWidth - 180)),

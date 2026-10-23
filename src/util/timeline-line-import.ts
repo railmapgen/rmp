@@ -29,7 +29,7 @@ export const populateTimelineFromLineInformation = (
     document: TimelineDocument = createEmptyTimelineDocument()
 ): TimelineDocument => {
     const track: TimelineElementEntry[] = [];
-    const added = new Set<string>();
+    const added = new Set<string>(document.fixedResources ?? []);
     const nodes = new Map(graph.nodes.map(node => [node.key, node]));
     const edges = new Map(graph.edges.map((edge, index) => [edge.key!, { edge, index }]));
     const add = (id: string) => {

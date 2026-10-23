@@ -10,9 +10,10 @@ import { blobToBase64 } from '../util/binary';
 import { reconcileLineDefinitions } from '../util/line-definitions';
 import { yieldLineCalculation } from '../util/line-export';
 import { RMPSave, upgradeWithoutBackup } from '../util/save';
-import { normalizeTimelineDocument } from '../util/timeline';
+import { filterTimelineTrack, normalizeTimelineDocument, setTimelineFixedResources } from '../util/timeline';
 import { populateTimelineFromLineInformation } from '../util/timeline-line-import';
 import { timelineProjectDB } from './timeline-project-db';
+import { upgradeTimelineProject } from './timeline-project-upgrade';
 import {
     TIMELINE_PROJECT_APP,
     TIMELINE_PROJECT_VERSION,
@@ -173,10 +174,9 @@ export const createTimelineProjectFromRmp = async (
 
 const normalizeTimelineProjectFile = (raw: unknown): TimelineProjectFile => {
     if (!raw || typeof raw !== 'object') throw new Error('Invalid Timeline project file');
-    const file = raw as Partial<TimelineProjectFile>;
-    if (file.app !== TIMELINE_PROJECT_APP) throw new Error('This is not a Timeline project file');
-    if (file.version !== TIMELINE_PROJECT_VERSION)
-        throw new Error(`Unsupported Timeline project version: ${file.version}`);
+    if ((raw as Partial<TimelineProjectFile>).app !== TIMELINE_PROJECT_APP)
+        throw new Error('This is not a Timeline project file');
+    const file = upgradeTimelineProject(raw) as unknown as Partial<TimelineProjectFile>;
     const revision = file.revision as Partial<TimelineProjectRevision> | undefined;
     if (
         !revision?.graph ||
@@ -244,7 +244,10 @@ export const exportTimelineProjectFile = async (record: TimelineProjectRecord): 
         app: TIMELINE_PROJECT_APP,
         version: TIMELINE_PROJECT_VERSION,
         name: record.name,
-        revision: structuredClone(record.revision),
+        revision: {
+            ...structuredClone(record.revision),
+            timeline: normalizeTimelineDocument(record.revision.timeline),
+        },
         assets: await Promise.all(
             assets.map(async asset => ({
                 kind: asset.kind,
@@ -259,28 +262,18 @@ export const exportTimelineProjectFile = async (record: TimelineProjectRecord): 
 
 /** Remove missing map references and rebase independently placed clip anchors. */
 export const reconcileTimelineAfterRmpSync = (timeline: TimelineDocument, graph: TimelineGraph): TimelineDocument => {
-    const retainedIndexes: number[] = [];
-    const track = timeline.track.filter((entry, index) => {
-        const keep =
+    const reconciled = filterTimelineTrack(
+        timeline,
+        entry =>
             entry.kind === 'pause' ||
             (entry.kind === 'node' && graph.hasNode(entry.refId)) ||
             (entry.kind === 'edge' && graph.hasEdge(entry.refId)) ||
-            (entry.kind === 'keyframe' && graph.hasNode(entry.refId));
-        if (keep) retainedIndexes.push(index);
-        return keep;
-    });
-    const mapSlot = (slot: number) => retainedIndexes.filter(index => index < slot).length;
-    const audioTrack = timeline.audioTrack?.map(entry => {
-        const startSlot = Math.min(track.length, mapSlot(Math.round(entry.startSlot)));
-        const endSlot = Math.min(track.length, Math.max(startSlot, mapSlot(Math.round(entry.endSlot))));
-        return { ...entry, startSlot, endSlot };
-    });
-    const labelTrack = timeline.labelTrack?.map(entry => {
-        const startSlot = Math.min(track.length, mapSlot(Math.round(entry.startSlot)));
-        const endSlot = Math.min(track.length, Math.max(startSlot, mapSlot(Math.round(entry.endSlot))));
-        return { ...entry, startSlot, endSlot };
-    });
-    return { ...timeline, track, ...(audioTrack ? { audioTrack } : {}), ...(labelTrack ? { labelTrack } : {}) };
+            (entry.kind === 'keyframe' && graph.hasNode(entry.refId))
+    );
+    return setTimelineFixedResources(
+        reconciled,
+        (timeline.fixedResources ?? []).filter(id => graph.hasNode(id) || graph.hasEdge(id))
+    );
 };
 
 export const prepareTimelineProjectSync = async (

@@ -48,6 +48,7 @@ interface TimelineTrackProps {
     timing?: TimelinePlaybackTiming;
     playbackTime?: number;
     onSeek?: (time: number) => void;
+    readOnly?: boolean;
 }
 
 // Keep the insertion target compact so the remaining track gaps can start a range selection.
@@ -112,21 +113,36 @@ export default function TimelineTrack({
     timing,
     playbackTime,
     onSeek,
+    readOnly = false,
 }: TimelineTrackProps) {
     const { t } = useTranslation();
     const onSelectEntry = useEvent(onSelectEntryProp);
-    const onToggleAnimation = useEvent(onToggleAnimationProp);
-    const onPauseDurationChange = useEvent(onPauseDurationChangeProp);
+    const onToggleAnimation = useEvent((id: string) => {
+        if (!readOnly) onToggleAnimationProp(id);
+    });
+    const onPauseDurationChange = useEvent((id: string, duration: number) => {
+        if (!readOnly) onPauseDurationChangeProp(id, duration);
+    });
     const onInsertionIndexChange = useEvent(onInsertionIndexChangeProp);
-    const onRemoveEntry = useEvent(onRemoveEntryProp);
+    const onRemoveEntry = useEvent((id: string) => {
+        if (!readOnly) onRemoveEntryProp(id);
+    });
     const onDragStart = useEvent(onDragStartProp);
     const onDragOver = useEvent(onDragOverProp);
     const onDragEnd = useEvent(onDragEndProp);
     const onSelectionChange = useEvent(onSelectionChangeProp);
-    const onToggleSelectedAnimation = useEvent(onToggleSelectedAnimationProp);
-    const onRemoveSelectedEntries = useEvent(onRemoveSelectedEntriesProp);
-    const onReverseSelectedEntries = useEvent(onReverseSelectedEntriesProp);
-    const onDocumentChange = useEvent(onDocumentChangeProp);
+    const onToggleSelectedAnimation = useEvent((id: string) => {
+        if (!readOnly) onToggleSelectedAnimationProp(id);
+    });
+    const onRemoveSelectedEntries = useEvent((id: string) => {
+        if (!readOnly) onRemoveSelectedEntriesProp(id);
+    });
+    const onReverseSelectedEntries = useEvent(() => {
+        if (!readOnly) onReverseSelectedEntriesProp();
+    });
+    const onDocumentChange = useEvent((next: TimelineDocument) => {
+        if (!readOnly) onDocumentChangeProp(next);
+    });
     const [cursorStore] = React.useState(() => createInsertionCursorStore(insertionIndex));
     React.useLayoutEffect(() => cursorStore.setIndex(insertionIndex), [cursorStore, insertionIndex]);
     const trackRef = React.useRef<HTMLDivElement>(null);
@@ -143,6 +159,15 @@ export default function TimelineTrack({
     const suppressNextClickRef = React.useRef(false);
     const [selection, setSelection] = React.useState<{ start: number; current: number } | null>(null);
     const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number; entry: TimelineEntry } | null>(null);
+
+    React.useEffect(() => {
+        if (!readOnly) return;
+        const drag = cardDragRef.current;
+        cardDragRef.current = undefined;
+        if (drag?.target.hasPointerCapture(drag.pointerId)) drag.target.releasePointerCapture(drag.pointerId);
+        setSelection(null);
+        setContextMenu(null);
+    }, [readOnly]);
 
     const { entries: entryLayout, totalWidth } = React.useMemo(
         () => getTimelineTrackLayout(document.track, cardWidth),
@@ -166,6 +191,7 @@ export default function TimelineTrack({
         return clientX - element.getBoundingClientRect().left + element.scrollLeft;
     };
     const handleSelectionStart = (e: React.PointerEvent<HTMLDivElement>) => {
+        if (readOnly) return;
         const target = e.target as HTMLElement;
         if (
             e.button !== 0 ||
@@ -198,7 +224,7 @@ export default function TimelineTrack({
         if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
     };
     const handleCardPointerDown = useEvent((event: React.PointerEvent<HTMLElement>, entry: TimelineEntry) => {
-        if (event.button !== 0 || cardDragRef.current) return;
+        if (readOnly || event.button !== 0 || cardDragRef.current) return;
         suppressNextClickRef.current = false;
         const target = event.target as Element;
         const interactiveButton = target.closest('button');
@@ -220,6 +246,7 @@ export default function TimelineTrack({
         onDragStart(entry.id, entryIds);
     });
     const handleCardPointerMove = useEvent((event: React.PointerEvent<HTMLDivElement>) => {
+        if (readOnly) return;
         const drag = cardDragRef.current;
         if (!drag || drag.pointerId !== event.pointerId) return;
         if (!drag.active) {
@@ -235,6 +262,7 @@ export default function TimelineTrack({
         onDragOver(getContentX(event.clientX));
     });
     const finishCardDrag = useEvent((event: React.PointerEvent<HTMLDivElement>) => {
+        if (readOnly) return;
         const drag = cardDragRef.current;
         if (!drag || drag.pointerId !== event.pointerId) return;
         cardDragRef.current = undefined;
@@ -244,6 +272,7 @@ export default function TimelineTrack({
     });
     const handleContextMenu = useEvent((e: React.MouseEvent, entry: TimelineEntry) => {
         e.preventDefault();
+        if (readOnly) return;
         if (!selectedEntryIds.has(entry.id)) {
             onSelectionChange([entry.id]);
         }
@@ -357,6 +386,7 @@ export default function TimelineTrack({
                     <React.Fragment key={entry.id}>
                         {renderInsertionCursor(index)}
                         <TrackCard
+                            readOnly={readOnly}
                             entry={entry}
                             graph={graph}
                             graphRefresh={graphRefresh}
@@ -389,6 +419,7 @@ export default function TimelineTrack({
             onRemoveEntry,
             onToggleAnimation,
             onInsertionIndexChange,
+            readOnly,
         ]
     );
     const keyframeLanes = React.useMemo(
@@ -481,6 +512,7 @@ export default function TimelineTrack({
                                         />
                                     </Tooltip>
                                     <CloseButton
+                                        isDisabled={readOnly}
                                         size="xs"
                                         position="absolute"
                                         top="-18px"
@@ -499,11 +531,12 @@ export default function TimelineTrack({
                     )}
                 </Box>
             ),
-        [lanes, totalWidth, graph, graphRefresh, selectedEntryIds, t, onSelectEntry, onRemoveEntry]
+        [lanes, totalWidth, graph, graphRefresh, selectedEntryIds, t, onSelectEntry, onRemoveEntry, readOnly]
     );
     const audioTrack = React.useMemo(
         () => (
             <TimelineAudioTrack
+                readOnly={readOnly}
                 document={document}
                 totalWidth={totalWidth}
                 onChange={onDocumentChange}
@@ -511,11 +544,12 @@ export default function TimelineTrack({
                 timeScale={timeScale}
             />
         ),
-        [document, totalWidth, onDocumentChange, timing, timeScale]
+        [document, totalWidth, onDocumentChange, timing, timeScale, readOnly]
     );
     const labelTrack = React.useMemo(
         () => (
             <TimelineLabelTrack
+                readOnly={readOnly}
                 document={document}
                 totalWidth={totalWidth}
                 onChange={onDocumentChange}
@@ -523,7 +557,7 @@ export default function TimelineTrack({
                 timeScale={timeScale}
             />
         ),
-        [document, totalWidth, onDocumentChange, timing, timeScale]
+        [document, totalWidth, onDocumentChange, timing, timeScale, readOnly]
     );
 
     return (
@@ -688,6 +722,7 @@ interface TrackCardProps
     cardWidth?: number;
     onContextMenu: (event: React.MouseEvent, entry: TimelineEntry) => void;
     onCardPointerDown: (event: React.PointerEvent<HTMLElement>, entry: TimelineEntry) => void;
+    readOnly?: boolean;
 }
 
 // Card content changes independently of playback and insertion cursor subscriptions.
@@ -702,6 +737,7 @@ const TrackCard = React.memo(function TrackCard({
     onPauseDurationChange,
     onRemoveEntry,
     onToggleAnimation,
+    readOnly,
 }: TrackCardProps) {
     const { t } = useTranslation();
     const handlePointerDown = (event: React.PointerEvent<HTMLElement>) => onCardPointerDown(event, entry);
@@ -715,6 +751,7 @@ const TrackCard = React.memo(function TrackCard({
         />
     ) : isPauseEntry(entry) ? (
         <TimelinePauseClip
+            readOnly={readOnly}
             entry={entry}
             isSelected={isSelected}
             cardWidth={cardWidth}
@@ -726,6 +763,7 @@ const TrackCard = React.memo(function TrackCard({
         />
     ) : (
         <TimelineClip
+            readOnly={readOnly}
             entry={entry}
             graph={graph}
             isSelected={isSelected}

@@ -29,7 +29,7 @@ const projectIds: string[] = [];
 const makeProject = (graph: Graph): TimelineProjectRecord => ({
     id: `timeline-label-test-${Date.now()}-${Math.random()}`,
     name: 'Video labels',
-    version: 1,
+    version: 2,
     createdAt: 1,
     updatedAt: 1,
     revision: {

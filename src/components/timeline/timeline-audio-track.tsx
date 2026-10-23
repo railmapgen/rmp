@@ -33,6 +33,7 @@ interface TimelineAudioTrackProps {
     timing?: TimelinePlaybackTiming;
     timeScale?: TimelineTrackTimeScale;
     onChange: (document: TimelineDocument) => void;
+    readOnly?: boolean;
 }
 
 const AUDIO_ROW_HEIGHT = 28;
@@ -47,6 +48,7 @@ export default function TimelineAudioTrack({
     timing,
     timeScale,
     onChange,
+    readOnly = false,
 }: TimelineAudioTrackProps) {
     const { t } = useTranslation();
     const projectContext = useOptionalTimelineProjectContext();
@@ -57,6 +59,10 @@ export default function TimelineAudioTrack({
     const [durations, setDurations] = React.useState<Record<string, number>>({});
     const inputRef = React.useRef<HTMLInputElement>(null);
     const restoreRef = React.useRef<TimelineAudioEntry | undefined>(undefined);
+    const readOnlyRef = React.useRef(readOnly);
+    const editingGeneration = React.useRef(0);
+    if (readOnlyRef.current !== readOnly) editingGeneration.current++;
+    readOnlyRef.current = readOnly;
     const duration = timing?.duration ?? 0;
     const cursorTimes = timing?.cursorTimes ?? [0];
     const resourceKey = JSON.stringify(entries.map(entry => [entry.id, entry.blobId]));
@@ -104,6 +110,7 @@ export default function TimelineAudioTrack({
     }, [resourceKey, getAudio]);
 
     const updateEntry = (entryId: string, start: number, end: number, precision = 2) => {
+        if (readOnly) return;
         const factor = 10 ** precision;
         const startTime = clamp(Math.round(start * factor) / factor, 0, duration);
         const endTime = clamp(Math.round(end * factor) / factor, startTime, duration);
@@ -122,8 +129,10 @@ export default function TimelineAudioTrack({
         timing,
         timeScale,
         onCommit: (entryId, start, end) => updateEntry(entryId, start, end, 6),
+        readOnly,
     });
     const restore = (entry: TimelineAudioEntry) => {
+        if (readOnly) return;
         restoreRef.current = entry;
         inputRef.current?.click();
     };
@@ -131,9 +140,11 @@ export default function TimelineAudioTrack({
         const file = event.target.files?.[0];
         event.target.value = '';
         const entry = restoreRef.current;
-        if (!file || !entry) return;
+        if (readOnlyRef.current || !file || !entry) return;
+        const generation = editingGeneration.current;
         const blobId = `audio_${nanoid(12)}`;
         await saveAudio(blobId, file, file.name);
+        if (readOnlyRef.current || generation !== editingGeneration.current) return;
         onChange({
             ...document,
             audioTrack: entries.map(item => (item.id === entry.id ? { ...item, blobId, name: file.name } : item)),
@@ -196,7 +207,11 @@ export default function TimelineAudioTrack({
                             bg={isMissing ? 'gray.400' : 'blue.500'}
                             borderRadius="md"
                             cursor={
-                                draft?.entryId === entry.id && dragRef.current?.mode === 'move' ? 'grabbing' : 'grab'
+                                readOnly
+                                    ? 'default'
+                                    : draft?.entryId === entry.id && dragRef.current?.mode === 'move'
+                                      ? 'grabbing'
+                                      : 'grab'
                             }
                             userSelect="none"
                             style={{ touchAction: 'none' }}
@@ -248,6 +263,7 @@ export default function TimelineAudioTrack({
                                 <Popover placement="top">
                                     <PopoverTrigger>
                                         <IconButton
+                                            isDisabled={readOnly}
                                             size="xs"
                                             variant="ghost"
                                             color="white"
@@ -273,6 +289,7 @@ export default function TimelineAudioTrack({
                                                         {t('header.timelinePage.audioStart')}
                                                     </FormLabel>
                                                     <NumberInput
+                                                        isDisabled={readOnly}
                                                         size="sm"
                                                         value={start}
                                                         min={0}
@@ -294,6 +311,7 @@ export default function TimelineAudioTrack({
                                                         {t('header.timelinePage.audioEnd')}
                                                     </FormLabel>
                                                     <NumberInput
+                                                        isDisabled={readOnly}
                                                         size="sm"
                                                         value={end}
                                                         min={start}
@@ -322,11 +340,13 @@ export default function TimelineAudioTrack({
                                     </Portal>
                                 </Popover>
                                 <CloseButton
+                                    isDisabled={readOnly}
                                     size="xs"
                                     color="white"
                                     aria-label={`${t('header.timelinePage.deleteEntry')}: ${entry.name}`}
                                     onClick={event => {
                                         event.stopPropagation();
+                                        if (readOnly) return;
                                         onChange({
                                             ...document,
                                             audioTrack: entries.filter(item => item.id !== entry.id),
@@ -356,7 +376,7 @@ export default function TimelineAudioTrack({
                     {t('header.timelinePage.audioMissing')}
                 </Alert>
             )}
-            <input ref={inputRef} type="file" accept="audio/*" hidden onChange={handleRestore} />
+            <input ref={inputRef} type="file" accept="audio/*" hidden disabled={readOnly} onChange={handleRestore} />
         </Box>
     );
 }

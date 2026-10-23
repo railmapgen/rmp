@@ -18,6 +18,7 @@ interface TimelineClipProps {
     onRemove: () => void;
     onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
+    readOnly?: boolean;
 }
 
 export default function TimelineClip({
@@ -30,6 +31,7 @@ export default function TimelineClip({
     onRemove,
     onPointerDown,
     onContextMenu,
+    readOnly = false,
 }: TimelineClipProps) {
     const { t } = useTranslation();
     const accent = getTimelineEntryAccent(graph, entry);
@@ -90,6 +92,7 @@ export default function TimelineClip({
                 />
             )}
             <CloseButton
+                isDisabled={readOnly}
                 size="sm"
                 w={cardWidth < 90 ? '18px' : '24px'}
                 h={cardWidth < 90 ? '18px' : '24px'}
@@ -140,6 +143,7 @@ export default function TimelineClip({
                     </Badge>
                     <Tooltip label={t('header.timelinePage.showAnimation')} hasArrow>
                         <IconButton
+                            isDisabled={readOnly}
                             aria-label={t('header.timelinePage.showAnimation')}
                             aria-pressed={entry.showAnimation}
                             icon={<MdAnimation />}

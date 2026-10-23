@@ -27,12 +27,14 @@ export function useTimelineClipDrag({
     timing,
     timeScale,
     onCommit,
+    readOnly = false,
 }: {
     document: TimelineDocument;
     totalWidth: number;
     timing?: TimelinePlaybackTiming;
     timeScale?: TimelineTrackTimeScale;
     onCommit: (entryId: string, start: number, end: number) => void;
+    readOnly?: boolean;
 }) {
     const dragRef = React.useRef<ClipDrag | undefined>(undefined);
     const dragFrameRef = React.useRef<number | undefined>(undefined);
@@ -53,7 +55,7 @@ export function useTimelineClipDrag({
     React.useEffect(() => {
         releaseDrag();
         setDraft(undefined);
-    }, [document, duration, timeScale, totalWidth]);
+    }, [document, duration, timeScale, totalWidth, readOnly]);
     React.useEffect(() => releaseDrag, []);
 
     const handlePointerDown = (
@@ -61,7 +63,14 @@ export function useTimelineClipDrag({
         entry: TimelineTimedEntry,
         mode: 'move' | 'start' | 'end'
     ) => {
-        if (event.button !== 0 || !duration || dragRef.current || (event.target as Element).closest('button')) return;
+        if (
+            readOnly ||
+            event.button !== 0 ||
+            !duration ||
+            dragRef.current ||
+            (event.target as Element).closest('button')
+        )
+            return;
         const lane = laneRef.current;
         const bounds = lane?.getBoundingClientRect();
         if (!lane || !bounds || bounds.width <= 0) return;
@@ -127,7 +136,11 @@ export function useTimelineClipDrag({
         if (commit) updateDrag(drag, event.clientX);
         releaseDrag();
         setDraft(undefined);
-        if (commit && (Math.abs(drag.start - drag.originStart) > 1e-6 || Math.abs(drag.end - drag.originEnd) > 1e-6))
+        if (
+            !readOnly &&
+            commit &&
+            (Math.abs(drag.start - drag.originStart) > 1e-6 || Math.abs(drag.end - drag.originEnd) > 1e-6)
+        )
             onCommit(drag.entryId, drag.start, drag.end);
     };
 

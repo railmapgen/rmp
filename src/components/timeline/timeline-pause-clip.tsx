@@ -13,6 +13,7 @@ interface TimelinePauseClipProps {
     onRemove: () => void;
     onPointerDown?: (event: React.PointerEvent<HTMLElement>) => void;
     onContextMenu: (e: React.MouseEvent) => void;
+    readOnly?: boolean;
 }
 
 export default function TimelinePauseClip({
@@ -24,6 +25,7 @@ export default function TimelinePauseClip({
     onRemove,
     onPointerDown,
     onContextMenu,
+    readOnly = false,
 }: TimelinePauseClipProps) {
     const { t } = useTranslation();
     const label =
@@ -64,6 +66,7 @@ export default function TimelinePauseClip({
                 borderLeftRadius="md"
             />
             <CloseButton
+                isDisabled={readOnly}
                 size="sm"
                 w={cardWidth < 90 ? '18px' : '24px'}
                 h={cardWidth < 90 ? '18px' : '24px'}
@@ -101,6 +104,8 @@ export default function TimelinePauseClip({
                 </Text>
                 <Flex align="center" gap={1} onClick={e => e.stopPropagation()} w="full" minW={0}>
                     <Input
+                        isReadOnly={readOnly}
+                        isDisabled={readOnly}
                         aria-label={t('header.timelinePage.pauseDuration')}
                         type="number"
                         min={0}

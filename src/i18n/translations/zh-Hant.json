@@ -1016,17 +1016,15 @@
                 "playback": "播放效果",
                 "overlays": "畫面標註",
                 "lineInformation": "路線資訊",
-                "showYear": "顯示年份",
-                "showYearHint": "在影片左上角顯示目前路線的通車年份。",
-                "showLineName": "標註路線名稱",
-                "showLineNameHint": "在年份下方顯示路線標誌色、中文名稱和英文名稱。",
-                "showLineLength": "標註路線長度",
                 "showLineLengthMapOnly": "僅開啟真實地理地圖時可用。",
-                "lineLengthUnit": "長度單位",
                 "savedWithProject": "隨目前的編年器專案儲存",
                 "done": "完成",
                 "cameraZoom": "放大倍率",
-                "cameraZoomFull": "全螢幕（Full）"
+                "cameraZoomFull": "全螢幕（Full）",
+                    "lineInformationHint": "修改畫面標註中使用的路線名稱、顏色和日期。",
+                    "editPositionsHint": "在預覽區域新增、排列並設定畫面標註模組。",
+                    "chooseFixedResources": "選擇固定資源",
+                    "fixedResourcesHint": "讓選取的節點和路線區段從首幀起持續顯示。"
             },
             "lineLabels": {
                 "title": "路線標籤資訊",
@@ -1052,7 +1050,74 @@
             "previewFailed": "預覽載入失敗",
             "audioDuration": "資源時長：{{duration}} 秒",
             "audioTiming": "編輯音樂時間",
-            "retryPreview": "重新載入"
+            "retryPreview": "重新載入",
+            "fixedResources": {
+                "title": "固定資源",
+                "hint": "點按節點或路線區段可加入選取，再次點按可移除。",
+                "selectedCount": "已選取 {{count}} 個資源",
+                "doneNoticeTitle": "固定資源已更新",
+                "doneNotice": "固定資源會從首幀起持續顯示至影片結束，對應的出現和退出片段已從軌道移除。取消固定不會還原原有片段，可依正常流程重新新增至軌道。",
+                "done": "完成",
+                "previewLabel": "固定資源預覽"
+            },
+            "overlayEditor": {
+                "editPositions": "修改元素位置",
+                "title": "畫面標註配置",
+                "settingsHint": "在預覽區域新增、排列並獨立設定畫面標註。",
+                "hint": "點選預覽中的模組可修改設定。透過虛線加號新增模組，拖曳模組可調整順序或移到其他角落。",
+                "addToRegion": "新增至{{region}}",
+                "closeCatalog": "關閉模組清單",
+                "addModule": "新增模組",
+                "subscriberLocked": "此區域僅訂閱使用者可編輯。已有模組可以移到免費區域。",
+                "subscriptionExport": "右上角區域需要訂閱。請將其中的模組移到其他區域，或恢復訂閱後匯出。",
+                "region": "顯示區域",
+                "moveUp": "上移",
+                "moveDown": "下移",
+                "remove": "刪除模組",
+                "timedTextHint": "文字內容與出現時間由文字軌控制。",
+                "trackLocked": "調整畫面標註期間，軌道內容已鎖定。",
+                "regions": {
+                    "top-left": "左上角",
+                    "top-right": "右上角",
+                    "bottom-left": "左下角",
+                    "bottom-right": "右下角"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "時間",
+                    "lineIdentity": "路線標識",
+                    "lineLength": "路線長度",
+                    "minimap": "地圖縮圖",
+                    "timedText": "時間軸文字"
+                },
+                "fields": {
+                    "showMonthDay": "時間內容",
+                    "dateLayout": "日期版面",
+                    "showAppearedLines": "在下方顯示所有已出現過的路線",
+                    "lengthScope": "長度統計",
+                    "unit": "長度單位",
+                    "size": "小窗大小",
+                    "fontSize": "文字大小",
+                    "alignment": "文字對齊"
+                },
+                "options": {
+                    "yearOnly": "僅年份",
+                    "yearMonthDay": "年月日",
+                    "singleLine": "單行",
+                    "doubleLine": "雙行",
+                    "network": "全網累計總長",
+                    "currentLine": "目前路線累計長度",
+                    "km": "公里（km）",
+                    "mi": "英里（mi）",
+                    "small": "小",
+                    "medium": "中",
+                    "large": "大",
+                    "left": "靠左",
+                    "center": "置中",
+                    "right": "靠右"
+                }
+            }
         },
         "mapToggle": {
             "show": "顯示地理地圖",

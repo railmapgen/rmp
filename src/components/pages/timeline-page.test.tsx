@@ -4,13 +4,14 @@ import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
+import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../../constants/constants';
 import {
     createEmptyTimelineDocument,
     TimelineDocument,
     TimelineEntry,
     TimelineKeyframeEntry,
 } from '../../constants/timeline';
+import { TimelineOverlayModule, TimelineOverlayRegion } from '../../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { setActiveSubscriptions } from '../../redux/account/account-slice';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
@@ -20,6 +21,7 @@ import {
     replaceTimeline,
     setCursor,
     setVideoOptions,
+    undo,
 } from '../../timeline/timeline-store';
 import type { VideoExportOptions } from '../../util/video-export/video-export';
 import TimelinePage from './timeline-page';
@@ -49,8 +51,31 @@ vi.mock('../timeline/timeline-track', () => ({ KEYFRAME_ROW_HEIGHT: 20 }));
 vi.mock('../timeline/use-timeline-audio-playback', () => ({ useTimelineAudioPlayback: () => undefined }));
 vi.mock('../timeline/use-timeline-playback-clock', () => ({ useTimelinePlaybackClock: playbackClock }));
 vi.mock('../timeline/timeline-svg-wrapper', () => ({
-    default: ({ isSubscriber }: { isSubscriber: boolean }) => (
-        <div data-testid="timeline-editor" data-subscriber={isSubscriber} />
+    default: ({
+        isSubscriber,
+        onSelect,
+        selectedIds,
+        visibleIds,
+        canvasId,
+    }: {
+        isSubscriber: boolean;
+        onSelect: (id: Id) => void;
+        selectedIds?: Set<Id>;
+        visibleIds?: Set<Id>;
+        canvasId?: string;
+    }) => (
+        <div
+            data-testid={canvasId === 'fixed-resource-preview' ? 'fixed-preview-canvas' : 'timeline-editor'}
+            data-subscriber={isSubscriber}
+            data-resources={JSON.stringify([...(visibleIds ?? selectedIds ?? [])])}
+        >
+            {!canvasId && (
+                <>
+                    <button onClick={() => onSelect('stn_a')}>Select station once</button>
+                    <button onClick={() => onSelect('line_a')}>Select line once</button>
+                </>
+            )}
+        </div>
     ),
 }));
 vi.mock('../timeline/timeline-track-panel', () => ({
@@ -62,6 +87,9 @@ vi.mock('../timeline/timeline-track-panel', () => ({
         onTogglePlayback,
         onSeek,
         onSelectEntry,
+        onEditOverlayModules,
+        onEditFixedResources,
+        readOnly,
     }: {
         document: TimelineDocument;
         selectedEntryId?: string;
@@ -70,9 +98,15 @@ vi.mock('../timeline/timeline-track-panel', () => ({
         onTogglePlayback: () => void;
         onSeek: (time: number) => void;
         onSelectEntry: (entry: TimelineEntry) => void;
+        onEditOverlayModules: () => void;
+        onEditFixedResources: () => void;
+        readOnly: boolean;
     }) => (
         <>
             <button onClick={onTogglePlayback}>{isPlaying ? 'Pause preview' : 'Play preview'}</button>
+            <button onClick={onEditOverlayModules}>Edit annotation layout</button>
+            <button onClick={onEditFixedResources}>Choose fixed resources</button>
+            <span data-testid="track-read-only">{String(readOnly)}</span>
             <button onClick={() => onSeek(17.5)}>Seek preview</button>
             <button onClick={() => onSeek(20)}>Seek to end</button>
             {document.track.map(entry => (
@@ -92,12 +126,20 @@ vi.mock('../timeline/timeline-preview', () => ({
         document,
         editableKeyframe,
         isSubscriber,
+        previewOverlayModules,
+        onPreviewOverlayModuleMove,
+        onCancelOverlayModuleMove,
+        onMoveOverlayModule,
     }: {
         options: VideoExportOptions;
         onTimingChange: (timing: { duration: number; cursorTimes: number[] }) => void;
         document: TimelineDocument;
         editableKeyframe?: TimelineKeyframeEntry;
         isSubscriber: boolean;
+        previewOverlayModules?: TimelineOverlayModule[];
+        onPreviewOverlayModuleMove: (id: string, region: TimelineOverlayRegion, index: number) => void;
+        onCancelOverlayModuleMove: () => void;
+        onMoveOverlayModule: (id: string, region: TimelineOverlayRegion, index: number) => void;
     }) => {
         previewRender(options);
         React.useEffect(() => {
@@ -117,7 +159,18 @@ vi.mock('../timeline/timeline-preview', () => ({
                 data-testid="timeline-preview"
                 data-editable-keyframe={editableKeyframe?.id}
                 data-subscriber={isSubscriber}
-            />
+            >
+                <span data-testid="module-preview-region">
+                    {previewOverlayModules?.[0]?.region ?? document.overlayModules?.[0]?.region}
+                </span>
+                <button onClick={() => onPreviewOverlayModuleMove(document.overlayModules![0].id, 'bottom-right', 0)}>
+                    Drag module preview
+                </button>
+                <button onClick={onCancelOverlayModuleMove}>Cancel module drag</button>
+                <button onClick={() => onMoveOverlayModule(document.overlayModules![0].id, 'bottom-right', 0)}>
+                    Drop module
+                </button>
+            </div>
         );
     },
 }));
@@ -151,7 +204,7 @@ const renderPage = (track: TimelineEntry[] = []) => {
     const record: TimelineProjectRecord = {
         id: 'preview-options',
         name: 'Preview options',
-        version: 1,
+        version: 2,
         createdAt: 1,
         updatedAt: 1,
         revision: {
@@ -189,6 +242,61 @@ const renderPage = (track: TimelineEntry[] = []) => {
 const latestPreviewOptions = () => previewRender.mock.calls.at(-1)![0] as VideoExportOptions;
 
 describe('TimelinePage preview and export isolation', () => {
+    it('toggles fixed resources with one click, stages the full-map preview and saves once on Done', () => {
+        projectContext.current.graph.addNode('stn_a', { x: 0, y: 0 } as NodeAttributes);
+        projectContext.current.graph.addNode('stn_b', { x: 100, y: 0 } as NodeAttributes);
+        projectContext.current.graph.addEdgeWithKey('line_a', 'stn_a', 'stn_b', {} as EdgeAttributes);
+        const track: TimelineEntry[] = [
+            { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+            { id: 'line_a', kind: 'edge', refId: 'line_a', phase: 'enter', showAnimation: true },
+            { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 50, y: 50 },
+        ];
+        const store = renderPage(track);
+        const original = structuredClone(store.getState().project.active!.revision.timeline);
+        const historyLength = store.getState().project.past.length;
+        fireEvent.click(screen.getByRole('button', { name: 'Choose fixed resources' }));
+        expect(store.getState().runtime.fixedResourceEditing).toBe(true);
+        expect(screen.getByTestId('track-read-only').textContent).toBe('true');
+        expect(screen.queryByTestId('timeline-preview')).toBeNull();
+        fireEvent.click(screen.getByRole('button', { name: 'Select station once' }));
+        expect(screen.getByTestId('fixed-preview-canvas').getAttribute('data-resources')).toBe('["stn_a"]');
+        fireEvent.click(screen.getByRole('button', { name: 'Select station once' }));
+        expect(screen.getByTestId('fixed-preview-canvas').getAttribute('data-resources')).toBe('[]');
+        fireEvent.click(screen.getByRole('button', { name: 'Select station once' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Select line once' }));
+        expect(store.getState().project.active!.revision.timeline).toEqual(original);
+        expect(store.getState().project.past).toHaveLength(historyLength);
+        fireEvent.click(screen.getByRole('button', { name: 'header.timelinePage.fixedResources.done' }));
+        const saved = store.getState().project.active!.revision.timeline;
+        expect(saved.fixedResources).toEqual(['stn_a', 'line_a']);
+        expect(saved.track).toEqual([track[2]]);
+        expect(store.getState().project.past).toHaveLength(historyLength + 1);
+        expect(store.getState().runtime.fixedResourceEditing).toBe(false);
+        expect(screen.getByRole('dialog').textContent).toContain('header.timelinePage.fixedResources.doneNotice');
+        expect(screen.getByTestId('track-read-only').textContent).toBe('false');
+        expect(screen.getByTestId('timeline-preview')).toBeTruthy();
+        act(() => store.dispatch(undo()));
+        expect(store.getState().project.active!.revision.timeline).toEqual(original);
+    });
+
+    it('previews drag placement without saving, restores cancellation and commits only on drop', () => {
+        const store = renderPage();
+        fireEvent.click(screen.getByRole('button', { name: 'Edit annotation layout' }));
+        const original = structuredClone(store.getState().project.active!.revision.timeline);
+        const historyLength = store.getState().project.past.length;
+        fireEvent.click(screen.getByRole('button', { name: 'Drag module preview' }));
+        expect(screen.getByTestId('module-preview-region').textContent).toBe('bottom-right');
+        expect(store.getState().project.active!.revision.timeline).toEqual(original);
+        expect(store.getState().project.past).toHaveLength(historyLength);
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel module drag' }));
+        expect(screen.getByTestId('module-preview-region').textContent).toBe('top-left');
+        fireEvent.click(screen.getByRole('button', { name: 'Drag module preview' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Drop module' }));
+        expect(store.getState().project.active!.revision.timeline.overlayModules?.[0].region).toBe('bottom-right');
+        expect(store.getState().project.active!.revision.timeline.track).toEqual(original.track);
+        expect(store.getState().project.past).toHaveLength(historyLength + 1);
+    });
+
     it('updates both the editor and video preview when Export access changes', () => {
         const store = renderPage();
         const expectSubscriber = (subscriber: boolean) => {
@@ -249,17 +357,13 @@ describe('TimelinePage preview and export isolation', () => {
         expect(screen.getByRole('button', { name: 'Pause preview' })).toBeTruthy();
     });
 
-    it('still applies persisted drawing speed, station behavior, year and line label settings to the preview', () => {
+    it('applies persisted drawing speed, station behavior and camera zoom to the preview', () => {
         const store = renderPage();
         const initialOptions = latestPreviewOptions();
         const settings = {
             cameraZoom: 8 as const,
             speedMultiplier: 1.8,
             autoChangeStationType: false,
-            showYear: true,
-            showLineName: true,
-            showLineLength: true,
-            lineLengthUnit: 'mi' as const,
         };
         act(() => store.dispatch(replaceTimeline({ ...store.getState().project.active!.revision.timeline, settings })));
         expect(latestPreviewOptions()).not.toBe(initialOptions);

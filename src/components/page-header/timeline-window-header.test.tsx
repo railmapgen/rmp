@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unassigned-import
 import '@testing-library/jest-dom';
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -13,7 +13,14 @@ import i18n from '../../i18n/config';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
-import { createTimelineStore, openProject, setCursor } from '../../timeline/timeline-store';
+import {
+    createTimelineStore,
+    openProject,
+    setCursor,
+    setAnnotationEditing,
+    setFixedResourceEditing,
+    replaceTimeline,
+} from '../../timeline/timeline-store';
 import { createTestLineGraph } from '../../test-utils';
 import * as lineExport from '../../util/line-export';
 import { CURRENT_VERSION } from '../../util/save';
@@ -54,7 +61,7 @@ afterEach(() => {
 const makeProject = (): TimelineProjectRecord => ({
     id: 'header-project',
     name: 'Header project',
-    version: 1,
+    version: 2,
     createdAt: 1,
     updatedAt: 1,
     revision: {
@@ -69,6 +76,87 @@ const makeProject = (): TimelineProjectRecord => ({
 });
 
 describe('TimelineWindowHeader', () => {
+    it('discards pending RMP preparation after entering and leaving the fixed-resource picker', async () => {
+        await i18n.changeLanguage('en');
+        const project = makeProject();
+        const graph = createTestLineGraph([['A', 'B']]);
+        localStorage.setItem(
+            LocalStorageKey.PARAM,
+            JSON.stringify({ version: CURRENT_VERSION, graph: graph.export() })
+        );
+        let finishCalculation!: () => void;
+        const yieldSpy = vi.spyOn(lineExport, 'yieldLineCalculation').mockImplementationOnce(
+            () =>
+                new Promise<void>(resolve => {
+                    finishCalculation = resolve;
+                })
+        );
+        const store = createTimelineStore();
+        store.dispatch(openProject(project));
+        render(
+            <I18nextProvider i18n={i18n}>
+                <Provider store={store}>
+                    <RmgThemeProvider>
+                        <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                            <TimelineWindowHeader />
+                        </TimelineProjectProvider>
+                    </RmgThemeProvider>
+                </Provider>
+            </I18nextProvider>
+        );
+        try {
+            const files = screen.getByRole('button', { name: 'Files' });
+            fireEvent.click(files);
+            fireEvent.click(screen.getByText('Import RMP data'));
+            fireEvent.click(await screen.findByText('Project open in painter'));
+            await waitFor(() => expect(yieldSpy).toHaveBeenCalledOnce());
+            act(() => store.dispatch(setFixedResourceEditing(true)));
+            act(() => store.dispatch(setFixedResourceEditing(false)));
+            await act(async () => finishCalculation());
+            await waitFor(() => expect(files).not.toBeDisabled());
+            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).toBeNull();
+            expect(store.getState().project.active!.revision).toEqual(project.revision);
+        } finally {
+            finishCalculation();
+            yieldSpy.mockRestore();
+        }
+    });
+
+    it.each(['annotation', 'fixed resources'] as const)(
+        'locks insert, edit, sync and history controls during %s editing',
+        async mode => {
+            await i18n.changeLanguage('en');
+            const project = makeProject();
+            const graph = MultiDirectedGraph.from(project.revision.graph);
+            const store = createTimelineStore();
+            store.dispatch(openProject(project));
+            store.dispatch(
+                replaceTimeline({
+                    ...project.revision.timeline,
+                    track: [{ id: 'pause', kind: 'pause', position: 'after', duration: 2 }],
+                })
+            );
+            store.dispatch(mode === 'annotation' ? setAnnotationEditing(true) : setFixedResourceEditing(true));
+            render(
+                <I18nextProvider i18n={i18n}>
+                    <Provider store={store}>
+                        <RmgThemeProvider>
+                            <TimelineProjectProvider projectId={project.id} graph={graph} revision={project.revision}>
+                                <TimelineWindowHeader />
+                            </TimelineProjectProvider>
+                        </RmgThemeProvider>
+                    </Provider>
+                </I18nextProvider>
+            );
+            expect(screen.getByRole('button', { name: 'Insert' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Edit' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Redo' })).toBeDisabled();
+            fireEvent.click(screen.getByRole('button', { name: 'Files' }));
+            expect((await screen.findByText('Import RMP data')).closest('button')).toBeDisabled();
+            if (mode === 'fixed resources') expect(screen.getByText('Rename project').closest('button')).toBeDisabled();
+        }
+    );
     it('shows loading feedback and disables repeat requests while preparing current RMP line data', async () => {
         await i18n.changeLanguage('en');
         const project = makeProject();

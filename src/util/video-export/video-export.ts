@@ -11,17 +11,20 @@ import {
     TimelineDocument,
     TimelineEntry,
     TimelineLabelEntry,
-    TimelineLengthUnit,
 } from '../../constants/timeline';
+import {
+    getTimelineOverlayModules,
+    hasSubscriberOnlyTimelineOverlays,
+    TimelineOverlayModule,
+} from '../../constants/timeline-overlays';
 import { createGeographicLengthProfile } from '../../map/geographic-length';
-import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
+import { compileMapStyleCss, DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
 import { renderMapLayerForExport } from '../../map/map-tile-controller';
 import { positionMapAttribution } from '../../map/map-attribution';
 import { isMapZoomed } from '../../map/map-config';
 import { TextLanguage } from '../fonts';
 import { changeStationType, checkAndChangeStationIntType } from '../change-types';
-import { makeRenderReadySVGElement } from '../download';
-import { getRmpWatermarkUrl } from '../watermark';
+import { getRmpWatermarkUrl, makeRenderReadySVGElement } from '../download';
 import { calculateCanvasSize } from '../helpers';
 import { Element as RenderElement, getLines, getNodes } from '../process-elements';
 import { getTimelineAudioRange, getTimelineClipRange } from '../timeline-playback';
@@ -29,7 +32,12 @@ import { imageStoreIndexedDB } from '../image-store-indexed-db';
 import { isOpenPath } from '../path';
 import { getOpenPathPrimitives } from '../open-path-primitives';
 import { getPointAtPrimitiveArcLength, getPrimitiveListLength } from '../open-path-length';
-import { createVideoLineOverlay, getVideoLineAnnotation } from './video-overlay';
+import { getVideoLineAnnotation, getVideoLineLabel } from './video-overlay';
+import {
+    createVideoOverlayModules,
+    TimelineOverlayLayoutItem,
+    VideoOverlayLineIdentity,
+} from './video-overlay-modules';
 import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions } from './video-encoder';
 import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
@@ -76,10 +84,6 @@ export interface VideoExportOptions extends VideoEncodingOptions {
     autoChangeStationType: boolean;
     isSystemFontsOnly: boolean;
     hideWatermark: boolean;
-    showYear?: boolean;
-    showLineName?: boolean;
-    showLineLength?: boolean;
-    lineLengthUnit?: TimelineLengthUnit;
 }
 
 export interface VideoExportEnvironment {
@@ -143,6 +147,7 @@ const VideoExportCSS = `
 `;
 
 let videoWatermarkGraphic: SVGSVGElement | undefined;
+let videoWorldGroupSequence = 0;
 
 type CameraFocus = VideoCameraFocus;
 
@@ -767,6 +772,8 @@ export const exportVideo = async (
     runtime: VideoExportRuntime = {}
 ): Promise<VideoExportResult> => {
     throwIfVideoExportAborted(runtime.signal);
+    if (!environment.isSubscriber && hasSubscriberOnlyTimelineOverlays(timeline))
+        throw new Error(i18n.t('header.timelinePage.overlayEditor.subscriptionExport'));
     const { mapEnabled, mapStyle, svgViewBoxMin, svgViewBoxZoom } = environment;
     const source = createVideoExportCanvas(
         mapEnabled,
@@ -839,7 +846,8 @@ const createPreparedVideoRenderer = async (
     source: ReturnType<typeof createVideoExportCanvas>,
     environment: VideoExportEnvironment,
     exportRuntime?: VideoExportRuntime,
-    previewSignal?: AbortSignal
+    previewSignal?: AbortSignal,
+    background = '#fff'
 ) => {
     const layout = createVideoResourceLayout({
         languages,
@@ -857,7 +865,8 @@ const createPreparedVideoRenderer = async (
             source,
             environment,
             layout,
-            exportRuntime
+            exportRuntime,
+            background
         );
         return {
             ...renderer,
@@ -881,7 +890,8 @@ const prepareVideoRenderer = async (
     source: ReturnType<typeof createVideoExportCanvas>,
     environment: VideoExportEnvironment,
     resourceLayout: ReturnType<typeof createVideoResourceLayout>,
-    exportRuntime?: VideoExportRuntime
+    exportRuntime?: VideoExportRuntime,
+    background = '#fff'
 ) => {
     languages = getVideoResourceLanguages(getNodes(graph), languages);
     const { fps, speedMultiplier, resolution, autoChangeStationType, isSystemFontsOnly, hideWatermark } = {
@@ -889,14 +899,9 @@ const prepareVideoRenderer = async (
         ...timeline.settings,
     };
     const { cameraZoom } = getTimelineSettings(timeline);
-    const {
-        showYear = false,
-        showLineName = false,
-        showLineLength: showLength = false,
-        lineLengthUnit: lengthUnit = 'km',
-    } = { ...options, ...timeline.settings };
-    const lineLengthUnit = lengthUnit === 'mi' ? 'mi' : 'km';
-    const showLineLength = environment.mapEnabled && showLength;
+    let overlayModules = getTimelineOverlayModules(timeline);
+    let overlayEditing = false;
+    let overlayLayout: TimelineOverlayLayoutItem[] = [];
     const imageAssets = new Map<string, string>();
     const imageIds = new Set<string>();
     graph.forEachNode((_node, attrs) => {
@@ -911,29 +916,47 @@ const prepareVideoRenderer = async (
             if (asset) imageAssets.set(id, asset);
         })
     );
-    const usesAuthoredPlayback = timeline.track.some(
+    const fixedResources = new Set<Id>(
+        (timeline.fixedResources ?? []).filter(id => graph.hasNode(id) || graph.hasEdge(id))
+    );
+    const fixedNodes = new Set<NodeId>([...fixedResources].filter(id => graph.hasNode(id)) as NodeId[]);
+    const fixedEdges = new Set<LineId>([...fixedResources].filter(id => graph.hasEdge(id)) as LineId[]);
+    // Persisted normalization normally removes these clips. Zero-length placeholders also
+    // protect direct renderer callers while preserving every original cursor index.
+    const playbackTimeline: TimelineDocument = {
+        ...timeline,
+        track: timeline.track.map(entry =>
+            isElementEntry(entry) && fixedResources.has(entry.refId)
+                ? { id: entry.id, kind: 'pause', position: 'before', duration: 0 }
+                : entry
+        ),
+    };
+    const usesAuthoredPlayback = playbackTimeline.track.some(
         entry =>
             entry.kind === 'keyframe' ||
             entry.kind === 'pause' ||
             (isElementEntry(entry) && entry.phase === 'exit') ||
             (isElementEntry(entry) && entry.showAnimation === false)
     );
-    const renderGeometry = usesAuthoredPlayback || source.renderGeometry || showLineLength;
+    const renderGeometry = usesAuthoredPlayback || source.renderGeometry || environment.mapEnabled;
     if (renderGeometry) {
         // Keep the editor graph untouched, and render each authored line independently so
         // one reconciled segment can enter/exit without affecting the rest of its group.
         graph = graph.copy();
         graph.forEachEdge(edge => graph.setEdgeAttribute(edge, 'reconcileId', ''));
     }
-    const sequence = generateAnimationSequence(graph, timeline);
+    const sequence = fixedResources.size
+        ? buildTimelineSequence(graph, playbackTimeline.track)
+        : generateAnimationSequence(graph, playbackTimeline);
+    const fixedOnly = fixedResources.size > 0 && sequence.steps.length === 0;
     const { width: outputWidth, height: outputHeight } = getVideoExportDimensions(resolution);
 
-    if (sequence.steps.length === 0) {
+    if (sequence.steps.length === 0 && !fixedResources.size) {
         throw new Error('No timeline steps to animate');
     }
 
     const fitToElementsZoom = getOverviewZoom(graph);
-    const currentZoom = fitToElementsZoom * cameraZoom;
+    const currentZoom = fitToElementsZoom * (fixedOnly ? 1 : cameraZoom);
     const fullscreenZoom = fitToElementsZoom;
     const playbackSegments: PlaybackSegment[] = [];
     let previousEdgeForPause: LineId | undefined;
@@ -956,7 +979,7 @@ const prepareVideoRenderer = async (
     });
     const { edgeLengths: measuredEdgeLengths, geometry } = await measureRenderedEdgeLengths(
         graph,
-        sequence.edges,
+        [...new Set([...sequence.edges, ...fixedEdges])],
         resourceLayout,
         isSystemFontsOnly,
         languages,
@@ -972,7 +995,7 @@ const prepareVideoRenderer = async (
     const authoredPlayback = usesAuthoredPlayback
         ? createVideoTimelinePlayback(
               graph,
-              timeline,
+              playbackTimeline,
               measuredEdgeLengths,
               new Map(
                   sequence.steps.filter(step => step.kind === 'edge').map(step => [step.id as LineId, step.reverse])
@@ -1017,7 +1040,7 @@ const prepareVideoRenderer = async (
     // Resolve each audio clip's cursor slots into real video seconds. The last cursor is
     // stretched to the end of the overview so music aimed at the timeline end covers it.
     const validTrackIndices: number[] = [];
-    timeline.track.forEach((entry, index) => {
+    playbackTimeline.track.forEach((entry, index) => {
         if (!isElementEntry(entry) || entry.phase !== 'enter') return;
         const isValid = entry.kind === 'node' ? graph.hasNode(entry.refId) : graph.hasEdge(entry.refId);
         if (isValid) validTrackIndices.push(index);
@@ -1025,7 +1048,8 @@ const prepareVideoRenderer = async (
     const cursorTimes = authoredPlayback
         ? [...authoredPlayback.cursorTimes]
         : getPlaybackCursorTimes(timeline.track.length, validTrackIndices, playbackSegments, animationDuration);
-    if (cursorTimes.length > 0) cursorTimes[cursorTimes.length - 1] = totalFrames / fps;
+    if (cursorTimes.length > 0 && (!fixedOnly || cursorTimes.length > 1))
+        cursorTimes[cursorTimes.length - 1] = totalFrames / fps;
 
     const cumulativeWeights: number[] = [];
     let runningWeight = 0;
@@ -1165,18 +1189,30 @@ const prepareVideoRenderer = async (
         } else {
             const overviewProgress = getOverviewZoomProgress(frame - animationFrames, overviewFrames);
             nextZoom = interpolateCameraZoom(currentZoom, fullscreenZoom, overviewProgress);
-            allNodes.forEach(nodeId => {
+            const overviewNodes = fixedResources.size ? sequence.nodes : allNodes;
+            const overviewEdges = fixedResources.size ? sequence.edges : allEdges;
+            overviewNodes.forEach(nodeId => {
                 visibleNodes.add(nodeId);
                 nodeProgress.set(nodeId, 1);
                 textProgress.set(nodeId, 1);
             });
-            allEdges.forEach(edgeId => {
+            overviewEdges.forEach(edgeId => {
                 visibleEdges.add(edgeId);
                 edgeDirections.set(edgeId, false);
                 edgeProgress.set(edgeId, 1);
             });
         }
-        if (cameraZoom === 1) nextZoom = getOverviewZoom(frameGraph);
+        for (const id of fixedNodes) {
+            visibleNodes.add(id);
+            nodeProgress.set(id, 1);
+            textProgress.set(id, 1);
+        }
+        for (const id of fixedEdges) {
+            visibleEdges.add(id);
+            edgeProgress.set(id, 1);
+            edgeDirections.set(id, false);
+        }
+        if (cameraZoom === 1 || fixedOnly) nextZoom = getOverviewZoom(frameGraph);
         return {
             frameGraph,
             visibleNodes,
@@ -1228,6 +1264,32 @@ const prepareVideoRenderer = async (
     const finalFullscreenZoom = getOverviewZoom(cameraGraph);
     const baseBounds = calculateCanvasSize(graph);
     const baseCenter = { x: (baseBounds.xMin + baseBounds.xMax) / 2, y: (baseBounds.yMin + baseBounds.yMax) / 2 };
+    const minimapExtents = { ...baseBounds };
+    graph.forEachNode((_id, attrs) => {
+        minimapExtents.xMin = Math.min(minimapExtents.xMin, attrs.x - 50);
+        minimapExtents.xMax = Math.max(minimapExtents.xMax, attrs.x + 50);
+        minimapExtents.yMin = Math.min(minimapExtents.yMin, attrs.y - 50);
+        minimapExtents.yMax = Math.max(minimapExtents.yMax, attrs.y + 50);
+    });
+    for (const entry of timeline.track) {
+        if (entry.kind !== 'keyframe' || !graph.hasNode(entry.refId)) continue;
+        minimapExtents.xMin = Math.min(minimapExtents.xMin, entry.x - 50);
+        minimapExtents.xMax = Math.max(minimapExtents.xMax, entry.x + 50);
+        minimapExtents.yMin = Math.min(minimapExtents.yMin, entry.y - 50);
+        minimapExtents.yMax = Math.max(minimapExtents.yMax, entry.y + 50);
+    }
+    const minimapWidth = Math.max(
+        1,
+        minimapExtents.xMax - minimapExtents.xMin,
+        ((minimapExtents.yMax - minimapExtents.yMin) * 16) / 9
+    );
+    const minimapHeight = (minimapWidth * 9) / 16;
+    const minimapBounds = {
+        x: (minimapExtents.xMin + minimapExtents.xMax - minimapWidth) / 2,
+        y: (minimapExtents.yMin + minimapExtents.yMax - minimapHeight) / 2,
+        width: minimapWidth,
+        height: minimapHeight,
+    };
     const originalPaths = new Map<LineId, { path: SVGPathElement; length: number }>();
     for (const id of allEdges) {
         const path = geometry.getElementById(id)?.querySelector('path');
@@ -1353,7 +1415,7 @@ const prepareVideoRenderer = async (
     };
     const cameraCenterAt = (frame: number) => {
         if (frame === totalFrames - 1) return overviewCenter;
-        if (cameraZoom === 1) {
+        if (cameraZoom === 1 || fixedOnly) {
             const frameGraph = frameAt(frame).frameGraph;
             const bounds = frameGraph === graph ? baseBounds : calculateCanvasSize(frameGraph);
             return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
@@ -1394,21 +1456,67 @@ const prepareVideoRenderer = async (
             });
     }
     const lineMarkers: { time: number; edgeId: LineId }[] = [];
+    const appearedMarkers: { time: number; edgeId: LineId }[] = [];
     if (timeline.track.length) {
-        timeline.track.forEach((entry, index) => {
-            if (entry.kind === 'edge' && graph.hasEdge(entry.refId))
+        playbackTimeline.track.forEach((entry, index) => {
+            if (entry.kind === 'edge' && graph.hasEdge(entry.refId)) {
                 lineMarkers.push({ time: cursorTimes[index] ?? 0, edgeId: entry.refId });
+                if (entry.phase === 'enter')
+                    appearedMarkers.push({ time: cursorTimes[index] ?? 0, edgeId: entry.refId });
+            }
         });
     } else {
         playbackSegments.forEach((segment, index) => {
-            if (segment.kind === 'step' && segment.step.kind === 'edge')
+            if (segment.kind === 'step' && segment.step.kind === 'edge') {
                 lineMarkers.push({ time: cumulativeWeights[index], edgeId: segment.step.id as LineId });
+                appearedMarkers.push({ time: cumulativeWeights[index], edgeId: segment.step.id as LineId });
+            }
         });
     }
     embedVideoExportStyles(geometry);
     geometry.setAttribute('width', String(outputWidth));
     geometry.setAttribute('height', String(outputHeight));
     const scene = createVideoFrameScene(geometry, { nodeIds: allNodes, edgeIds: allEdges });
+    const worldGroup = geometry.querySelector<SVGGElement>('[data-editor-layer]');
+    const worldGroupId = `rmp_video_world_${++videoWorldGroupSequence}`;
+    let minimapBasemap: Promise<string> | undefined;
+    const prepareMinimapBasemap = () => {
+        minimapBasemap ??= (async () => {
+            const sourceMap = source.canvas.querySelector<SVGGElement>('[data-map-layer]');
+            if (!sourceMap) throw new Error('Map layer is missing during minimap preparation');
+            const overview = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            // Cache the full extent once, using the same map source and detail level as the main scene.
+            const pixelWidth = Math.ceil((360 * outputWidth) / 1280);
+            const pixelHeight = Math.ceil((pixelWidth * 9) / 16);
+            overview.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            overview.setAttribute('width', String(pixelWidth));
+            overview.setAttribute('height', String(pixelHeight));
+            overview.setAttribute(
+                'viewBox',
+                `${minimapBounds.x} ${minimapBounds.y} ${minimapBounds.width} ${minimapBounds.height}`
+            );
+            const style = document.createElementNS(overview.namespaceURI, 'style');
+            style.textContent = compileMapStyleCss(environment.mapStyle);
+            const targetMap = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            targetMap.setAttribute('data-map-layer', '');
+            overview.append(style, targetMap);
+            await renderMapLayerForExport(sourceMap, targetMap, {
+                xMin: minimapBounds.x,
+                yMin: minimapBounds.y,
+                xMax: minimapBounds.x + minimapBounds.width,
+                yMax: minimapBounds.y + minimapBounds.height,
+            });
+            // The main frame owns readable attribution; thumbnail includes only its map content.
+            targetMap.querySelector('[data-map-attribution]')?.remove();
+            const canvas = document.createElement('canvas');
+            canvas.width = pixelWidth;
+            canvas.height = pixelHeight;
+            // Keep the cache alpha intact; the miniature supplies the same background as the output frame.
+            await renderVideoSVGToCanvas(overview, canvas, true, 'white', exportRuntime?.signal);
+            return canvas.toDataURL('image/png');
+        })();
+        return minimapBasemap;
+    };
     const baseStationKeys = new Map<StnId, string>();
     graph.forEachNode((id, attrs) => {
         if (isStationNodeId(id as Id))
@@ -1449,7 +1557,7 @@ const prepareVideoRenderer = async (
     const geographicLengths = new Map<LineId, ReturnType<typeof createGeographicLengthProfile>>();
     const updateGeographicLength = (element: RenderElement) => {
         if (
-            !showLineLength ||
+            !environment.mapEnabled ||
             !element.line ||
             element.line.attr.visible === false ||
             !scene.getGroup(element.id) ||
@@ -1458,7 +1566,7 @@ const prepareVideoRenderer = async (
             return;
         geographicLengths.set(element.id as LineId, createGeographicLengthProfile(element.line.path));
     };
-    if (showLineLength) getLines(graph, { showReconcileWarnings: false }).forEach(updateGeographicLength);
+    if (environment.mapEnabled) getLines(graph, { showReconcileWarnings: false }).forEach(updateGeographicLength);
     let currentLineKeys = new Map<Id, string>();
     let lastGeometryGraph = graph;
     if (movingNodes.size) {
@@ -1632,6 +1740,17 @@ const prepareVideoRenderer = async (
         placedLabels = placeLabels(labels);
         lastFrame = -1;
     };
+    const setOverlayModules = (modules: readonly TimelineOverlayModule[]) => {
+        overlayModules = structuredClone([...modules]);
+        annotationKey = undefined;
+        lastFrame = -1;
+    };
+    const setOverlayEditing = (editing: boolean) => {
+        if (overlayEditing === editing) return;
+        overlayEditing = editing;
+        annotationKey = undefined;
+        lastFrame = -1;
+    };
     const renderPreviewFrame = async (time: number, request: { force?: boolean } = {}): Promise<SVGSVGElement> => {
         if (disposed) throw new DOMException('Video renderer disposed', 'AbortError');
         await refreshFontLayout();
@@ -1665,33 +1784,74 @@ const prepareVideoRenderer = async (
             watermark.setAttribute('transform', `translate(${layout.x}, ${layout.y}) scale(${layout.scale})`);
         }
         const markerIndex = lastStartedIndex(markerTimes, frame / fps);
-        const edgeId = lineMarkers[Math.max(0, markerIndex)]?.edgeId;
+        const edgeId = lineMarkers[Math.max(0, markerIndex)]?.edgeId ?? fixedEdges.values().next().value;
         const annotation = edgeId && getVideoLineAnnotation(graph, edgeId);
-        let totalLength = '';
-        if (showLineLength) {
-            let totalKm = 0;
-            for (const id of state.visibleEdges)
-                totalKm +=
+        const definitions = graph.getAttribute('lineDefinitions') ?? [];
+        const currentDefinition = definitions.find(line => edgeId && line.edgeIds.includes(edgeId));
+        const identityFor = (line: (typeof definitions)[number]): VideoOverlayLineIdentity => ({
+            id: line.id,
+            ...getVideoLineLabel(graph, line),
+        });
+        const appearedLines: VideoOverlayLineIdentity[] = [];
+        const appearedIds = new Set<string>();
+        for (const id of fixedEdges) {
+            const line = definitions.find(line => line.edgeIds.includes(id));
+            if (!line || appearedIds.has(line.id)) continue;
+            appearedIds.add(line.id);
+            appearedLines.push(identityFor(line));
+        }
+        for (const marker of appearedMarkers) {
+            if (marker.time > frame / fps) break;
+            if (marker.time === frame / fps && !(state.edgeProgress.get(marker.edgeId) ?? 0)) continue;
+            const line = definitions.find(line => line.edgeIds.includes(marker.edgeId));
+            if (!line || appearedIds.has(line.id)) continue;
+            appearedIds.add(line.id);
+            appearedLines.push(identityFor(line));
+        }
+        let networkLengthKm = 0;
+        let currentLineLengthKm = 0;
+        if (environment.mapEnabled)
+            for (const id of state.visibleEdges) {
+                const length =
                     geographicLengths
                         .get(id)
                         ?.lengthAt(state.edgeProgress.get(id) ?? 1, state.edgeDirections.get(id)) ?? 0;
-            const distance = lineLengthUnit === 'mi' ? totalKm / 1.609344 : totalKm;
-            totalLength = `${distance.toFixed(1)}${lineLengthUnit}`;
-        }
+                networkLengthKm += length;
+                if (currentDefinition?.edgeIds.includes(id)) currentLineLengthKm += length;
+            }
         const labels = placedLabels
             .filter(label => frame / fps >= label.start && frame / fps < label.end)
             .map(label => label.entry);
-        const key = JSON.stringify([annotation, totalLength, labels.map(label => [label.id, label.text])]);
+        const hasMinimap = overlayModules.some(module => module.type === 'minimap');
+        if (hasMinimap) worldGroup?.setAttribute('id', worldGroupId);
+        else worldGroup?.removeAttribute('id');
+        const basemapHref = hasMinimap && environment.mapEnabled ? await prepareMinimapBasemap() : undefined;
+        const context = {
+            annotation: annotation || undefined,
+            currentLine: currentDefinition ? identityFor(currentDefinition) : undefined,
+            appearedLines,
+            networkLengthKm,
+            currentLineLengthKm,
+            mapEnabled: environment.mapEnabled,
+            labels,
+            minimap: { bounds: minimapBounds, viewport: viewBox, worldGroupId, basemapHref, background },
+        };
+        const key = JSON.stringify([
+            overlayModules,
+            overlayEditing,
+            annotation,
+            appearedLines,
+            networkLengthKm,
+            currentLineLengthKm,
+            labels.map(label => [label.id, label.text]),
+            hasMinimap ? viewBox : undefined,
+        ]);
         if (key !== annotationKey) {
             overlay?.remove();
-            overlay = createVideoLineOverlay(
-                annotation || undefined,
-                { showYear, showLineName },
-                viewBox,
-                labels,
-                totalLength
-            );
-            if (overlay) geometry.append(overlay);
+            const rendered = createVideoOverlayModules(overlayModules, context, viewBox, overlayEditing);
+            overlay = rendered.overlay;
+            overlayLayout = rendered.layout;
+            if (overlay.childElementCount) geometry.append(overlay);
             annotationKey = key;
         } else
             overlay?.setAttribute('transform', `translate(${viewBox.x}, ${viewBox.y}) scale(${viewBox.width / 1280})`);
@@ -1741,7 +1901,7 @@ const prepareVideoRenderer = async (
     const cameraFrameCount = Math.ceil(((totalFrames - 1) * VideoTimelineTimingFps) / fps) + 1;
     const warmCamera = () => {
         warmResources();
-        if (cameraZoom === 1 || typeof requestIdleCallback !== 'function' || disposed) return;
+        if (cameraZoom === 1 || fixedOnly || typeof requestIdleCallback !== 'function' || disposed) return;
         warmup = requestIdleCallback(deadline => {
             warmup = undefined;
             const start = performance.now();
@@ -1766,6 +1926,9 @@ const prepareVideoRenderer = async (
         renderFrame,
         renderPreviewFrame,
         setLabelTrack,
+        setOverlayModules,
+        setOverlayEditing,
+        getOverlayLayout: () => overlayLayout.map(item => ({ ...item })),
         warmCamera,
         dispose,
     };
@@ -1778,6 +1941,9 @@ export interface VideoPreviewRenderer {
     renderFrame: (time: number) => Promise<SVGSVGElement>;
     renderPreviewFrame: (time: number, options?: { force?: boolean }) => Promise<SVGSVGElement>;
     setLabelTrack: (labels: readonly TimelineLabelEntry[]) => void;
+    setOverlayModules: (modules: readonly TimelineOverlayModule[]) => void;
+    setOverlayEditing: (editing: boolean) => void;
+    getOverlayLayout: () => TimelineOverlayLayoutItem[];
     dispose: () => void;
 }
 
@@ -1847,6 +2013,7 @@ const renderVideo = async (
     environment: VideoExportEnvironment = DefaultVideoEnvironment,
     runtime: VideoExportRuntime = {}
 ): Promise<VideoExportResult> => {
+    const transparent = options.isTransparent && options.format === 'webm';
     const renderer = await createPreparedVideoRenderer(
         graph,
         timeline,
@@ -1854,7 +2021,9 @@ const renderVideo = async (
         options,
         source,
         environment,
-        runtime
+        runtime,
+        undefined,
+        transparent ? 'none' : bgColor
     );
     const { width, height } = getVideoExportDimensions(options.resolution);
     const canvas = document.createElement('canvas');
@@ -1874,13 +2043,7 @@ const renderVideo = async (
             throwIfVideoExportAborted(runtime.signal);
             const elem = await renderer.renderFrame(frame / options.fps);
             try {
-                await renderVideoSVGToCanvas(
-                    elem,
-                    canvas,
-                    options.isTransparent && options.format === 'webm',
-                    bgColor,
-                    runtime.signal
-                );
+                await renderVideoSVGToCanvas(elem, canvas, transparent, bgColor, runtime.signal);
                 await videoWriter.addFrame(frame);
             } finally {
                 elem.remove();

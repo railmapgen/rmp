@@ -3,7 +3,7 @@ import type { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constan
 import type { TimelineDocument } from '../constants/timeline';
 import type { MapStyle } from '../map/map-style';
 
-export const TIMELINE_PROJECT_VERSION = 1 as const;
+export const TIMELINE_PROJECT_VERSION = 2 as const;
 export const TIMELINE_PROJECT_APP = 'rmp-timeline' as const;
 
 export type TimelineProjectGraph = SerializedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;

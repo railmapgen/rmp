@@ -5,6 +5,7 @@ import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { createEmptyTimelineDocument, TimelineDocument } from '../constants/timeline';
+import { createTimelineOverlayModule } from '../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { blobToBase64 } from '../util/binary';
 import { CURRENT_VERSION } from '../util/save';
@@ -17,6 +18,7 @@ import {
     importTimelineProjectFile,
     parseRmpTimelineSource,
     prepareTimelineProjectSync,
+    reconcileTimelineAfterRmpSync,
 } from './timeline-project-io';
 import { TimelineAssetRecord, TimelineProjectRecord, TimelineProjectRevision } from './timeline-project';
 
@@ -47,6 +49,58 @@ const makeRmpSave = (graph: Graph, overrides: Record<string, unknown> = {}) =>
     });
 
 describe('Timeline project import and sync', () => {
+    it('imports a legacy portable file through the version upgrade chain', async () => {
+        const parsed = await parseRmpTimelineSource(makeRmpSave(new MultiDirectedGraph()));
+        const labelTrack = [
+            {
+                id: 'caption',
+                kind: 'label',
+                text: 'Legacy caption',
+                startSlot: 0,
+                endSlot: 0,
+                startTime: 1,
+                endTime: 2,
+            },
+        ];
+        const file = {
+            app: 'rmp-timeline',
+            version: 1,
+            name: 'Legacy portable',
+            assets: [],
+            revision: {
+                ...parsed.revision,
+                timeline: {
+                    version: 1,
+                    track: [],
+                    labelTrack,
+                    settings: {
+                        ...createEmptyTimelineDocument().settings!,
+                        showYear: true,
+                        showLineName: true,
+                        showLineLength: true,
+                        lineLengthUnit: 'mi',
+                    },
+                },
+            },
+        };
+        const createSpy = vi.spyOn(timelineProjectDB, 'createProject').mockResolvedValue(undefined);
+        try {
+            const record = await importTimelineProjectFile(JSON.stringify(file));
+            expect(record.version).toBe(2);
+            expect(record.revision.timeline.version).toBe(2);
+            expect(record.revision.timeline.labelTrack).toEqual(labelTrack);
+            expect(record.revision.timeline.overlayModules?.map(module => module.type)).toEqual([
+                'date',
+                'line-identity',
+                'line-length',
+                'timed-text',
+            ]);
+            expect(createSpy).toHaveBeenCalledWith(record, []);
+        } finally {
+            createSpy.mockRestore();
+        }
+    });
+
     it('copies RMP map state and images into a project with an empty Timeline', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('misc_node_image', {
@@ -252,14 +306,27 @@ describe('Timeline project import and sync', () => {
         } as NodeAttributes);
         const timeline: TimelineDocument = {
             ...createEmptyTimelineDocument(),
+            fixedResources: ['misc_node_image'],
+            overlayModules: [
+                {
+                    ...createTimelineOverlayModule('date', 'top-left', 'date'),
+                    settings: { showMonthDay: true, layout: 'single' },
+                },
+                createTimelineOverlayModule('minimap', 'top-right', 'minimap'),
+                {
+                    ...createTimelineOverlayModule('line-length', 'bottom-left', 'total'),
+                    settings: { scope: 'network', unit: 'km' },
+                },
+                {
+                    ...createTimelineOverlayModule('line-length', 'bottom-left', 'current'),
+                    settings: { scope: 'currentLine', unit: 'mi' },
+                },
+                createTimelineOverlayModule('timed-text', 'bottom-right', 'text'),
+            ],
             settings: {
                 cameraZoom: 8,
                 speedMultiplier: 1.7,
                 autoChangeStationType: false,
-                showYear: true,
-                showLineName: true,
-                showLineLength: true,
-                lineLengthUnit: 'mi' as const,
             },
             labelTrack: [
                 {
@@ -288,7 +355,7 @@ describe('Timeline project import and sync', () => {
         const original: TimelineProjectRecord = {
             id: 'original-local-id',
             name: 'Round trip',
-            version: 1,
+            version: 2,
             createdAt: 1,
             updatedAt: 1,
             revision: {
@@ -343,6 +410,34 @@ describe('Timeline project import and sync', () => {
         );
     });
 
+    it('drops absent fixed references during RMP sync while preserving surviving fixed-node keyframes', () => {
+        const current: TimelineDocument = {
+            ...createEmptyTimelineDocument(),
+            fixedResources: ['stn_keep', 'line_removed', 'stn_removed'],
+            track: [
+                { id: 'keep-key', kind: 'keyframe', refId: 'stn_keep', x: 10, y: 20 },
+                { id: 'removed-key', kind: 'keyframe', refId: 'stn_removed', x: 30, y: 40 },
+            ],
+            labelTrack: [
+                {
+                    id: 'caption',
+                    kind: 'label',
+                    text: 'Kept caption',
+                    startSlot: 0,
+                    endSlot: 2,
+                    startTime: 0.1,
+                    endTime: 8.5,
+                },
+            ],
+        };
+        const replacement = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        replacement.addNode('stn_keep', makeStationAttributes('Keep'));
+        const reconciled = reconcileTimelineAfterRmpSync(current, replacement);
+        expect(reconciled.fixedResources).toEqual(['stn_keep']);
+        expect(reconciled.track.map(entry => entry.id)).toEqual(['keep-key']);
+        expect(reconciled.labelTrack![0]).toEqual({ ...current.labelTrack![0], endSlot: 1 });
+    });
+
     it('prunes invalid entries and remaps audio slots during manual RMP sync', async () => {
         const oldGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         oldGraph.addNode('stn_keep', makeStationAttributes('Keep'));
@@ -358,7 +453,7 @@ describe('Timeline project import and sync', () => {
             parallelIndex: -1,
         } as EdgeAttributes);
         const timeline: TimelineDocument = {
-            version: 1,
+            version: 2,
             track: [
                 { id: 'keep', kind: 'node', refId: 'stn_keep', phase: 'enter', showAnimation: true },
                 { id: 'remove-node', kind: 'node', refId: 'stn_remove', phase: 'enter', showAnimation: true },
