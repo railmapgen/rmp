@@ -205,6 +205,43 @@ describe('stable RMG branch orientation', () => {
 });
 
 describe('asynchronous line calculation', () => {
+    it('finishes calculating two rejoining cycles through virtual junctions and the following line', async () => {
+        const graph = createTestLineGraph(
+            [
+                ['J1', 'A'],
+                ['J1', 'M'],
+                ['J1', 'R'],
+                ['M', 'J2'],
+                ['J2', 'B'],
+                ['J2', 'R'],
+                ['A', 'B'],
+                ['B', 'X'],
+                ['A', 'Y'],
+                ['P', 'Q'],
+            ],
+            ['J1', 'J2']
+        ).export();
+        const line = graph.attributes.lineDefinitions!.find(line => line.edgeIds.includes('line_0'))!;
+        const entries = await getLineExportsAsync(graph);
+        expect(entries).toHaveLength(2);
+        const cyclic = entries.find(entry => entry.line.id === line.id)!;
+        expect(cyclic.startCandidates).toEqual(['stn_X', 'stn_Y']);
+        for (const origin of cyclic.startCandidates) {
+            const entry = getLineExport(graph, { ...line, exportStartStationId: origin });
+            expect(entry.error).toBeUndefined();
+            expect(entry.param!.current_stn_idx).toBe(origin);
+            expect(
+                Object.keys(entry.param!.stn_list)
+                    .filter(id => id.startsWith('stn_'))
+                    .sort()
+            ).toEqual(['stn_A', 'stn_B', 'stn_M', 'stn_R', 'stn_X', 'stn_Y']);
+        }
+        const simple = entries.find(entry => entry.line.id !== line.id)!;
+        expect(simple.error).toBeUndefined();
+        expect(simple.param!.current_stn_idx).toBe('stn_P');
+        expect(simple.param!.stn_list.lineend.parents).toEqual(['stn_Q']);
+    });
+
     it('returns the same line exports after letting the browser paint', async () => {
         const graph = createTestLineGraph([
             ['A', 'B'],

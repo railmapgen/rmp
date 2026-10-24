@@ -307,10 +307,12 @@ const generateNewStn = (
         visNext: new Set(),
     });
     const pending = [createFrame(u, f, absFather, counter)];
+    const active = new Set<string>();
     const colorKey = getThemeKey(color);
     let result: string[] = [];
     const complete = (stations: string[]) => {
-        pending.pop();
+        const frame = pending.pop()!;
+        if (frame.entered) active.delete(frame.u);
         if (pending.length) pending[pending.length - 1].newChild.push(...stations);
         return stations;
     };
@@ -318,6 +320,11 @@ const generateNewStn = (
         const frame = pending[pending.length - 1];
         const { u, f, absFather, counter, newChild, newParent, newInterchange, newInterchangeSet, visNext } = frame;
         if (!frame.entered) {
+            // Completed junctions may be revisited to merge branches; an active ancestor must never be expanded again.
+            if (active.has(u)) {
+                result = complete([]);
+                continue;
+            }
             if (
                 visStn.has(u) &&
                 ((!u.startsWith('misc_node_') && newParam.stn_list[u] == undefined) ||
@@ -370,6 +377,7 @@ const generateNewStn = (
                 continue;
             }
             frame.entered = true;
+            active.add(u);
             visStn.add(u);
         }
         if (frame.edge !== -1) {
