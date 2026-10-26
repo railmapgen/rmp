@@ -4,7 +4,8 @@ import React from 'react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { MiscNodeType } from '../../../constants/nodes';
-import store, { createStore } from '../../../redux';
+import { createStore } from '../../../redux';
+import store from '../../../redux/store';
 import { render } from '../../../test-utils';
 import InfoMultipleSection from './info-multiple-selection';
 

@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -30,7 +31,10 @@ const WuhanRTLineBadge = (props: NodeComponentProps<WuhanRTLineBadgeAttributes>)
     const textEl = React.useRef<SVGTextElement | null>(null);
     const displayText = getDisplayText(content);
     const [textWidth, setTextWidth] = React.useState(0);
-    React.useEffect(() => setTextWidth(textEl.current?.getBBox().width ?? 0), [displayText]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setTextWidth(textEl.current ? measureBBox(textEl.current).width : 0),
+        [displayText]
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

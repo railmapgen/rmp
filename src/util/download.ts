@@ -36,6 +36,8 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
  * @param isShareInfoAttached Whether the user confirmed they will attach RMP info when sharing the image.
  * @param isSystemFontsOnly Whether to add font-family to elements with fonts classes.
  * @param forceRMPInfo Whether RMP info must be embedded regardless of the user's confirmation.
+ * @param renderGraph Optionally render a frame's graph into the detached clone before export cleanup.
+ * @param sourceCanvas Optional export source when the editor canvas is not mounted.
  * @returns The all in one SVGSVGElement and the size of canvas.
  */
 export const makeRenderReadySVGElement = async (
@@ -45,14 +47,18 @@ export const makeRenderReadySVGElement = async (
     isSystemFontsOnly: boolean,
     languages: TextLanguage[],
     forceRMPInfo: boolean,
-    svgVersion: 1.1 | 2
+    svgVersion: 1.1 | 2,
+    renderGraph?: (clone: SVGSVGElement) => void,
+    sourceCanvas?: SVGSVGElement
 ) => {
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
     const [width, height] = [xMax - xMin, yMax - yMin];
 
-    const canvas = document.getElementById('canvas')!;
+    const canvas = sourceCanvas ?? document.getElementById('canvas');
+    if (!canvas) throw new Error('SVG canvas is not available for export');
     const elem = canvas.cloneNode(true) as SVGSVGElement;
+    renderGraph?.(elem);
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -297,6 +303,15 @@ const findRmpInfoPosition = (
     return candidates[0];
 };
 
+export const getRmpWatermarkUrl = (): string => {
+    const origin = typeof window !== 'undefined' ? (window.location?.origin ?? '') : '';
+    let url = 'https://railmapgen.org/';
+    if (origin.includes('github')) url = 'https://railmapgen.github.io/';
+    else if (origin.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
+    url += '?app=rmp';
+    return url;
+};
+
 const generateRmpInfo = async (x: number, y: number) => {
     const info = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     info.setAttribute('transform', `translate(${x}, ${y})`);
@@ -326,11 +341,7 @@ const generateRmpInfo = async (x: number, y: number) => {
     link.setAttribute('font-size', '20');
     link.setAttribute('x', '60');
     link.setAttribute('y', '50');
-    const origin = window.location.origin;
-    let url = 'https://railmapgen.org/';
-    if (origin.includes('github')) url = 'https://railmapgen.github.io/';
-    else if (origin.includes('gitlab')) url = 'https://railmapgen.gitlab.io/';
-    url += '?app=rmp';
+    const url = getRmpWatermarkUrl();
     link.appendChild(document.createTextNode(url));
 
     info.appendChild(logo);

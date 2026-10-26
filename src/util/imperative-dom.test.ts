@@ -153,4 +153,77 @@ describe('imperative DOM helpers', () => {
         expect(document.querySelector('#line_a path')?.getAttribute('d')).toBe(expectedPath);
         expect(document.querySelector('#line_z path')?.getAttribute('d')).toBe('M 0 0 L 0 0');
     });
+
+    it('does not overwrite path elements inside defs, clipPath, mask, or marker when redrawing lines', () => {
+        const graph = createGraph();
+        addVirtualNode(graph, 'misc_node_a', 0, 0);
+        addVirtualNode(graph, 'misc_node_b', 100, 0);
+        graph.addDirectedEdgeWithKey('line_tram', 'misc_node_a', 'misc_node_b', {
+            ...makeLineAttrs(''),
+            style: LineStyleType.BjsubwayTram,
+            [LineStyleType.BjsubwayTram]: {
+                color: [CityCode.Beijing, 'bj10', '#F39800', MonoColour.white],
+            },
+        });
+        graph.mergeNodeAttributes('misc_node_a', { x: 10, y: 0 });
+
+        const markerPath = 'M 0 -2 L 4 0 L 0 2 Z';
+        document.body.innerHTML = `
+            <svg>
+                <g id="misc_node_a" transform="translate(0,0)"></g>
+                <g id="line_tram">
+                    <path d="M 0 0 L 100 0"></path>
+                    <defs>
+                        <marker id="marker1">
+                            <path d="${markerPath}"></path>
+                        </marker>
+                    </defs>
+                </g>
+            </svg>
+        `;
+
+        moveNodesAndRedrawLines(graph, ['misc_node_a'], 10, 0);
+
+        const visualPath = document.querySelector('#line_tram > path');
+        const markerPathEl = document.getElementById('marker1')?.querySelector('path');
+        expect(visualPath?.getAttribute('d')).toBe('M 10 0 L 100 0');
+        expect(markerPathEl?.getAttribute('d')).toBe(markerPath);
+    });
+
+    it('updates both main path and hollow clip outline for bjsubway-dotted during dragging', () => {
+        const graph = createGraph();
+        addVirtualNode(graph, 'misc_node_a', 0, 0);
+        addVirtualNode(graph, 'misc_node_b', 100, 0);
+        graph.addDirectedEdgeWithKey('line_dotted', 'misc_node_a', 'misc_node_b', {
+            ...makeLineAttrs(''),
+            style: LineStyleType.BjsubwayDotted,
+            [LineStyleType.BjsubwayDotted]: {
+                color: [CityCode.Beijing, 'bj10', '#F39800', MonoColour.white],
+            },
+        });
+        graph.mergeNodeAttributes('misc_node_a', { x: 20, y: 0 });
+
+        document.body.innerHTML = `
+            <svg>
+                <g id="misc_node_a" transform="translate(0,0)"></g>
+                <g id="line_dotted">
+                    <path id="bjsubway-dotted_main_line_dotted" d="M 0 0 L 100 0"></path>
+                    <defs>
+                        <clipPath id="clip1">
+                            <path id="bjsubway-dotted_clip_line_dotted" d="old-clip"></path>
+                        </clipPath>
+                    </defs>
+                </g>
+            </svg>
+        `;
+
+        moveNodesAndRedrawLines(graph, ['misc_node_a'], 20, 0);
+
+        const visualPath = document.getElementById('bjsubway-dotted_main_line_dotted');
+        const clipPathEl = document.getElementById('bjsubway-dotted_clip_line_dotted');
+        expect(visualPath?.getAttribute('d')).toBe('M 20 0 L 100 0');
+        expect(clipPathEl?.getAttribute('d')).toContain('M 20');
+        expect(clipPathEl?.getAttribute('d')).not.toBe('old-clip');
+        expect(clipPathEl?.getAttribute('d')).not.toBe(visualPath?.getAttribute('d'));
+    });
 });

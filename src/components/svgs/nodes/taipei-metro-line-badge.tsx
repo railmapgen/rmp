@@ -12,7 +12,8 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
     const {
         code = defaultTaipeiMetroLineBadgeAttributes.code,
         color = defaultTaipeiMetroLineBadgeAttributes.color,
-        tram = defaultTaipeiMetroLineBadgeAttributes.tram,
+        // Missing sizes belong to older saves, whose badges were 16 units high.
+        size = 16,
     } = attrs ?? defaultTaipeiMetroLineBadgeAttributes;
 
     const onPointerDown = React.useCallback(
@@ -32,7 +33,7 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
 
     return (
         <g
-            transform={`scale(${tram ? 0.8 : 1})`}
+            transform={`scale(${size / 16})`}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
@@ -41,7 +42,7 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
             <rect fill={color[2]} x={-width / 2} y="-8" width={width} height="16" rx="2.5" ry="2.5" />
             <g>
                 <text
-                    {...getLangStyle(TextLanguage.taipei)}
+                    {...getLangStyle(TextLanguage.en)}
                     textAnchor="middle"
                     dominantBaseline="central"
                     fontSize="10"
@@ -59,12 +60,12 @@ const TaipeiMetroLineBadge = (props: NodeComponentProps<TaipeiMetroLineBadgeAttr
  */
 export interface TaipeiMetroLineBadgeAttributes extends ColorAttribute {
     code: string;
-    tram: boolean;
+    size?: number;
 }
 
 const defaultTaipeiMetroLineBadgeAttributes: TaipeiMetroLineBadgeAttributes = {
     code: 'BR',
-    tram: false,
+    size: 13.2,
     color: [CityCode.Taipei, 'br', '#C48C31', MonoColour.white],
 };
 
@@ -84,14 +85,18 @@ const TaipeiMetroTextLineBadgeAttrsComponent = (props: AttrsProps<TaipeiMetroLin
             minW: 'full',
         },
         {
-            type: 'switch',
-            label: t('panel.details.nodes.taipeiMetroLineBadge.tram'),
-            isChecked: attrs.tram ?? defaultTaipeiMetroLineBadgeAttributes.tram,
-            onChange: (val: boolean) => {
-                attrs.tram = val;
-                handleAttrsUpdate(id, attrs);
+            type: 'input',
+            label: t('panel.details.nodes.taipeiMetroLineBadge.size'),
+            variant: 'number',
+            value: String(attrs.size ?? 16),
+            validator: val => Number.isFinite(Number(val)) && Number(val) > 0,
+            onChange: val => {
+                if (!val.trim()) return;
+                const size = Number(val);
+                if (Number.isFinite(size) && size > 0) {
+                    handleAttrsUpdate(id, { ...attrs, size });
+                }
             },
-            oneLine: true,
             minW: 'full',
         },
         {

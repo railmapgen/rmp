@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
-import store, { createStore } from '../../../redux';
+import { createStore } from '../../../redux';
+import store from '../../../redux/store';
 import { render } from '../../../test-utils';
 import LineTypeSection from './line-type-section';
 

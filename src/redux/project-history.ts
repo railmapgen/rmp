@@ -4,7 +4,7 @@ import {
     applyRedoAction,
     applyUndoAction,
     ParamGraph,
-    ProjectSnapshot,
+    ProjectReplacement,
     replaceProjectState,
 } from './param/param-slice';
 import { refreshEdgesThunk, refreshNodesThunk } from './runtime/runtime-slice';
@@ -17,6 +17,9 @@ const replaceWindowGraph = (graph: ParamGraph) => {
     // Preserve object identity because existing canvas refs keep pointing to window.graph.
     window.graph.clear();
     window.graph.import(replacement);
+    // Graphology's Graph-instance import copies nodes/edges but omits graph attributes.
+    // Line definitions are part of the snapshot and must be restored explicitly.
+    window.graph.replaceAttributes(structuredClone(replacement.getAttributes()));
 };
 
 const refreshGraphState = (dispatch: RootDispatch) => {
@@ -31,7 +34,7 @@ const refreshGraphState = (dispatch: RootDispatch) => {
  * Replaces the live graph before committing project history so a malformed
  * graph cannot leave Redux pointing at a project that failed to open.
  */
-export const replaceProject = (project: ProjectSnapshot) => (dispatch: RootDispatch) => {
+export const replaceProject = (project: ProjectReplacement) => (dispatch: RootDispatch, getState: () => RootState) => {
     replaceWindowGraph(project.graph);
     dispatch(replaceProjectState(project));
     return refreshGraphState(dispatch);

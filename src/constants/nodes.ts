@@ -29,6 +29,9 @@ import type { LondonArrowAttributes } from '../components/svgs/nodes/london-arro
 import type { LondonTubeLineBadgeAttributes } from '../components/svgs/nodes/london-tube-line-badge/london-tube-line-badge';
 import type { ChengduRTLineBadgeAttributes } from '../components/svgs/nodes/chengdurt-line-badge';
 import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
+import type { TaipeiLightRailLineBadgeAttributes } from '../components/svgs/nodes/taipei-light-rail-line-badge';
+import type { TaipeiMaokongGondolaBadgeAttributes } from '../components/svgs/nodes/taipei-maokong-gondola-badge';
+import type { TaiwanRailwayArrowAttributes } from '../components/svgs/nodes/taiwan-railway-arrow';
 import type { WuhanRTLineBadgeAttributes } from '../components/svgs/nodes/wuhanrt-line-badge';
 import type { FillAttributes } from '../components/svgs/nodes/fill';
 
@@ -62,6 +65,9 @@ export enum MiscNodeType {
     LondonTubeLineBadge = 'london-tube-line-badge',
     ChengduRTLineBadge = 'chengdurt-line-badge',
     TaiPeiMetroLineBadege = 'taipei-metro-line-badge',
+    TaipeiLightRailLineBadge = 'taipei-light-rail-line-badge',
+    TaipeiMaokongGondolaBadge = 'taipei-maokong-gondola-badge',
+    TaiwanRailwayArrow = 'taiwan-railway-arrow',
     WuhanRTLineBadge = 'wuhanrt-line-badge',
 }
 
@@ -95,6 +101,9 @@ export interface MiscNodeAttributes {
     [MiscNodeType.LondonTubeLineBadge]?: LondonTubeLineBadgeAttributes;
     [MiscNodeType.ChengduRTLineBadge]?: ChengduRTLineBadgeAttributes;
     [MiscNodeType.TaiPeiMetroLineBadege]?: TaipeiMetroLineBadgeAttributes;
+    [MiscNodeType.TaipeiLightRailLineBadge]?: TaipeiLightRailLineBadgeAttributes;
+    [MiscNodeType.TaipeiMaokongGondolaBadge]?: TaipeiMaokongGondolaBadgeAttributes;
+    [MiscNodeType.TaiwanRailwayArrow]?: TaiwanRailwayArrowAttributes;
     [MiscNodeType.WuhanRTLineBadge]?: WuhanRTLineBadgeAttributes;
 }
 

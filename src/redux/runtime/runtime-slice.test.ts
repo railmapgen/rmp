@@ -6,7 +6,8 @@ import { LinePathType, LineStyleType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
 import { MAX_PARALLEL_LINES_FREE } from '../../util/parallel';
-import store, { createStore } from '../index';
+import { createStore } from '../index';
+import store from '../store';
 import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
 import appReducer, {
     closeGlobalAlert,

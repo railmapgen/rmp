@@ -12,6 +12,10 @@ const generateSimplePath: PathGenerator<SimplePathAttributes> = (
     attrs: SimplePathAttributes = defaultSimplePathAttributes
 ) => {
     const { offset = defaultSimplePathAttributes.offset } = attrs;
+    if (x1 === x2 && y1 === y2) {
+        // Coincident endpoints have no direction to offset from.
+        return makeLinearPath(makePoint(x1, y1), makePoint(x2, y2));
+    }
     const k = Math.abs((y2 - y1) / (x2 - x1));
     if (k === Infinity) {
         // Vertical line

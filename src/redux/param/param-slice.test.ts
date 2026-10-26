@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
-import store from '../index';
+import store from '../store';
 import appReducer, {
     applyRedoAction,
     applyUndoAction,

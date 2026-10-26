@@ -11,7 +11,6 @@
     "close": "다시",
     "noShowAgain": "표시하지 않기",
     "rmtPromotion": "놓치고 싶지 않은 올인원 툴킷! 닫기.",
-
     "panel": {
         "tools": {
             "showLess": "적게 표시",
@@ -181,7 +180,7 @@
                 },
                 "taipeiMetroLineBadge": {
                     "displayName": "타이페이 지하철 노선 뱃지",
-                    "tram": "트램"
+                    "size": "크기"
                 },
                 "wuhanRTLineBadge": {
                     "displayName": "우한 도시철도 노선 표식"
@@ -253,7 +252,12 @@
                     "tram_shenzhen": "선전 트램",
                     "airport_shenzhen": "선전 공항",
                     "railway_wuhan": "우한 기차역",
-                    "airport_wuhan": "우한 공항"
+                    "airport_wuhan": "우한 공항",
+                    "airport_taipei": "공항 (타이베이)",
+                    "hsr_taipei": "고속철도 (타이베이)",
+                    "railway_taipei": "타이완 철도 (타이베이)",
+                    "taoyuan_airport_mrt": "타오위안 공항 MRT (타이베이)",
+                    "hot_spring_taipei": "온천 (타이베이)"
                 },
                 "text": {
                     "displayName": "임의 글자",
@@ -296,6 +300,16 @@
                     "createSquare": "정사각형 만들기",
                     "createTriangle": "삼각형 만들기",
                     "createCircle": "원 만들기"
+                },
+                "taipeiLightRailLineBadge": {
+                    "displayName": "타이베이 경전철 노선 표지"
+                },
+                "taipeiMaokongGondolaBadge": {
+                    "displayName": "타이베이 마오콩 곤돌라 표지"
+                },
+                "taiwanRailwayArrow": {
+                    "displayName": "타이완 철도 끝점 화살표",
+                    "outlined": "검은색 테두리"
                 }
             },
             "stations": {
@@ -567,6 +581,32 @@
                     "displayName": "항저우 지하철 환승역",
                     "mirror": "아이콘 미러링",
                     "scale": "역명 가로 크기 조절"
+                },
+                "taipeiMetroBasic": {
+                    "displayName": "타이베이 지하철역 (일반)"
+                },
+                "taipeiMetroInt": {
+                    "displayName": "타이베이 지하철역 (환승)"
+                },
+                "taipeiLightRail": {
+                    "displayName": "타이베이 경전철역",
+                    "codeLayout": "역 번호 배치",
+                    "codeInline": "한 줄 (V11)",
+                    "codeStacked": "두 줄 (LB / 12)",
+                    "textOpacity": "텍스트 불투명도"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "타이베이 마오콩 곤돌라역"
+                },
+                "taipeiCommon": {
+                    "nameOffset": "역명 위치",
+                    "secondaryNameZh": "보조 역명 (중국어)",
+                    "secondaryNameEn": "보조 역명 (영어)",
+                    "secondaryNameOnNewLine": "보조 역명을 새 줄에 표시",
+                    "filled": "채워진 역 번호판",
+                    "align": "역 번호판 배치",
+                    "horizontal": "가로",
+                    "vertical": "세로"
                 }
             },
             "lines": {
@@ -770,6 +810,21 @@
                     "moveLayerUp": "레이어 위로 이동",
                     "moveLayerDown": "레이어 아래로 이동",
                     "removeLayer": "레이어 삭제"
+                },
+                "taipeiLightRail": {
+                    "displayName": "타이베이 경전철"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "타이베이 마오콩 곤돌라"
+                },
+                "taipeiMetroOutOfStation": {
+                    "displayName": "타이베이 지하철 개찰구 밖 환승"
+                },
+                "taipeiTaiwanRailway": {
+                    "displayName": "타이완 철도 노선 (타이베이)"
+                },
+                "taipeiMaokongGondolaTransfer": {
+                    "displayName": "마오콩 곤돌라 도보 연결선"
                 }
             },
             "edges": {},
@@ -784,14 +839,286 @@
             },
             "footer": {
                 "duplicate": "복사"
+            },
+            "taipeiOpacity": {
+                "preset": "프리셋",
+                "opaque": "불투명"
             }
         }
     },
-
     "header": {
+        "lineInfo": {
+            "calculating": "노선 정보를 계산하는 중…",
+            "title": "노선 정보 설정",
+            "help": "변경 사항은 자동으로 저장됩니다. 구간 조정으로 노선을 분리하거나 연장하고, × 로 노선을 미배정 구간으로 옮길 수 있습니다.",
+            "lineNumber": "노선 번호",
+            "openingDate": "개통일",
+            "operator": "운영사",
+            "status": "운영 상태",
+            "notes": "메모",
+            "statuses": {
+                "planned": "계획 중",
+                "construction": "건설 중",
+                "operating": "운영 중",
+                "closed": "운행 중단"
+            },
+            "exportStart": "내보내기 시작역",
+            "removeLine": "미배정으로 이동",
+            "assignmentTarget": "배정 대상",
+            "newLine": "새 노선",
+            "unavailableLines": "복잡한 노선",
+            "unassignedIntervals": "미배정 구간",
+            "assignInterval": "배정",
+            "unassignedHelp": "새 노선이나 기존 노선을 선택하고 \"배정\"을 누르세요. 역과 연결선은 캔버스에 남습니다.",
+            "adjustInterval": "구간 조정",
+            "intervalDiagram": "노선 구간과 지선 구조",
+            "editInterval": "노선 구간 편집",
+            "intervalHelp": "끝점 링을 드래그하거나 방향키로 선택 구간을 미리 봅니다. 분리 또는 연장을 누르면 적용되고, 취소하면 노선이 유지됩니다.",
+            "rangeStart": "시작",
+            "rangeEnd": "끝",
+            "referenceStation": "기준역",
+            "pathStart": "경로 시작역",
+            "pathEnd": "경로 종착역",
+            "path": "경로",
+            "branchHelp": "모든 지선을 표시합니다. 경로의 시작점과 끝점을 선택하면 해당 지선을 수평 경로로 옮겨 링으로 조정할 수 있습니다. 분리하면 남은 연결 구간은 새 노선이 되고, 연장하면 선택 경로 밖의 기존 지선은 유지됩니다.",
+            "junction": "분기",
+            "noPath": "역 사이의 경로를 찾을 수 없습니다. 다른 시작역과 종착역을 선택하세요.",
+            "otherArc": "다른 구간 선택",
+            "selection": "선택 구간",
+            "splitPreview": "분리 후 노선",
+            "properInterval": "두 개 이상의 역을 포함하되 전체 노선보다 짧은 구간을 선택하세요.",
+            "extendHelp": "점선은 같은 색으로 연결된 미배정 구간입니다. 링을 그 구간까지 옮기고 연장을 누르면 선택한 경로가 추가됩니다.",
+            "extendPreview": "연장 후 노선",
+            "extendProperInterval": "더 짧은 구간을 선택하거나 미배정 구간을 포함하세요. 현재 노선의 구간을 최소 하나 포함해야 합니다.",
+            "extend": "연장",
+            "split": "분리",
+            "invalidDate": "YYYY-MM-DD 형식의 유효한 날짜를 입력하세요.",
+            "insufficientStations": "내보내려면 두 개 이상의 역이 필요합니다.",
+            "unsupportedTopology": "선택한 시작역의 노선 구조를 RMG로 표현할 수 없습니다. 시작역을 변경하거나 노선을 분리하세요.",
+            "exportHelp": "노선 정보 설정과 자동으로 동기화됩니다. 노선을 클릭하여 RMG 설정 파일을 다운로드하세요.",
+            "downloadLine": "노선 다운로드",
+            "unnamed": "이름 없는 노선",
+            "unnamedStation": "이름 없는 역"
+        },
         "popoverHeader": "당신은 환경을<1>{{environment}}</1>탐색하고 있습니다",
         "popoverBody": "최신 RMP를 테스트하고 있습니다.제안 사항이 있으시면 언제든지 https://github.com/railmapgen/rmp/issues에 제출해 주십시오.",
         "search": "방송국 검색",
+        "edit": "편집",
+        "undo": "실행 취소",
+        "redo": "다시 실행",
+        "timelinePage": {
+            "open": "$t(Rail Map Chronicle) 열기",
+            "backToEditor": "편집기로 돌아가기",
+            "trackTitle": "타임라인 트랙",
+            "resizeTrack": "타임라인 트랙 높이 조절",
+            "cardScale": "카드 크기",
+            "resetCardScale": "기본 크기로 복원",
+            "zoomIn": "확대",
+            "zoomOut": "축소",
+            "selectHint": "위에서 노드 또는 선분 하나를 선택한 뒤 트랙에 추가하세요.",
+            "alreadyAdded": "이미 추가됨",
+            "addSelected": "선택 항목 추가",
+            "addPathByColor": "색상별 노선 추가",
+            "homeDescription": "편집기에서 현재 열려 있는 RMP 프로젝트로 편년기 프로젝트를 만들거나 기존 편년기 프로젝트 파일을 가져옵니다.",
+            "continueEditing": "계속 편집",
+            "startFromCurrentRmp": "현재 RMP 프로젝트에서 시작",
+            "importTimelineProject": "편년기 프로젝트 가져오기",
+            "newProjectName": "편년기 프로젝트",
+            "recentProject": "최근 프로젝트",
+            "updatedAt": "업데이트:",
+            "openProject": "열기",
+            "deleteProject": "편년기 프로젝트 삭제",
+            "deleteProjectConfirm": "편년기 프로젝트 ‘{{name}}’을(를) 삭제하시겠습니까?",
+            "files": "파일",
+            "backToMainMenu": "메인 메뉴로 돌아가기",
+            "importRmpData": "RMP 데이터 가져오기",
+            "importOpenPainterProject": "편집기에서 열린 프로젝트",
+            "importLocalConfig": "로컬 구성 파일",
+            "renameProject": "프로젝트 이름 변경",
+            "renameProjectPrompt": "편년기 프로젝트 이름",
+            "downloadProject": "편년기 프로젝트 다운로드",
+            "exportVideo": "동영상 내보내기",
+            "insert": "삽입",
+            "insertKeyframe": "키프레임",
+            "insertExitAnimation": "현재 선택 항목의 퇴장 애니메이션 삽입",
+            "insertFramePauseBefore": "프레임 전 일시 정지",
+            "insertFramePauseAfter": "프레임 후 일시 정지",
+            "insertLabel": "라벨",
+            "editLabel": "라벨 편집",
+            "labelText": "라벨 텍스트",
+            "saveLabel": "저장",
+            "insertAudio": "오디오",
+            "audioTrack": "오디오 트랙",
+            "noAudio": "오디오가 없습니다. '삽입 > 오디오'에서 추가하세요.",
+            "audioStart": "시작 시간(초)",
+            "audioEnd": "종료 시간(초)",
+            "audioMissing": "오디오 데이터가 없습니다. 복원하려면 파일을 다시 가져오세요.",
+            "framePauseBefore": "프레임 전 일시 정지",
+            "framePauseAfter": "프레임 후 일시 정지",
+            "pauseDuration": "일시 정지 시간",
+            "seconds": "초",
+            "keyframe": "키프레임",
+            "enterPhase": "등장",
+            "exitPhase": "퇴장",
+            "showAnimation": "애니메이션 표시",
+            "toggleAnimation": "애니메이션 표시/숨기기",
+            "deleteEntry": "삭제",
+            "invertSelection": "다중 선택 순서 반전",
+            "editorPane": "편집",
+            "previewPane": "미리보기",
+            "keyframeHint": "역을 드래그하여 키프레임 위치 설정",
+            "selectLineColor": "선 색상 선택",
+            "selectDestNode": "캔버스에서 종착역 선택",
+            "noPathFound": "선택한 색상의 경로를 찾을 수 없습니다.",
+            "pathAdded": "트랙에 {{count}}개의 요소를 성공적으로 추가했습니다.",
+            "pathAlreadyAdded": "이 경로의 모든 요소가 이미 추가되었습니다.",
+            "cursorBefore": "새 콘텐츠를 {{position}}번째 항목 앞에 삽입",
+            "cursorEnd": "새 콘텐츠를 트랙 끝에 삽입",
+            "empty": "트랙이 비어 있습니다. 위에서 요소를 선택해 타임라인을 시작하세요.",
+            "missingCoverage": "{{nodeCount}}개 노드와 {{edgeCount}}개 선분이 타임라인에 아직 추가되지 않았습니다.",
+            "highlightMissing": "누락 항목 강조",
+            "clearMissingHighlight": "강조 해제",
+            "coverageComplete": "모든 노드와 선분이 타임라인에 추가되었습니다.",
+            "previousFrame": "이전 프레임",
+            "playPreview": "미리보기 재생",
+            "pausePreview": "미리보기 일시정지",
+            "nextFrame": "다음 프레임",
+            "playbackControls": "재생 컨트롤",
+            "onboarding": {
+                "title": "$t(Rail Map Chronicle) 빠른 시작",
+                "stepCount": "{{current}} / {{total}} 페이지",
+                "previous": "이전",
+                "next": "다음",
+                "done": "알겠습니다",
+                "tipLabel": "팁:",
+                "addLine": {
+                    "title": "노선 구간 전체 삽입",
+                    "description": "출발역과 도착역을 선택하면 두 역 사이의 전체 경로가 순서대로 타임라인에 추가됩니다.",
+                    "step1": "위쪽 편집 캔버스에서 시작 역을 선택하세요.",
+                    "step2": "트랙 패널 오른쪽의 ‘색상별 노선 추가’에서 사용할 노선 색상을 클릭하세요.",
+                    "step3": "캔버스에서 도착역을 선택하면 전체 경로가 타임라인의 현재 위치에 삽입됩니다.",
+                    "tip": "삽입 위치를 바꾸려면 먼저 트랙에서 두 항목 사이의 삽입 지점을 클릭하세요.",
+                    "imageAlt": "출발역, 노선 색상, 도착역을 차례로 선택해 전체 경로를 타임라인에 추가하는 3단계 그림"
+                },
+                "exportVideo": {
+                    "title": "편년기 동영상 내보내기",
+                    "description": "순서와 타이밍을 확인한 뒤 ‘파일’ 메뉴에서 동영상 내보내기를 여세요.",
+                    "step1": "왼쪽 위의 ‘파일’을 클릭하세요.",
+                    "step2": "‘동영상 내보내기’를 선택하세요.",
+                    "step3": "형식, 해상도, 프레임률을 설정한 뒤 동영상 생성을 시작하세요.",
+                    "tip": "동영상은 트랙을 왼쪽에서 오른쪽으로 재생합니다. 내보내기 전에 가운데 재생 버튼으로 미리 볼 수 있습니다.",
+                    "imageAlt": "파일 메뉴 안의 동영상 내보내기 항목을 강조한 그림"
+                }
+            },
+            "settings": {
+                "title": "편년기 설정",
+                "description": "재생과 표시를 조정합니다. 변경 사항은 미리보기와 내보낸 동영상에 반영됩니다.",
+                "playback": "재생",
+                "overlays": "동영상 표시",
+                "lineInformation": "노선 정보",
+                "showLineLengthMapOnly": "지리 지도를 활성화한 경우에만 사용할 수 있습니다.",
+                "savedWithProject": "현재 편년기 프로젝트에 함께 저장",
+                "done": "완료",
+                "cameraZoom": "확대 배율",
+                "cameraZoomFull": "전체 (Full)",
+                    "lineInformationHint": "주석에 표시할 노선 이름, 색상, 날짜를 변경합니다.",
+                    "editPositionsHint": "미리보기에서 주석 모듈을 추가하고 배치 및 설정합니다.",
+                    "chooseFixedResources": "고정 리소스 선택",
+                    "fixedResourcesHint": "선택한 노드와 노선 구간을 첫 프레임부터 계속 표시합니다."
+            },
+            "lineLabels": {
+                "title": "노선 표시 정보",
+                "description": "동영상에 표시할 노선 이름, 색상, 개통일을 설정합니다. 이 정보는 현재 편년기 프로젝트에만 저장됩니다.",
+                "empty": "노선 정보가 없습니다. 노선 정보가 있는 RMP 프로젝트를 가져오면 동영상 표시를 설정할 수 있습니다.",
+                "color": "표시 색상",
+                "invalidColor": "#1677ff와 같은 유효한 16진수 색상을 입력하세요.",
+                "reset": "가져온 노선 정보로 복원",
+                "resetHint": "이 노선의 표시를 가져온 RMP 노선 정보로 복원합니다.",
+                "saved": "변경 사항은 현재 편년기 프로젝트에 저장되며 미리보기와 내보내기에 반영됩니다."
+            },
+            "rmpImport": {
+                "title": "RMP 데이터 가져오기",
+                "applyLineInfo": "노선 정보로 타임라인 자동 채우기",
+                "description": "개통 날짜순으로 설정된 출발역에서 종착역까지 노선을 그립니다. 날짜가 없는 노선은 마지막에 배치됩니다.",
+                "summary": "노선 {{lines}}개 · 노드 {{nodes}}개 · 구간 {{edges}}개",
+                "unavailable": "사용할 수 있는 노선 정보가 없습니다. 지도를 가져온 후 타임라인을 직접 편집할 수 있습니다.",
+                "replaceTrack": "영상 트랙을 다시 만듭니다. 오디오 클립과 재생 설정은 유지됩니다.",
+                "syncSummary": "지도 변경: 노드 +{{addedNodes}}/−{{removedNodes}}, 구간 +{{addedEdges}}/−{{removedEdges}}. 유효하지 않은 타임라인 항목 {{removedEntries}}개가 제거됩니다."
+            },
+            "playbackPosition": "재생 위치",
+            "preparingPreview": "동영상 미리보기 준비 중…",
+            "previewFailed": "미리보기를 불러올 수 없습니다",
+            "audioDuration": "원본 길이: {{duration}}초",
+            "audioTiming": "음악 시간 편집",
+            "retryPreview": "미리보기 다시 불러오기",
+            "fixedResources": {
+                "title": "고정 리소스",
+                "hint": "노드 또는 노선 구간을 한 번 클릭하면 추가하고, 다시 클릭하면 제거합니다.",
+                "selectedCount": "{{count}}개 선택됨",
+                "doneNoticeTitle": "고정 리소스가 업데이트되었습니다",
+                "doneNotice": "고정 리소스는 첫 프레임부터 영상이 끝날 때까지 계속 표시되며 해당 등장 및 퇴장 클립은 트랙에서 제거되었습니다. 고정을 해제해도 이전 클립은 복원되지 않습니다. 일반적인 방법으로 트랙에 다시 추가할 수 있습니다.",
+                "done": "완료",
+                "previewLabel": "고정 리소스 미리보기"
+            },
+            "overlayEditor": {
+                "editPositions": "요소 위치 수정",
+                "title": "주석 배치",
+                "settingsHint": "미리보기에서 주석을 추가하고 배치하며 개별 설정을 변경합니다.",
+                "hint": "미리보기의 모듈을 선택해 설정을 변경하세요. 점선 + 버튼으로 추가하고 드래그하여 순서를 바꾸거나 다른 모서리로 이동할 수 있습니다.",
+                "addToRegion": "{{region}}에 추가",
+                "closeCatalog": "모듈 목록 닫기",
+                "addModule": "모듈 추가",
+                "subscriberLocked": "이 영역을 편집하려면 구독이 필요합니다. 기존 모듈은 무료 영역으로 옮길 수 있습니다.",
+                "subscriptionExport": "오른쪽 위 영역은 구독이 필요합니다. 모듈을 다른 영역으로 옮기거나 구독을 복원한 후 내보내세요.",
+                "region": "표시 위치",
+                "moveUp": "위로 이동",
+                "moveDown": "아래로 이동",
+                "remove": "모듈 삭제",
+                "timedTextHint": "텍스트와 표시 시간은 텍스트 트랙에서 설정합니다.",
+                "trackLocked": "주석 위치를 편집하는 동안 트랙이 잠겨 있습니다.",
+                "regions": {
+                    "top-left": "왼쪽 위",
+                    "top-right": "오른쪽 위",
+                    "bottom-left": "왼쪽 아래",
+                    "bottom-right": "오른쪽 아래"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "날짜",
+                    "lineIdentity": "노선 표시",
+                    "lineLength": "노선 길이",
+                    "minimap": "미니맵",
+                    "timedText": "타임라인 텍스트"
+                },
+                "fields": {
+                    "showMonthDay": "날짜 표시 내용",
+                    "dateLayout": "날짜 배치",
+                    "showAppearedLines": "아래에 등장한 모든 노선 표시",
+                    "lengthScope": "길이 집계",
+                    "unit": "단위",
+                    "size": "작은 창 크기",
+                    "fontSize": "글자 크기",
+                    "alignment": "텍스트 정렬"
+                },
+                "options": {
+                    "yearOnly": "연도만",
+                    "yearMonthDay": "연·월·일",
+                    "singleLine": "한 줄",
+                    "doubleLine": "두 줄",
+                    "network": "표시된 전체 노선 누적 길이",
+                    "currentLine": "현재 노선의 표시된 누적 길이",
+                    "km": "km",
+                    "mi": "mi",
+                    "small": "작게",
+                    "medium": "중간",
+                    "large": "크게",
+                    "left": "왼쪽",
+                    "center": "가운데",
+                    "right": "오른쪽"
+                }
+            }
+        },
         "mapToggle": {
             "show": "지리 지도 표시",
             "hide": "지리 지도 숨기기"
@@ -830,7 +1157,8 @@
                     "suzhou": "쑤저우",
                     "wuhan": "우한"
                 },
-                "detected": "AARC 저장 파일이 감지되었습니다. {{x}}개의 역과 {{y}}개의 노선을 가져올 준비를 하고 있습니다.",
+                "detected": "AARC 저장 파일이 감지되었습니다. {{x}}개의 도형 노드와 {{y}}개의 연결선을 가져올 준비를 하고 있습니다.",
+                "lineMetadata": "{{x}}개의 철도 노선/구간이 포함되어 있으며, 그중 {{y}}개 구간에는 개통일이 있습니다.",
                 "error": "제출한 저장 파일은 지원되지 않습니다.",
                 "next": "다음",
                 "previous": "이전",
@@ -840,6 +1168,45 @@
         "download": {
             "config": "프로젝트 내보내기",
             "image": "사진 내보내기",
+            "video": "비디오 내보내기",
+            "videoExport": {
+                "title": "비디오 내보내기",
+                "groups": {
+                    "output": "출력 설정",
+                    "rendering": "렌더링 설정",
+                    "sharing": "공유 및 약관"
+                },
+                "fps": "프레임 속도 (FPS)",
+                "speed": "그리기 속도",
+                "speedHint": "영상 길이는 노선 길이와 그리기 속도에 따라 자동으로 계산됩니다.",
+                "resolution": "비디오 해상도",
+                "resolutions": {
+                    "720p": "720p (1280×720)",
+                    "1080p": "1080p (1920×1080)",
+                    "2k": "2K (2560×1440)",
+                    "4k": "4K (3840×2160)"
+                },
+                "quality": "비디오 품질",
+                "autoChangeStationType": "일반역과 환승역 자동 전환",
+                "autoChangeStationTypeHint": "활성화하면 비디오에 현재 표시된 노선을 기준으로 다음 지원 환승역이 자동으로 조정됩니다: {{stations}}.",
+                "autoChangeStationTypeWarning": "비디오의 역명 위치 또는 환승 정보가 현재 지도와 일치하지 않으면, 지도의 현재 상태 그대로 역을 렌더링할 수 있도록 ‘일반역과 환승역 자동 전환’을 끄세요.",
+                "generating": "비디오를 생성하는 중...",
+                "progress": "진행률: {{progress}}%",
+                "description": "이 기능은 노드와 선이 순서대로 그려지는 애니메이션 비디오를 내보냅니다.",
+                "timelineGuide": "역과 노선은 타임라인에 설정된 순서대로 렌더링됩니다. 타임라인이 설정되지 않은 경우 기본 순서가 사용됩니다.",
+                "editTimeline": "타임라인 편집",
+                "shareInfo1": "이 동영상을 공유할 때",
+                "shareInfo2": "와(과) 해당 링크를 첨부합니다.",
+                "format": "비디오 형식",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4는 투명 배경을 지원하지 않으므로 현재 화면 배경색을 사용합니다.",
+                "error": "비디오 내보내기에 실패했습니다. 다시 시도하거나 해상도 또는 프레임 속도를 낮춰 주세요.",
+                "noNodes": "비디오를 내보낼 수 없습니다: 그래프에 노드가 없습니다.",
+                "unavailableLines": "현재 지도 또는 일반 모드에서 표시할 수 없는 선이 있습니다. 수정할 때까지 비디오를 내보낼 수 없습니다."
+            },
             "2rmg": {
                 "title": "RMG 프로젝트로 내보내기",
                 "type": {
@@ -853,7 +1220,7 @@
                     "lineCode": "노선 번호"
                 },
                 "info1": "이 기능은 RMP 프로젝트를 RMG 프로젝트로 변환하는 데 사용됩니다.",
-                "info2": "변환할 수 있는 사용 가능한 라인들은 다음과 같습니다. 왼쪽 텍스트 상자에 중국어 라인 이름을 입력하고, 가운데에 영어 라인 이름을 입력하며, 오른쪽에 (광저우 메트로 스타일용) 라인 코드를 입력한 다음, 오른쪽의 다운로드 버튼을 클릭하여 RMG 프로젝트를 저장할 수 있습니다.",
+                "info2": "노선 정보 설정과 자동으로 동기화됩니다. 노선을 클릭하여 RMG 설정 파일을 다운로드하세요.",
                 "noline": "사용 가능한 라인이 없습니다.",
                 "download": "다운로드",
                 "downloadInfo": "출발 역을 선택하고 클릭하십시오."
@@ -1053,7 +1420,6 @@
             "zulipContent": "Zulip에서 커뮤니티에 참여하세요!"
         }
     },
-
     "contextMenu": {
         "refresh": "새로 고침",
         "cut": "잘라내기",
@@ -1072,7 +1438,6 @@
         "flipDiagonal135": "135° 선을 기준으로 뒤집기",
         "reconcile": "통합"
     },
-
     "clipboard": {
         "errors": {
             "readText": "클립보드를 읽을 수 없습니다. 브라우저 권한을 확인한 뒤 다시 시도하세요.",
@@ -1080,7 +1445,6 @@
             "cannotPasteSpecificAttrs": "고유 속성을 붙여넣을 수 없습니다. 호환되는 대상을 선택했고 클립보드에 올바른 고유 속성 데이터가 있는지 확인하세요."
         }
     },
-
     "localStorageQuotaExceeded": "로컬 저장소 한도에 도달했습니다. 새로운 변경 사항을 저장할 수 없습니다.",
     "map": {
         "loading": "지도 불러오는 중",

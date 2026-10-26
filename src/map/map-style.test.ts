@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileMapStyleCss, DEFAULT_MAP_STYLE, MAP_LABEL_KINDS } from './map-style';
+import { compileMapStyleCss, DEFAULT_MAP_STYLE, MAP_LABEL_KINDS, normalizeMapStyle } from './map-style';
 
 describe('map style', () => {
     it('compiles scoped level-aware SVG rules', () => {
@@ -47,5 +47,19 @@ describe('map style', () => {
 
         expect(css).toContain('.labels { display: none; }');
         expect(css).toContain('.labels.label-transport-metro {\n    display: none;');
+    });
+
+    it('fills categories missing from older partial map styles', () => {
+        const style = normalizeMapStyle({
+            roads: { arterial: { enabled: false, color: '#123456' } },
+            labels: { enabled: true, categories: { building: { enabled: false } } },
+        });
+
+        expect(style.roads.arterial.enabled).toBe(false);
+        expect(style.roads.arterial.color).toBe('#123456');
+        expect(style.roads.arterial.widthScale).toBe(DEFAULT_MAP_STYLE.roads.arterial.widthScale);
+        expect(style.labels.categories.building.enabled).toBe(false);
+        expect(style.labels.categories['place-major']).toEqual(DEFAULT_MAP_STYLE.labels.categories['place-major']);
+        expect(() => compileMapStyleCss(style)).not.toThrow();
     });
 });

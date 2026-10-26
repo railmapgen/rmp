@@ -6,6 +6,8 @@ import { LondonTubeBasicStationAttributes } from '../components/svgs/stations/lo
 import { OsakaMetroStationAttributes } from '../components/svgs/stations/osaka-metro';
 import { ShanghaiSuburbanRailwayStationAttributes } from '../components/svgs/stations/shanghai-suburban-railway';
 import { ShmetroBasic2020StationAttributes } from '../components/svgs/stations/shmetro-basic-2020';
+import type { TaipeiMetroBasicStationAttributes } from '../components/svgs/stations/taipei-metro-basic';
+import type { TaipeiMetroIntStationAttributes } from '../components/svgs/stations/taipei-metro-int';
 import stations from '../components/svgs/stations/stations';
 import {
     CityCode,
@@ -109,6 +111,39 @@ export const changeStationType = (
         (newAttrs as AttributesWithColor).color = structuredClone(
             (graph.getNodeAttribute(selectedFirst, currentStnType) as AttributesWithColor).color
         );
+    }
+    if (currentStnType === StationType.TaipeiMetroBasic && newStnType === StationType.TaipeiMetroInt) {
+        const current = graph.getNodeAttribute(selectedFirst, currentStnType) as TaipeiMetroBasicStationAttributes;
+        const next = newAttrs as TaipeiMetroIntStationAttributes;
+        next.secondaryNames = structuredClone(current.secondaryNames ?? ['', '']);
+        next.secondaryNameOnNewLine = current.secondaryNameOnNewLine ?? false;
+        next.preciseNameOffsets = structuredClone(current.preciseNameOffsets);
+        next.transfer = [
+            [[...current.color, current.lineCode, current.stationCode, current.filled ? 'filled' : 'hollow']],
+        ];
+    } else if (currentStnType === StationType.TaipeiMetroInt && newStnType === StationType.TaipeiMetroBasic) {
+        const current = graph.getNodeAttribute(selectedFirst, currentStnType) as TaipeiMetroIntStationAttributes;
+        const next = newAttrs as TaipeiMetroBasicStationAttributes;
+        next.secondaryNames = structuredClone(current.secondaryNames ?? ['', '']);
+        next.secondaryNameOnNewLine = current.secondaryNameOnNewLine ?? false;
+        next.preciseNameOffsets = structuredClone(current.preciseNameOffsets);
+        const remainingColors = getStationLineColors(graph, selectedFirst as StnId).lineColor;
+        const remaining = remainingColors.length === 1 ? remainingColors[0] : undefined;
+        const entries = current.transfer?.[0] ?? [];
+        const entry =
+            entries.find(
+                info =>
+                    remaining &&
+                    (remaining[0] === CityCode.Other
+                        ? info[0] === CityCode.Other && info[2] === remaining[2] && info[3] === remaining[3]
+                        : info[0] === remaining[0] && info[1] === remaining[1])
+            ) ?? entries[0];
+        if (entry) {
+            next.color = [entry[0], entry[1], entry[2], entry[3]];
+            next.lineCode = entry[4] ?? '';
+            next.stationCode = entry[5] ?? '';
+            next.filled = entry[6] === 'filled';
+        }
     }
     graph.removeNodeAttribute(selectedFirst, currentStnType);
     graph.mergeNodeAttributes(selectedFirst, { type: newStnType, [newStnType]: newAttrs });

@@ -1,11 +1,15 @@
 import { Bezier } from 'bezier-js';
 import {
     ClosedSubpathCommands,
+    CompoundClosedAreaPath,
+    EmptyOpenPath,
     OpenPathDrawCommand,
     PathPoint,
     closePath,
     cubicTo,
     lineTo,
+    makeCompoundClosedAreaPath,
+    makeEmptyOpenPath,
     makePoint,
     moveTo,
 } from '../constants/path';
@@ -50,8 +54,16 @@ export const getSymmetricOutlineSides = (
     startHalfWidth: number,
     endHalfWidth = startHalfWidth
 ): OutlineSideChain => {
+    // Coincident endpoint handles give bezier-js a zero tangent and an undefined outline normal.
+    // Trim a tiny parameter interval to use the limiting tangent without visibly moving the stroke.
+    const collapsedStart = arePointsEqual(curve.points[0], curve.points[1]);
+    const collapsedEnd = arePointsEqual(curve.points.at(-1)!, curve.points.at(-2)!);
+    if (collapsedStart || collapsedEnd) {
+        curve = curve.split(collapsedStart ? 1e-4 : 0, collapsedEnd ? 1 - 1e-4 : 1);
+    }
     const outline = curve.outline(startHalfWidth, startHalfWidth, endHalfWidth, endHalfWidth);
-    const forwardCount = curve.order === 1 ? 1 : curve.reduce().length;
+    // outline() already reduces the curve and returns two caps plus paired forward/backward sides.
+    const forwardCount = (outline.curves.length - 2) / 2;
 
     return {
         left: outline.curves.slice(1, 1 + forwardCount).map(normalizeCurve),
@@ -138,4 +150,23 @@ export const makeClosedBezierChainCommandsWithAnchor = (
     }
 
     return [...commands, closePath()] as unknown as ClosedSubpathCommands;
+};
+
+export const makeSymmetricOutlineHollowPath = (
+    primitives: readonly OpenPathPrimitive[],
+    outerHalfWidth: number,
+    innerHalfWidth: number
+): CompoundClosedAreaPath | EmptyOpenPath => {
+    if (!primitives.length) return makeEmptyOpenPath();
+    const outer = buildSymmetricOutlineSideChains(primitives, outerHalfWidth);
+    const inner = buildSymmetricOutlineSideChains(primitives, innerHalfWidth);
+    if (!outer.left.length || !inner.left.length) return makeEmptyOpenPath();
+
+    const outerAnchor = bezierPointToPathPoint(outer.left[0]?.points[0] ?? outer.right[0]?.points[0]);
+    const innerAnchor = bezierPointToPathPoint(inner.left[0]?.points[0] ?? inner.right[0]?.points[0]);
+    const outerSubpath = makeClosedBezierChainCommandsWithAnchor(outerAnchor, outer.left, outer.right);
+    const innerSubpath = makeClosedBezierChainCommandsWithAnchor(innerAnchor, inner.left, inner.right);
+    if (!outerSubpath || !innerSubpath) return makeEmptyOpenPath();
+
+    return makeCompoundClosedAreaPath([outerSubpath, innerSubpath]);
 };

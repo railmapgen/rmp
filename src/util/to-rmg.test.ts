@@ -1,6 +1,6 @@
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { MultiDirectedGraph } from 'graphology';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { linePaths } from '../components/svgs/lines/lines';
 import miscNodes from '../components/svgs/nodes/misc-nodes';
 import stations from '../components/svgs/stations/stations';
@@ -8,7 +8,8 @@ import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes, Theme } from
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { toRmg } from './to-rmg';
+import { createTestLineGraph } from '../test-utils';
+import { colorToString, toRmg } from './to-rmg';
 
 const color: Theme = [CityCode.Shanghai, 'sh1', '#E4002B', MonoColour.white];
 
@@ -1819,5 +1820,164 @@ describe('Unit tests for to rmg function', () => {
                 type: 'LINE',
             },
         ]);
+    });
+});
+
+describe('RMG theme identity', () => {
+    const paletteVariant: Theme = [CityCode.Shanghai, 'sh1', '#123456', MonoColour.black];
+    const custom: Theme = [CityCode.Other, 'custom-a', '#E4002B', MonoColour.white];
+    const customVariant: Theme = [CityCode.Other, 'custom-b', '#E4002B', MonoColour.white];
+
+    it.each([
+        { kind: 'palette', first: color, second: paletteVariant },
+        { kind: 'custom', first: custom, second: customVariant },
+    ])('joins equivalent $kind edges and does not add a self transfer', ({ first, second }) => {
+        const graph = createTestLineGraph([
+            ['A', 'B', first],
+            ['B', 'C', second],
+        ]);
+        const result = toRmg(graph);
+        expect(result).toHaveLength(1);
+        expect(result[0].param).toHaveLength(2);
+        for (const [param] of result[0].param) {
+            expect(
+                Object.keys(param.stn_list)
+                    .filter(id => id.startsWith('stn'))
+                    .sort()
+            ).toEqual(['stn_A', 'stn_B', 'stn_C']);
+            expect(param.stn_list.stn_B.transfer.groups[0].lines).toBeUndefined();
+        }
+    });
+
+    it.each([
+        { kind: 'palette line IDs', first: color, second: [CityCode.Shanghai, 'sh2', color[2], color[3]] as Theme },
+        { kind: 'palette city IDs', first: color, second: [CityCode.Guangzhou, color[1], color[2], color[3]] as Theme },
+        { kind: 'custom fill', first: custom, second: [CityCode.Other, custom[1], '#123456', custom[3]] as Theme },
+        {
+            kind: 'custom foreground',
+            first: custom,
+            second: [CityCode.Other, custom[1], custom[2], MonoColour.black] as Theme,
+        },
+        { kind: 'custom fill case', first: custom, second: [CityCode.Other, custom[1], '#e4002b', custom[3]] as Theme },
+        { kind: 'palette and custom', first: color, second: custom },
+    ])('keeps distinct $kind separate and preserves interchange placeholder names', ({ first, second }) => {
+        const graph = createTestLineGraph([
+            ['A', 'B', first],
+            ['B', 'C', second],
+        ]);
+        const result = toRmg(graph);
+        expect(result).toHaveLength(2);
+        for (const [index, line] of result.entries()) {
+            const other = index === 0 ? second : first;
+            for (const [param] of line.param) {
+                expect(Object.keys(param.stn_list).filter(id => id.startsWith('stn'))).toHaveLength(2);
+                expect(param.stn_list.stn_B.transfer.groups[0].lines).toEqual([
+                    { theme: other, name: [`ch_${colorToString(other)}`, `en_${colorToString(other)}`] },
+                ]);
+            }
+        }
+    });
+
+    it('adds only one transfer for equivalent palette representations on the other line', () => {
+        const other: Theme = [CityCode.Shanghai, 'sh2', '#123456', MonoColour.black];
+        const otherVariant: Theme = [CityCode.Shanghai, 'sh2', '#654321', MonoColour.white];
+        const graph = createTestLineGraph([
+            ['A', 'B', color],
+            ['B', 'C', paletteVariant],
+            ['D', 'B', other],
+            ['B', 'E', otherVariant],
+        ]);
+        const result = toRmg(graph);
+        expect(result).toHaveLength(2);
+        for (const line of result) {
+            for (const [param] of line.param) {
+                const transfers = param.stn_list.stn_B.transfer.groups[0].lines!;
+                expect(transfers).toHaveLength(1);
+                expect(transfers[0].theme![1]).not.toEqual(line.theme[1]);
+            }
+        }
+    });
+
+    it.each([
+        { kind: 'palette', first: color, transferTheme: paletteVariant },
+        { kind: 'custom', first: custom, transferTheme: customVariant },
+    ])('matches the GZMTR station code using $kind identity', ({ first, transferTheme }) => {
+        const graph = createTestLineGraph([['A', 'B', first]]);
+        graph.mergeNodeAttributes('stn_A', {
+            type: StationType.GzmtrInt,
+            [StationType.GzmtrInt]: {
+                ...structuredClone(stations[StationType.GzmtrInt].defaultAttrs),
+                transfer: [[[...transferTheme, '线路', '07']], []],
+            },
+        });
+        const result = toRmg(graph, ['stn_A']);
+        expect(result).toHaveLength(1);
+        expect(result[0].param[0][0].stn_list.stn_A.num).toBe('07');
+    });
+});
+
+describe('on-demand RMG conversion', () => {
+    it('constructs only the requested loop direction while retaining the historical station links', () => {
+        const graph = createTestLineGraph([
+            ['A', 'B'],
+            ['B', 'C'],
+            ['C', 'D'],
+            ['D', 'A'],
+        ]);
+        const allDirections = toRmg(graph)[0].param;
+        const selected = toRmg(graph, ['stn_C'])[0].param;
+        expect(selected).toEqual(allDirections.filter(([param]) => param.current_stn_idx === 'stn_C'));
+    });
+
+    it('exports a long line without overflowing the JavaScript call stack', () => {
+        const length = 6000;
+        const connections: [string, string][] = Array.from({ length: length - 1 }, (_, index) => [
+            String(index),
+            String(index + 1),
+        ]);
+        const graph = createTestLineGraph(connections);
+        const result = toRmg(graph, ['stn_0']);
+        expect(result).toHaveLength(1);
+        expect(result[0].param).toHaveLength(1);
+        const param = result[0].param[0][0];
+        expect(Object.keys(param.stn_list)).toHaveLength(length + 2);
+        expect(param.stn_list.linestart.children).toEqual(['stn_0']);
+        expect(param.stn_list.lineend.parents).toEqual([`stn_${length - 1}`]);
+        expect(param.stn_list.stn_3000).toMatchObject({ parents: ['stn_2999'], children: ['stn_3001'] });
+    });
+
+    it.each([false, true])(
+        'rejects a many-terminal branch before generating parameters (virtual tails: %s)',
+        virtualTails => {
+            const connections: [string, string][] = Array.from({ length: 254 }, (_, index) => [
+                String(Math.floor(index / 2)),
+                String(index + 1),
+            ]);
+            const virtual: string[] = [];
+            if (virtualTails) {
+                for (let index = 127; index < 255; index++) {
+                    const tail = `tail_${index}`;
+                    virtual.push(tail);
+                    connections.push([String(index), tail]);
+                }
+            }
+            const graph = createTestLineGraph(connections, virtual);
+            const attributes = vi.spyOn(graph, 'getNodeAttributes');
+            expect(toRmg(graph)).toEqual([]);
+            expect(attributes).not.toHaveBeenCalled();
+        }
+    );
+
+    it('visits a large loop once for a saved origin instead of generating every station origin', () => {
+        const length = 1200;
+        const graph = createTestLineGraph(
+            Array.from({ length }, (_, index) => [String(index), String((index + 1) % length)])
+        );
+        const attributes = vi.spyOn(graph, 'getNodeAttributes');
+        const result = toRmg(graph, ['stn_600']);
+        expect(result[0].param).toHaveLength(1);
+        expect(Object.keys(result[0].param[0][0].stn_list)).toHaveLength(length + 2);
+        expect(result[0].param[0][0]).toMatchObject({ loop: true, current_stn_idx: 'stn_600' });
+        expect(attributes).toHaveBeenCalledTimes(length + 1);
     });
 });

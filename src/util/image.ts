@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
-import { RootState } from '../redux';
+import type { RootState } from '../redux';
 import { setRefreshImages } from '../redux/runtime/runtime-slice';
 import { blobToBase64 } from './binary';
 import { imageStoreIndexedDB } from './image-store-indexed-db';

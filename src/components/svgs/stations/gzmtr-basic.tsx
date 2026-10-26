@@ -3,6 +3,7 @@ import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import { StationNumber } from '@railmapgen/svg-assets/gzmtr';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -55,7 +56,7 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 
     const iconEl = React.useRef<SVGGElement | null>(null);
     const [iconBBox, setIconBBox] = React.useState({ x: -18.5, y: -9.25, width: 37, height: 18.5 } as DOMRect);
-    React.useEffect(() => setIconBBox(iconEl.current!.getBBox()), []);
+    useSvgLayoutEffect(({ measureBBox }) => setIconBBox(measureBBox(iconEl.current!)), []);
 
     const FONT_SIZE = {
         en: tram || String(lineCode).includes('APM') ? 5.08 : 6.56,
@@ -98,14 +99,18 @@ const GzmtrBasicStation = (props: StationComponentProps) => {
 
     const secondaryTextRef = React.useRef<SVGGElement | null>(null);
     const [secondaryTextWidth, setSecondaryTextWidth] = React.useState(0);
-    React.useEffect(
-        () => setSecondaryTextWidth(secondaryTextRef.current?.getBBox().width ?? 0),
+    useSvgLayoutEffect(
+        ({ measureBBox }) =>
+            setSecondaryTextWidth(secondaryTextRef.current ? measureBBox(secondaryTextRef.current).width : 0),
         [...secondaryNames, tram]
     );
 
     const textRef = React.useRef<SVGGElement | null>(null);
     const [textWidth, setTextWidth] = React.useState(0);
-    React.useEffect(() => setTextWidth(textRef.current?.getBBox().width ?? 0), [...names, tram]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setTextWidth(textRef.current ? measureBBox(textRef.current).width : 0),
+        [...names, tram]
+    );
 
     const secondaryDx =
         nameOffsetX === 'middle'

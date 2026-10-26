@@ -3,14 +3,14 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { Rotate } from '../../../constants/stations';
-import { useRootDispatch } from '../../../redux';
-import { loadFont } from '../../../redux/fonts/fonts-slice';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
 import { ColorAttribute, ColorField } from '../../panels/details/color-field';
 import { MultilineText } from '../common/multiline-text';
+import { useSvgRenderContext } from '../../svg-render-context';
 
 const languageWithoutSynthesis: Set<TextLanguage> = new Set([
     TextLanguage.zh,
@@ -20,7 +20,7 @@ const languageWithoutSynthesis: Set<TextLanguage> = new Set([
 ]);
 
 const Text = (props: NodeComponentProps<TextAttributes>) => {
-    const dispatch = useRootDispatch();
+    const { ensureFont } = useSvgRenderContext();
     const { id, x, y, attrs, handlePointerDown, handlePointerMove, handlePointerUp } = props;
     const {
         content = defaultTextAttributes.content,
@@ -38,8 +38,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ x: 0, y: 0, width: 32, height: 16 } as DOMRect);
-    React.useEffect(
-        () => setBBox(textLineEl.current!.getBBox()),
+    useSvgLayoutEffect(
+        ({ measureBBox }) => setBBox(measureBBox(textLineEl.current!)),
         // Watch content to get update of bBox's width and height.
         // Watch textAnchor and dominantBaseline to get update of bBox's x and y.
         [
@@ -58,8 +58,8 @@ const Text = (props: NodeComponentProps<TextAttributes>) => {
     );
 
     React.useEffect(() => {
-        dispatch(loadFont(language));
-    }, [language]);
+        ensureFont(language);
+    }, [ensureFont, language]);
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

@@ -3,7 +3,8 @@ import { fireEvent, screen } from '@testing-library/react';
 import React from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
-import store, { createStore } from '../../../redux';
+import { createStore } from '../../../redux';
+import store from '../../../redux/store';
 import { render } from '../../../test-utils';
 import ToolsPanel from './tools';
 

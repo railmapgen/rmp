@@ -13,7 +13,6 @@
     "close": "閉じる",
     "noShowAgain": "次回表示しない",
     "rmtPromotion": "絶対に見逃せないオールインワンツールキット！",
-
     "panel": {
         "tools": {
             "showLess": "表示を減らす",
@@ -183,7 +182,7 @@
                 },
                 "taipeiMetroLineBadge": {
                     "displayName": "台北地下鉄路線記号",
-                    "tram": "路面電車"
+                    "size": "サイズ"
                 },
                 "wuhanRTLineBadge": {
                     "displayName": "武漢軌道交通路線記号"
@@ -255,7 +254,12 @@
                     "tram_shenzhen": "深圳トラム",
                     "airport_shenzhen": "深圳空港",
                     "railway_wuhan": "武漢鉄道駅",
-                    "airport_wuhan": "武漢空港"
+                    "airport_wuhan": "武漢空港",
+                    "airport_taipei": "空港（台北）",
+                    "hsr_taipei": "高速鉄道（台北）",
+                    "railway_taipei": "台湾鉄道（台北）",
+                    "taoyuan_airport_mrt": "桃園空港MRT（台北）",
+                    "hot_spring_taipei": "温泉（台北）"
                 },
                 "text": {
                     "displayName": "任意の文字",
@@ -298,6 +302,16 @@
                     "createSquare": "正方形を作成",
                     "createTriangle": "三角形を作成",
                     "createCircle": "円を作成"
+                },
+                "taipeiLightRailLineBadge": {
+                    "displayName": "台北ライトレール路線標"
+                },
+                "taipeiMaokongGondolaBadge": {
+                    "displayName": "台北猫空ロープウェイ標識"
+                },
+                "taiwanRailwayArrow": {
+                    "displayName": "台湾鉄道の終端矢印",
+                    "outlined": "黒い枠線"
                 }
             },
             "stations": {
@@ -570,6 +584,32 @@
                     "displayName": "杭州メトロ乗り換え駅",
                     "mirror": "アイコンミラーリング",
                     "scale": "駅名の横方向スケール"
+                },
+                "taipeiMetroBasic": {
+                    "displayName": "台北メトロ駅（一般）"
+                },
+                "taipeiMetroInt": {
+                    "displayName": "台北メトロ駅（乗換）"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北ライトレール駅",
+                    "codeLayout": "駅番号の配置",
+                    "codeInline": "1行（V11）",
+                    "codeStacked": "2行（LB / 12）",
+                    "textOpacity": "文字の不透明度"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北猫空ロープウェイ駅"
+                },
+                "taipeiCommon": {
+                    "nameOffset": "駅名の位置",
+                    "secondaryNameZh": "副駅名（中国語）",
+                    "secondaryNameEn": "副駅名（英語）",
+                    "secondaryNameOnNewLine": "副駅名を改行して表示",
+                    "filled": "塗りつぶしの駅番号標",
+                    "align": "駅番号標の配置",
+                    "horizontal": "横方向",
+                    "vertical": "縦方向"
                 }
             },
             "lines": {
@@ -773,6 +813,21 @@
                     "moveLayerUp": "レイヤーを上へ移動",
                     "moveLayerDown": "レイヤーを下へ移動",
                     "removeLayer": "レイヤーを削除"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北ライトレール"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北猫空ロープウェイ"
+                },
+                "taipeiMetroOutOfStation": {
+                    "displayName": "台北メトロ改札外乗換"
+                },
+                "taipeiTaiwanRailway": {
+                    "displayName": "台湾鉄道路線（台北）"
+                },
+                "taipeiMaokongGondolaTransfer": {
+                    "displayName": "猫空ロープウェイ徒歩連絡線"
                 }
             },
             "edges": {},
@@ -787,14 +842,286 @@
             },
             "footer": {
                 "duplicate": "重複"
+            },
+            "taipeiOpacity": {
+                "preset": "プリセット",
+                "opaque": "不透明"
             }
         }
     },
-
     "header": {
+        "lineInfo": {
+            "calculating": "路線情報を計算しています…",
+            "title": "路線情報設定",
+            "help": "変更は自動保存されます。「区間を調整」で路線を分離・延長でき、× で未割り当ての区間へ移せます。",
+            "lineNumber": "路線番号",
+            "openingDate": "開業日",
+            "operator": "運営会社",
+            "status": "運行状況",
+            "notes": "備考",
+            "statuses": {
+                "planned": "計画中",
+                "construction": "建設中",
+                "operating": "運行中",
+                "closed": "運休"
+            },
+            "exportStart": "書き出し始発駅",
+            "removeLine": "未割り当てに移す",
+            "assignmentTarget": "割り当て先",
+            "newLine": "新しい路線",
+            "unavailableLines": "複雑な路線",
+            "unassignedIntervals": "未割り当ての区間",
+            "assignInterval": "割り当て",
+            "unassignedHelp": "新しい路線や既存の路線を選び、「割り当て」を押してください。駅や接続線はキャンバス上に残ります。",
+            "adjustInterval": "区間を調整",
+            "intervalDiagram": "路線区間と支線の構造",
+            "editInterval": "路線区間を編集",
+            "intervalHelp": "リングをドラッグするか矢印キーで選択範囲を確認できます。「分離」または「延長」を押すと適用されます。キャンセルでは路線は変更されません。",
+            "rangeStart": "起点",
+            "rangeEnd": "終点",
+            "referenceStation": "基準駅",
+            "pathStart": "経路の起点",
+            "pathEnd": "経路の終点",
+            "path": "経路",
+            "branchHelp": "すべての支線を表示しています。経路の起終点を選ぶと、その支線を水平の経路として表示し、リングで区間を調整できます。分離すると残りの接続区間は新しい路線になります。延長では選択経路以外の既存の支線を保持します。",
+            "junction": "分岐",
+            "noPath": "駅間の経路が見つかりません。別の起終点を選択してください。",
+            "otherArc": "反対側の区間を選択",
+            "selection": "選択区間",
+            "splitPreview": "分離後の路線",
+            "properInterval": "2駅以上で、路線全体より短い区間を選択してください。",
+            "extendHelp": "破線は、同じ色で接続している未割り当ての区間です。リングをそこまで動かして「延長」を押すと、選択した経路を追加できます。",
+            "extendPreview": "延長後の路線",
+            "extendProperInterval": "短い区間を選択するか、未割り当ての区間を含めてください。現在の路線の区間を少なくとも1つ残してください。",
+            "extend": "延長",
+            "split": "分離",
+            "invalidDate": "YYYY-MM-DD形式の有効な日付を入力してください。",
+            "insufficientStations": "書き出しには2駅以上が必要です。",
+            "unsupportedTopology": "選択した始発駅からの構造をRMGで表現できません。始発駅を変更するか、路線を分離してください。",
+            "exportHelp": "路線情報設定と自動同期されます。路線をクリックしてRMG設定ファイルをダウンロードします。",
+            "downloadLine": "路線をダウンロード",
+            "unnamed": "名前のない路線",
+            "unnamedStation": "名前のない駅"
+        },
         "popoverHeader": "<1>{{environment}}</1> 環境です！",
         "popoverBody": "現在、最新のRMPをテストしています。ご意見がありましたら、https://github.com/railmapgen/rmp/issues で提案してください",
         "search": "駅を探す",
+        "edit": "編集",
+        "undo": "元に戻す",
+        "redo": "やり直す",
+        "timelinePage": {
+            "open": "$t(Rail Map Chronicle)を開く",
+            "backToEditor": "エディターに戻る",
+            "trackTitle": "タイムライントラック",
+            "resizeTrack": "タイムライントラックの高さを変更",
+            "cardScale": "カードサイズ",
+            "resetCardScale": "デフォルトサイズに戻す",
+            "zoomIn": "拡大",
+            "zoomOut": "縮小",
+            "selectHint": "上でノードまたはエッジを 1 つ選択して、トラックに追加します。",
+            "alreadyAdded": "追加済み",
+            "addSelected": "選択項目を追加",
+            "addPathByColor": "色で路線を追加",
+            "homeDescription": "描画ツールで現在開いている RMP プロジェクトから編年器プロジェクトを作成するか、既存の編年器プロジェクトファイルを読み込みます。",
+            "continueEditing": "編集を続ける",
+            "startFromCurrentRmp": "現在の RMP プロジェクトから開始",
+            "importTimelineProject": "編年器プロジェクトを読み込む",
+            "newProjectName": "編年器プロジェクト",
+            "recentProject": "最近のプロジェクト",
+            "updatedAt": "更新日時：",
+            "openProject": "開く",
+            "deleteProject": "編年器プロジェクトを削除",
+            "deleteProjectConfirm": "編年器プロジェクト「{{name}}」を削除しますか？",
+            "files": "ファイル",
+            "backToMainMenu": "メインメニューに戻る",
+            "importRmpData": "RMP データをインポート",
+            "importOpenPainterProject": "描画ツールで開いているプロジェクト",
+            "importLocalConfig": "ローカル設定ファイル",
+            "renameProject": "プロジェクト名を変更",
+            "renameProjectPrompt": "編年器プロジェクト名",
+            "downloadProject": "編年器プロジェクトをダウンロード",
+            "exportVideo": "動画をエクスポート",
+            "insert": "挿入",
+            "insertKeyframe": "キーフレーム",
+            "insertExitAnimation": "選択項目の退出アニメーションを挿入",
+            "insertFramePauseBefore": "フレーム前の停止",
+            "insertFramePauseAfter": "フレーム後の停止",
+            "insertLabel": "ラベル",
+            "editLabel": "ラベルを編集",
+            "labelText": "ラベルのテキスト",
+            "saveLabel": "保存",
+            "insertAudio": "音声",
+            "audioTrack": "音声トラック",
+            "noAudio": "音声がありません。「挿入 > 音声」から追加してください。",
+            "audioStart": "開始時間（秒）",
+            "audioEnd": "終了時間（秒）",
+            "audioMissing": "音声データがありません。復元するには再インポートしてください。",
+            "framePauseBefore": "フレーム前の停止",
+            "framePauseAfter": "フレーム後の停止",
+            "pauseDuration": "停止時間",
+            "seconds": "秒",
+            "keyframe": "キーフレーム",
+            "enterPhase": "登場",
+            "exitPhase": "退場",
+            "showAnimation": "アニメーションを表示",
+            "toggleAnimation": "アニメーションの表示/非表示",
+            "deleteEntry": "削除",
+            "invertSelection": "選択範囲の順序を反転",
+            "editorPane": "編集",
+            "previewPane": "プレビュー",
+            "keyframeHint": "駅をドラッグしてキーフレームの位置を設定",
+            "selectLineColor": "線の色を選択",
+            "selectDestNode": "キャンバスで終点駅を選択",
+            "noPathFound": "選択した色のパスが見つかりません。",
+            "pathAdded": "トラックに {{count}} 個の要素を追加しました。",
+            "pathAlreadyAdded": "このパスのすべての要素はすでに追加されています。",
+            "cursorBefore": "新しい内容を {{position}} 番目の項目の前に挿入",
+            "cursorEnd": "新しい内容をトラックの末尾に挿入",
+            "empty": "トラックは空です。上で要素を選択してタイムラインを作成してください。",
+            "missingCoverage": "{{nodeCount}} 個のノードと {{edgeCount}} 本の線分がタイムラインに未追加です。",
+            "highlightMissing": "未追加を強調",
+            "clearMissingHighlight": "強調を解除",
+            "coverageComplete": "すべてのノードと線分がタイムラインに追加されています。",
+            "previousFrame": "前のフレーム",
+            "playPreview": "プレビューを再生",
+            "pausePreview": "プレビューを一時停止",
+            "nextFrame": "次のフレーム",
+            "playbackControls": "再生コントロール",
+            "onboarding": {
+                "title": "$t(Rail Map Chronicle)クイックガイド",
+                "stepCount": "{{current}} / {{total}} ページ",
+                "previous": "戻る",
+                "next": "次へ",
+                "done": "わかりました",
+                "tipLabel": "ヒント：",
+                "addLine": {
+                    "title": "路線区間をまとめて挿入",
+                    "description": "始点と終点の駅を選ぶと、その間の経路全体が順番にタイムラインへ追加されます。",
+                    "step1": "上の編集キャンバスで始点となる駅を選択します。",
+                    "step2": "トラックパネル右側の「色で路線を追加」で、使用する路線の色をクリックします。",
+                    "step3": "キャンバスで終点の駅を選択すると、経路全体がタイムラインの現在の位置に挿入されます。",
+                    "tip": "挿入位置を変えるには、先にトラック上の項目と項目の間をクリックしてください。",
+                    "imageAlt": "始点の駅、路線色、終点の駅を選んで経路をタイムラインに追加する3ステップの図"
+                },
+                "exportVideo": {
+                    "title": "編年器動画を書き出す",
+                    "description": "順序とタイミングを確認したら、「ファイル」メニューから動画の書き出しを開きます。",
+                    "step1": "左上の「ファイル」をクリックします。",
+                    "step2": "「動画をエクスポート」を選びます。",
+                    "step3": "形式、解像度、フレームレートを設定して、動画の生成を開始します。",
+                    "tip": "動画はトラックを左から右へ再生します。書き出す前に中央の再生ボタンでプレビューできます。",
+                    "imageAlt": "ファイルメニュー内の動画エクスポート項目を強調した図"
+                }
+            },
+            "settings": {
+                "title": "編年器設定",
+                "description": "再生とラベルを調整します。変更はプレビューと書き出した動画に反映されます。",
+                "playback": "再生",
+                "overlays": "動画のラベル",
+                "lineInformation": "路線情報",
+                "showLineLengthMapOnly": "地理地図を有効にした場合のみ利用できます。",
+                "savedWithProject": "この編年器プロジェクトに保存",
+                "done": "完了",
+                "cameraZoom": "ズーム",
+                "cameraZoomFull": "全体（Full）",
+                    "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
+                    "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
+                    "chooseFixedResources": "固定リソースを選択",
+                    "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
+            },
+            "lineLabels": {
+                "title": "路線ラベル情報",
+                "description": "動画に表示する路線名、色、開業日を設定します。ラベルはこの編年器プロジェクトにのみ保存されます。",
+                "empty": "路線情報がありません。路線情報を含む RMP プロジェクトを読み込むと、動画のラベルを設定できます。",
+                "color": "ラベルの色",
+                "invalidColor": "#1677ff のような有効な16進数の色を入力してください。",
+                "reset": "読み込んだ路線情報に戻す",
+                "resetHint": "この路線のラベルを、読み込み時の RMP 路線情報に戻します。",
+                "saved": "変更はこの編年器プロジェクトに保存され、プレビューと書き出しに反映されます。"
+            },
+            "rmpImport": {
+                "title": "RMP データを読み込む",
+                "applyLineInfo": "路線情報からタイムラインを自動作成",
+                "description": "開業日順に、設定した始点から終点へ路線を描画します。開業日がない路線は最後に配置します。",
+                "summary": "{{lines}} 路線 · {{nodes}} ノード · {{edges}} 区間",
+                "unavailable": "利用できる路線情報がありません。地図を読み込み、タイムラインを手動で編集できます。",
+                "replaceTrack": "映像トラックを作り直します。音声クリップと再生設定は保持されます。",
+                "syncSummary": "地図の変更：ノード +{{addedNodes}}/−{{removedNodes}}、区間 +{{addedEdges}}/−{{removedEdges}}。無効なタイムライン項目 {{removedEntries}} 件を削除します。"
+            },
+            "playbackPosition": "再生位置",
+            "preparingPreview": "動画プレビューを準備中…",
+            "previewFailed": "プレビューを読み込めません",
+            "audioDuration": "音声の長さ：{{duration}} 秒",
+            "audioTiming": "音声の時間を編集",
+            "retryPreview": "プレビューを再読み込み",
+            "fixedResources": {
+                "title": "固定リソース",
+                "hint": "ノードまたは路線区間をクリックして追加し、もう一度クリックすると解除します。",
+                "selectedCount": "{{count}} 個を選択中",
+                "doneNoticeTitle": "固定リソースを更新しました",
+                "doneNotice": "固定リソースは最初のフレームから動画の最後まで常に表示され、対応する出現・退出クリップはトラックから削除されました。固定を解除しても以前のクリップは復元されません。通常の操作でトラックに再追加できます。",
+                "done": "完了",
+                "previewLabel": "固定リソースのプレビュー"
+            },
+            "overlayEditor": {
+                "editPositions": "要素の位置を編集",
+                "title": "注釈の配置",
+                "settingsHint": "プレビューで注釈を追加、配置し、個別に設定します。",
+                "hint": "プレビューのモジュールを選ぶと設定できます。破線の＋で追加し、ドラッグで並べ替えや隅への移動ができます。",
+                "addToRegion": "{{region}}に追加",
+                "closeCatalog": "モジュール一覧を閉じる",
+                "addModule": "モジュールを追加",
+                "subscriberLocked": "この領域の編集にはサブスクリプションが必要です。既存のモジュールは無料領域へ移動できます。",
+                "subscriptionExport": "右上の領域にはサブスクリプションが必要です。モジュールを他の領域へ移動するか、契約を再開してから書き出してください。",
+                "region": "表示位置",
+                "moveUp": "上へ移動",
+                "moveDown": "下へ移動",
+                "remove": "モジュールを削除",
+                "timedTextHint": "文字と表示時間はテキストトラックで設定します。",
+                "trackLocked": "注釈の配置編集中はトラックがロックされています。",
+                "regions": {
+                    "top-left": "左上",
+                    "top-right": "右上",
+                    "bottom-left": "左下",
+                    "bottom-right": "右下"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "日付",
+                    "lineIdentity": "路線表示",
+                    "lineLength": "路線長",
+                    "minimap": "ミニマップ",
+                    "timedText": "タイムライン文字"
+                },
+                "fields": {
+                    "showMonthDay": "日付の表示内容",
+                    "dateLayout": "日付のレイアウト",
+                    "showAppearedLines": "下に表示済みの路線を一覧表示",
+                    "lengthScope": "長さの集計",
+                    "unit": "単位",
+                    "size": "小窓の大きさ",
+                    "fontSize": "文字サイズ",
+                    "alignment": "文字揃え"
+                },
+                "options": {
+                    "yearOnly": "年のみ",
+                    "yearMonthDay": "年月日",
+                    "singleLine": "1行",
+                    "doubleLine": "2行",
+                    "network": "表示中の全路線の合計",
+                    "currentLine": "現在の路線の表示済み延長",
+                    "km": "km",
+                    "mi": "mi",
+                    "small": "小",
+                    "medium": "中",
+                    "large": "大",
+                    "left": "左揃え",
+                    "center": "中央揃え",
+                    "right": "右揃え"
+                }
+            }
+        },
         "mapToggle": {
             "show": "地理地図を表示",
             "hide": "地理地図を非表示"
@@ -833,7 +1160,8 @@
                     "suzhou": "蘇州",
                     "wuhan": "武漢"
                 },
-                "detected": "AARCからの保存ファイルが検出されました。{{x}}駅と{{y}}路線のインポートを準備しています。",
+                "detected": "AARCからの保存ファイルが検出されました。{{x}}個の描画ノードと{{y}}本の接続線のインポートを準備しています。",
+                "lineMetadata": "{{x}}本の鉄道路線・区間を含み、うち{{y}}区間には開業日があります。",
                 "error": "送信された保存ファイルはサポートされていません。",
                 "next": "次へ",
                 "previous": "前へ",
@@ -843,6 +1171,45 @@
         "download": {
             "config": "作品をエクスポート",
             "image": "画像をエクスポート",
+            "video": "ビデオをエクスポート",
+            "videoExport": {
+                "title": "ビデオをエクスポート",
+                "groups": {
+                    "output": "出力設定",
+                    "rendering": "レンダリング設定",
+                    "sharing": "共有と利用規約"
+                },
+                "fps": "フレームレート（FPS）",
+                "speed": "描画速度",
+                "speedHint": "動画の長さは路線の長さと描画速度に応じて自動的に計算されます。",
+                "resolution": "ビデオ解像度",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
+                "quality": "ビデオ品質",
+                "autoChangeStationType": "一般駅と乗換駅を自動的に切り替える",
+                "autoChangeStationTypeHint": "有効にすると、動画内で現在表示されている路線に基づいて、対応する以下の乗換駅が自動的に調整されます：{{stations}}。",
+                "autoChangeStationTypeWarning": "動画内の駅名位置や乗換情報が現在のマップと一致しない場合は、「一般駅と乗換駅を自動的に切り替える」をオフにすると、マップの現在の状態どおりに駅を描画できます。",
+                "generating": "ビデオを生成しています...",
+                "progress": "進捗: {{progress}}%",
+                "description": "この機能は、ノードと線が順番に描画されるアニメーション動画を書き出します。",
+                "timelineGuide": "駅と路線はタイムラインに設定された順序で描画されます。タイムラインが未設定の場合は、既定の順序が使用されます。",
+                "editTimeline": "タイムラインを編集",
+                "shareInfo1": "この動画を共有する際には",
+                "shareInfo2": "とそのリンクを添付します。",
+                "format": "ビデオ形式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4は透過背景に対応していないため、現在の画面背景色を使用します。",
+                "error": "ビデオの書き出しに失敗しました。再試行するか、解像度やフレームレートを下げてください。",
+                "noNodes": "ビデオを書き出せません: グラフにノードがありません。",
+                "unavailableLines": "現在の地図または通常モードでは表示できない路線があります。修正するまでビデオを書き出せません。"
+            },
             "2rmg": {
                 "title": "RMG作品へエクスポート",
                 "type": {
@@ -856,7 +1223,7 @@
                     "lineCode": "路線番号"
                 },
                 "info1": "この機能は、RMP作品をRMG作品に変換するために設計されています。",
-                "info2": "以下のリストの行は、変換用に利用できます。左側の文字ボックスに中国語の行名、中央に英語の行名、右側に（広州メトロ風格用の）行コードを入力し、ダウンロードボタンをクリックしてRMG作品を保存できます。",
+                "info2": "路線情報設定と自動同期されます。路線をクリックしてRMG設定ファイルをダウンロードします。",
                 "noline": "利用可能な回線が見つかりません。",
                 "download": "ダウンロード",
                 "downloadInfo": "出発駅を選択してクリックしてください。"
@@ -1055,7 +1422,6 @@
             "zulipContent": "Zulip でコミュニティに参加しましょう！"
         }
     },
-
     "contextMenu": {
         "refresh": "更新",
         "cut": "切り取り",
@@ -1074,7 +1440,6 @@
         "flipDiagonal135": "135° 線で反転",
         "reconcile": "統合"
     },
-
     "clipboard": {
         "errors": {
             "readText": "クリップボードを読み取れませんでした。ブラウザーの権限を確認して再試行してください。",
@@ -1082,7 +1447,6 @@
             "cannotPasteSpecificAttrs": "独自属性を貼り付けできません。互換性のある対象を選択し、クリップボードに有効な独自属性データがあることを確認してください。"
         }
     },
-
     "localStorageQuotaExceeded": "ローカルストレージの上限に達しました。新しい変更は保存できません。",
     "map": {
         "loading": "地図を読み込み中",

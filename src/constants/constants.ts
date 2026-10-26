@@ -1,5 +1,6 @@
 import { ColourHex, MonoColour } from '@railmapgen/rmg-palette-resources';
 import { ExternalLinePathAttributes, ExternalLineStyleAttributes, LinePathType, LineStyleType } from './lines';
+import type { LineDefinition } from './line-definitions';
 import { MiscNodeAttributes, MiscNodeType } from './nodes';
 import { PathPoint } from './path';
 import { ExternalStationAttributes, StationType } from './stations';
@@ -35,10 +36,6 @@ export type EdgeAttributes = BaseAttributes & {
 } & Partial<ExternalLinePathAttributes> &
     Partial<ExternalLineStyleAttributes>;
 
-export type GraphAttributes = {
-    name?: string;
-};
-
 /**
  * A props interface for all specific attributes components
  * that give users an input (UI) to change attributes.
@@ -70,6 +67,13 @@ export type LineId = `line_${string}`;
 export type MiscNodeId = `misc_node_${string}`;
 export type NodeId = StnId | MiscNodeId;
 export type Id = NodeId | LineId;
+
+export type GraphAttributes = {
+    name?: string;
+    lineDefinitions?: LineDefinition[];
+    /** Explicitly removed memberships stay outside automatic line discovery until reassigned. */
+    unassignedLineEdgeIds?: string[];
+};
 
 /** Viewport context supplied to an editor overlay. */
 export interface OverlayProps<T extends Id> {
@@ -155,6 +159,7 @@ export enum LocalStorageKey {
     PARAM = 'rmp__param',
     PARAM_BACKUP = 'rmp__param__backup',
     DO_NOT_SHOW_RMT_MSG = 'rmp__doNotShowRMTMsg',
+    TIMELINE_ONBOARDING_DISMISSED = 'rmp__timelineOnboardingDismissed_v1',
     ACCOUNT = 'rmg-home__account',
 }
 

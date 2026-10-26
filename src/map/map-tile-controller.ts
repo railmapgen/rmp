@@ -135,6 +135,8 @@ export interface MapTileControllerOptions {
     rasterCache?: MapRasterCacheApi | null;
     rasterizer?: MapRasterizer | null;
     rasterEnabled?: boolean;
+    /** Retain detailed geometry at every viewport scale, as required by Timeline. */
+    forceDetailed?: boolean;
     rasterIdleDelayMs?: number;
     now?: () => number;
 }
@@ -337,10 +339,14 @@ export class MapTileController {
             this.setLoading(false);
             return;
         }
-        this.switchLevel(isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview');
+        this.switchLevel(this.getLevel());
         const requests = this.reconcileVisibleTiles();
         await Promise.allSettled(requests);
         if (!this.disposed) this.reconcileVisibleTiles();
+    }
+
+    private getLevel(): MapLevelName {
+        return this.options.forceDetailed || (this.viewport && isMapZoomed(this.viewport.zoom)) ? 'zoomed' : 'overview';
     }
 
     /**
@@ -355,7 +361,7 @@ export class MapTileController {
         // Attribution must follow even before tile metadata is ready, because viewport updates are independent of loading.
         this.positionAttribution(viewport);
         if (this.initialized) {
-            const target = isMapZoomed(viewport.zoom) ? 'zoomed' : 'overview';
+            const target = this.getLevel();
             if (target !== this.activeLevel) this.switchLevel(target);
         }
         this.scheduleRender();
@@ -429,7 +435,7 @@ export class MapTileController {
          * freshest viewport chooses the same level the live renderer is about
          * to show, even if its coalesced animation frame has not run yet.
          */
-        const levelName = this.viewport && isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        const levelName = this.getLevel();
         const sourceConfigs = this.getSourcesForBounds(levelName, bounds, 0);
         await Promise.allSettled(sourceConfigs.map(source => this.ensureSource(source)));
         if (this.disposed) return;
@@ -615,7 +621,7 @@ export class MapTileController {
      */
     private render() {
         if (!this.initialized || !this.viewport || this.disposed) return;
-        const target = isMapZoomed(this.viewport.zoom) ? 'zoomed' : 'overview';
+        const target = this.getLevel();
         if (target !== this.activeLevel) this.switchLevel(target);
         void Promise.allSettled(this.reconcileVisibleTiles());
     }

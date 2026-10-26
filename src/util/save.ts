@@ -4,6 +4,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { updateGraphKeys } from 'graphology-utils';
 import { nanoid } from 'nanoid';
 import { linePaths, lineStyles } from '../components/svgs/lines/lines';
+import type { TaipeiMetroLineBadgeAttributes } from '../components/svgs/nodes/taipei-metro-line-badge';
 import { TextAttributes } from '../components/svgs/nodes/text';
 import { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
@@ -41,6 +42,7 @@ import { StationType } from '../constants/stations';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
+import { reconcileLineDefinitions } from './line-definitions';
 
 /**
  * The save format of the project.
@@ -54,7 +56,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 79;
+export const CURRENT_VERSION = 81;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -113,32 +115,55 @@ export const getInitialParam = async () => JSON.stringify((await import('../save
 /**
  * Upgrade the passed param to the latest format.
  */
-export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
-    let changed = false;
-
-    if (!originalParam) {
-        originalParam = await getInitialParam();
-        changed = true;
+const upgradeSaveString = (originalParam: string): string => {
+    const parsed = JSON.parse(originalParam);
+    const originalSave =
+        parsed && Number.isInteger(parsed.version)
+            ? parsed
+            : parsed && Array.isArray(parsed.nodes) && Array.isArray(parsed.edges)
+              ? { version: 0, graph: parsed }
+              : undefined;
+    if (!originalSave) {
+        throw new Error('Cannot parse version from the uploaded file');
     }
-
-    let originalSave = JSON.parse(originalParam);
-    if (!('version' in originalSave) || !Number.isInteger(originalSave.version)) {
-        originalSave = JSON.parse(await getInitialParam());
-        changed = true;
-    }
-
     let version = Number(originalSave.version);
     let save = JSON.stringify(originalSave);
     while (version in UPGRADE_COLLECTION) {
         save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
+    }
+    return repairNodeXYNullCoordinates(save);
+};
+
+/** Upgrade an explicitly supplied save without reading or writing RMP LocalStorage. */
+export const upgradeWithoutBackup = async (originalParam: string): Promise<string> => upgradeSaveString(originalParam);
+
+export const upgrade: (originalParam: string | null) => Promise<string> = async originalParam => {
+    let changed = false;
+    if (!originalParam) {
+        originalParam = await getInitialParam();
         changed = true;
     }
 
-    // Temporary repair for legacy saves where node `x`/`y` may be serialized as `null`.
-    const repairedSave = repairNodeXYNullCoordinates(save);
-    changed ||= repairedSave !== save;
-    save = repairedSave;
+    let originalSave: RMPSave;
+    try {
+        const parsed = JSON.parse(originalParam);
+        if (Number.isInteger(parsed?.version)) {
+            originalSave = parsed as RMPSave;
+        } else if (Array.isArray(parsed?.nodes) && Array.isArray(parsed?.edges)) {
+            originalSave = { version: 0, graph: parsed } as RMPSave;
+        } else {
+            throw new Error('Invalid save version');
+        }
+    } catch {
+        originalParam = await getInitialParam();
+        originalSave = JSON.parse(originalParam) as RMPSave;
+        changed = true;
+    }
+
+    const save = upgradeSaveString(originalParam);
+    changed ||= save !== originalParam;
+    const version = Number((JSON.parse(save) as RMPSave).version);
 
     if (changed) {
         logger.warn(`Upgrade save from version: ${originalSave.version} to version: ${version}`);
@@ -163,9 +188,9 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
  * Returns a save containing only the current project snapshot, never its undo
  * and redo stacks. Images are attached only when supplied by an export flow.
  */
-export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>) => {
+export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>, images = paramState.images) => {
     const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
-    if (paramState.images) save.images = paramState.images;
+    if (images) save.images = images;
     return JSON.stringify(save);
 };
 
@@ -1040,7 +1065,43 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
             mapEnabled: false,
             mapStyle: DEFAULT_MAP_STYLE,
         }),
-    78: param =>
-        // Bump save version to support Wuhan facilities.
-        JSON.stringify({ ...JSON.parse(param), version: 79 }),
+    /** Support Wuhan facilities and reconcile version 78 saves from the timeline and real-map branches. */
+    78: param => {
+        const save = JSON.parse(param) as Partial<RMPSave>;
+        return JSON.stringify({
+            ...save,
+            version: 79,
+            mapEnabled: save.mapEnabled ?? false,
+            mapStyle: save.mapStyle ?? DEFAULT_MAP_STYLE,
+        });
+    },
+    79: param => {
+        const save = JSON.parse(param) as RMPSave;
+        return JSON.stringify({ ...save, version: 80, graph: reconcileLineDefinitions(save.graph) });
+    },
+    80: param => {
+        // Add Taipei resources, preserve existing metro dimensions, and migrate tram badges to light rail.
+        const save = JSON.parse(param) as RMPSave;
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.import(save.graph);
+        graph.forEachNode((node, attrs) => {
+            if (attrs.type !== MiscNodeType.TaiPeiMetroLineBadege) return;
+            const badge = attrs[MiscNodeType.TaiPeiMetroLineBadege] as
+                | (TaipeiMetroLineBadgeAttributes & { tram?: boolean })
+                | undefined;
+            if (!badge) return;
+
+            const { tram, size = 16, ...metroAttrs } = badge;
+            if (tram) {
+                graph.mergeNodeAttributes(node, {
+                    type: MiscNodeType.TaipeiLightRailLineBadge,
+                    [MiscNodeType.TaipeiLightRailLineBadge]: { code: badge.code, color: badge.color },
+                });
+                graph.removeNodeAttribute(node, MiscNodeType.TaiPeiMetroLineBadege);
+            } else {
+                graph.setNodeAttribute(node, MiscNodeType.TaiPeiMetroLineBadege, { ...metroAttrs, size });
+            }
+        });
+        return JSON.stringify({ ...save, version: 81, graph: graph.export() });
+    },
 };

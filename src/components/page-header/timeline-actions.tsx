@@ -1,0 +1,304 @@
+import {
+    Button,
+    Popover,
+    PopoverBody,
+    PopoverContent,
+    PopoverTrigger,
+    Portal,
+    useDisclosure,
+    VStack,
+} from '@chakra-ui/react';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { MdAdd, MdAnimation, MdEdit, MdExitToApp, MdKey, MdPause, MdAudiotrack, MdLabel } from 'react-icons/md';
+import { nanoid } from 'nanoid';
+import { Id, NodeId } from '../../constants/constants';
+import { isElementEntry } from '../../constants/timeline';
+import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
+import { replaceTimeline, setCursor, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
+import {
+    insertKeyframeEntry,
+    insertTimelineExitEntry,
+    insertTimelinePause,
+    insertTimelineLabel,
+} from '../../util/timeline';
+
+interface TimelineActionsProps {
+    compact?: boolean;
+}
+
+export default function TimelineActions({ compact = false }: TimelineActionsProps) {
+    const { t } = useTranslation();
+    const dispatch = useTimelineDispatch();
+    const timeline = useTimelineSelector(state => state.project.active!.revision.timeline);
+    const editingLocked = useTimelineSelector(
+        state => state.runtime.annotationEditing || state.runtime.fixedResourceEditing
+    );
+    const selected = useTimelineSelector(state => state.runtime.selected);
+    const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
+    const { graph, saveAudio } = useTimelineProjectContext();
+    const audioInputRef = React.useRef<HTMLInputElement>(null);
+    const insertMenu = useDisclosure();
+    const editMenu = useDisclosure();
+    const editingRef = React.useRef(editingLocked);
+    const editingGeneration = React.useRef(0);
+    if (editingRef.current !== editingLocked) editingGeneration.current++;
+    editingRef.current = editingLocked;
+    React.useEffect(() => {
+        if (!editingLocked) return;
+        insertMenu.onClose();
+        editMenu.onClose();
+    }, [editingLocked, insertMenu.onClose, editMenu.onClose]);
+
+    const selectedElementId = React.useMemo(() => {
+        if (selected.size !== 1) return undefined;
+        const [id] = selected;
+        return (graph.hasNode(id) || graph.hasEdge(id) ? id : undefined) as Id | undefined;
+    }, [graph, selected]);
+    const selectedNodeId =
+        selectedElementId && graph.hasNode(selectedElementId) ? (selectedElementId as NodeId) : undefined;
+    const canInsertExit = React.useMemo(
+        () =>
+            selectedElementId !== undefined &&
+            timeline.track.some(
+                entry => isElementEntry(entry) && entry.refId === selectedElementId && entry.phase === 'enter'
+            ) &&
+            !timeline.track.some(
+                entry => isElementEntry(entry) && entry.refId === selectedElementId && entry.phase === 'exit'
+            ),
+        [selectedElementId, timeline.track]
+    );
+    const selectedNodeEntries = React.useMemo(
+        () =>
+            selectedNodeId
+                ? timeline.track.filter(entry => isElementEntry(entry) && entry.refId === selectedNodeId)
+                : [],
+        [selectedNodeId, timeline.track]
+    );
+    const canAdjustAnimation = selectedNodeEntries.length > 0;
+    const areSelectedNodeAnimationsShown = selectedNodeEntries.every(
+        entry => isElementEntry(entry) && entry.showAnimation
+    );
+
+    const handleInsertKeyframe = () => {
+        if (editingRef.current || !selectedNodeId) return;
+
+        const { document, cursor } = insertKeyframeEntry(timeline, graph, selectedNodeId, timelineCursor);
+        dispatch(replaceTimeline(document));
+        dispatch(setCursor(cursor));
+    };
+    const handleInsertExit = () => {
+        if (editingRef.current || !selectedElementId) return;
+
+        const { document, cursor } = insertTimelineExitEntry(timeline, selectedElementId, timelineCursor);
+        if (document === timeline) return;
+        dispatch(replaceTimeline(document));
+        dispatch(setCursor(cursor));
+    };
+    const handleInsertPause = (position: 'before' | 'after') => {
+        if (editingRef.current) return;
+        const { document, cursor } = insertTimelinePause(timeline, position, timelineCursor);
+        dispatch(replaceTimeline(document));
+        dispatch(setCursor(cursor));
+    };
+    const handleToggleSelectedNodeAnimation = () => {
+        if (editingRef.current || !canAdjustAnimation) return;
+        const showAnimation = !areSelectedNodeAnimationsShown;
+        const document = {
+            ...timeline,
+            track: timeline.track.map(entry =>
+                isElementEntry(entry) && entry.refId === selectedNodeId ? { ...entry, showAnimation } : entry
+            ),
+        };
+        dispatch(replaceTimeline(document));
+    };
+    const handleAudio = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (editingRef.current || !file) return;
+        const generation = editingGeneration.current;
+        const id = `audio_${nanoid(12)}`;
+        await saveAudio(id, file, file.name);
+        if (editingRef.current || generation !== editingGeneration.current) return;
+        dispatch(
+            replaceTimeline({
+                ...timeline,
+                audioTrack: [
+                    ...(timeline.audioTrack ?? []),
+                    {
+                        id: `timeline_${nanoid(10)}`,
+                        kind: 'audio',
+                        blobId: id,
+                        name: file.name,
+                        startSlot: 0,
+                        endSlot: Math.max(1, timeline.track.length),
+                    },
+                ],
+            })
+        );
+    };
+
+    return (
+        <>
+            <Popover
+                isOpen={insertMenu.isOpen}
+                onOpen={() => !editingRef.current && insertMenu.onOpen()}
+                onClose={insertMenu.onClose}
+                placement="bottom-start"
+            >
+                <PopoverTrigger>
+                    <Button
+                        isDisabled={editingLocked}
+                        size="sm"
+                        variant="ghost"
+                        leftIcon={<MdAdd />}
+                        aria-label={t('header.timelinePage.insert')}
+                        title={t('header.timelinePage.insert')}
+                    >
+                        {compact ? null : t('header.timelinePage.insert')}
+                    </Button>
+                </PopoverTrigger>
+                <Portal>
+                    <PopoverContent width="auto">
+                        <PopoverBody p={1}>
+                            <VStack align="stretch" spacing={0} minW="240px">
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdLabel />}
+                                    onClick={() => {
+                                        if (editingRef.current) return;
+                                        insertMenu.onClose();
+                                        dispatch(
+                                            replaceTimeline(insertTimelineLabel(timeline, 'Label', timelineCursor))
+                                        );
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertLabel')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdAudiotrack />}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        audioInputRef.current?.click();
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertAudio')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdKey />}
+                                    isDisabled={!selectedNodeId}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        handleInsertKeyframe();
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertKeyframe')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdExitToApp />}
+                                    isDisabled={!canInsertExit}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        handleInsertExit();
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertExitAnimation')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdPause />}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        handleInsertPause('before');
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertFramePauseBefore')}
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdPause />}
+                                    onClick={() => {
+                                        insertMenu.onClose();
+                                        handleInsertPause('after');
+                                    }}
+                                >
+                                    {t('header.timelinePage.insertFramePauseAfter')}
+                                </Button>
+                            </VStack>
+                        </PopoverBody>
+                    </PopoverContent>
+                </Portal>
+            </Popover>
+            <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                hidden
+                disabled={editingLocked}
+                onChange={handleAudio}
+            />
+            <Popover
+                isOpen={editMenu.isOpen}
+                onOpen={() => !editingRef.current && editMenu.onOpen()}
+                onClose={editMenu.onClose}
+                placement="bottom-start"
+            >
+                <PopoverTrigger>
+                    <Button
+                        isDisabled={editingLocked}
+                        size="sm"
+                        variant="ghost"
+                        leftIcon={<MdEdit />}
+                        aria-label={t('header.edit')}
+                        title={t('header.edit')}
+                    >
+                        {compact ? null : t('header.edit')}
+                    </Button>
+                </PopoverTrigger>
+                <Portal>
+                    <PopoverContent width="auto">
+                        <PopoverBody p={1}>
+                            <VStack align="stretch" spacing={0} minW="240px">
+                                <Button
+                                    size="sm"
+                                    justifyContent="flex-start"
+                                    variant="ghost"
+                                    fontWeight="normal"
+                                    leftIcon={<MdAnimation />}
+                                    isDisabled={!canAdjustAnimation}
+                                    onClick={() => {
+                                        editMenu.onClose();
+                                        handleToggleSelectedNodeAnimation();
+                                    }}
+                                >
+                                    {t('header.timelinePage.showAnimation')}
+                                </Button>
+                            </VStack>
+                        </PopoverBody>
+                    </PopoverContent>
+                </Portal>
+            </Popover>
+        </>
+    );
+}

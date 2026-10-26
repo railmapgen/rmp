@@ -44,6 +44,11 @@ import type { ChongqingRTLoopAttributes } from '../components/svgs/lines/styles/
 import type { ChongqingRTLineBadgeAttributes } from '../components/svgs/lines/styles/chongqingrt-line-badge';
 import type { ChengduRTOutsideFareGatesAttributes } from '../components/svgs/lines/styles/chengdurt-outside-fare-gates';
 import type { ShinkansenAttributes } from '../components/svgs/lines/styles/shinkansen';
+import type { TaipeiLightRailAttributes } from '../components/svgs/lines/styles/taipei-light-rail';
+import type { TaipeiMaokongGondolaAttributes } from '../components/svgs/lines/styles/taipei-maokong-gondola';
+import type { TaipeiMetroOutOfStationAttributes } from '../components/svgs/lines/styles/taipei-metro-out-of-station';
+import type { TaipeiTaiwanRailwayAttributes } from '../components/svgs/lines/styles/taipei-taiwan-railway';
+import type { TaipeiMaokongGondolaTransferAttributes } from '../components/svgs/lines/styles/taipei-maokong-gondola-transfer';
 import type { Path, PathPoint } from './path';
 
 export enum LinePathType {
@@ -102,6 +107,11 @@ export enum LineStyleType {
     ChongqingRTLineBadge = 'chongqingrt-line-badge',
     ChengduRTOutsideFareGates = 'chengdurt-outside-fare-gates',
     Shinkansen = 'shinkansen',
+    TaipeiLightRail = 'taipei-light-rail',
+    TaipeiMaokongGondola = 'taipei-maokong-gondola',
+    TaipeiMetroOutOfStation = 'taipei-metro-out-of-station',
+    TaipeiTaiwanRailway = 'taipei-taiwan-railway',
+    TaipeiMaokongGondolaTransfer = 'taipei-maokong-gondola-transfer',
 }
 
 export const isVisibleLineStyle = (style: LineStyleType): boolean => style !== LineStyleType.Unknown;
@@ -142,6 +152,11 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.ChongqingRTLineBadge]?: ChongqingRTLineBadgeAttributes;
     [LineStyleType.ChengduRTOutsideFareGates]?: ChengduRTOutsideFareGatesAttributes;
     [LineStyleType.Shinkansen]?: ShinkansenAttributes;
+    [LineStyleType.TaipeiLightRail]?: TaipeiLightRailAttributes;
+    [LineStyleType.TaipeiMaokongGondola]?: TaipeiMaokongGondolaAttributes;
+    [LineStyleType.TaipeiMetroOutOfStation]?: TaipeiMetroOutOfStationAttributes;
+    [LineStyleType.TaipeiTaiwanRailway]?: TaipeiTaiwanRailwayAttributes;
+    [LineStyleType.TaipeiMaokongGondolaTransfer]?: TaipeiMaokongGondolaTransferAttributes;
 }
 
 export const LINE_WIDTH = 5;

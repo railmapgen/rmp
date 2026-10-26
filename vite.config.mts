@@ -9,10 +9,15 @@ import svgr from 'vite-plugin-svgr';
 // https://vitejs.dev/config
 export default defineConfig({
     base: '/rmp/',
+    optimizeDeps: {
+        exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/core'],
+    },
     plugins: [
         react(),
         svgr(),
-        checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } }),
+        ...(process.env.VITEST
+            ? []
+            : [checker({ typescript: true, eslint: { lintCommand: 'eslint ./src', useFlatConfig: true } })]),
         visualizer({ filename: 'dist/bundle-report.html', gzipSize: true }),
     ],
     build: {
@@ -43,6 +48,8 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'jsdom',
+        // Each isolated jsdom worker loads the SVG/UI modules; keep peak memory bounded.
+        fileParallelism: false,
         setupFiles: './src/setupTests.ts',
         server: {
             deps: {

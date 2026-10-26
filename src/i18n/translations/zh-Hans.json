@@ -11,7 +11,6 @@
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
-
     "panel": {
         "tools": {
             "showLess": "显示更少",
@@ -181,7 +180,7 @@
                 },
                 "taipeiMetroLineBadge": {
                     "displayName": "台北捷运线路标志",
-                    "tram": "轻轨"
+                    "size": "大小"
                 },
                 "wuhanRTLineBadge": {
                     "displayName": "武汉轨道交通线路标识"
@@ -253,7 +252,12 @@
                     "tram_shenzhen": "深圳有轨电车",
                     "airport_shenzhen": "深圳机场",
                     "railway_wuhan": "武汉火车站",
-                    "airport_wuhan": "武汉机场"
+                    "airport_wuhan": "武汉机场",
+                    "airport_taipei": "机场（台北）",
+                    "hsr_taipei": "高铁（台北）",
+                    "railway_taipei": "台铁（台北）",
+                    "taoyuan_airport_mrt": "桃园机场捷运（台北）",
+                    "hot_spring_taipei": "温泉（台北）"
                 },
                 "text": {
                     "displayName": "任意文字",
@@ -296,6 +300,16 @@
                     "createSquare": "创建正方形",
                     "createTriangle": "创建三角形",
                     "createCircle": "创建圆形"
+                },
+                "taipeiLightRailLineBadge": {
+                    "displayName": "台北轻轨线路标识"
+                },
+                "taipeiMaokongGondolaBadge": {
+                    "displayName": "台北猫空缆车标识"
+                },
+                "taiwanRailwayArrow": {
+                    "displayName": "台铁端点箭头",
+                    "outlined": "黑色边框"
                 }
             },
             "stations": {
@@ -567,6 +581,32 @@
                     "displayName": "杭州地铁换乘车站",
                     "mirror": "图标镜像",
                     "scale": "站名横向缩放"
+                },
+                "taipeiMetroBasic": {
+                    "displayName": "台北捷运基本车站"
+                },
+                "taipeiMetroInt": {
+                    "displayName": "台北捷运换乘车站"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北轻轨车站",
+                    "codeLayout": "编号排版",
+                    "codeInline": "单行（V11）",
+                    "codeStacked": "双行（LB / 12）",
+                    "textOpacity": "文字不透明度"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北猫空缆车车站"
+                },
+                "taipeiCommon": {
+                    "nameOffset": "站名位置",
+                    "secondaryNameZh": "第二站名（中文）",
+                    "secondaryNameEn": "第二站名（英文）",
+                    "secondaryNameOnNewLine": "换行展示第二名称",
+                    "filled": "实心编号牌",
+                    "align": "编号牌排列",
+                    "horizontal": "横向",
+                    "vertical": "纵向"
                 }
             },
             "lines": {
@@ -770,6 +810,21 @@
                     "moveLayerUp": "上移线层",
                     "moveLayerDown": "下移线层",
                     "removeLayer": "删除线层"
+                },
+                "taipeiLightRail": {
+                    "displayName": "台北轻轨"
+                },
+                "taipeiMaokongGondola": {
+                    "displayName": "台北猫空缆车"
+                },
+                "taipeiMetroOutOfStation": {
+                    "displayName": "台北捷运出站换乘"
+                },
+                "taipeiTaiwanRailway": {
+                    "displayName": "台铁线路（台北）"
+                },
+                "taipeiMaokongGondolaTransfer": {
+                    "displayName": "猫空缆车步行连接线"
                 }
             },
             "edges": {},
@@ -784,14 +839,286 @@
             },
             "footer": {
                 "duplicate": "重复"
+            },
+            "taipeiOpacity": {
+                "preset": "预设",
+                "opaque": "不透明"
             }
         }
     },
-
     "header": {
+        "lineInfo": {
+            "calculating": "正在计算线路信息…",
+            "title": "线路信息设置",
+            "help": "修改会自动保存。点击“调整区间”可分离或延长线路，点击 × 可将线路移至待分配区间。",
+            "lineNumber": "线路编号",
+            "openingDate": "开通日期",
+            "operator": "运营方",
+            "status": "运营状态",
+            "notes": "备注",
+            "statuses": {
+                "planned": "规划中",
+                "construction": "建设中",
+                "operating": "运营中",
+                "closed": "停运"
+            },
+            "exportStart": "导出起始站",
+            "removeLine": "移至待分配",
+            "assignmentTarget": "分配到",
+            "newLine": "新线路",
+            "unavailableLines": "复杂的线路",
+            "unassignedIntervals": "待分配区间",
+            "assignInterval": "分配",
+            "unassignedHelp": "选择新线路或已有线路，点击“分配”整合区间。站点和连线保留在画布上。",
+            "adjustInterval": "调整区间",
+            "intervalDiagram": "线路区间及支线结构",
+            "editInterval": "修改线路区间",
+            "intervalHelp": "拖动起终点圆环预览选区，也可使用方向键调整。点击“分离”或“延长”才会提交，取消不会改变线路。",
+            "rangeStart": "起点",
+            "rangeEnd": "终点",
+            "referenceStation": "参考站",
+            "pathStart": "路径起点",
+            "pathEnd": "路径终点",
+            "path": "路径",
+            "branchHelp": "图中显示完整支线结构。选择路径起终点，可将对应支线展开为水平路径并调整圆环。分离时其余连通区间自动成为新线路；延长时保留原线路中所选路径以外的支线。",
+            "junction": "分叉",
+            "noPath": "未找到站点路径，请选择其他起终点。",
+            "otherArc": "选择另一段弧",
+            "selection": "所选区间",
+            "splitPreview": "分离后的线路",
+            "properInterval": "请选择至少两个站点，且不能包含整条线路。",
+            "extendHelp": "虚线表示同色且相连的待分配区间。将圆环拖至这些区间，点击“延长”即可加入所选路径。",
+            "extendPreview": "延长后的线路",
+            "extendProperInterval": "请选择更短的区间或纳入待分配区间，并保留当前线路的至少一个区间。",
+            "extend": "延长",
+            "split": "分离",
+            "invalidDate": "请输入有效日期，格式为 YYYY-MM-DD。",
+            "insufficientStations": "此线路需要至少两个站点才能导出。",
+            "unsupportedTopology": "RMG 无法从所选起始站表达此拓扑，请更换起始站或先分离线路。",
+            "exportHelp": "信息自动同步自线路信息设置。点击对应线路即可下载 RMG 配置文件。",
+            "downloadLine": "下载线路",
+            "unnamed": "未命名线路",
+            "unnamedStation": "未命名站点"
+        },
         "popoverHeader": "你正在浏览<1>{{environment}}</1>环境！",
         "popoverBody": "我们正在测试最新的RMP。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜索车站",
+        "edit": "编辑",
+        "undo": "撤销",
+        "redo": "重做",
+        "timelinePage": {
+            "open": "打开$t(Rail Map Chronicle)",
+            "backToEditor": "返回编辑器",
+            "trackTitle": "时间线轨道",
+            "resizeTrack": "调整时间线轨道高度",
+            "cardScale": "卡片大小",
+            "resetCardScale": "恢复默认大小",
+            "zoomIn": "放大",
+            "zoomOut": "缩小",
+            "selectHint": "先在上方选择一个节点或线段，再将其添加到轨道中。",
+            "alreadyAdded": "已添加",
+            "addSelected": "添加已选项",
+            "addPathByColor": "按颜色添加一条线路",
+            "homeDescription": "从绘制器当前打开的 RMP 项目创建编年器项目，或导入已有的编年器项目文件。",
+            "continueEditing": "继续编辑",
+            "startFromCurrentRmp": "从当前 RMP 项目开始",
+            "importTimelineProject": "导入编年器项目",
+            "newProjectName": "编年器项目",
+            "recentProject": "最近项目",
+            "updatedAt": "更新于",
+            "openProject": "打开",
+            "deleteProject": "删除编年器项目",
+            "deleteProjectConfirm": "确定删除编年器项目“{{name}}”吗？",
+            "files": "文件",
+            "backToMainMenu": "返回主菜单",
+            "importRmpData": "导入 RMP 数据",
+            "importOpenPainterProject": "绘制器打开的项目",
+            "importLocalConfig": "本地配置文件",
+            "renameProject": "项目重命名",
+            "renameProjectPrompt": "编年器项目名称",
+            "downloadProject": "下载编年器项目",
+            "exportVideo": "导出视频",
+            "insert": "插入",
+            "insertKeyframe": "关键帧",
+            "insertExitAnimation": "插入当前所选项的退出动画",
+            "insertFramePauseBefore": "帧前停顿",
+            "insertFramePauseAfter": "帧后停顿",
+            "insertLabel": "标注",
+            "editLabel": "编辑标注",
+            "labelText": "标注文本",
+            "saveLabel": "保存",
+            "insertAudio": "音频",
+            "audioTrack": "音频轨道",
+            "noAudio": "暂无音频。使用“插入 > 音频”添加。",
+            "audioStart": "开始时间（秒）",
+            "audioEnd": "结束时间（秒）",
+            "audioMissing": "音频数据丢失。请重新导入文件以恢复。",
+            "framePauseBefore": "帧前停顿",
+            "framePauseAfter": "帧后停顿",
+            "pauseDuration": "停顿时长",
+            "seconds": "秒",
+            "keyframe": "关键帧",
+            "enterPhase": "进入",
+            "exitPhase": "离开",
+            "showAnimation": "显示动画",
+            "toggleAnimation": "显示/隐藏动画",
+            "deleteEntry": "删除",
+            "invertSelection": "反转多选区域顺序",
+            "editorPane": "编辑",
+            "previewPane": "预览",
+            "keyframeHint": "拖动车站以设置关键帧位置",
+            "selectLineColor": "选择线路颜色",
+            "selectDestNode": "在画布中选择终点车站",
+            "noPathFound": "所选颜色在这两站之间没有找到路径。",
+            "pathAdded": "成功将 {{count}} 个元素添加进轨道。",
+            "pathAlreadyAdded": "此路径中的所有元素都已存在于轨道中。",
+            "cursorBefore": "将新增内容插入第 {{position}} 项之前",
+            "cursorEnd": "将新增内容插入轨道末尾",
+            "empty": "轨道还是空的。先在上方选择元素，再开始构建时间线。",
+            "missingCoverage": "还有 {{nodeCount}} 个节点、{{edgeCount}} 条线段未加入时间线。",
+            "highlightMissing": "高亮遗漏",
+            "clearMissingHighlight": "取消高亮",
+            "coverageComplete": "所有节点和线段都已加入时间线。",
+            "previousFrame": "上一帧",
+            "playPreview": "播放预览",
+            "pausePreview": "暂停预览",
+            "nextFrame": "下一帧",
+            "playbackControls": "播放控制",
+            "onboarding": {
+                "title": "$t(Rail Map Chronicle)快速上手",
+                "stepCount": "第 {{current}} / {{total}} 页",
+                "previous": "上一步",
+                "next": "下一步",
+                "done": "知道了",
+                "tipLabel": "小提示：",
+                "addLine": {
+                    "title": "插入一整段线路",
+                    "description": "选择起点站和终点站，两站之间的完整路径就会按顺序加入时间线。",
+                    "step1": "在上方的编辑画布中点击起点站。",
+                    "step2": "在轨道区右侧的“按颜色添加一条线路”中，点击要使用的线路颜色。",
+                    "step3": "回到画布点击终点站，整段路径会插入当前的时间线位置。",
+                    "tip": "想调整插入位置？先在轨道中点击两个片段之间的插入点。",
+                    "imageAlt": "三步示意图：选择起点站、选择线路颜色，再选择终点站，将整段线路加入时间线"
+                },
+                "exportVideo": {
+                    "title": "导出编年视频",
+                    "description": "确认顺序与节奏后，从“文件”菜单进入视频导出。",
+                    "step1": "点击左上角的“文件”。",
+                    "step2": "选择“导出视频”。",
+                    "step3": "设置格式、分辨率和帧率，然后开始生成视频。",
+                    "tip": "视频会按照轨道从左到右的顺序播放；导出前可先用中间的播放按钮预览。",
+                    "imageAlt": "在文件菜单中高亮导出视频选项的示意图"
+                }
+            },
+            "settings": {
+                "title": "编年器设置",
+                "description": "调整播放效果和画面标注，预览与导出视频会同步更新。",
+                "playback": "播放效果",
+                "overlays": "画面标注",
+                "lineInformation": "线路信息",
+                "showLineLengthMapOnly": "仅开启真实地理地图时可用。",
+                "savedWithProject": "随当前编年器项目保存",
+                "done": "完成",
+                "cameraZoom": "放大倍率",
+                "cameraZoomFull": "全屏（Full）",
+                    "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
+                    "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
+                    "chooseFixedResources": "选择固定资源",
+                    "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
+            },
+            "lineLabels": {
+                "title": "线路标签信息",
+                "description": "设置视频中显示的线路名称、标志色与开通日期。这些标注信息仅保存在当前编年器项目中。",
+                "empty": "暂无线路信息。导入包含线路信息的 RMP 存档后，即可设置视频线路标签。",
+                "color": "标签标志色",
+                "invalidColor": "请输入有效的十六进制颜色，例如 #1677ff。",
+                "reset": "恢复导入的线路信息",
+                "resetHint": "将此线路的标签恢复为导入时的 RMP 线路信息。",
+                "saved": "修改会保存在当前编年器项目中，并同时应用于预览和导出。"
+            },
+            "rmpImport": {
+                "title": "导入 RMP 数据",
+                "applyLineInfo": "按线路信息自动填入时间线",
+                "description": "按开通日期排列线路，并从设定的起点向终点依次绘制。未填写开通日期的线路排在最后。",
+                "summary": "{{lines}} 条线路 · {{nodes}} 个节点 · {{edges}} 条线段",
+                "unavailable": "暂无可用的线路信息。你仍可导入地图并手动编辑时间线。",
+                "replaceTrack": "此操作会重新生成视觉轨道，保留音频片段和播放设置。",
+                "syncSummary": "地图变更：节点 +{{addedNodes}}/−{{removedNodes}}，线段 +{{addedEdges}}/−{{removedEdges}}。将移除 {{removedEntries}} 个失效时间线条目。"
+            },
+            "playbackPosition": "播放进度",
+            "preparingPreview": "正在准备视频预览…",
+            "previewFailed": "预览加载失败",
+            "audioDuration": "资源时长：{{duration}} 秒",
+            "audioTiming": "编辑音乐时间",
+            "retryPreview": "重新加载",
+            "fixedResources": {
+                "title": "固定资源",
+                "hint": "点按节点或线路区段可加入选择，再次点按可移除。",
+                "selectedCount": "已选择 {{count}} 个资源",
+                "doneNoticeTitle": "固定资源已更新",
+                "doneNotice": "固定资源会从首帧起持续显示至视频结束，对应的出现和退出片段已从轨道移除。取消固定不会恢复原有片段，可按正常流程重新添加到轨道。",
+                "done": "完成",
+                "previewLabel": "固定资源预览"
+            },
+            "overlayEditor": {
+                "editPositions": "修改元素位置",
+                "title": "画面标注布局",
+                "settingsHint": "在预览区域添加、排列并独立设置画面标注。",
+                "hint": "点击预览中的模块可修改设置。通过虚线加号添加模块，拖动模块可调整顺序或移动到其他角落。",
+                "addToRegion": "添加到{{region}}",
+                "closeCatalog": "关闭模块列表",
+                "addModule": "添加模块",
+                "subscriberLocked": "此区域仅订阅用户可编辑。已有模块可以移到免费区域。",
+                "subscriptionExport": "右上角区域需要订阅。请将其中的模块移到其他区域，或恢复订阅后导出。",
+                "region": "显示区域",
+                "moveUp": "上移",
+                "moveDown": "下移",
+                "remove": "删除模块",
+                "timedTextHint": "文字内容与出现时间由文字轨道控制。",
+                "trackLocked": "调整画面标注期间，轨道内容已锁定。",
+                "regions": {
+                    "top-left": "左上角",
+                    "top-right": "右上角",
+                    "bottom-left": "左下角",
+                    "bottom-right": "右下角"
+                }
+            },
+            "overlayModules": {
+                "names": {
+                    "date": "时间",
+                    "lineIdentity": "线路标识",
+                    "lineLength": "线路长度",
+                    "minimap": "地图缩略",
+                    "timedText": "时间轴文字"
+                },
+                "fields": {
+                    "showMonthDay": "时间内容",
+                    "dateLayout": "日期布局",
+                    "showAppearedLines": "在下方显示所有已出现过的线路",
+                    "lengthScope": "长度统计",
+                    "unit": "长度单位",
+                    "size": "小窗大小",
+                    "fontSize": "文字大小",
+                    "alignment": "文字对齐"
+                },
+                "options": {
+                    "yearOnly": "仅年份",
+                    "yearMonthDay": "年月日",
+                    "singleLine": "单行",
+                    "doubleLine": "双行",
+                    "network": "全网累计总长",
+                    "currentLine": "当前线路累计长度",
+                    "km": "公里（km）",
+                    "mi": "英里（mi）",
+                    "small": "小",
+                    "medium": "中",
+                    "large": "大",
+                    "left": "左对齐",
+                    "center": "居中",
+                    "right": "右对齐"
+                }
+            }
+        },
         "mapToggle": {
             "show": "显示地理地图",
             "hide": "隐藏地理地图"
@@ -830,7 +1157,8 @@
                     "suzhou": "苏州",
                     "wuhan": "武汉"
                 },
-                "detected": "检测到 AARC 存档文件。准备导入 {{x}} 个车站和 {{y}} 条线路。",
+                "detected": "检测到 AARC 存档文件。准备导入 {{x}} 个图形节点和 {{y}} 条连接线。",
+                "lineMetadata": "包含 {{x}} 条铁路线路/区段，其中 {{y}} 个区段带有开通日期。",
                 "error": "您提交的存档文件不受支持。",
                 "next": "下一步",
                 "previous": "上一步",
@@ -840,6 +1168,45 @@
         "download": {
             "config": "导出项目",
             "image": "导出图片",
+            "video": "导出视频",
+            "videoExport": {
+                "title": "导出视频",
+                "groups": {
+                    "output": "输出设置",
+                    "rendering": "渲染设置",
+                    "sharing": "分享与许可"
+                },
+                "fps": "每秒帧数 (FPS)",
+                "speed": "绘制速度",
+                "speedHint": "视频时长将根据线路长度和绘制速度自动计算。",
+                "resolution": "视频分辨率",
+                "resolutions": {
+                    "720p": "720p（1280×720）",
+                    "1080p": "1080p（1920×1080）",
+                    "2k": "2K（2560×1440）",
+                    "4k": "4K（3840×2160）"
+                },
+                "quality": "视频质量",
+                "autoChangeStationType": "自动切换基本车站与换乘车站",
+                "autoChangeStationTypeHint": "开启后，将根据视频中当前已显示的线路自动调整以下受支持的换乘站：{{stations}}。",
+                "autoChangeStationTypeWarning": "如果视频中的站名位置或换乘信息与当前地图不一致，请关闭“自动切换基本车站与换乘车站”，以完全按照地图当前状态渲染车站。",
+                "generating": "正在生成视频...",
+                "progress": "进度：{{progress}}%",
+                "description": "此功能会导出一个动画视频，展示节点和线路逐步绘制的过程。",
+                "timelineGuide": "视频会按照时间线中设置的顺序依次渲染车站和线路；如果尚未设置时间线，则使用默认顺序。",
+                "editTimeline": "修改时间线",
+                "shareInfo1": "当我分享此视频时我会附上",
+                "shareInfo2": "和它的链接。",
+                "format": "视频格式",
+                "formats": {
+                    "webm": "WebM",
+                    "mp4": "MP4"
+                },
+                "mp4Transparency": "MP4 不支持透明背景，将使用当前界面背景色。",
+                "error": "视频导出失败，请重试或降低分辨率、帧率。",
+                "noNodes": "无法导出视频：图中没有节点。",
+                "unavailableLines": "当前地图或普通模式下有些线段无法显示。请修复这些线段后再导出视频。"
+            },
             "2rmg": {
                 "title": "导出RMG项目",
                 "type": {
@@ -853,7 +1220,7 @@
                     "lineCode": "路线编号"
                 },
                 "info1": "这个功能可将RMP项目导出为RMG项目。",
-                "info2": "下面的线路将可以被导出，你可以在左侧文本框中输入中文线路名称、在中间输入英文线路名称、右边输入线路编号（广州地铁样式专用），随后点击下载按钮即可导出RMG项目。",
+                "info2": "信息自动同步自线路信息设置。点击对应线路即可下载 RMG 配置文件。",
                 "noline": "未找到可用线路。",
                 "download": "下载",
                 "downloadInfo": "请选择一个起始车站，并点击它。"
@@ -1053,7 +1420,6 @@
             "zulipContent": "加入我们的 Zulip 社区！"
         }
     },
-
     "contextMenu": {
         "refresh": "刷新",
         "cut": "剪切",
@@ -1072,7 +1438,6 @@
         "flipDiagonal135": "沿135°线翻转",
         "reconcile": "合并线段"
     },
-
     "clipboard": {
         "errors": {
             "readText": "无法读取剪贴板。请检查浏览器权限后重试。",
@@ -1080,7 +1445,6 @@
             "cannotPasteSpecificAttrs": "无法粘贴独特属性。请确认已选中兼容的对象，且剪贴板中包含有效的独特属性数据。"
         }
     },
-
     "localStorageQuotaExceeded": "本地存储空间已达上限。无法保存新更改。",
     "map": {
         "loading": "正在加载地图",

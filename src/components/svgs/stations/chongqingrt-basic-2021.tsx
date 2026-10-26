@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { SameStyleLineEndpointOverlay } from '../common/same-style-line-endpoint-overlay';
 import StationNameTranslateButton from '../../panels/details/station-name-translate-button';
 import { AttrsProps, CanvasType, CategoriesType, CityCode } from '../../../constants/constants';
@@ -87,30 +88,33 @@ const ChongqingRTBasicStation2021 = (props: StationComponentProps) => {
     const [elOffset, setElOffset] = React.useState(0);
     const [opOffset, setOpOffset] = React.useState(0);
 
-    React.useEffect(() => {
-        if (elRef.current && zhRef.current) {
-            if (nameOffsetX !== 'middle') {
-                const elWidth = elRef.current.getBBox().width;
-                const zhWidth = zhRef.current.getBBox().width;
-                if (zhWidth > elWidth) {
-                    setElOffset((zhWidth - elWidth) / 2);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            if (elRef.current && zhRef.current) {
+                if (nameOffsetX !== 'middle') {
+                    const elWidth = measureBBox(elRef.current).width;
+                    const zhWidth = measureBBox(zhRef.current).width;
+                    if (zhWidth > elWidth) {
+                        setElOffset((zhWidth - elWidth) / 2);
+                    } else {
+                        setElOffset(0);
+                    }
                 } else {
                     setElOffset(0);
                 }
-            } else {
-                setElOffset(0);
             }
-        }
-        if (!open && opRef.current && zhRef.current) {
-            const opWidth = opRef.current.getBBox().width;
-            const zhWidth = zhRef.current.getBBox().width;
-            if (zhWidth > opWidth) {
-                setOpOffset((zhWidth - opWidth) / 2);
-            } else {
-                setOpOffset(0);
+            if (!open && opRef.current && zhRef.current) {
+                const opWidth = measureBBox(opRef.current).width;
+                const zhWidth = measureBBox(zhRef.current).width;
+                if (zhWidth > opWidth) {
+                    setOpOffset((zhWidth - opWidth) / 2);
+                } else {
+                    setOpOffset(0);
+                }
             }
-        }
-    }, [names[0], names[1], nameOffsetX]);
+        },
+        [names[0], names[1], nameOffsetX]
+    );
 
     const defaultNameLayout: NameLayout = {
         x: textX,

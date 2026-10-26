@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import store from '../../redux';
+import store from '../../redux/store';
 import { closeRadialTouchMenu, setRadialTouchMenu } from '../../redux/runtime/runtime-slice';
 import { MenuCategory } from '../../util/graph-nearby-elements';
 import RadialTouchMenu from './radial-touch-menu';

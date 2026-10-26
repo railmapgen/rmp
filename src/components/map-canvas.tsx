@@ -5,6 +5,7 @@ import { GlobalAlertId } from '../constants/global-alerts';
 import { isMapZoomed } from '../map/map-config';
 import { MAP_ROUTING } from '../map/map-routing';
 import { compileMapStyleCss } from '../map/map-style';
+import type { MapStyle } from '../map/map-style';
 import { MapTileController, type MapLoadingProgress } from '../map/map-tile-controller';
 import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
 import { closeGlobalAlert, setGlobalAlert, setMapOverview } from '../redux/runtime/runtime-slice';
@@ -31,6 +32,17 @@ export interface MapCanvasHandle {
     markViewportInteraction: () => void;
 }
 
+export interface MapCanvasCoreProps {
+    mapEnabled: boolean;
+    mapStyle: MapStyle;
+    initialViewport: LiveViewport;
+    forceDetailed?: boolean;
+    disableMapPerformanceOptimization?: boolean;
+    editorInteractionActive?: boolean;
+    onOverviewChange?: (isOverview: boolean) => void;
+    onLoadingChange?: (loading: boolean, progress?: MapLoadingProgress) => void;
+}
+
 /**
  * Owns the optional real-map layer mounted behind the regular editor canvas.
  *
@@ -39,15 +51,18 @@ export interface MapCanvasHandle {
  * imperative handle keeps that high-frequency bridge explicit without making
  * this component aware of the editor canvas or its children.
  */
-const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
+export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProps>((props, ref) => {
+    const {
+        mapEnabled,
+        mapStyle,
+        initialViewport,
+        forceDetailed = false,
+        disableMapPerformanceOptimization = false,
+        editorInteractionActive = false,
+        onOverviewChange = () => undefined,
+        onLoadingChange = () => undefined,
+    } = props;
     const { t } = useTranslation();
-    const dispatch = useRootDispatch();
-    const store = useRootStore();
-    const { mapEnabled, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
-    const disableMapPerformanceOptimization = useRootSelector(
-        state => state.app.preference.disableMapPerformanceOptimization
-    );
-    const editorInteractionActive = useRootSelector(state => state.runtime.active !== undefined);
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const mapLayerRef = React.useRef<SVGGElement>(null);
@@ -57,9 +72,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
 
     // A viewport may arrive before manifests finish loading; retaining it lets the controller start at the latest frame.
     const latestViewportRef = React.useRef<LiveViewport>({
-        x: svgViewBoxMin.x,
-        y: svgViewBoxMin.y,
-        zoom: svgViewBoxZoom,
+        ...initialViewport,
     });
 
     /**
@@ -77,58 +90,22 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
         sendErrorNotification(t('error'), t('map.loadError'));
     });
     const updateOverviewState = useEvent((isOverview: boolean) => {
-        // Redux is the sole overview state; consulting it here also avoids re-publishing identical viewport frames.
-        if (store.getState().runtime.isMapOverview === isOverview) return;
-        dispatch(setMapOverview(isOverview));
-
-        if (isOverview) {
-            dispatch(
-                setGlobalAlert({
-                    id: GlobalAlertId.MapOverviewEdit,
-                    status: 'info',
-                    message: t('map.zoomInToEdit'),
-                })
-            );
-        } else {
-            // The same transition handles zooming in, hiding the map, and teardown.
-            dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit));
-        }
+        onOverviewChange(isOverview);
     });
     const updateLoadingAlert = useEvent((loading: boolean, progress?: MapLoadingProgress) => {
-        if (!loading) {
-            // Closing an absent ID is intentionally safe across errors, project changes, and unmounts.
-            isLoadingSessionRef.current = false;
-            dispatch(closeGlobalAlert(GlobalAlertId.MapLoading));
-            return;
-        }
-
-        // A manual dismissal suppresses later progress updates until the controller starts a new loading session.
-        if (
-            isLoadingSessionRef.current &&
-            store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading] === undefined
-        ) {
-            return;
-        }
-        isLoadingSessionRef.current = true;
-        const progressText = progress ? ` (${progress.completed} / ${progress.total})` : '';
-        dispatch(
-            setGlobalAlert({
-                id: GlobalAlertId.MapLoading,
-                status: 'loading',
-                message: `${t('map.loading')}${progressText}`,
-            })
-        );
+        isLoadingSessionRef.current = loading;
+        onLoadingChange(loading, progress);
     });
     const updateViewport = React.useCallback(
         (viewport: LiveViewport) => {
             latestViewportRef.current = viewport;
 
-            const isOverview = mapEnabled && !isMapZoomed(viewport.zoom);
+            const isOverview = mapEnabled && !forceDetailed && !isMapZoomed(viewport.zoom);
             updateOverviewState(isOverview);
 
             mapControllerRef.current?.updateViewport(viewport);
         },
-        [mapEnabled, updateOverviewState]
+        [forceDetailed, mapEnabled, updateOverviewState]
     );
 
     const markViewportInteraction = React.useCallback(() => {
@@ -154,16 +131,15 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
      * while transient pan/zoom frames continue through `updateViewport`.
      */
     React.useLayoutEffect(() => {
-        updateOverviewState(mapEnabled && !isMapZoomed(svgViewBoxZoom));
-    }, [mapEnabled, svgViewBoxZoom, updateOverviewState]);
+        updateOverviewState(mapEnabled && !forceDetailed && !isMapZoomed(initialViewport.zoom));
+    }, [forceDetailed, initialViewport.zoom, mapEnabled, updateOverviewState]);
 
     React.useEffect(
         () => () => {
             // Runtime UI must not retain a map-only state if the canvas is removed.
-            dispatch(setMapOverview(false));
-            dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit));
+            onOverviewChange(false);
         },
-        [dispatch]
+        [onOverviewChange]
     );
 
     React.useEffect(() => {
@@ -180,6 +156,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
             routing: MAP_ROUTING,
             styleCss: mapStyleCssRef.current,
             rasterEnabled: rasterEnabledRef.current,
+            forceDetailed,
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
@@ -213,7 +190,7 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
             controller.dispose();
             if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
         };
-    }, [mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
+    }, [forceDetailed, mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
 
     viewportSizeRef.current = { height, width };
     mapStyleCssRef.current = mapStyleCss;
@@ -253,6 +230,70 @@ const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
             </defs>
             <g ref={mapLayerRef} data-map-layer="" />
         </>
+    );
+});
+
+MapCanvasCore.displayName = 'MapCanvasCore';
+
+const MapCanvas = React.forwardRef<MapCanvasHandle>((_, ref) => {
+    const { t } = useTranslation();
+    const dispatch = useRootDispatch();
+    const store = useRootStore();
+    const { mapEnabled, mapStyle, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const disableMapPerformanceOptimization = useRootSelector(
+        state => state.app.preference.disableMapPerformanceOptimization
+    );
+    const editorInteractionActive = useRootSelector(state => state.runtime.active !== undefined);
+    const loadingSession = React.useRef(false);
+
+    const handleOverviewChange = React.useCallback(
+        (isOverview: boolean) => {
+            if (store.getState().runtime.isMapOverview === isOverview) return;
+            dispatch(setMapOverview(isOverview));
+            if (isOverview) {
+                dispatch(
+                    setGlobalAlert({
+                        id: GlobalAlertId.MapOverviewEdit,
+                        status: 'info',
+                        message: t('map.zoomInToEdit'),
+                    })
+                );
+            } else dispatch(closeGlobalAlert(GlobalAlertId.MapOverviewEdit));
+        },
+        [dispatch, store, t]
+    );
+    const handleLoadingChange = React.useCallback(
+        (loading: boolean, progress?: MapLoadingProgress) => {
+            if (!loading) {
+                loadingSession.current = false;
+                dispatch(closeGlobalAlert(GlobalAlertId.MapLoading));
+                return;
+            }
+            if (loadingSession.current && !store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]) return;
+            loadingSession.current = true;
+            const progressText = progress ? ` (${progress.completed} / ${progress.total})` : '';
+            dispatch(
+                setGlobalAlert({
+                    id: GlobalAlertId.MapLoading,
+                    status: 'loading',
+                    message: `${t('map.loading')}${progressText}`,
+                })
+            );
+        },
+        [dispatch, store, t]
+    );
+
+    return (
+        <MapCanvasCore
+            ref={ref}
+            mapEnabled={mapEnabled}
+            mapStyle={mapStyle}
+            initialViewport={{ x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom }}
+            disableMapPerformanceOptimization={disableMapPerformanceOptimization}
+            editorInteractionActive={editorInteractionActive}
+            onOverviewChange={handleOverviewChange}
+            onLoadingChange={handleLoadingChange}
+        />
     );
 });
 

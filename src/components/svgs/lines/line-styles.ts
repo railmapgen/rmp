@@ -33,6 +33,11 @@ import shanghaiSuburbanRailway from './styles/shanghai-suburban-railway';
 import shinkansen from './styles/shinkansen';
 import shmetroVirtualInt from './styles/shmetro-virtual-int';
 import singleColor from './styles/single-color';
+import taipeiLightRail from './styles/taipei-light-rail';
+import taipeiMaokongGondola from './styles/taipei-maokong-gondola';
+import taipeiMetroOutOfStation from './styles/taipei-metro-out-of-station';
+import taipeiTaiwanRailway from './styles/taipei-taiwan-railway';
+import taipeiMaokongGondolaTransfer from './styles/taipei-maokong-gondola-transfer';
 import unknownLineStyle from './styles/unknown';
 
 /**
@@ -74,4 +79,9 @@ export const lineStyles = {
     [LineStyleType.ChongqingRTLineBadge]: chongqingRTLineBadge,
     [LineStyleType.ChengduRTOutsideFareGates]: chengduRTOutsideFareGates,
     [LineStyleType.Shinkansen]: shinkansen,
+    [LineStyleType.TaipeiLightRail]: taipeiLightRail,
+    [LineStyleType.TaipeiMaokongGondola]: taipeiMaokongGondola,
+    [LineStyleType.TaipeiMetroOutOfStation]: taipeiMetroOutOfStation,
+    [LineStyleType.TaipeiTaiwanRailway]: taipeiTaiwanRailway,
+    [LineStyleType.TaipeiMaokongGondolaTransfer]: taipeiMaokongGondolaTransfer,
 };

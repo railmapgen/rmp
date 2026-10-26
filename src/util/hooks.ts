@@ -1,13 +1,142 @@
 import { logger } from '@railmapgen/rmg-runtime';
 import { LanguageCode, Translation } from '@railmapgen/rmg-translate';
 import type { RefObject } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { Theme } from '../constants/constants';
-import { useRootSelector } from '../redux';
+import { LineDefinition } from '../constants/line-definitions';
+import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
+import { ParamGraph, refreshLineDefinitions } from '../redux/param/param-slice';
 import { openPaletteAppClip } from '../redux/runtime/runtime-slice';
 import { loadFont } from './fonts';
+import { getLineTopology, getUnassignedLineSections, reconcileLineDefinitions } from './line-definitions';
+import { getLineExportsAsync, LineExport, yieldLineCalculation } from './line-export';
+
+/** Request a fresh projection on open, and discard work for closed panels or superseded graphs. */
+export const useLineInformation = (isOpen: boolean) => {
+    const source = useRootSelector(state => state.param.present.graph);
+    const dispatch = useRootDispatch();
+    const store = useRootStore();
+    const calculated = useRef<ParamGraph | undefined>(undefined);
+    const previousGraphs = useRef([source]);
+    const restoredGraph = useRef(source);
+    const [result, setResult] = useState<{
+        graph: ParamGraph;
+        entries: LineExport[];
+        unassigned: LineDefinition[];
+        error?: string;
+    }>();
+
+    useEffect(() => {
+        let previous = store.getState().param;
+        return store.subscribe(() => {
+            const next = store.getState().param;
+            if (next === previous) return;
+            const last = next.past[next.past.length - 1];
+            const oldLast = previous.past[previous.past.length - 1];
+            const restored =
+                next.present.graph === oldLast?.graph
+                    ? oldLast
+                    : next.present.graph === previous.future[0]?.graph
+                      ? previous.future[0]
+                      : undefined;
+            const initialized = next.past !== previous.past && next.past.length === 0 && next.future.length === 0;
+            const replaced = last?.scope === 'project' && last !== previous.past[previous.past.length - 1];
+            // Reuse restored state references; ordinary drawing saves never scan or repair memberships here.
+            if (initialized || replaced || restored?.scope === 'project') {
+                previousGraphs.current = [next.present.graph];
+                restoredGraph.current = next.present.graph;
+            } else if (restored) restoredGraph.current = next.present.graph;
+            previous = next;
+        });
+    }, [store]);
+
+    useEffect(() => {
+        if (!isOpen) {
+            calculated.current = undefined;
+            setResult(undefined);
+            return;
+        }
+        if (calculated.current === source) return;
+        const controller = new AbortController();
+        const calculate = async () => {
+            try {
+                await yieldLineCalculation(controller.signal);
+                if (controller.signal.aborted) return;
+                const past = store.getState().param.past;
+                let start = 0;
+                for (let index = past.length - 1; index >= 0; index--) {
+                    if (past[index].scope !== 'project') continue;
+                    start = index + 1;
+                    break;
+                }
+                const graph = reconcileLineDefinitions(source, [
+                    ...previousGraphs.current,
+                    restoredGraph.current,
+                    ...past.slice(start).map(entry => entry.graph),
+                ]);
+                const entries = await getLineExportsAsync(graph, controller.signal);
+                if (controller.signal.aborted || store.getState().param.present.graph !== source) return;
+                dispatch(refreshLineDefinitions({ source, attributes: graph.attributes }));
+                const current = store.getState().param.present.graph;
+                const unassigned = getUnassignedLineSections(current).filter(
+                    line => getLineTopology(current, line).stationIds.length >= 2
+                );
+                calculated.current = current;
+                // Retain only existing states needed by current/undo/redo memberships, without copying their graphs.
+                const state = store.getState().param;
+                const referenced = new Set(
+                    [
+                        current,
+                        ...state.past.slice(start).map(entry => entry.graph),
+                        ...state.future.map(entry => entry.graph),
+                    ].flatMap(graph => [
+                        ...(graph.attributes?.lineDefinitions ?? []).flatMap(line => line.edgeIds),
+                        ...(graph.attributes?.unassignedLineEdgeIds ?? []),
+                    ])
+                );
+                const candidates = [
+                    ...previousGraphs.current,
+                    restoredGraph.current,
+                    ...past.slice(start).map(entry => entry.graph),
+                    current,
+                ];
+                const retained: ParamGraph[] = [];
+                const seen = new Set<ParamGraph>();
+                for (let index = candidates.length - 1; index >= 0; index--) {
+                    const candidate = candidates[index];
+                    let needed = candidate === current;
+                    if (referenced.size) {
+                        for (const edge of candidate.edges) if (referenced.delete(edge.key!)) needed = true;
+                    }
+                    if (needed && !seen.has(candidate)) {
+                        retained.unshift(candidate);
+                        seen.add(candidate);
+                    }
+                }
+                previousGraphs.current = retained;
+                restoredGraph.current = current;
+                setResult({ graph: current, entries, unassigned });
+            } catch (cause) {
+                if (controller.signal.aborted) return;
+                calculated.current = source;
+                setResult({ graph: source, entries: [], unassigned: [], error: String(cause) });
+            }
+        };
+        void calculate();
+        return () => controller.abort();
+    }, [isOpen, source, dispatch, store]);
+
+    const isLoading = isOpen && (!result || result.graph !== source);
+    return {
+        graph: result?.graph ?? source,
+        entries: result?.entries ?? [],
+        unassigned: result?.unassigned ?? [],
+        isLoading,
+        error: result?.error,
+    };
+};
 
 // Define general type for useWindowSize hook, which includes width and height
 export interface Size {
@@ -135,7 +264,7 @@ export const useFonts = () => {
 
     useEffect(() => {
         for (const lang of languages) {
-            loadFont(lang);
+            void loadFont(lang).catch(error => logger.warn('Failed to load font', lang, error));
         }
     }, [refreshNodes, languages]);
 };

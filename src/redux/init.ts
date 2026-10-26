@@ -107,7 +107,7 @@ export const initStore = async (store: RootStore) => {
     // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, ...project } = JSON.parse(param) as RMPSave;
+    const { version, images: _images, ...project } = JSON.parse(param) as RMPSave;
     window.graph = MultiDirectedGraph.from(project.graph);
     store.dispatch(initializeProject(project));
     // TODO(graph-mutation-pipeline): Route initialization through one explicit
@@ -121,7 +121,8 @@ export const initStore = async (store: RootStore) => {
         predicate: (_action, currentState, previousState) => currentState.param.present !== previousState.param.present,
         effect: (_action, listenerApi) => {
             try {
-                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(listenerApi.getState().param));
+                const state = listenerApi.getState();
+                localStorage.setItem(LocalStorageKey.PARAM, stringifyParam(state.param));
                 onRMPSaveUpdate(); // notify rmt to update the save
             } catch (error) {
                 if (error instanceof Error && error.name == 'QuotaExceededError') {

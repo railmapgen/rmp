@@ -2,6 +2,7 @@ import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import { MonoColour } from '@railmapgen/rmg-palette-resources';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSvgLayoutEffect } from '../../svg-layout';
 import { AttrsProps, CityCode } from '../../../constants/constants';
 import { MiscNodeType, Node, NodeComponentProps } from '../../../constants/nodes';
 import { getLangStyle, TextLanguage } from '../../../util/fonts';
@@ -18,7 +19,15 @@ const BjsubwayTextLineBadge = (props: NodeComponentProps<BjsubwayTextLineBadgeAt
 
     const textLineEl = React.useRef<SVGGElement | null>(null);
     const [bBox, setBBox] = React.useState({ width: 12 } as DOMRect);
-    React.useEffect(() => setBBox(textLineEl.current!.getBBox()), [...names, setBBox, textLineEl]);
+    useSvgLayoutEffect(
+        ({ measureBBox }) => {
+            const bounds = measureBBox(textLineEl.current!);
+            if (!Number.isFinite(bounds.width) || bounds.width < 0) return;
+            setBBox(previous => (previous.width === bounds.width ? previous : bounds));
+        },
+        [...names, setBBox, textLineEl],
+        textLineEl
+    );
 
     const onPointerDown = React.useCallback(
         (e: React.PointerEvent<SVGElement>) => handlePointerDown(id, e),

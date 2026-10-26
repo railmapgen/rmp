@@ -1,8 +1,11 @@
 import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
+import { MiscNodeType } from '../constants/nodes';
+import { createEmptyTimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
 import { createStore } from '../redux';
+import { createTestLineGraph } from '../test-utils';
 import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
@@ -138,6 +141,70 @@ describe('Unit tests for param upgrade function', () => {
         expect(allKeys.reduce((acc, cur) => acc + cur, 0)).toEqual(((CURRENT_VERSION - 1) * CURRENT_VERSION) / 2);
         // Maximum of allKeys equals CURRENT_VERSION - 1.
         expect(Math.max(...allKeys) + 1).toEqual(CURRENT_VERSION);
+    });
+
+    it('stringifyParam should not export legacy timeline data', () => {
+        const paramState = createStore().getState().param;
+        const save = JSON.parse(stringifyParam(paramState));
+
+        expect(save.timeline).toBeUndefined();
+        expect(save.graph).toBeDefined();
+    });
+
+    it('77 -> 78', () => {
+        const oldParam =
+            '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"timeline":{"version":1,"track":[]},"version":77}';
+        const newParam = UPGRADE_COLLECTION[77](oldParam);
+        const upgraded = JSON.parse(newParam);
+
+        expect(upgraded.version).toBe(78);
+        // Timeline structure is normalized when a save is loaded, not during parameter upgrades.
+        expect(upgraded.timeline).toEqual({ version: 1, track: [] });
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it('78 -> 79 reconciles saves from the timeline and real-map branches', () => {
+        const timelineSave = JSON.stringify({
+            graph: new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>().export(),
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline: createEmptyTimelineDocument(),
+            version: 78,
+        });
+        const upgraded = JSON.parse(UPGRADE_COLLECTION[78](timelineSave));
+
+        expect(upgraded.version).toBe(79);
+        expect(upgraded.timeline).toEqual(createEmptyTimelineDocument());
+        expect(upgraded.mapEnabled).toBe(false);
+        expect(upgraded.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+    });
+
+    it.each([false, true])('upgrades v78 map and line data together (mapEnabled=%s)', async mapEnabled => {
+        const graph = createTestLineGraph([['A', 'B']]).export();
+        delete graph.attributes.lineDefinitions;
+        const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
+        mapStyle.roads.arterial.color = '#123456';
+        const timeline = createEmptyTimelineDocument();
+        const save = JSON.stringify({
+            version: 78,
+            graph,
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            timeline,
+            ...(mapEnabled ? { mapEnabled, mapStyle } : {}),
+        });
+        const upgraded = JSON.parse(await upgrade(save));
+
+        expect(upgraded.version).toBe(CURRENT_VERSION);
+        expect(upgraded.mapEnabled).toBe(mapEnabled);
+        expect(upgraded.mapStyle).toEqual(mapEnabled ? mapStyle : DEFAULT_MAP_STYLE);
+        expect(upgraded.timeline).toEqual(timeline);
+        expect(upgraded.graph.nodes).toEqual(graph.nodes);
+        expect(upgraded.graph.edges).toEqual(graph.edges);
+        expect(upgraded.graph.attributes.lineDefinitions).toEqual([
+            expect.objectContaining({ edgeIds: ['line_0'], status: 'operating', exportStartStationId: 'stn_A' }),
+        ]);
     });
 
     it('1 -> 2', () => {
@@ -1116,6 +1183,64 @@ describe('Unit tests for param upgrade function', () => {
         expect(() => graph.import(JSON.parse(newParam))).not.toThrow();
         const expectParam =
             '{"graph":{"options":{"type":"directed","multi":true,"allowSelfLoops":true},"attributes":{},"nodes":[{"key":"misc_node_wuhan_facility","attributes":{"visible":true,"zIndex":0,"x":100,"y":100,"type":"facilities","facilities":{"type":"railway_wuhan"}}}],"edges":[]},"svgViewBoxZoom":100,"svgViewBoxMin":{"x":0,"y":0},"version":79}';
-        expect(newParam).toEqual(expectParam);
+        expect(JSON.parse(newParam)).toEqual({
+            ...JSON.parse(expectParam),
+            mapEnabled: false,
+            mapStyle: DEFAULT_MAP_STYLE,
+        });
+    });
+
+    it('converts legacy Taipei tram badges from version 80 to light rail badges in version 81', async () => {
+        const graph = new MultiDirectedGraph();
+        const common = { visible: false, zIndex: 3, x: 120, y: 80 };
+        const color = ['taipei', 'custom', '#123456', '#fff'];
+        const badge = { code: 'LB', color };
+        const metro = MiscNodeType.TaiPeiMetroLineBadege;
+        const lightRail = MiscNodeType.TaipeiLightRailLineBadge;
+        graph.addNode('misc_node_tram', { ...common, type: metro, [metro]: { ...badge, tram: true } });
+        graph.addNode('misc_node_custom_tram', {
+            ...common,
+            type: metro,
+            [metro]: { ...badge, tram: true, size: 24 },
+        });
+        graph.addNode('misc_node_metro', { ...common, type: metro, [metro]: { ...badge, tram: false, size: 20 } });
+        graph.addNode('misc_node_no_tram', { ...common, type: metro, [metro]: { ...badge, size: 18 } });
+        graph.addNode('misc_node_light_rail', { ...common, type: lightRail, [lightRail]: badge });
+        graph.addNode('misc_node_other_tram', {
+            ...common,
+            type: MiscNodeType.GzmtrLineBadge,
+            [MiscNodeType.GzmtrLineBadge]: { names: ['1号线', 'Line 1'], color, tram: true, span: false },
+        });
+        const originalGraph = graph.export();
+        const oldSave = {
+            version: 80,
+            graph: originalGraph,
+            svgViewBoxZoom: 75,
+            svgViewBoxMin: { x: 10, y: 20 },
+            mapEnabled: true,
+            mapStyle: DEFAULT_MAP_STYLE,
+            images: [{ id: 'image', base64: 'data:image/png;base64,example' }],
+        };
+
+        const upgradedString = await upgrade(JSON.stringify(oldSave));
+        const upgraded = JSON.parse(upgradedString);
+        expect(upgraded).toEqual({
+            ...oldSave,
+            version: 81,
+            graph: {
+                ...originalGraph,
+                nodes: [
+                    { key: 'misc_node_tram', attributes: { ...common, type: lightRail, [lightRail]: badge } },
+                    { key: 'misc_node_custom_tram', attributes: { ...common, type: lightRail, [lightRail]: badge } },
+                    { key: 'misc_node_metro', attributes: { ...common, type: metro, [metro]: { ...badge, size: 20 } } },
+                    {
+                        key: 'misc_node_no_tram',
+                        attributes: { ...common, type: metro, [metro]: { ...badge, size: 18 } },
+                    },
+                    ...originalGraph.nodes.slice(4),
+                ],
+            },
+        });
+        expect(await upgrade(upgradedString)).toBe(upgradedString);
     });
 });

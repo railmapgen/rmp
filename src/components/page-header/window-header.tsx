@@ -4,7 +4,7 @@ import rmgRuntime, { RmgEnv } from '@railmapgen/rmg-runtime';
 import { LANGUAGE_NAMES, LanguageCode } from '@railmapgen/rmg-translate';
 import React from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo } from 'react-icons/md';
+import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo, MdRoute } from 'react-icons/md';
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/project-history';
@@ -16,6 +16,7 @@ import OpenActions from './open-actions';
 import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
+import { LineInfoModal } from './line-info-modal';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -25,6 +26,7 @@ export default function WindowHeader() {
 
     const [isSettingsModalOpen, setIsSettingsModalOpen] = React.useState(false);
     const [isAboutModalOpen, setIsAboutModalOpen] = React.useState(false);
+    const [isLineInfoOpen, setIsLineInfoOpen] = React.useState(false);
 
     const environment = useReadyConfig(rmgRuntime.getEnv);
     const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
@@ -80,7 +82,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Undo"
+                        aria-label={t('header.undo')}
                         icon={<MdUndo />}
                         isDisabled={past.length === 0}
                         onClick={handleUndo}
@@ -88,7 +90,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Redo"
+                        aria-label={t('header.redo')}
                         icon={<MdRedo />}
                         isDisabled={future.length === 0}
                         onClick={handleRedo}
@@ -99,6 +101,15 @@ export default function WindowHeader() {
                     <OpenActions />
 
                     <DownloadActions />
+
+                    <IconButton
+                        size="sm"
+                        variant="ghost"
+                        aria-label={t('header.lineInfo.title')}
+                        title={t('header.lineInfo.title')}
+                        icon={<MdRoute />}
+                        onClick={() => setIsLineInfoOpen(true)}
+                    />
 
                     {rmgRuntime.isStandaloneWindow() && (
                         <Menu>
@@ -134,6 +145,7 @@ export default function WindowHeader() {
             </Flex>
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
+            <LineInfoModal isOpen={isLineInfoOpen} onClose={() => setIsLineInfoOpen(false)} />
             <AboutModal isOpen={isAboutModalOpen} onClose={() => setIsAboutModalOpen(false)} />
         </RmgWindowHeader>
     );

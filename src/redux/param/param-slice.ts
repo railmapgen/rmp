@@ -1,7 +1,7 @@
 import { ActionReducerMapBuilder, createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
-import { Draft } from 'immer';
+import { Draft, original } from 'immer';
 import { NodeAttributes, EdgeAttributes, GraphAttributes } from '../../constants/constants';
 import { DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-style';
 
@@ -32,6 +32,9 @@ export interface ProjectSnapshot {
      */
     svgViewBoxMin: { x: number; y: number };
 }
+
+/** A whole-project replacement restores the complete RMP snapshot. */
+export type ProjectReplacement = ProjectSnapshot;
 
 /**
  * Controls how a history snapshot is restored. Every entry stores a complete
@@ -83,8 +86,10 @@ const initialState: ParamState = {
 // The scope is read from the stack head by the history thunk. Keeping it on the
 // action lets other slices follow the same restore policy, while this reducer
 // verifies that it still matches the stack head before changing either stack.
-export const applyUndoAction = createAction<HistoryScope>('undo');
-export const applyRedoAction = createAction<HistoryScope>('redo');
+const prepareHistoryAction = (scope: HistoryScope) => ({ payload: scope });
+
+export const applyUndoAction = createAction('undo', prepareHistoryAction);
+export const applyRedoAction = createAction('redo', prepareHistoryAction);
 
 const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
     state.past.push(entry);
@@ -97,7 +102,7 @@ const pushPast = (state: Draft<ParamState>, entry: Draft<HistoryEntry>) => {
  * settings and viewport; project history replaces the entire snapshot.
  */
 const restoreHistoryEntry = (state: Draft<ParamState>, entry: Draft<HistoryEntry>): Draft<HistoryEntry> => {
-    const current = { scope: entry.scope, ...state.present };
+    const current: HistoryEntry = { scope: entry.scope, ...state.present };
     const { scope, ...snapshot } = entry;
     state.present =
         scope === 'project'
@@ -134,11 +139,28 @@ const paramSlice = createSlice({
                 graph: structuredClone(action.payload),
             };
         },
+        /** Publish requested line data without adding a drawing operation to undo history. */
+        refreshLineDefinitions: (state, action: PayloadAction<{ source: ParamGraph; attributes: GraphAttributes }>) => {
+            if (original(state.present.graph) !== action.payload.source) return;
+            if (
+                JSON.stringify(state.present.graph.attributes?.lineDefinitions) ===
+                    JSON.stringify(action.payload.attributes.lineDefinitions) &&
+                JSON.stringify(state.present.graph.attributes?.unassignedLineEdgeIds) ===
+                    JSON.stringify(action.payload.attributes.unassignedLineEdgeIds)
+            )
+                return;
+            state.present.graph.attributes = structuredClone(action.payload.attributes);
+        },
         /** Records a whole-project replacement, including its persisted viewport. */
-        replaceProjectState: (state, action: PayloadAction<ProjectSnapshot>) => {
-            state.future = [];
-            pushPast(state, { scope: 'project', ...state.present });
-            state.present = structuredClone(action.payload);
+        replaceProjectState: {
+            prepare: (project: ProjectReplacement) => ({ payload: project }),
+            reducer: (state, action: PayloadAction<ProjectReplacement>) => {
+                state.future = [];
+                const previous: HistoryEntry = { scope: 'project', ...state.present };
+                pushPast(state, previous);
+                const { mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin } = action.payload;
+                state.present = structuredClone({ mapEnabled, mapStyle, graph, svgViewBoxZoom, svgViewBoxMin });
+            },
         },
         setSvgViewport: (state, action: PayloadAction<{ zoom: number; min: { x: number; y: number } }>) => {
             state.present.svgViewBoxZoom = action.payload.zoom;
@@ -179,6 +201,7 @@ const paramSlice = createSlice({
 export const {
     initializeProject,
     saveGraph,
+    refreshLineDefinitions,
     replaceProjectState,
     setSvgViewport,
     setSvgViewBoxZoom,

@@ -7,6 +7,7 @@ import fontsReducer from './fonts/fonts-slice';
 import paramReducer from './param/param-slice';
 import runtimeReducer from './runtime/runtime-slice';
 import viewportReducer from './viewport/viewport-slice';
+import { lineDefinitionMiddleware } from './line-definition-middleware';
 
 enableMapSet();
 
@@ -29,18 +30,18 @@ export const createStore = (preloadedState: Partial<RootState> = {}) =>
             // Runtime state deliberately contains transient Sets, so it is excluded
             // from persistence and the serializable state check is disabled.
             // https://stackoverflow.com/questions/61704805/getting-an-error-a-non-serializable-value-was-detected-in-the-state-when-using
-            getDefaultMiddleware({ serializableCheck: false }).prepend(listenerMiddleware.middleware),
+            getDefaultMiddleware({ serializableCheck: false }).prepend(
+                listenerMiddleware.middleware,
+                lineDefinitionMiddleware
+            ),
         preloadedState,
     });
-const store = createStore();
-export type RootStore = typeof store;
+export type RootStore = ReturnType<typeof createStore>;
 
-export type RootDispatch = typeof store.dispatch;
+export type RootDispatch = RootStore['dispatch'];
 export const useRootDispatch = () => useDispatch<RootDispatch>();
 export const useRootSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const useRootStore = () => useStore() as RootStore;
 
 type RootStartListening = TypedStartListening<RootState, RootDispatch>;
 export const startRootListening = listenerMiddleware.startListening as RootStartListening;
-
-export default store;
