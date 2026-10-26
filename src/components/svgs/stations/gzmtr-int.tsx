@@ -307,7 +307,7 @@ const GzmtrIntStation = (props: StationComponentProps) => {
                     </>
                 )}
 
-                {transferAll.map((info, i, arr) => (
+                {transfer[0]?.slice(0, 4).map((info, i, arr) => (
                     <g
                         key={`gzmtr_int_${id}_stn_${i}`}
                         transform={`translate(${CODE_POS[arr.length][i][0]},${CODE_POS[arr.length][i][1]})`}
