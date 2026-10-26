@@ -1,4 +1,4 @@
-import { Badge, BadgeProps, Tooltip, useColorModeValue } from '@chakra-ui/react';
+import { Badge, BadgeProps, Image, Tooltip, useColorModeValue } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { useRootSelector } from '../redux';
 import type { ActiveSubscriptions } from '../redux/account/account-slice';
@@ -22,6 +22,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
         }
     );
     const name = t(subscription);
+    const icon = subscription === 'RMP_CLOUD' ? 'shuppatsu_shinko.svg' : 'ichido_teishi.svg';
     const label = isSubscribed
         ? t('subscription.included', { subscription: name })
         : (description ?? t('subscription.required', { subscription: name }));
@@ -37,10 +38,20 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                 fontWeight="600"
                 lineHeight="18px"
                 textTransform="none"
+                display="inline-flex"
+                alignItems="center"
+                gap="1"
+                verticalAlign="middle"
                 flexShrink={0}
                 tabIndex={0}
                 {...props}
             >
+                <Image
+                    src={import.meta.env.BASE_URL + `images/subscriptions/${icon}`}
+                    alt=""
+                    boxSize="18px"
+                    flexShrink={0}
+                />
                 {t(`${subscription}_SHORT_NAME`)}
             </Badge>
         </Tooltip>

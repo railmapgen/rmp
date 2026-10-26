@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="iconTitle iconDesc">
+  <title id="iconTitle">一度停车</title>
+  <desc id="iconDesc">正面电车停在红色停车位置线前；右侧为红色实心、带白色内边缝的停车牌。</desc>
+  <!-- The 0.9 scale maintains the previously approved optical size. -->
+  <g id="scaled-stop-icon" transform="translate(51.2 51.2) scale(0.9)">
+    <g id="train">
+      <!-- Outer silhouette. Rounded transitions use actual cubic Bézier segments. -->
+      <path id="train-outline" fill="#282A2D" d="
+        M 327 141 H 544
+        C 571 141 589 162 590 187 H 611
+        C 658 187 695 224 695 271 V 578
+        C 695 606 681 626 654 638 V 664
+        C 654 685 646 694 622 701
+        L 674 764 H 608 L 575 717
+        C 570 708 564 703 552 703 H 310
+        C 300 703 294 707 289 717
+        L 258 765 H 195 L 247 702
+        C 225 699 213 685 213 665 V 638
+        C 189 627 174 604 174 577 V 271
+        C 174 224 212 187 257 187 H 278
+        C 280 158 299 141 327 141 Z" />
+      <path id="lower-bogie-detail" fill="#282A2D" d="
+        M 308 731 H 556
+        C 566 731 572 738 576 746 L 584 764 H 286
+        L 295 745 C 298 736 302 731 308 731 Z" />
+      <path id="left-rail-foot" fill="#282A2D" d="
+        M 177 833 H 227
+        C 236 833 234 841 228 850 L 210 880
+        C 208 883 205 884 200 884 H 161
+        C 156 884 153 879 156 874 L 173 840
+        C 175 835 175 833 177 833 Z" />
+      <path id="right-rail-foot" fill="#282A2D" d="
+        M 634 833 H 684
+        C 691 833 697 841 701 849 L 711 873
+        C 714 880 712 883 704 884 H 667
+        C 664 884 659 882 657 878 L 635 847
+        C 632 841 631 834 634 833 Z" />
+      <path id="train-front-panel" fill="#FAFAFA" d="
+        M 270 209 H 597
+        C 635 209 662 235 662 270 V 571
+        C 662 594 649 609 630 609 H 239
+        C 220 609 206 596 206 572 V 270
+        C 206 234 233 209 270 209 Z" />
+      <rect id="windscreen" x="234" y="289" width="402" height="172" rx="23" fill="#282A2D" />
+      <rect id="destination-panel" x="368" y="228" width="134" height="47" rx="14" fill="#282A2D" />
+      <circle id="left-headlight" cx="280" cy="532" r="37" fill="#282A2D" />
+      <circle id="right-headlight" cx="589" cy="532" r="37" fill="#282A2D" />
+    </g>
+    <g id="stop-board">
+      <rect id="board-post" x="807" y="542" width="56" height="225" rx="6" fill="#282A2D" />
+      <rect id="board-frame" x="731" y="237" width="206" height="329" rx="60" fill="#282A2D" />
+      <rect id="board-white-gap" x="759" y="264" width="150" height="271" rx="31" fill="#FAFAFA" />
+      <rect id="board-red-face" x="775" y="280" width="118" height="240" rx="15" fill="#EF252A" />
+    </g>
+    <rect id="stop-position-line" x="89" y="775" width="817" height="49" rx="18" fill="#EF252A" />
+  </g>
+</svg>

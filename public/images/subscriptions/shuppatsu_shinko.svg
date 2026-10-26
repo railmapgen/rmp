@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="iconTitle iconDesc">
+  <title id="iconTitle">出发进行</title>
+  <desc id="iconDesc">右向的方正E233系电车车头侧视图，右侧无灯檐的三灯式出发信号机顶部绿灯亮。</desc>
+  <!-- Same 1024 viewport. Transform preserves the previously approved scale and position. -->
+  <g id="scaled-content" transform="matrix(1.25 0 0 1.25 -278 -326.5)">
+    <g id="train-cab">
+      <!-- Smooth wheel arcs, cab roof, and the gently slanted near-vertical front. -->
+      <path id="train-outline" fill="#282A2D" d="
+        M 270 451
+        C 270 449 272 449 274 449 H 570
+        C 596 449 615 467 623 492 H 665
+        C 687 492 700 510 705 533
+        L 739 718
+        C 740 722 740 727 740 731 V 827
+        C 740 841 734 853 724 860
+        L 729 899
+        C 729 901 728 902 725 902 H 587
+        C 576 902 568 896 562 887
+        C 558 881 556 878 550 878 H 488
+        C 481 901 463 920 449 920 H 401
+        C 381 920 366 897 361 878 H 274
+        C 271 878 270 877 270 873 Z" />
+      <!-- Body is pure white, with contours formed using cubic Bézier curves. -->
+      <path id="train-body" fill="#FAFAFA" d="
+        M 270 510 H 658
+        C 670 510 675 517 679 529
+        L 709 715 C 711 727 712 742 712 752
+        C 712 754 711 755 708 755 H 681
+        C 674 755 670 761 670 768 V 782
+        C 670 790 674 795 681 795 H 714 V 837
+        C 714 846 708 851 699 852 H 611
+        C 601 852 598 846 593 838
+        C 588 828 585 821 573 821 H 270 Z" />
+      <!-- Short upper-side stripe with a smoothly rounded end. -->
+      <path id="upper-side-stripe" fill="#282A2D" d="
+        M 270 554 H 380
+        C 390 554 395 564 395 572
+        C 395 582 388 589 380 589 H 270 Z" />
+      <!-- Separate editable door, upper curve with rounded shoulders. -->
+      <path id="crew-door-outline" fill="none" stroke="#282A2D" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" d="
+        M 420 807 V 576
+        C 420 562 426 557 439 557 H 510
+        C 522 557 526 563 526 576 V 807" />
+      <rect id="crew-door-glass" x="443" y="584" width="60" height="110" rx="12" fill="#282A2D" />
+      <!-- Squared E233-style cab window with a gently slanted leading edge. -->
+      <path id="cab-side-window" fill="#282A2D" d="
+        M 581 559 H 655
+        C 662 559 665 563 667 572 L 683 677
+        C 685 687 681 693 674 693 H 581
+        C 572 693 566 687 566 678 V 575
+        C 566 565 572 559 581 559 Z" />
+    </g>
+    <g id="departure-signal" fill="#282A2D">
+      <!-- Rounded boxes and true circles replace polygonal approximations. -->
+      <rect id="signal-cap" x="898" y="392" width="45" height="56" rx="13" />
+      <rect id="signal-housing" x="860" y="426" width="122" height="274" rx="48" />
+      <rect id="signal-neck" x="906" y="692" width="29" height="31" rx="7" />
+      <rect id="signal-post" x="906" y="795" width="29" height="111" rx="6" />
+      <rect id="signal-plate-frame" x="889" y="721" width="64" height="88" rx="14" />
+      <rect id="signal-plate-inset" x="907" y="738" width="27" height="52" rx="2" fill="#FAFAFA" />
+      <path id="signal-base" d="M 896 898 H 946 C 955 898 961 906 962 920 H 879 C 881 906 886 898 896 898 Z" />
+      <circle id="green-proceed-lamp" cx="921" cy="489" r="31" fill="#0BB64D" />
+      <circle id="middle-unlit-lamp" cx="916" cy="563" r="30" fill="#777779" />
+      <circle id="bottom-unlit-lamp" cx="916" cy="637" r="30" fill="#777779" />
+    </g>
+    <rect id="rail-line" x="270" y="922" width="722" height="27" rx="13" fill="#282A2D" />
+  </g>
+</svg>
