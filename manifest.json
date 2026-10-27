@@ -1,7 +1,6 @@
 {
   "pullRequest": "https://github.com/railmapgen/rmp/pull/1599",
-  "sourceCommit": "2dd1d07862a542abd2a1830f5d862a2387d0fdd5",
-  "capturedAt": "2026-10-26T07:14:52.381Z",
+  "capturedAt": "2026-10-27T12:10:07.506Z",
   "source": "Local Vite preview of the actual app",
   "browser": "Chrome for Testing 156.0.8078.47, headless",
   "viewport": {
@@ -45,7 +44,7 @@
       ],
       "width": 1248,
       "height": 1656,
-      "sha256": "fa940d339ef374ee414be4626490ead030e54d6e2f632f2e575b36e69898ef14"
+      "sha256": "4846e9ac7467a55cdfb0fa722222f8e87e84cc88bfdf836ba41d8a15557a1058"
     },
     {
       "scene": "tools",
@@ -85,7 +84,7 @@
       ],
       "width": 900,
       "height": 884,
-      "sha256": "06171ef7ce80e11b5d0caef65b7da9b076f8a4dc872e67f4c45ccd455fd89fb9"
+      "sha256": "0c6a0027f83fa9ab207c91ce27cd143687c3f6d897017c84d5406b03e917a283"
     },
     {
       "scene": "images",
@@ -101,7 +100,7 @@
       ],
       "width": 1632,
       "height": 760,
-      "sha256": "ea6aa8c48075122e39e83688b4188b0542dfe46d0a425a69ef343c912b6303bb"
+      "sha256": "1000d973e37914a9603aa16391e711e11274cb1f79d1217a63317649d543bb8a"
     },
     {
       "scene": "export",
@@ -117,7 +116,7 @@
       ],
       "width": 1440,
       "height": 899,
-      "sha256": "4e65efc13ef6e8132ad785b25efe1153e15dcf044584b38d5cddf1f2a87ce4ed"
+      "sha256": "104bed72d717e3b039823df707f2d0791d1854cc78778afefbe7a9aea8ddecb5"
     },
     {
       "scene": "settings",
@@ -151,7 +150,7 @@
       ],
       "width": 1248,
       "height": 1656,
-      "sha256": "659e79bbc6185de200ff8bc0b778aff3796d6aee46f8104412cd397f85fc2552"
+      "sha256": "4e865cc66ea7b2f222e30dac0f7c4376a5c074424d3f17420f070343d5d239a1"
     },
     {
       "scene": "tools",
@@ -191,7 +190,7 @@
       ],
       "width": 900,
       "height": 884,
-      "sha256": "451bf47364525e9647c669cb5077960f091462e9f96ba1b07253f09a2be5c745"
+      "sha256": "80aa171129f784fce5183635075b8f2888a6ff3dab13e63a8bec1f09e2400f68"
     },
     {
       "scene": "images",
@@ -207,7 +206,7 @@
       ],
       "width": 1632,
       "height": 760,
-      "sha256": "6523775ffa9519625a3640e95e929aa2da22f807f00653eba3e5e82b87902c48"
+      "sha256": "a5ae19ee4971429d1c6249b333f3517788f8c2db62af9d728d288a309466d810"
     },
     {
       "scene": "export",
@@ -223,7 +222,13 @@
       ],
       "width": 1440,
       "height": 899,
-      "sha256": "6449eaf58b21a8843995fdcba994dbafa5c55a4a07942286b1d0af4b4c3dfbc2"
+      "sha256": "d6eaeee59ea58001d27838b51d43906a2b90083af86159c7a5428063f15013bf"
     }
-  ]
+  ],
+  "sourceBaseCommit": "44fcdca123386ed662098872b3547602a187b677",
+  "updatedResourceHashes": {
+    "shuppatsu_shinko.svg": "9e283a9956f954296a84de4f23f5f78e1a3cce0ac982118c4ba6c5d2e052a896",
+    "ichido_teishi.svg": "e04645287a0170c45ac6c1806f05bf597cef5be54b573c2baca17354d75dffd5"
+  },
+  "sourceCommit": "0befa8916771f55e1042472afc5efbc788832000"
 }
