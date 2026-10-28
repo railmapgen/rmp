@@ -1,15 +1,4 @@
-import {
-    Badge,
-    Box,
-    FormControl,
-    FormLabel,
-    Heading,
-    HStack,
-    Switch,
-    Text,
-    Tooltip,
-    useStyleConfig,
-} from '@chakra-ui/react';
+import { Box, FormControl, FormLabel, Heading, HStack, Switch, Text, useStyleConfig } from '@chakra-ui/react';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +14,7 @@ import {
     makeParallelIndex,
     supportsParallelLinePath,
 } from '../../../util/parallel';
+import SubscriptionBadge from '../../subscription-badge';
 import { linePaths, lineStyles } from '../../svgs/lines/lines';
 import stations from '../../svgs/stations/stations';
 import InfoMultipleSection from './info-multiple-selection';
@@ -34,7 +24,6 @@ import StationTypeSection from './station-type-section';
 
 const ExportVisibilityField = (props: {
     label: string;
-    proLabel: string;
     isChecked: boolean;
     isDisabled: boolean;
     onChange: (visible: boolean) => void;
@@ -46,13 +35,7 @@ const ExportVisibilityField = (props: {
             <FormLabel size="xs">
                 <HStack spacing="1">
                     <Text>{props.label}</Text>
-                    {props.isDisabled && (
-                        <Tooltip label={props.proLabel}>
-                            <Badge color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
-                                PRO
-                            </Badge>
-                        </Tooltip>
-                    )}
+                    {props.isDisabled && <SubscriptionBadge subscription="RMP_CLOUD" />}
                 </HStack>
             </FormLabel>
             <Switch
@@ -208,7 +191,6 @@ export default function InfoSection() {
             {selected.size === 1 && (
                 <ExportVisibilityField
                     label={t('panel.details.info.visible')}
-                    proLabel={t('header.settings.pro')}
                     isChecked={selectedVisible}
                     isDisabled={isVisibilityPolicyRestricted}
                     onChange={handleVisibleChange}

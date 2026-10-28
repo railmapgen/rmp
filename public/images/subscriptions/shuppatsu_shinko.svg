@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">出发进行</title>
+  <desc id="desc">绿色轮廓的侧视电车车头与三灯信号机，保留原色亮绿信号灯。</desc>
+  <style>
+    svg { color: #39835B; }
+    @media (prefers-color-scheme: dark) {
+      svg { color: #8DCBA6; }
+    }
+  </style>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <!-- train -->
+    <path d="M258 330H508Q548 330 565 362L639 561V689Q639 742 586 742H324" stroke-width="34"/>
+    <path d="M258 726H594" stroke-width="28"/>
+    <path d="M258 796H658" stroke-width="28"/>
+    <rect x="326" y="430" width="122" height="262" rx="12" stroke-width="22" fill="#fff"/>
+    <rect x="373" y="472" width="34" height="106" rx="6" fill="currentColor" stroke="none"/>
+    <path d="M514 372L572 610" stroke-width="22"/>
+    <path d="M388 726L434 796" stroke-width="22"/>
+    <path d="M500 726L548 796" stroke-width="22"/>
+    <!-- signal -->
+    <rect x="774" y="214" width="136" height="334" rx="62" fill="currentColor" stroke="none"/>
+    <circle cx="842" cy="298" r="38" fill="#00d64f" stroke="none"/>
+    <circle cx="842" cy="412" r="38" fill="#fff" stroke="none"/>
+    <circle cx="842" cy="526" r="38" fill="#fff" stroke="none"/>
+    <path d="M842 548V806" stroke-width="34"/>
+    <path d="M760 806H924" stroke-width="34"/>
+  </g>
+</svg>

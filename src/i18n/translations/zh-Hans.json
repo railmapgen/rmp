@@ -330,7 +330,7 @@
                     "custom": "自定义",
                     "translateName": "翻译站名到英文",
                     "translateNameEmpty": "请先填写中文名称。",
-                    "translateNameNotSubscribed": "意译需要 RMP Cloud 订阅。",
+                    "translateNameNotSubscribed": "意译需要「$t(RMP_CLOUD)」订阅。",
                     "translateNameFailed": "车站名称翻译失败。"
                 },
                 "interchange": {
@@ -804,7 +804,7 @@
                     "linecapSquare": "方头",
                     "dash": "虚线长度",
                     "gap": "间隔长度",
-                    "layerLimitWarning": "订阅可解锁额外线层。",
+                    "layerLimitWarning": "订阅「$t(RMP_CLOUD)」可解锁额外线层。",
                     "addLayer": "添加线层",
                     "copyLayer": "复制线层",
                     "moveLayerUp": "上移线层",
@@ -1234,7 +1234,7 @@
             "transparent": "透明背景",
             "scale": "缩放",
             "disabledScaleOptions": "图像对于此浏览器来说太大。",
-            "disabledScaleOptionsSolution": "<link1>订阅</link1>并<link2>下载</link2>我们的桌面应用程序以渲染大型图像。",
+            "disabledScaleOptionsSolution": "<link1>订阅「$t(RMP_EXPORT)」</link1>并<link2>下载</link2>我们的桌面应用程序以渲染大型图像。",
             "imageTooBig": "图像太大，无法在您的浏览器中生成！",
             "isSystemFontsOnly": "仅用系统字体（字体显示可能不一致）。 ",
             "shareInfo1": "当我分享此图片时我会附上",
@@ -1254,12 +1254,10 @@
         },
         "settings": {
             "title": "设置",
-            "pro": "这是一个专业功能，需要带有订阅的账户。",
-            "proWithTrial": "这是一个PRO功能，并提供有限的免费试用。",
             "proLimitExceed": {
                 "master": "大师节点超出了免费额度。",
                 "parallel": "平行线段超出了免费额度。",
-                "solution": "移除它们以消除此警告，或订阅以解锁更多功能！"
+                "solution": "移除超出额度的项目以消除此警告，或订阅「$t(RMP_CLOUD)」以解除数量限制。"
             },
             "status": {
                 "title": "状态",
@@ -1511,5 +1509,11 @@
                 }
             }
         }
+    },
+    "subscription": {
+        "required": "订阅「{{subscription}}」即可解锁此功能。",
+        "included": "你的「{{subscription}}」订阅已包含此功能。",
+        "masterLimit": "免费可使用 {{count}} 个大师节点，订阅「$t(RMP_CLOUD)」后不限数量。",
+        "parallelLimit": "免费可使用 {{count}} 条平行线段，订阅「$t(RMP_CLOUD)」后不限数量。"
     }
 }

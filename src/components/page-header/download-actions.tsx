@@ -40,6 +40,7 @@ import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { stringifyParam } from '../../util/save';
+import SubscriptionBadge from '../subscription-badge';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
 
@@ -371,11 +372,7 @@ export default function DownloadActions() {
                                     {t('header.download.shareInfo2')}
                                 </Text>
                             </Checkbox>
-                            {isRmpInfoForced && (
-                                <Badge ml="1" color="gray.50" background="radial-gradient(circle, #3f5efb, #fc466b)">
-                                    PRO
-                                </Badge>
-                            )}
+                            {isRmpInfoForced && <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />}
                         </HStack>
                         <Checkbox
                             id="agree_terms"
@@ -436,7 +433,11 @@ export default function DownloadActions() {
                                 <AlertIcon />
                                 <Box>
                                     <AlertTitle>{t('header.download.disabledScaleOptions')}</AlertTitle>
-                                    <AlertDescription>{t('header.settings.pro')}</AlertDescription>
+                                    <AlertDescription>
+                                        {t('subscription.required', {
+                                            subscription: t('RMP_EXPORT'),
+                                        })}
+                                    </AlertDescription>
                                 </Box>
                             </Alert>
                         )}

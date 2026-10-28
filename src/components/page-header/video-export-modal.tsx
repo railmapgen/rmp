@@ -3,7 +3,6 @@ import {
     AlertDescription,
     AlertIcon,
     AlertTitle,
-    Badge,
     Box,
     Button,
     Checkbox,
@@ -43,6 +42,7 @@ import {
 } from '../../util/video-export/video-export-destination';
 import { getUnavailableLineIds } from '../../util/line-path-availability';
 import { useSvgRenderContext } from '../svg-render-context';
+import SubscriptionBadge from '../subscription-badge';
 import TermsAndConditionsModal from './terms-and-conditions';
 
 interface VideoExportModalProps {
@@ -280,15 +280,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             <Box>
                                 <Text fontSize="sm" fontWeight="semibold" color={sectionHeadingColor} mb={2}>
                                     {t('header.download.videoExport.groups.output')}
-                                    <Tooltip label={t('header.settings.proWithTrial')}>
-                                        <Badge
-                                            ml="1"
-                                            color="gray.50"
-                                            background="radial-gradient(circle, #3f5efb, #fc466b)"
-                                        >
-                                            PRO
-                                        </Badge>
-                                    </Tooltip>
+                                    <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
                                 </Text>
                                 <RmgFields fields={outputFields} />
                             </Box>
