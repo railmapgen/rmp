@@ -13,14 +13,31 @@ export default function SubscriptionBadge({ subscription, description, ...props 
     const isSubscribed = useRootSelector(state => state.account.activeSubscriptions[subscription]);
     const colors = useColorModeValue(
         {
-            RMP_CLOUD: { bg: '#FFF4E5', color: '#9A4D00', borderColor: '#F2D2A6' },
-            RMP_EXPORT: { bg: '#EEF2FF', color: '#3730A3', borderColor: '#C7D2FE' },
+            RMP_CLOUD: {
+                bg: 'linear-gradient(to bottom right, #E8F7EE, #CFEEDB)',
+                color: '#22613E',
+                borderColor: '#39835B',
+            },
+            RMP_EXPORT: {
+                bg: 'linear-gradient(to bottom right, #FDECEE, #F8D2D9)',
+                color: '#8D3043',
+                borderColor: '#B64C61',
+            },
         },
         {
-            RMP_CLOUD: { bg: '#3D2B18', color: '#F8C77E', borderColor: '#79522B' },
-            RMP_EXPORT: { bg: '#282746', color: '#C7D2FE', borderColor: '#56558A' },
+            RMP_CLOUD: {
+                bg: 'linear-gradient(to bottom right, #163727, #255239)',
+                color: '#C2EED2',
+                borderColor: '#8DCBA6',
+            },
+            RMP_EXPORT: {
+                bg: 'linear-gradient(to bottom right, #3F1E28, #5C2A38)',
+                color: '#FFD2DB',
+                borderColor: '#E8A1B1',
+            },
         }
     );
+    const iconColorScheme = useColorModeValue('light', 'dark');
     const name = t(subscription);
     const icon = subscription === 'RMP_CLOUD' ? 'shuppatsu_shinko.svg' : 'ichido_teishi.svg';
     const label = isSubscribed
@@ -51,6 +68,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                     alt=""
                     boxSize="18px"
                     flexShrink={0}
+                    sx={{ colorScheme: iconColorScheme }}
                 />
                 {t(`${subscription}_SHORT_NAME`)}
             </Badge>
