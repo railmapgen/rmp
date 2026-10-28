@@ -1,0 +1,123 @@
+{
+  "capturedAt": "2026-10-28T13:49:10.645Z",
+  "fixture": "Isolated browser with simulated account/redemption API responses; no real credentials or CDKeys",
+  "viewport": {
+    "width": 1600,
+    "height": 1000,
+    "deviceScaleFactor": 1.5
+  },
+  "sources": {
+    "rmp": {
+      "repository": "railmapgen/rmp",
+      "branch": "#1605-subscription-redemption",
+      "base": "4d1bd506eabed1b723e646b5ff9af9f90a2db971",
+      "tree": "8f42e8b73d475b46ed116c9781072511ae8cdd63",
+      "commit": "e77ec1256462095b423d9a9349123f23e8e35dad"
+    },
+    "rmt": {
+      "repository": "railmapgen/railmapgen.github.io",
+      "branch": "#390-subscription-redemption",
+      "commit": "1ec6fc263a196a5360f0cf59b8eb8bfcb3885922"
+    }
+  },
+  "verification": {
+    "scenes": [
+      {
+        "name": "tools-light",
+        "guest": true,
+        "keyboard": "Enter"
+      },
+      {
+        "name": "settings-light",
+        "loginDidNotContinue": true,
+        "hostInputUsable": true
+      },
+      {
+        "name": "images-light",
+        "disabledTab": true,
+        "hostInputUsable": true,
+        "keyboard": "Space"
+      },
+      {
+        "name": "export-light",
+        "hostInputUsable": true
+      },
+      {
+        "name": "tools-dark",
+        "guest": true,
+        "keyboard": "Space"
+      },
+      {
+        "name": "settings-dark",
+        "loginDidNotContinue": true,
+        "hostInputUsable": true
+      },
+      {
+        "name": "images-dark",
+        "disabledTab": true,
+        "hostInputUsable": true,
+        "keyboard": "Space"
+      },
+      {
+        "name": "export-dark",
+        "hostInputUsable": true
+      }
+    ],
+    "successNotificationDelta": 1,
+    "subscriptionFetchDelta": 1,
+    "projectUnchanged": true,
+    "foreignFrameIgnored": true,
+    "hostErrors": [],
+    "appErrors": []
+  },
+  "images": [
+    {
+      "path": "redemption-export-dark.png",
+      "sha256": "263acd2ef9a1a19da5ef70beaa6c1675422f4ad4f1bc5a935e2b8ae8b2921813",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-export-light.png",
+      "sha256": "f809e1563ba75fd5ae20973a12c7576754d1c862c62e8660aab989c5525db593",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-images-dark.png",
+      "sha256": "86874c4f1e7fa000fa5cd712b05ee64b2774cc1c36770079bd59eb2cc26d2c64",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-images-light.png",
+      "sha256": "f4751db7e009422ee35bef407be6354c00ce04fe7f2fc799ddb9d6695f4c0b06",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-settings-dark.png",
+      "sha256": "7ccecebe0437e4b43bfde1ab47983efeb4f747fa7aaba0c5af96930d455a6342",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-settings-light.png",
+      "sha256": "459f10a2a9470d56693c5aff415e8a3627fb9269c07609faf3341972364d4d50",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-tools-dark.png",
+      "sha256": "eb5e2864b6cc6299a6a89df6c12d6606074bfe056777e4c788baceb541e15950",
+      "width": 2400,
+      "height": 1500
+    },
+    {
+      "path": "redemption-tools-light.png",
+      "sha256": "291218c0d090da718a1ce186c0c312aec0f260829f4d5c5abdad5df5890950eb",
+      "width": 2400,
+      "height": 1500
+    }
+  ]
+}
