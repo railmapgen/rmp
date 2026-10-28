@@ -1,6 +1,6 @@
 {
   "pullRequest": "https://github.com/railmapgen/rmp/pull/1599",
-  "capturedAt": "2026-10-27T12:10:07.506Z",
+  "capturedAt": "2026-10-28T04:23:23.501Z",
   "source": "Local Vite preview of the actual app",
   "browser": "Chrome for Testing 156.0.8078.47, headless",
   "viewport": {
@@ -18,33 +18,49 @@
       "file": "settings-light.png",
       "badges": [
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         }
       ],
       "width": 1248,
       "height": 1656,
-      "sha256": "4846e9ac7467a55cdfb0fa722222f8e87e84cc88bfdf836ba41d8a15557a1058"
+      "sha256": "4e73bc2bb78aa1c0be33642cd35c177059e6bd9d593d6eaa9e96847e7baeaf9b"
     },
     {
       "scene": "tools",
@@ -52,39 +68,59 @@
       "file": "tools-light.png",
       "badges": [
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(255, 244, 229)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(57, 131, 91)",
+          "color": "rgb(34, 97, 62)",
+          "gradient": "linear-gradient(to right bottom, rgb(232, 247, 238), rgb(207, 238, 219))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         }
       ],
       "width": 900,
       "height": 884,
-      "sha256": "0c6a0027f83fa9ab207c91ce27cd143687c3f6d897017c84d5406b03e917a283"
+      "sha256": "cbf74ffff4cb9b5ffd4d3304aae4bd5f2daeb034ce9840f800842b31f81ce89e"
     },
     {
       "scene": "images",
@@ -92,15 +128,19 @@
       "file": "images-light.png",
       "badges": [
         {
-          "background": "rgb(238, 242, 255)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(182, 76, 97)",
+          "color": "rgb(141, 48, 67)",
+          "gradient": "linear-gradient(to right bottom, rgb(253, 236, 238), rgb(248, 210, 217))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "一度停车",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/ichido_teishi.svg"
         }
       ],
       "width": 1632,
       "height": 760,
-      "sha256": "1000d973e37914a9603aa16391e711e11274cb1f79d1217a63317649d543bb8a"
+      "sha256": "5e74edd738cc59e1589c274b72ed3c257596983f75f67b7ede58cdb953eb5479"
     },
     {
       "scene": "export",
@@ -108,15 +148,19 @@
       "file": "export-light.png",
       "badges": [
         {
-          "background": "rgb(238, 242, 255)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(182, 76, 97)",
+          "color": "rgb(141, 48, 67)",
+          "gradient": "linear-gradient(to right bottom, rgb(253, 236, 238), rgb(248, 210, 217))",
           "height": 20,
+          "iconColorScheme": "light",
           "label": "一度停车",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/ichido_teishi.svg"
         }
       ],
       "width": 1440,
       "height": 899,
-      "sha256": "104bed72d717e3b039823df707f2d0791d1854cc78778afefbe7a9aea8ddecb5"
+      "sha256": "f9f52a3c8569e449bd9f37c7b11c071aecbdb9eaf914054a9d1e16f4b2ee169e"
     },
     {
       "scene": "settings",
@@ -124,33 +168,49 @@
       "file": "settings-dark.png",
       "badges": [
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         }
       ],
       "width": 1248,
       "height": 1656,
-      "sha256": "4e865cc66ea7b2f222e30dac0f7c4376a5c074424d3f17420f070343d5d239a1"
+      "sha256": "667045ae2a25166c77674e8d96b22ba4e8be44a05a08498ea0eaba6ef415fec3"
     },
     {
       "scene": "tools",
@@ -158,39 +218,59 @@
       "file": "tools-dark.png",
       "badges": [
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         },
         {
-          "background": "rgb(61, 43, 24)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(141, 203, 166)",
+          "color": "rgb(194, 238, 210)",
+          "gradient": "linear-gradient(to right bottom, rgb(22, 55, 39), rgb(37, 82, 57))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "出发进行",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/shuppatsu_shinko.svg"
         }
       ],
       "width": 900,
       "height": 884,
-      "sha256": "80aa171129f784fce5183635075b8f2888a6ff3dab13e63a8bec1f09e2400f68"
+      "sha256": "fd69269daa44a3090c5dffb9fa4b4b9cf49e3c890721be660adb15ccce92bdc8"
     },
     {
       "scene": "images",
@@ -198,15 +278,19 @@
       "file": "images-dark.png",
       "badges": [
         {
-          "background": "rgb(40, 39, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(232, 161, 177)",
+          "color": "rgb(255, 210, 219)",
+          "gradient": "linear-gradient(to right bottom, rgb(63, 30, 40), rgb(92, 42, 56))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "一度停车",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/ichido_teishi.svg"
         }
       ],
       "width": 1632,
       "height": 760,
-      "sha256": "a5ae19ee4971429d1c6249b333f3517788f8c2db62af9d728d288a309466d810"
+      "sha256": "9d7b8e40702bee383b9f0bcb632e65c49f1f4a3515d93dc346a5f73435068451"
     },
     {
       "scene": "export",
@@ -214,21 +298,96 @@
       "file": "export-dark.png",
       "badges": [
         {
-          "background": "rgb(40, 39, 70)",
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "rgb(232, 161, 177)",
+          "color": "rgb(255, 210, 219)",
+          "gradient": "linear-gradient(to right bottom, rgb(63, 30, 40), rgb(92, 42, 56))",
           "height": 20,
+          "iconColorScheme": "dark",
           "label": "一度停车",
           "src": "http://127.0.0.1:5173/rmp/images/subscriptions/ichido_teishi.svg"
         }
       ],
       "width": 1440,
       "height": 899,
-      "sha256": "d6eaeee59ea58001d27838b51d43906a2b90083af86159c7a5428063f15013bf"
+      "sha256": "9bee6df4d2643639af2d53ca962d9922a42449c5f6945927ed517b4f5924e7b4"
     }
   ],
-  "sourceBaseCommit": "44fcdca123386ed662098872b3547602a187b677",
+  "sourceBaseCommit": "0befa8916771f55e1042472afc5efbc788832000",
   "updatedResourceHashes": {
-    "shuppatsu_shinko.svg": "9e283a9956f954296a84de4f23f5f78e1a3cce0ac982118c4ba6c5d2e052a896",
-    "ichido_teishi.svg": "e04645287a0170c45ac6c1806f05bf597cef5be54b573c2baca17354d75dffd5"
+    "shuppatsu_shinko.svg": "f301196e1145422d716f0bdeec8e212c4bab75e1aed9480cbbd74fbe1575cfc5",
+    "ichido_teishi.svg": "26f2cd90cb9dc354ecce5f4b916c36f56b8f509869a709a516928880b122cb09"
   },
-  "sourceCommit": "0befa8916771f55e1042472afc5efbc788832000"
+  "componentHash": "d773ffd3cd6b5a0a6876efa890c44d69e5cf9a1a95ca12935433ddabac76bbe3",
+  "themeVerification": [
+    {
+      "theme": "light",
+      "systemTheme": "dark",
+      "kind": "cloud",
+      "scheme": "light",
+      "border": "rgb(57, 131, 91)",
+      "foregroundPixel": [
+        57,
+        131,
+        91
+      ],
+      "signalPixel": [
+        0,
+        214,
+        79
+      ]
+    },
+    {
+      "theme": "light",
+      "systemTheme": "dark",
+      "kind": "export",
+      "scheme": "light",
+      "border": "rgb(182, 76, 97)",
+      "foregroundPixel": [
+        182,
+        76,
+        97
+      ],
+      "signalPixel": [
+        255,
+        29,
+        37
+      ]
+    },
+    {
+      "theme": "dark",
+      "systemTheme": "light",
+      "kind": "cloud",
+      "scheme": "dark",
+      "border": "rgb(141, 203, 166)",
+      "foregroundPixel": [
+        141,
+        203,
+        166
+      ],
+      "signalPixel": [
+        0,
+        214,
+        79
+      ]
+    },
+    {
+      "theme": "dark",
+      "systemTheme": "light",
+      "kind": "export",
+      "scheme": "dark",
+      "border": "rgb(232, 161, 177)",
+      "foregroundPixel": [
+        232,
+        161,
+        177
+      ],
+      "signalPixel": [
+        255,
+        29,
+        37
+      ]
+    }
+  ],
+  "sourceCommit": "d0d9bd4e452a06a1bf8557bcaf7f3d57135cfbce"
 }
