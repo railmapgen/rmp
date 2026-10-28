@@ -1,8 +1,9 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
 import { MultiDirectedGraph } from 'graphology';
 import { SerializedGraph } from 'graphology-types';
 import React from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
 import { MiscNodeType } from '../../../constants/nodes';
@@ -76,6 +77,8 @@ const renderSelectedLine = (type: LinePathType, visible: boolean) => {
 };
 
 describe('InfoSection visibility', () => {
+    afterEach(() => vi.restoreAllMocks());
+
     beforeEach(() => {
         window.graph = createGraph();
     });
@@ -111,6 +114,8 @@ describe('InfoSection visibility', () => {
     });
 
     it('shows a policy-hidden line as export-hidden with its required subscription', () => {
+        vi.spyOn(rmgRuntime, 'isStandaloneWindow').mockReturnValue(false);
+        const postEvent = vi.spyOn(rmgRuntime, 'postEvent').mockImplementation(() => {});
         renderSelectedLine(LinePathType.Bezier, true);
 
         const visibilityField = screen.getByRole('group', { name: 'Visible in export' });
@@ -121,7 +126,13 @@ describe('InfoSection visibility', () => {
         expect(visibleSwitch).toBeDisabled();
         expect(label).not.toBeNull();
         expect(within(label!).getByText('Visible in export')).toBeInTheDocument();
-        expect(within(label!).getByText('Proceed Signal')).toBeInTheDocument();
+        const badge = within(visibilityField).getByRole('button', { name: /Redeem.*Proceed Signal/ });
+        expect(label).not.toContainElement(badge);
+
+        fireEvent.click(badge);
+        expect(postEvent).toHaveBeenCalledExactlyOnceWith('OPEN_SUBSCRIPTION_REDEMPTION', undefined);
+        expect(visibleSwitch).not.toBeChecked();
+        expect(window.graph.getEdgeAttribute('line_policy_visibility', 'visible')).toBe(true);
 
         fireEvent.click(visibleSwitch);
         expect(window.graph.getEdgeAttribute('line_policy_visibility', 'visible')).toBe(true);

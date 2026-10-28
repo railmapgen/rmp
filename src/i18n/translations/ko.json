@@ -1514,6 +1514,8 @@
         "required": "이 기능을 사용하려면 「{{subscription}}」 구독이 필요합니다.",
         "included": "이 기능은 현재 이용 중인 「{{subscription}}」 구독에 포함되어 있습니다.",
         "masterLimit": "마스터 노드는 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다.",
-        "parallelLimit": "평행선은 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다."
+        "parallelLimit": "평행선은 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다.",
+        "redeem": "클릭하여 구독을 등록하세요.",
+        "redeemNamed": "{{subscription}} 구독 등록"
     }
 }

@@ -325,14 +325,17 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Button>
                                 <ScaleNodesModal isOpen={isScaleNodesOpen} onClose={() => setIsScaleNodesOpen(false)} />
 
-                                <Button
-                                    sx={procedureButtonStyle}
-                                    rightIcon={<MdReadMore />}
-                                    onClick={() => setIsChangeTypeOpen(true)}
-                                >
-                                    {t('header.settings.procedures.changeType.title')}
-                                    <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
-                                </Button>
+                                <HStack spacing="1">
+                                    <Button
+                                        sx={procedureButtonStyle}
+                                        rightIcon={<MdReadMore />}
+                                        onClick={() => setIsChangeTypeOpen(true)}
+                                        flex="1"
+                                    >
+                                        {t('header.settings.procedures.changeType.title')}
+                                    </Button>
+                                    <SubscriptionBadge subscription="RMP_CLOUD" />
+                                </HStack>
                                 <ChangeTypeModal
                                     isOpen={isChangeTypeOpen}
                                     onClose={() => setIsChangeTypeOpen(false)}

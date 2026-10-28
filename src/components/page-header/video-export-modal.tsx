@@ -243,6 +243,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
 
     return (
         <Modal
+            lockFocusAcrossFrames={false}
             size="2xl"
             isOpen={isOpen}
             closeOnEsc={!isVideoGenerating}

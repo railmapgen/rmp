@@ -11,6 +11,7 @@ import {
     CloseButton,
     Flex,
     Heading,
+    HStack,
     IconButton,
     Image,
     Input,
@@ -217,7 +218,7 @@ export const ImagePanelModal = (props: {
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside">
+        <Modal isOpen={isOpen} onClose={onClose} size="3xl" scrollBehavior="inside" lockFocusAcrossFrames={false}>
             <ModalOverlay />
             <ModalContent>
                 <ModalHeader>{t(`panel.details.image.importTitle`)}</ModalHeader>
@@ -225,13 +226,18 @@ export const ImagePanelModal = (props: {
 
                 <ModalBody>
                     <Tabs isLazy isFitted overflow="hidden" index={activeTab} onChange={idx => setActiveTab(idx)}>
-                        <TabList>
-                            <Tab>{t('panel.details.image.local')}</Tab>
-                            <Tab isDisabled={!RMP_EXPORT}>
-                                {t('panel.details.image.server')}
-                                <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
-                            </Tab>
-                        </TabList>
+                        <HStack spacing="1">
+                            <TabList flex="1">
+                                <Tab>{t('panel.details.image.local')}</Tab>
+                                <Tab
+                                    isDisabled={!RMP_EXPORT}
+                                    aria-label={`${t('panel.details.image.server')} ${t('RMP_EXPORT_SHORT_NAME')}`}
+                                >
+                                    {t('panel.details.image.server')}
+                                </Tab>
+                            </TabList>
+                            <SubscriptionBadge subscription="RMP_EXPORT" />
+                        </HStack>
 
                         <TabPanels overflow="hidden" h="100%">
                             {tabs.map((g, i) => (

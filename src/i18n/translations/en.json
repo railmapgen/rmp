@@ -1515,6 +1515,8 @@
         "required": "Subscribe to {{subscription}} to unlock this feature.",
         "included": "This feature is included in your {{subscription}} subscription.",
         "masterLimit": "Up to {{count}} master nodes are free. Subscribe to $t(RMP_CLOUD) for unlimited master nodes.",
-        "parallelLimit": "Up to {{count}} parallel lines are free. Subscribe to $t(RMP_CLOUD) for unlimited parallel lines."
+        "parallelLimit": "Up to {{count}} parallel lines are free. Subscribe to $t(RMP_CLOUD) for unlimited parallel lines.",
+        "redeem": "Click to redeem a subscription.",
+        "redeemNamed": "Redeem {{subscription}}"
     }
 }

@@ -160,10 +160,12 @@ export default function InfoMultipleSection() {
                 </HStack>
                 {filter.length !== 0 && (
                     <>
-                        <Button width="100%" size="sm" onClick={() => setIsOpenChangeModal(true)}>
-                            {t('panel.details.multipleSelection.change')}
-                            <SubscriptionBadge subscription="RMP_CLOUD" ml="1" />
-                        </Button>
+                        <HStack spacing="1">
+                            <Button flex="1" size="sm" onClick={() => setIsOpenChangeModal(true)}>
+                                {t('panel.details.multipleSelection.change')}
+                            </Button>
+                            <SubscriptionBadge subscription="RMP_CLOUD" />
+                        </HStack>
                         <Divider />
                     </>
                 )}

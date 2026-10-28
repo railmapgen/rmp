@@ -1514,6 +1514,8 @@
         "required": "訂閱「{{subscription}}」即可解鎖此功能。",
         "included": "你的「{{subscription}}」訂閱已包含此功能。",
         "masterLimit": "免費可使用 {{count}} 個大師節點，訂閱「$t(RMP_CLOUD)」後不限數量。",
-        "parallelLimit": "免費可使用 {{count}} 條平行線段，訂閱「$t(RMP_CLOUD)」後不限數量。"
+        "parallelLimit": "免費可使用 {{count}} 條平行線段，訂閱「$t(RMP_CLOUD)」後不限數量。",
+        "redeem": "點擊前往兌換訂閱。",
+        "redeemNamed": "兌換{{subscription}}"
     }
 }

@@ -1516,6 +1516,8 @@
         "required": "この機能を利用するには「{{subscription}}」の契約が必要です。",
         "included": "この機能はご契約中の「{{subscription}}」に含まれています。",
         "masterLimit": "大師節点は {{count}} 個まで無料です。「$t(RMP_CLOUD)」を契約すると個数制限がなくなります。",
-        "parallelLimit": "並列路線は {{count}} 本まで無料です。「$t(RMP_CLOUD)」を契約すると本数制限がなくなります。"
+        "parallelLimit": "並列路線は {{count}} 本まで無料です。「$t(RMP_CLOUD)」を契約すると本数制限がなくなります。",
+        "redeem": "クリックしてサブスクリプションを引き換えます。",
+        "redeemNamed": "{{subscription}}を引き換える"
     }
 }

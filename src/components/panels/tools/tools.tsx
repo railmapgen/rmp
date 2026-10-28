@@ -276,10 +276,15 @@ const ToolsPanel = () => {
                                             flex={1}
                                         >
                                             {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                            {isTextShown && isProLinePath ? (
-                                                <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
-                                            ) : undefined}
                                         </Button>
+                                        {isTextShown && isProLinePath && (
+                                            <SubscriptionBadge
+                                                subscription="RMP_CLOUD"
+                                                ml="1"
+                                                mr="2"
+                                                alignSelf="center"
+                                            />
+                                        )}
                                     </Flex>
                                 );
                             })}
@@ -343,10 +348,10 @@ const ToolsPanel = () => {
                                         flex={1}
                                     >
                                         {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
-                                        {isTextShown && !!lineStyles[styleType].isPro ? (
-                                            <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
-                                        ) : undefined}
                                     </Button>
+                                    {isTextShown && !!lineStyles[styleType].isPro && (
+                                        <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="2" alignSelf="center" />
+                                    )}
                                     {isTextShown && (
                                         <FavoriteButton
                                             isFavorite={favorites.lineStyles.includes(styleType)}
@@ -433,17 +438,18 @@ const ToolsPanel = () => {
                                         flex={1}
                                     >
                                         {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
-                                        {isTextShown && type === MiscNodeType.Master && (
-                                            <SubscriptionBadge
-                                                subscription="RMP_CLOUD"
-                                                description={t('subscription.masterLimit', {
-                                                    count: MAX_MASTER_NODE_FREE,
-                                                })}
-                                                ml="1"
-                                                mr="auto"
-                                            />
-                                        )}
                                     </Button>
+                                    {isTextShown && type === MiscNodeType.Master && (
+                                        <SubscriptionBadge
+                                            subscription="RMP_CLOUD"
+                                            description={t('subscription.masterLimit', {
+                                                count: MAX_MASTER_NODE_FREE,
+                                            })}
+                                            ml="1"
+                                            mr="2"
+                                            alignSelf="center"
+                                        />
+                                    )}
                                     {isTextShown && (
                                         <FavoriteButton
                                             isFavorite={favorites.miscNodes.includes(type)}
