@@ -325,16 +325,24 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 </Button>
                                 <ScaleNodesModal isOpen={isScaleNodesOpen} onClose={() => setIsScaleNodesOpen(false)} />
 
-                                <HStack spacing="1">
+                                <HStack spacing="1" position="relative" isolation="isolate">
                                     <Button
-                                        sx={procedureButtonStyle}
-                                        rightIcon={<MdReadMore />}
                                         onClick={() => setIsChangeTypeOpen(true)}
-                                        flex="1"
+                                        pr="0"
+                                        position="static"
+                                        _before={{
+                                            content: '""',
+                                            position: 'absolute',
+                                            inset: 0,
+                                            zIndex: -1,
+                                            bg: 'inherit',
+                                            borderRadius: 'inherit',
+                                        }}
                                     >
                                         {t('header.settings.procedures.changeType.title')}
                                     </Button>
-                                    <SubscriptionBadge subscription="RMP_CLOUD" />
+                                    <SubscriptionBadge subscription="RMP_CLOUD" mr="auto" />
+                                    <Box as={MdReadMore} mr="4" pointerEvents="none" aria-hidden />
                                 </HStack>
                                 <ChangeTypeModal
                                     isOpen={isChangeTypeOpen}

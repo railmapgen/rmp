@@ -11,7 +11,6 @@ import {
     CloseButton,
     Flex,
     Heading,
-    HStack,
     IconButton,
     Image,
     Input,
@@ -226,18 +225,37 @@ export const ImagePanelModal = (props: {
 
                 <ModalBody>
                     <Tabs isLazy isFitted overflow="hidden" index={activeTab} onChange={idx => setActiveTab(idx)}>
-                        <HStack spacing="1">
-                            <TabList flex="1">
-                                <Tab>{t('panel.details.image.local')}</Tab>
+                        <TabList>
+                            <Tab>{t('panel.details.image.local')}</Tab>
+                            <Flex
+                                flex="1"
+                                position="relative"
+                                isolation="isolate"
+                                align="center"
+                                justify="center"
+                                mb="-2px"
+                                px="4"
+                            >
                                 <Tab
                                     isDisabled={!RMP_EXPORT}
                                     aria-label={`${t('panel.details.image.server')} ${t('RMP_EXPORT_SHORT_NAME')}`}
+                                    flex="0 1 auto"
+                                    position="static"
+                                    mb="0"
+                                    px="0"
+                                    _after={{
+                                        content: '""',
+                                        position: 'absolute',
+                                        inset: 0,
+                                        zIndex: -1,
+                                        borderBottom: 'inherit',
+                                    }}
                                 >
                                     {t('panel.details.image.server')}
                                 </Tab>
-                            </TabList>
-                            <SubscriptionBadge subscription="RMP_EXPORT" />
-                        </HStack>
+                                <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
+                            </Flex>
+                        </TabList>
 
                         <TabPanels overflow="hidden" h="100%">
                             {tabs.map((g, i) => (
