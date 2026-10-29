@@ -27,6 +27,7 @@ import {
     isKeyframeEntry,
     TimelineEntry,
     TimelineKeyframeEntry,
+    TimelineDocument,
 } from '../../constants/timeline';
 import {
     getTimelineOverlayModules,
@@ -41,6 +42,7 @@ import {
     setViewport,
     setAnnotationEditing,
     setFixedResourceEditing,
+    undo,
     useTimelineDispatch,
     useTimelineSelector,
 } from '../../timeline/timeline-store';
@@ -62,6 +64,8 @@ import { useTimelinePlaybackClock } from '../timeline/use-timeline-playback-cloc
 import { createTimelinePreviewOptions } from '../timeline/timeline-preview-options';
 import TimelineOverlayPanel from '../timeline/timeline-overlay-panel';
 import TimelineFixedResourcesPreview from '../timeline/timeline-fixed-resources-preview';
+import TimelineKeyframePanel from '../timeline/timeline-keyframe-panel';
+import { getTimelineKeyframeStationAtCursor } from '../timeline/timeline-keyframe-state';
 
 const TRACK_PANEL_BASE_HEIGHT = 324;
 const TRACK_PANEL_MIN_HEIGHT_RATIO = 0.3;
@@ -74,6 +78,16 @@ export default function TimelinePage() {
     const active = useTimelineSelector(state => state.project.active)!;
     const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
     const timeline = active.revision.timeline;
+    const latestTimeline = React.useRef(timeline);
+    latestTimeline.current = timeline;
+    const activeProjectId = React.useRef<string | undefined>(active.id);
+    activeProjectId.current = active.id;
+    React.useEffect(() => {
+        activeProjectId.current = active.id;
+        return () => {
+            activeProjectId.current = undefined;
+        };
+    }, [active.id]);
     const timelineCursor = useTimelineSelector(state => state.runtime.cursor);
     const selected = useTimelineSelector(state => state.runtime.selected);
     const annotationEditing = useTimelineSelector(state => state.runtime.annotationEditing);
@@ -237,12 +251,30 @@ export default function TimelinePage() {
         const entry = timeline.track[timelineCursor];
         return entry?.id === selectedEntryId && isKeyframeEntry(entry) ? entry : undefined;
     }, [selectedEntryId, timeline.track, timelineCursor]);
+    const previewKeyframe = React.useMemo(
+        () =>
+            editableKeyframe && {
+                ...editableKeyframe,
+                station: getTimelineKeyframeStationAtCursor(graph, timeline, editableKeyframe.id, timing),
+            },
+        [editableKeyframe, graph, timeline, timing]
+    );
 
     const handleTimelineChange = React.useCallback(
         (nextDocument: typeof timeline) => {
             dispatch(replaceTimeline(nextDocument));
         },
         [dispatch]
+    );
+
+    const handleKeyframeChange = React.useCallback(
+        (update: (document: TimelineDocument) => TimelineDocument) => {
+            if (activeProjectId.current !== active.id) return;
+            const next = update(latestTimeline.current);
+            latestTimeline.current = next;
+            dispatch(replaceTimeline(next));
+        },
+        [active.id, dispatch]
     );
 
     const handleCursorChange = React.useCallback(
@@ -448,22 +480,35 @@ export default function TimelinePage() {
                             </Text>
                         </Flex>
                     )}
-                    <Box flex="1" minH="0">
-                        <MemoTimelineSvgWrapper
-                            ref={svgHandleRef}
-                            selectedId={selectedId}
-                            selectedIds={fixedResourceEditing ? fixedResourceSelection : undefined}
-                            highlightedIds={highlightedIds}
-                            onSelect={handleCanvasSelect}
-                            viewport={viewport}
-                            onViewportChange={handleViewportChange}
+                    {editableKeyframe && !editingLocked ? (
+                        <TimelineKeyframePanel
                             graph={graph}
+                            document={timeline}
+                            entry={editableKeyframe}
                             mapEnabled={mapEnabled}
-                            mapStyle={mapStyle}
-                            isSubscriber={isSubscriber}
-                            fitToGraph={fixedResourceEditing}
+                            timing={timing}
+                            onChange={handleKeyframeChange}
+                            onUndo={() => dispatch(undo())}
+                            onDone={() => setSelectedEntryId(undefined)}
                         />
-                    </Box>
+                    ) : (
+                        <Box flex="1" minH="0">
+                            <MemoTimelineSvgWrapper
+                                ref={svgHandleRef}
+                                selectedId={selectedId}
+                                selectedIds={fixedResourceEditing ? fixedResourceSelection : undefined}
+                                highlightedIds={highlightedIds}
+                                onSelect={handleCanvasSelect}
+                                viewport={viewport}
+                                onViewportChange={handleViewportChange}
+                                graph={graph}
+                                mapEnabled={mapEnabled}
+                                mapStyle={mapStyle}
+                                isSubscriber={isSubscriber}
+                                fitToGraph={fixedResourceEditing}
+                            />
+                        </Box>
+                    )}
                     {annotationEditing && (
                         <TimelineOverlayPanel
                             modules={overlayModules}
@@ -508,7 +553,7 @@ export default function TimelinePage() {
                             svgViewBoxZoom={svgViewBoxZoom}
                             onTimingChange={handleTimingChange}
                             getImage={getImage}
-                            editableKeyframe={editingLocked ? undefined : editableKeyframe}
+                            editableKeyframe={editingLocked ? undefined : previewKeyframe}
                             onKeyframeMove={handleKeyframeMove}
                             graph={graph}
                             mapEnabled={mapEnabled}

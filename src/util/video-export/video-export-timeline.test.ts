@@ -2,7 +2,12 @@ import { MultiDirectedGraph } from 'graphology';
 import { describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../constants/constants';
 import { StationType } from '../../constants/stations';
-import { TimelineElementEntry, TimelineEntry } from '../../constants/timeline';
+import {
+    TimelineElementEntry,
+    TimelineEntry,
+    TimelineKeyframeEntry,
+    TimelineKeyframeStation,
+} from '../../constants/timeline';
 import { createVideoTimelinePlayback } from './video-export-timeline';
 
 const makeGraph = () => {
@@ -29,7 +34,7 @@ const edge: TimelineElementEntry = {
     phase: 'enter',
     showAnimation: true,
 };
-const keyframe = (id: string, x: number, y: number): TimelineEntry => ({
+const keyframe = (id: string, x: number, y: number): TimelineKeyframeEntry => ({
     id,
     kind: 'keyframe',
     refId: 'stn_a',
@@ -49,6 +54,47 @@ const playback = (track: TimelineEntry[], speed = 1) =>
     );
 
 describe('authored video timeline playback', () => {
+    it('morphs independent station snapshots before their anchors and restores them on backwards seeks', () => {
+        const first: TimelineKeyframeStation = { type: StationType.ShmetroBasic, attrs: { names: ['First', 'A'] } };
+        const second: TimelineKeyframeStation = { type: StationType.ShmetroInt, attrs: { names: ['Second', 'B'] } };
+        const track: TimelineEntry[] = [
+            node,
+            { ...keyframe('first-style', 0, 0), station: first },
+            edge,
+            { ...keyframe('second-style', 100, 0), station: second },
+        ];
+        const animation = playback(track);
+        expect(animation.duration).toBe(2);
+        expect(animation.frameAt(0).stationOverrides.get('stn_a')).toEqual(first);
+        expect(animation.frameAt(1.7).stationBlur.size).toBe(0);
+        expect(animation.frameAt(1.8).stationOverrides.get('stn_a')).toEqual(first);
+        expect(animation.frameAt(1.8).stationBlur.get('stn_a')).toBeGreaterThan(0);
+        expect(animation.frameAt(1.95).stationOverrides.get('stn_a')).toEqual(second);
+        expect(animation.frameAt(1.95).stationBlur.get('stn_a')).toBeGreaterThan(0);
+        expect(animation.frameAt(2).stationOverrides.get('stn_a')).toEqual(second);
+        expect(animation.frameAt(2).stationBlur.size).toBe(0);
+        expect(animation.frameAt(4).stationOverrides.get('stn_a')).toEqual(second);
+        expect(animation.frameAt(0.5).stationOverrides.get('stn_a')).toEqual(first);
+        animation.frameAt(2).stationOverrides.get('stn_a')!.attrs.names[0] = 'Modified returned frame';
+        expect(animation.frameAt(2).stationOverrides.get('stn_a')).toEqual(second);
+        expect(first.attrs.names[0]).toBe('First');
+        expect(second.attrs.names[0]).toBe('Second');
+    });
+
+    it('uses the last same-time appearance marker and leaves equal snapshots sharp', () => {
+        const station: TimelineKeyframeStation = { type: StationType.ShmetroBasic, attrs: { names: ['Same'] } };
+        const animation = playback([
+            node,
+            { ...keyframe('initial', 0, 0), station },
+            edge,
+            { ...keyframe('discarded', 0, 0), station: { ...station, attrs: { names: ['Discarded'] as [string] } } },
+            { ...keyframe('final', 0, 0), station },
+        ]);
+        expect(animation.frameAt(1.9).stationBlur.size).toBe(0);
+        expect(animation.frameAt(2).stationOverrides.get('stn_a')).toEqual(station);
+        expect(animation.frameAt(2).focus).toMatchObject({ kind: 'edge' });
+    });
+
     it('queries focus independently with the same results for arbitrary forward and backward seeks', () => {
         const animation = playback([
             { ...node, id: 'absent-node-exit', refId: 'stn_c', phase: 'exit' },

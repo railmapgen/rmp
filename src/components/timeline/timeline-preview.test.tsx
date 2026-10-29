@@ -95,6 +95,36 @@ describe('TimelinePreview video frames', () => {
         expect(mocks.prepare.mock.calls[1][1].fixedResources).toEqual(['stn_b']);
     });
 
+    it('previews the selected same-time marker only at its anchor and restores playback when seeking away', async () => {
+        const first = { id: 'first', kind: 'keyframe' as const, refId: 'stn_a' as const, x: 20, y: 30 };
+        const second = { ...first, id: 'second', x: 60, y: 70 };
+        const document = { ...timeline, track: [...timeline.track, first, second] };
+        const prepare = mocks.prepare.getMockImplementation()!;
+        mocks.prepare.mockImplementation(async (...args) => ({
+            ...(await prepare(...args)),
+            cursorTimes: [0, 5, 5, 12.5],
+        }));
+        const { rerender } = render(
+            <TimelinePreview {...props} document={document} time={5} editableKeyframe={first} />
+        );
+        await waitFor(() =>
+            expect(mocks.renderPreviewFrame).toHaveBeenLastCalledWith(
+                5,
+                expect.objectContaining({ keyframeOverride: first })
+            )
+        );
+        rerender(<TimelinePreview {...props} document={document} time={5} editableKeyframe={second} />);
+        await waitFor(() =>
+            expect(mocks.renderPreviewFrame).toHaveBeenLastCalledWith(
+                5,
+                expect.objectContaining({ keyframeOverride: second })
+            )
+        );
+        expect(mocks.prepare).toHaveBeenCalledTimes(1);
+        rerender(<TimelinePreview {...props} document={document} time={5.01} editableKeyframe={second} />);
+        await waitFor(() => expect(mocks.renderPreviewFrame).toHaveBeenLastCalledWith(5.01, undefined));
+    });
+
     it('rebuilds video geometry when Export access changes', async () => {
         const { container, rerender } = render(<TimelinePreview {...props} />);
         await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());

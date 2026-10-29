@@ -8,11 +8,13 @@ import { undoAction } from '../../../redux/project-history';
 import { isMacClient } from '../../../util/helpers';
 import { translateStationNameByPinyin, translateStationNameBySemantic } from '../../../util/station-name-translation';
 import { sendErrorNotification } from '../../../util/notifications';
+import { StationAttrsContext } from './station-attrs-context';
 
 const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsProps<T>) => {
     const { id, attrs, handleAttrsUpdate } = props;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const stationAttrsContext = React.useContext(StationAttrsContext);
     const { token, activeSubscriptions } = useRootSelector(state => state.account);
     const {
         preference: { stationNameTranslationMode },
@@ -41,14 +43,15 @@ const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsPro
             }
 
             event.preventDefault();
-            dispatch(undoAction());
+            if (stationAttrsContext) stationAttrsContext.onUndo();
+            else dispatch(undoAction());
             lastTranslatedTextareaRef.current = null;
             lastTranslatedValueRef.current = undefined;
         };
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [dispatch]);
+    }, [dispatch, stationAttrsContext]);
 
     const focusEnglishNameTextarea = React.useCallback((translatedValue: string) => {
         window.setTimeout(() => {

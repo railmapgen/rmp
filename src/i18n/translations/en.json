@@ -968,6 +968,12 @@
             "editorPane": "Editor",
             "previewPane": "Preview",
             "keyframeHint": "Drag the station to set its keyframe position",
+            "keyframeEditor": {
+                "title": "Keyframe station",
+                "hint": "Edit the station type and details for this keyframe. Drag the station in the preview to adjust its position.",
+                "done": "Done",
+                "stationOnly": "This keyframe supports position editing in the preview. Station attributes are available for station keyframes."
+            },
             "selectLineColor": "Select a line color",
             "selectDestNode": "Select destination station on canvas",
             "noPathFound": "No path found between selected stations along this line.",

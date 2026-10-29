@@ -970,6 +970,12 @@
             "editorPane": "編集",
             "previewPane": "プレビュー",
             "keyframeHint": "駅をドラッグしてキーフレームの位置を設定",
+            "keyframeEditor": {
+                "title": "キーフレームの駅",
+                "hint": "このキーフレームの駅種別と詳細を編集します。プレビュー内の駅をドラッグして位置を調整できます。",
+                "done": "完了",
+                "stationOnly": "このキーフレームの位置はプレビューで調整できます。駅のキーフレームでは駅属性を編集できます。"
+            },
             "selectLineColor": "線の色を選択",
             "selectDestNode": "キャンバスで終点駅を選択",
             "noPathFound": "選択した色のパスが見つかりません。",

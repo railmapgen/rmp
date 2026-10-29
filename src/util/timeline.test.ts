@@ -10,6 +10,7 @@ import {
 } from '../constants/timeline';
 import { createTimelineOverlayModule } from '../constants/timeline-overlays';
 import { LinePathType, LineStyleType } from '../constants/lines';
+import { StationType } from '../constants/stations';
 import {
     appendTimelineEntry,
     createKeyframeEntry,
@@ -18,6 +19,7 @@ import {
     getEdgeThemeString,
     getTimelineCoverage,
     getTimelinePreviewState,
+    getTimelineKeyframeStation,
     insertTimelineEntries,
     insertTimelineEntry,
     insertTimelineExitEntry,
@@ -29,6 +31,7 @@ import {
     insertTimelineLabel,
     removeTimelineEntry,
     updateKeyframePosition,
+    updateKeyframeStation,
     upgradeTimelineDocument,
 } from './timeline';
 
@@ -199,6 +202,89 @@ describe('timeline utilities', () => {
 
         const next = updateKeyframePosition({ ...emptyDocument(), track: [keyframe] }, keyframe.id, 33, 44);
         expect(next.track[0]).toMatchObject({ x: 33, y: 44 });
+    });
+
+    it('resolves keyframe station snapshots in track order without sharing graph or earlier frame attributes', () => {
+        const graph = makeGraph();
+        const first = { ...createKeyframeEntry(graph, 'stn_a'), id: 'first' };
+        const second = { ...createKeyframeEntry(graph, 'stn_a'), id: 'second' };
+        let document: TimelineDocument = { ...emptyDocument(), track: [first, second] };
+        const base = getTimelineKeyframeStation(graph, document, first.id)!;
+        expect(base).toMatchObject({ type: StationType.ShmetroBasic, attrs: { names: ['Alpha'] } });
+        base.attrs.names[0] = 'First name';
+        document = updateKeyframeStation(document, first.id, base);
+        base.attrs.names[0] = 'Unsaved change';
+        const inherited = getTimelineKeyframeStation(graph, document, second.id)!;
+        expect(inherited.attrs.names[0]).toBe('First name');
+        inherited.attrs.names[0] = 'Second name';
+        document = updateKeyframeStation(document, second.id, inherited);
+
+        expect(getTimelineKeyframeStation(graph, document, first.id)!.attrs.names[0]).toBe('First name');
+        expect(getTimelineKeyframeStation(graph, document, second.id)!.attrs.names[0]).toBe('Second name');
+        expect(graph.getNodeAttribute('stn_a', StationType.ShmetroBasic)!.names[0]).toBe('Alpha');
+        expect(first).not.toHaveProperty('station');
+    });
+
+    it('does not apply future or other-station snapshots to an earlier keyframe', () => {
+        const graph = makeGraph();
+        const first = { ...createKeyframeEntry(graph, 'stn_a'), id: 'first' };
+        const other = { ...createKeyframeEntry(graph, 'stn_b'), id: 'other' };
+        const last = { ...createKeyframeEntry(graph, 'stn_a'), id: 'last' };
+        let document: TimelineDocument = { ...emptyDocument(), track: [other, first, last] };
+        const station = { type: StationType.ShmetroInt, attrs: { names: ['Override'] as [string] } };
+        document = updateKeyframeStation(document, other.id, station);
+        document = updateKeyframeStation(document, last.id, station);
+
+        expect(getTimelineKeyframeStation(graph, document, first.id)!.attrs.names[0]).toBe('Alpha');
+        expect(getTimelineKeyframeStation(graph, document, last.id)).toEqual(station);
+        expect(getTimelineKeyframeStation(graph, document, 'missing')).toBeUndefined();
+        expect(updateKeyframeStation(document, 'missing', station)).toBe(document);
+    });
+
+    it('preserves complete station attributes through normalization and portable JSON without retaining aliases', () => {
+        const attrs = {
+            names: ['Frame name', 'Frame name'] as [string, string],
+            nameOffsetX: 'left',
+            nameOffsetY: 'bottom',
+            preciseNameOffsets: undefined,
+            transfer: [[['shanghai', 'sh1', '#E3002B', '#fff', '', '']]],
+        };
+        const document: TimelineDocument = {
+            ...emptyDocument(),
+            track: [
+                {
+                    id: 'appearance',
+                    kind: 'keyframe',
+                    refId: 'stn_a',
+                    x: 30,
+                    y: 40,
+                    station: { type: StationType.ShmetroInt, attrs },
+                },
+            ],
+        };
+        const normalized = normalizeTimelineDocument(document);
+        expect(normalized.track[0]).toEqual(document.track[0]);
+        attrs.names[0] = 'Changed after normalization';
+        expect(getTimelineKeyframeStation(makeGraph(), normalized, 'appearance')!.attrs.names[0]).toBe('Frame name');
+        expect(normalizeTimelineDocument(JSON.parse(JSON.stringify(normalized)))).toEqual(
+            JSON.parse(JSON.stringify(normalized))
+        );
+    });
+
+    it.each([
+        { type: 'unsupported-station', attrs: { names: ['A'] } },
+        { type: StationType.ShmetroBasic, attrs: null },
+        { type: StationType.ShmetroBasic, attrs: { names: [] } },
+        { type: StationType.ShmetroBasic, attrs: { names: [42] } },
+        { type: StationType.ShmetroBasic, attrs: { names: ['A'], rotate: Infinity } },
+        {
+            type: StationType.ShmetroBasic,
+            attrs: { names: ['A'], preciseNameOffsets: { x: 1, y: 2, anchor: 'invalid' } },
+        },
+    ])('discards malformed imported appearance while retaining the position keyframe: %j', station => {
+        const entry = { id: 'appearance', kind: 'keyframe', refId: 'stn_a', x: 30, y: 40 };
+        const normalized = normalizeTimelineDocument({ version: 2, track: [{ ...entry, station }] });
+        expect(normalized.track).toEqual([entry]);
     });
 
     it('insertKeyframeEntry should add the enter entry before the keyframe when missing', () => {

@@ -74,6 +74,9 @@ export default function TimelinePreview({
     const containerRef = React.useRef<HTMLDivElement>(null);
     const latestTime = React.useRef(time);
     latestTime.current = time;
+    const latestKeyframe = React.useRef(editableKeyframe);
+    latestKeyframe.current = editableKeyframe;
+    const editableKeyframeKey = JSON.stringify(editableKeyframe);
     const requestRenderRef = React.useRef<(force?: boolean) => void>(() => {});
     const latestLabels = React.useRef(timeline.labelTrack);
     latestLabels.current = timeline.labelTrack;
@@ -143,6 +146,7 @@ export default function TimelinePreview({
         let forcePending = false;
         let rendering = false;
         let renderedFrame: number | undefined;
+        let renderedKeyframe: string | undefined;
         let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
         let unsubscribeLayout: (() => void) | undefined;
         setLoading(true);
@@ -156,6 +160,13 @@ export default function TimelinePreview({
                     Math.floor((Number.isFinite(time) ? time : 0) * options.fps + 1e-6)
                 )
             );
+        const keyframeOverrideAt = (time: number) => {
+            const keyframe = latestKeyframe.current;
+            if (!keyframe || latestEditing.current || !renderer) return undefined;
+            const index = visualDocument.track.findIndex(entry => entry.id === keyframe.id);
+            const anchor = renderer.cursorTimes[index];
+            return anchor !== undefined && Math.abs(time - anchor) < 1e-6 ? keyframe : undefined;
+        };
         const renderLatest = async (force = false) => {
             pending = true;
             forcePending ||= force;
@@ -166,14 +177,21 @@ export default function TimelinePreview({
                     pending = false;
                     const requestedTime = latestTime.current;
                     const requestedFrame = frameIndex(requestedTime);
+                    const keyframeOverride = keyframeOverrideAt(requestedTime);
+                    const requestedKeyframe = JSON.stringify(keyframeOverride);
                     const forceFrame = forcePending;
                     forcePending = false;
-                    if (!forceFrame && requestedFrame === renderedFrame) continue;
+                    if (!forceFrame && requestedFrame === renderedFrame && requestedKeyframe === renderedKeyframe)
+                        continue;
                     let frame: SVGSVGElement;
                     try {
                         frame = await renderer.renderPreviewFrame(
                             requestedTime,
-                            forceFrame ? { force: true } : undefined
+                            keyframeOverride
+                                ? { ...(forceFrame ? { force: true } : {}), keyframeOverride }
+                                : forceFrame
+                                  ? { force: true }
+                                  : undefined
                         );
                     } catch (cause) {
                         if (requestedFrame !== frameIndex(latestTime.current)) {
@@ -188,12 +206,17 @@ export default function TimelinePreview({
                     // The renderer may have updated an already mounted scene before resolving.
                     // Track that frame even when a newer seek makes this result obsolete.
                     renderedFrame = requestedFrame;
+                    renderedKeyframe = requestedKeyframe;
                     if (dragRef.current) {
                         pending = true;
                         forcePending = true;
                         break;
                     }
-                    if (requestedFrame !== frameIndex(latestTime.current) || forcePending) {
+                    if (
+                        requestedFrame !== frameIndex(latestTime.current) ||
+                        requestedKeyframe !== JSON.stringify(keyframeOverrideAt(latestTime.current)) ||
+                        forcePending
+                    ) {
                         pending = true;
                         continue;
                     }
@@ -317,6 +340,7 @@ export default function TimelinePreview({
     }, [overlayEditing, editableKeyframe?.id]);
 
     React.useEffect(() => requestRenderRef.current(), [time]);
+    React.useEffect(() => requestRenderRef.current(true), [editableKeyframeKey]);
     React.useEffect(() => updateLabelsRef.current(timeline.labelTrack ?? []), [timeline.labelTrack]);
 
     const getPosition = (event: React.PointerEvent) => {
