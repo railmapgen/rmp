@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-10-28T13:49:10.645Z",
-  "fixture": "Isolated browser with simulated account/redemption API responses; no real credentials or CDKeys",
+  "capturedAt": "2026-10-29T15:43:35.577Z",
+  "fixture": "Isolated local browser with simulated account API responses; no real credentials or redemption codes",
   "viewport": {
     "width": 1600,
     "height": 1000,
@@ -10,9 +10,7 @@
     "rmp": {
       "repository": "railmapgen/rmp",
       "branch": "#1605-subscription-redemption",
-      "base": "4d1bd506eabed1b723e646b5ff9af9f90a2db971",
-      "tree": "8f42e8b73d475b46ed116c9781072511ae8cdd63",
-      "commit": "e77ec1256462095b423d9a9349123f23e8e35dad"
+      "commit": "cb14e1a2722f5faaa18a699544c0140dc4e97322"
     },
     "rmt": {
       "repository": "railmapgen/railmapgen.github.io",
@@ -21,101 +19,167 @@
     }
   },
   "verification": {
-    "scenes": [
+    "capturedAt": "2026-10-29T15:43:35.577Z",
+    "viewport": {
+      "width": 1600,
+      "height": 1000,
+      "deviceScaleFactor": 1.5
+    },
+    "fixture": "Isolated local browser with simulated account API responses; no real credentials or redemption codes",
+    "beforeFix": {
+      "toolBadgeGap": 242.66668701171875
+    },
+    "records": [
       {
         "name": "tools-light",
-        "guest": true,
-        "keyboard": "Enter"
+        "buttonOutsideBadge": true,
+        "centerOffset": -97.33333206176758,
+        "gap": 4,
+        "label": "基本线段",
+        "clickTargetPreserved": true,
+        "redemptionOpened": true
       },
       {
         "name": "settings-light",
-        "loginDidNotContinue": true,
-        "hostInputUsable": true
+        "buttonOutsideBadge": true,
+        "centerOffset": -124.66667556762695,
+        "gap": 4,
+        "label": "修改所有对象的属性",
+        "arrowAligned": true,
+        "redemptionOpened": true
       },
       {
         "name": "images-light",
-        "disabledTab": true,
-        "hostInputUsable": true,
-        "keyboard": "Space"
+        "buttonOutsideBadge": true,
+        "centerOffset": 4.1961669921875e-05,
+        "gap": 4,
+        "label": "服务器图像",
+        "equalTabWidths": true,
+        "redemptionOpened": true
       },
       {
-        "name": "export-light",
-        "hostInputUsable": true
+        "name": "multiple-light",
+        "buttonOutsideBadge": true,
+        "centerOffset": 4.1961669921875e-05,
+        "gap": 4,
+        "label": "修改选中对象的属性",
+        "clickTargetPreserved": true,
+        "redemptionOpened": true
       },
       {
         "name": "tools-dark",
-        "guest": true,
-        "keyboard": "Space"
+        "buttonOutsideBadge": true,
+        "centerOffset": -97.33333206176758,
+        "gap": 4,
+        "label": "基本线段",
+        "clickTargetPreserved": true,
+        "redemptionOpened": true
       },
       {
         "name": "settings-dark",
-        "loginDidNotContinue": true,
-        "hostInputUsable": true
+        "buttonOutsideBadge": true,
+        "centerOffset": -124.66667556762695,
+        "gap": 4,
+        "label": "修改所有对象的属性",
+        "arrowAligned": true,
+        "redemptionOpened": true
       },
       {
         "name": "images-dark",
-        "disabledTab": true,
-        "hostInputUsable": true,
-        "keyboard": "Space"
+        "buttonOutsideBadge": true,
+        "centerOffset": 4.1961669921875e-05,
+        "gap": 4,
+        "label": "服务器图像",
+        "equalTabWidths": true,
+        "redemptionOpened": true
       },
       {
-        "name": "export-dark",
-        "hostInputUsable": true
+        "name": "multiple-dark",
+        "buttonOutsideBadge": true,
+        "centerOffset": 4.1961669921875e-05,
+        "gap": 4,
+        "label": "修改选中对象的属性",
+        "clickTargetPreserved": true,
+        "redemptionOpened": true
+      },
+      {
+        "name": "all-tool-badges",
+        "checked": 5,
+        "fullRowClick": true,
+        "favoriteIndependent": true
+      },
+      {
+        "name": "cloud-tab-interaction",
+        "keyboard": true,
+        "fullTabClick": true
+      },
+      {
+        "name": "english-tab-layout",
+        "buttonOutsideBadge": true,
+        "centerOffset": -0.00519561767578125,
+        "gap": 4,
+        "label": "Server images"
+      },
+      {
+        "name": "english-multiple-layout",
+        "badgeLeft": 1451.447998046875,
+        "badgeRight": 1588.0000915527344,
+        "groupLeft": 1312,
+        "groupRight": 1588,
+        "textLeft": 1314.385498046875,
+        "textRight": 1445.0625
       }
     ],
-    "successNotificationDelta": 1,
-    "subscriptionFetchDelta": 1,
-    "projectUnchanged": true,
-    "foreignFrameIgnored": true,
+    "projectUnchangedByControls": true,
     "hostErrors": [],
     "appErrors": []
   },
   "images": [
     {
-      "path": "redemption-export-dark.png",
-      "sha256": "263acd2ef9a1a19da5ef70beaa6c1675422f4ad4f1bc5a935e2b8ae8b2921813",
+      "path": "badge-layout-tools-light.png",
+      "sha256": "a63f14560349e55dc2e44f45c29e8c1b43f12d2a764c49e6396c44f8b44403c8",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-export-light.png",
-      "sha256": "f809e1563ba75fd5ae20973a12c7576754d1c862c62e8660aab989c5525db593",
+      "path": "badge-layout-tools-dark.png",
+      "sha256": "1da69413d630bc06e0317a32247427c23d2802cd3193215560c83c41123498b8",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-images-dark.png",
-      "sha256": "86874c4f1e7fa000fa5cd712b05ee64b2774cc1c36770079bd59eb2cc26d2c64",
+      "path": "badge-layout-settings-light.png",
+      "sha256": "45c375325853e8c6c67b002c21f490668cc4dcecaf9f14127978ab1d4d819f89",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-images-light.png",
-      "sha256": "f4751db7e009422ee35bef407be6354c00ce04fe7f2fc799ddb9d6695f4c0b06",
+      "path": "badge-layout-settings-dark.png",
+      "sha256": "577fabadc58e1e041d0fb12783a6a4ed4407b77ca541b60d00147e368be7ff05",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-settings-dark.png",
-      "sha256": "7ccecebe0437e4b43bfde1ab47983efeb4f747fa7aaba0c5af96930d455a6342",
+      "path": "badge-layout-images-light.png",
+      "sha256": "8dcf01d073295b9ef5604e023f413c56fcbefbbaea414046086365aa9acd3043",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-settings-light.png",
-      "sha256": "459f10a2a9470d56693c5aff415e8a3627fb9269c07609faf3341972364d4d50",
+      "path": "badge-layout-images-dark.png",
+      "sha256": "90cf43e48e208e180715d03e670736b665a8b90ee4ce143be21972867f9c7b4b",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-tools-dark.png",
-      "sha256": "eb5e2864b6cc6299a6a89df6c12d6606074bfe056777e4c788baceb541e15950",
+      "path": "badge-layout-multiple-light.png",
+      "sha256": "faef01f49b1a03d5f28c059725ee5a5014297c66c642653a57db52bcd0c7e511",
       "width": 2400,
       "height": 1500
     },
     {
-      "path": "redemption-tools-light.png",
-      "sha256": "291218c0d090da718a1ce186c0c312aec0f260829f4d5c5abdad5df5890950eb",
+      "path": "badge-layout-multiple-dark.png",
+      "sha256": "73b7423f068926289ed5d287eed511599c2b18ca1982c9afdb9bcfac8d7394bf",
       "width": 2400,
       "height": 1500
     }
