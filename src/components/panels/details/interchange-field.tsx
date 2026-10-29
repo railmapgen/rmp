@@ -8,6 +8,7 @@ import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { refreshNodesThunk } from '../../../redux/runtime/runtime-slice';
 import InterchangeCard from './interchange-card';
+import { StationAttrsContext } from './station-attrs-context';
 
 /**
  * InterchangeInfo with theme, line code, station code.
@@ -42,6 +43,8 @@ export const InterchangeField = (props: {
 
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const context = React.useContext(StationAttrsContext);
+    const scopedAttrs = context?.type === stationType ? context : undefined;
 
     const { theme: runtimeTheme } = useRootSelector(state => state.runtime);
 
@@ -53,13 +56,23 @@ export const InterchangeField = (props: {
     const [selectedFirst] = selected;
     const graph = React.useRef(window.graph);
 
-    const attr =
-        selectedFirst &&
-        graph.current.hasNode(selectedFirst) &&
-        graph.current.getNodeAttribute(selectedFirst, 'type') === stationType
-            ? (graph.current.getNodeAttribute(selectedFirst, stationType) as StationAttributesWithInterchange)
-            : defaultAttrs;
+    const attr = scopedAttrs
+        ? (scopedAttrs.attrs as StationAttributesWithInterchange)
+        : selectedFirst &&
+            graph.current.hasNode(selectedFirst) &&
+            graph.current.getNodeAttribute(selectedFirst, 'type') === stationType
+          ? (graph.current.getNodeAttribute(selectedFirst, stationType) as StationAttributesWithInterchange)
+          : defaultAttrs;
     const transfer = attr.transfer ?? defaultAttrs.transfer;
+
+    const submitTransfer = (next: InterchangeInfo[][]) => {
+        if (scopedAttrs) {
+            scopedAttrs.onChange({ ...attr, transfer: next } as StationAttributesWithInterchange);
+        } else {
+            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: { ...attr, transfer: next } });
+            hardRefresh();
+        }
+    };
 
     const handleAdd = (setIndex: number) => (interchangeIndex: number, interchangeInfo: InterchangeInfo) => {
         const newTransferInfo: InterchangeInfo[][] = structuredClone(transfer);
@@ -75,9 +88,7 @@ export const InterchangeField = (props: {
             ...newTransferInfo[setIndex].slice(interchangeIndex),
         ];
 
-        attr.transfer = newTransferInfo;
-        graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
-        hardRefresh();
+        submitTransfer(newTransferInfo);
     };
 
     const handleDelete = (setIndex: number) => (interchangeIndex: number) => {
@@ -86,9 +97,7 @@ export const InterchangeField = (props: {
                 setIdx === setIndex ? set.filter((_, intIdx) => intIdx !== interchangeIndex) : set
             );
 
-            attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
-            hardRefresh();
+            submitTransfer(newTransferInfo);
         }
     };
 
@@ -106,9 +115,7 @@ export const InterchangeField = (props: {
                     : set
             );
 
-            attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
-            hardRefresh();
+            submitTransfer(newTransferInfo);
         }
     };
 
@@ -130,9 +137,7 @@ export const InterchangeField = (props: {
                     : set
             );
 
-            attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
-            hardRefresh();
+            submitTransfer(newTransferInfo);
         }
     };
 
@@ -144,9 +149,7 @@ export const InterchangeField = (props: {
                     : set
             );
 
-            attr.transfer = newTransferInfo;
-            graph.current.mergeNodeAttributes(selectedFirst, { [stationType]: attr });
-            hardRefresh();
+            submitTransfer(newTransferInfo);
         }
     };
 

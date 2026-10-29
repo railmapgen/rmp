@@ -1,4 +1,5 @@
 import { Id, LineId, NodeId } from './constants';
+import type { StationAttributes, StationType } from './stations';
 import { getTimelineOverlayModules, type TimelineOverlayModule } from './timeline-overlays';
 
 export const TIMELINE_DOCUMENT_VERSION = 2;
@@ -15,12 +16,19 @@ export type TimelineElementEntry =
     | (TimelineElementEntryBase & { kind: 'node'; refId: NodeId })
     | (TimelineElementEntryBase & { kind: 'edge'; refId: LineId });
 
+/** A complete appearance snapshot for the station type used at this keyframe. */
+export interface TimelineKeyframeStation {
+    type: StationType;
+    attrs: StationAttributes;
+}
+
 export interface TimelineKeyframeEntry {
     id: string;
     kind: 'keyframe';
     refId: NodeId;
     x: number;
     y: number;
+    station?: TimelineKeyframeStation;
 }
 
 export type TimelinePausePosition = 'before' | 'after';

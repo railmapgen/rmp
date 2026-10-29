@@ -7,7 +7,7 @@ import miscNodes from '../../components/svgs/nodes/misc-nodes';
 import { linePaths, lineStyles } from '../../components/svgs/lines/lines';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { LinePathType, LineStyleType } from '../../constants/lines';
-import { StationType } from '../../constants/stations';
+import { StationAttributes, StationType } from '../../constants/stations';
 import { MiscNodeType } from '../../constants/nodes';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
 import { isMapZoomed } from '../../map/map-config';
@@ -16,12 +16,11 @@ import type { LiveViewport } from '../../redux/viewport/viewport-slice';
 import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../../constants/timeline';
 import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { makeRenderReadySVGElement } from '../download';
-import { calculateCanvasSize } from '../helpers';
-import * as canvasHelpers from '../helpers';
 import * as videoExportCanvas from './video-export-canvas';
 import * as videoResourceLayout from './video-resource-layout';
 import {
     createVideoPreviewRenderer,
+    createFrameStationGraph,
     exportVideo,
     getCameraViewBox,
     getOverviewZoom,
@@ -886,16 +885,6 @@ describe('geographic timeline overlays and frame coverage', () => {
     ])(
         'refreshes only visible export bounds as the camera moves and selects detail for $resolution',
         async ({ resolution, outputWidth, changesDetail }) => {
-            // jsdom cannot measure the detached SVG's visual bounds; model the authored node extent for this LOD case.
-            vi.spyOn(canvasHelpers, 'calculateCanvasSize').mockImplementation(graph => {
-                const attrs = graph.nodes().map(node => graph.getNodeAttributes(node));
-                return {
-                    xMin: Math.min(...attrs.map(node => node.x)) - 50,
-                    yMin: Math.min(...attrs.map(node => node.y)) - 50,
-                    xMax: Math.max(...attrs.map(node => node.x)) + 50,
-                    yMax: Math.max(...attrs.map(node => node.y)) + 50,
-                };
-            });
             const updateViewport = vi.fn<(viewport: LiveViewport) => void>();
             const load = mockGeographicMap(updateViewport);
             const timeline = authoredTimeline(nodeEntry, edgeEntry, {
@@ -1204,6 +1193,182 @@ describe('authored video frames', () => {
 });
 
 describe('shared real-time preview renderer', () => {
+    it('previews a selected same-time keyframe independently and restores the exported last marker', async () => {
+        const earlier = {
+            id: 'earlier',
+            kind: 'keyframe' as const,
+            refId: 'stn_a' as const,
+            x: 10,
+            y: 20,
+            station: {
+                type: StationType.ShmetroBasic,
+                attrs: {
+                    ...structuredClone(stations[StationType.ShmetroBasic].defaultAttrs),
+                    names: ['Earlier local', 'Early'] as [string, string],
+                },
+            },
+        };
+        const later = {
+            ...earlier,
+            id: 'later',
+            x: 30,
+            y: 40,
+            station: {
+                ...earlier.station,
+                attrs: { ...earlier.station.attrs, names: ['Later local', 'Late'] as [string, string] },
+            },
+        };
+        const renderer = await createVideoPreviewRenderer(
+            makeGraph(200),
+            authoredTimeline(nodeEntry, edgeEntry, earlier, later),
+            [],
+            defaultOptions
+        );
+        const anchor = renderer.cursorTimes[2];
+        const normal = await renderer.renderPreviewFrame(anchor);
+        expect(normal.getElementById('stn_a')!.textContent).toContain('Later local');
+        const selected = await renderer.renderPreviewFrame(anchor, { keyframeOverride: earlier });
+        expect(selected.getElementById('stn_a')!.textContent).toContain('Earlier local');
+        expect(selected.getElementById('stn_a')!.getAttribute('transform')).toBe('translate(10, 20)');
+        expect(selected.getElementById('stn_a')!.getAttribute('filter')).toBeNull();
+        const exported = await renderer.renderFrame(anchor);
+        expect(exported.getElementById('stn_a')!.textContent).toContain('Later local');
+        expect(exported.getElementById('stn_a')!.getAttribute('transform')).toBe('translate(30, 40)');
+        renderer.dispose();
+    });
+
+    it.each([true, false])(
+        'compares first keyframe blur against the automatic station appearance (different=%s)',
+        async different => {
+            const graph = makeGraph(200);
+            graph.mergeNodeAttributes('stn_a', {
+                type: StationType.ShmetroInt,
+                [StationType.ShmetroInt]: structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+            });
+            const baseline = different ? graph : createFrameStationGraph(graph, new Set(['line_ab']));
+            const attrs = baseline.getNodeAttributes('stn_a');
+            const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+                id: 'manual',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 0,
+                station: {
+                    type: attrs.type as StationType,
+                    attrs: structuredClone(attrs[attrs.type]) as StationAttributes,
+                },
+            });
+            timeline.settings = { ...createEmptyTimelineDocument().settings!, autoChangeStationType: true };
+            const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+            const frame = await renderer.renderFrame(renderer.cursorTimes[2] - 0.1);
+            expect(frame.getElementById('stn_a')!.hasAttribute('filter')).toBe(different);
+            renderer.dispose();
+        }
+    );
+
+    it('renders keyframe station types, attributes and blur in shared preview/export frames without changing the source', async () => {
+        const graph = makeGraph(200);
+        const original = structuredClone(graph.export());
+        const timeline = authoredTimeline(
+            nodeEntry,
+            edgeEntry,
+            {
+                id: 'mrt-style',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 0,
+                station: {
+                    type: StationType.MRTBasic,
+                    attrs: {
+                        ...structuredClone(stations[StationType.MRTBasic].defaultAttrs),
+                        names: ['MRT local', 'MRT'],
+                    },
+                },
+            },
+            { ...edgeEntry, id: 'exit', phase: 'exit' },
+            {
+                id: 'final-style',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 0,
+                station: {
+                    type: StationType.ShmetroBasic,
+                    attrs: {
+                        ...structuredClone(stations[StationType.ShmetroBasic].defaultAttrs),
+                        names: ['Final local', 'Final'],
+                    },
+                },
+            }
+        );
+        const savedTimeline = structuredClone(timeline);
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const firstAnchor = renderer.cursorTimes[2];
+        const finalAnchor = renderer.cursorTimes[4];
+        const initial = await renderer.renderFrame(0.5);
+        const initialText = initial.getElementById('stn_a')!.textContent;
+        const blurred = await renderer.renderFrame(firstAnchor - 0.1);
+        expect(blurred.getElementById('stn_a')!.getAttribute('filter')).toMatch(/^url\(#rmp_video_station_blur_/);
+        expect(
+            Number(blurred.querySelector('filter')!.firstElementChild!.getAttribute('stdDeviation'))
+        ).toBeGreaterThan(0);
+        const mrt = await renderer.renderFrame(firstAnchor);
+        expect(mrt.getElementById('stn_a.post')!.textContent).toContain('MRT local');
+        expect(mrt.getElementById('stn_a')!.getAttribute('filter')).toBeNull();
+        const final = await renderer.renderFrame(finalAnchor);
+        expect(final.getElementById('stn_a')!.textContent).toContain('Final local');
+        expect(final.getElementById('stn_a')!.querySelector('circle')).not.toBeNull();
+        expect(final.getElementById('stn_a.post')!.textContent).toBe('');
+        expect(final.getElementById('stn_a')!.getAttribute('filter')).toBeNull();
+        expect((await renderer.renderFrame(renderer.duration)).getElementById('stn_a')!.textContent).toContain(
+            'Final local'
+        );
+        const restored = await renderer.renderPreviewFrame(0.5);
+        expect(restored.getElementById('stn_a')!.textContent).toBe(initialText);
+        expect(restored.getElementById('stn_a.post')!.textContent).toBe('');
+        const live = await renderer.renderPreviewFrame(firstAnchor - 0.1);
+        const exported = await renderer.renderFrame(firstAnchor - 0.1);
+        expect(exported.getElementById('stn_a')!.outerHTML).toBe(live.getElementById('stn_a')!.outerHTML);
+        expect(graph.export()).toEqual(original);
+        expect(timeline).toEqual(savedTimeline);
+        renderer.dispose();
+    });
+
+    it('keeps an authored station snapshot above automatic station switching after later topology changes', async () => {
+        const graph = makeGraph(200);
+        graph.mergeNodeAttributes('stn_a', {
+            type: StationType.ShmetroInt,
+            [StationType.ShmetroInt]: structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+        });
+        const timeline = authoredTimeline(
+            nodeEntry,
+            {
+                id: 'manual',
+                kind: 'keyframe',
+                refId: 'stn_a',
+                x: 0,
+                y: 0,
+                station: {
+                    type: StationType.ShmetroInt,
+                    attrs: {
+                        ...structuredClone(stations[StationType.ShmetroInt].defaultAttrs),
+                        names: ['Manual interchange', 'Local'],
+                    },
+                },
+            },
+            edgeEntry,
+            { ...edgeEntry, id: 'exit', phase: 'exit' }
+        );
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, autoChangeStationType: true };
+        const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        for (const time of [0, 1, 2.5, renderer.duration, 0.5]) {
+            const svg = await renderer.renderFrame(time);
+            expect(svg.getElementById('stn_a')!.textContent).toContain('Manual interchange');
+        }
+        renderer.dispose();
+    });
+
     const observeResourceLayouts = () => {
         const createLayout = videoResourceLayout.createVideoResourceLayout;
         const layouts: ReturnType<typeof createLayout>[] = [];
@@ -1432,10 +1597,17 @@ describe('shared real-time preview renderer', () => {
             const frameGraph = graph.copy();
             const progress = Math.min(1, time / 2);
             frameGraph.mergeNodeAttributes('stn_a', { x: 1000 * progress, y: 300 * progress });
-            const bounds = calculateCanvasSize(frameGraph);
+            // Prepared group bounds are 40×10 in this fixture; node coordinates and moving line extents
+            // must contribute even with no editor SVG mounted in the document.
+            const bounds = {
+                xMin: Math.min(200, 1000 * progress) - 50,
+                yMin: -50,
+                xMax: Math.max(200, 1000 * progress) + 90,
+                yMax: 300 * progress + 60,
+            };
             const box = getCameraViewBox(
                 { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 },
-                getOverviewZoom(frameGraph)
+                getOverviewZoom(frameGraph, bounds)
             );
             const expected = [box.x, box.y, box.width, box.height];
             const frame = await renderer.renderFrame(time);
@@ -1452,13 +1624,13 @@ describe('shared real-time preview renderer', () => {
         const graph = makeGraph(200);
         const timeline = createEmptyTimelineDocument();
         timeline.settings!.cameraZoom = cameraZoom;
-        const bounds = calculateCanvasSize(graph);
+        const bounds = { xMin: -50, yMin: -50, xMax: 290, yMax: 60 };
         const wholeViewBox = getCameraViewBox(
             {
                 x: (bounds.xMin + bounds.xMax) / 2,
                 y: (bounds.yMin + bounds.yMax) / 2,
             },
-            getOverviewZoom(graph)
+            getOverviewZoom(graph, bounds)
         );
         const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
         const current = await preview.renderFrame(0.4);
@@ -1489,6 +1661,109 @@ describe('shared real-time preview renderer', () => {
             .map(Number)
             .forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
         preview.dispose();
+    });
+
+    it('keeps preset magnification when opening the keyframe panel removes the editor map', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+            id: 'keyframe',
+            kind: 'keyframe',
+            refId: 'stn_a',
+            x: 0,
+            y: 0,
+        });
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, cameraZoom: 4 };
+        // The mounted editor can have bounds unlike a previous playback frame or no mounted map at all.
+        const editorStation = document.createElementNS(editorCanvas.namespaceURI, 'g') as SVGGElement;
+        editorStation.id = 'stn_a';
+        Object.defineProperty(editorStation, 'getBBox', {
+            value: () => ({ x: -500, y: -300, width: 1800, height: 900 }),
+        });
+        const identity = {
+            inverse() {
+                return this;
+            },
+            multiply() {
+                return this;
+            },
+        } as unknown as DOMMatrix;
+        editorCanvas.getScreenCTM = () => identity;
+        editorStation.getScreenCTM = () => identity;
+        editorCanvas.createSVGPoint = () =>
+            ({
+                x: 0,
+                y: 0,
+                matrixTransform() {
+                    return { x: this.x, y: this.y };
+                },
+            }) as DOMPoint;
+        editorCanvas.append(editorStation);
+
+        const withEditor = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const original = (await withEditor.renderPreviewFrame(1)).getAttribute('viewBox')!.split(' ').map(Number);
+        editorStation.remove();
+        const inPanel = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);
+        const edited = (await inPanel.renderPreviewFrame(1)).getAttribute('viewBox')!.split(' ').map(Number);
+        expect(edited[2]).toBeCloseTo(original[2], 9);
+        expect(edited[3]).toBeCloseTo(original[3], 9);
+        withEditor.dispose();
+        inPanel.dispose();
+    });
+
+    it('keeps the preset camera in preview and export when a previous moved frame is still mounted', async () => {
+        const graph = makeGraph(200);
+        const timeline = authoredTimeline(nodeEntry, edgeEntry, {
+            id: 'move',
+            kind: 'keyframe',
+            refId: 'stn_a',
+            x: 5000,
+            y: 300,
+        });
+        timeline.settings = { ...createEmptyTimelineDocument().settings!, cameraZoom: 4 };
+        const preview = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 15 });
+        const live = await preview.renderPreviewFrame(1);
+        const original = live.getAttribute('viewBox')!.split(' ').map(Number);
+        document.body.append(live);
+        // Rebuilding the renderer while an old playback frame is visible must not measure that frame.
+        const oldStation = live.getElementById('stn_a')!;
+        oldStation.setAttribute('transform', 'translate(50000,30000)');
+        Object.defineProperty(oldStation, 'getBBox', {
+            value: () => ({ x: 0, y: 0, width: 10000, height: 5000 }),
+        });
+        const identity = {
+            inverse() {
+                return this;
+            },
+            multiply() {
+                return this;
+            },
+        } as unknown as DOMMatrix;
+        [live, ...live.querySelectorAll<SVGGraphicsElement>('*')].forEach(element => {
+            (element as SVGGraphicsElement).getScreenCTM = () => identity;
+        });
+        live.createSVGPoint = () =>
+            ({
+                x: 0,
+                y: 0,
+                matrixTransform() {
+                    return { x: this.x, y: this.y };
+                },
+            }) as DOMPoint;
+        let rebuilt: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+        try {
+            rebuilt = await createVideoPreviewRenderer(graph, timeline, [], { ...defaultOptions, fps: 60 });
+            const frame = await rebuilt.renderFrame(1);
+            const exported = frame.getAttribute('viewBox')!.split(' ').map(Number);
+            exported.forEach((value, index) => expect(value).toBeCloseTo(original[index], 9));
+            const restored = await rebuilt.renderPreviewFrame(0);
+            const initial = restored.getAttribute('viewBox')!.split(' ').map(Number);
+            expect(initial[2]).toBeCloseTo(original[2], 9);
+            expect(initial[3]).toBeCloseTo(original[3], 9);
+        } finally {
+            live.remove();
+            preview.dispose();
+            rebuilt?.dispose();
+        }
     });
 
     it('keeps the same camera position at shared video times across preview and export FPS', async () => {

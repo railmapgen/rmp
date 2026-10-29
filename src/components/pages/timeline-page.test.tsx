@@ -1,10 +1,11 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, Id, NodeAttributes } from '../../constants/constants';
+import { StationType } from '../../constants/stations';
 import {
     createEmptyTimelineDocument,
     TimelineDocument,
@@ -24,6 +25,7 @@ import {
     undo,
 } from '../../timeline/timeline-store';
 import type { VideoExportOptions } from '../../util/video-export/video-export';
+import stations from '../svgs/stations/stations';
 import TimelinePage from './timeline-page';
 
 const { previewRender, previewPrepare, playbackClock, projectContext, svgContext } = vi.hoisted(() => ({
@@ -42,7 +44,10 @@ const { previewRender, previewPrepare, playbackClock, projectContext, svgContext
 
 vi.mock('../../timeline/timeline-project-context', () => ({ useTimelineProjectContext: () => projectContext.current }));
 vi.mock('../svg-render-context', () => ({ useSvgRenderContext: () => svgContext.current }));
-vi.mock('../../util/hooks', () => ({ useWindowSize: () => ({ width: 1600, height: 900 }) }));
+vi.mock('../../util/hooks', async importOriginal => ({
+    ...(await importOriginal<typeof import('../../util/hooks')>()),
+    useWindowSize: () => ({ width: 1600, height: 900 }),
+}));
 vi.mock('react-i18next', async importOriginal => ({
     ...(await importOriginal<typeof import('react-i18next')>()),
     useTranslation: () => ({ t: (key: string) => key }),
@@ -242,6 +247,111 @@ const renderPage = (track: TimelineEntry[] = []) => {
 const latestPreviewOptions = () => previewRender.mock.calls.at(-1)![0] as VideoExportOptions;
 
 describe('TimelinePage preview and export isolation', () => {
+    it('keeps delayed name submissions bound to their marker and preserves newer type changes', async () => {
+        const type = StationType.ShmetroBasic;
+        projectContext.current.graph.addNode('stn_a', {
+            x: 0,
+            y: 0,
+            type,
+            [type]: structuredClone(stations[type].defaultAttrs),
+        } as NodeAttributes);
+        const store = renderPage([
+            { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 },
+            { id: 'key_b', kind: 'keyframe', refId: 'stn_a', x: 80, y: 90 },
+        ]);
+        fireEvent.click(screen.getByRole('button', { name: 'key_a' }));
+        fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Delayed first' } });
+        fireEvent.click(screen.getByRole('button', { name: 'key_b' }));
+        fireEvent.change(screen.getByRole('combobox', { name: 'panel.details.info.stationType' }), {
+            target: { value: StationType.GzmtrBasic },
+        });
+        await waitFor(() =>
+            expect(
+                (store.getState().project.active!.revision.timeline.track[0] as TimelineKeyframeEntry).station?.attrs
+                    .names[0]
+            ).toBe('Delayed first')
+        );
+        expect(
+            (store.getState().project.active!.revision.timeline.track[1] as TimelineKeyframeEntry).station?.type
+        ).toBe(StationType.GzmtrBasic);
+
+        fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Delayed second' } });
+        fireEvent.change(screen.getByRole('combobox', { name: 'panel.details.info.stationType' }), {
+            target: { value: StationType.LondonTubeBasic },
+        });
+        await waitFor(() =>
+            expect(
+                (store.getState().project.active!.revision.timeline.track[1] as TimelineKeyframeEntry).station?.attrs
+                    .names[0]
+            ).toBe('Delayed second')
+        );
+        expect(
+            (store.getState().project.active!.revision.timeline.track[1] as TimelineKeyframeEntry).station?.type
+        ).toBe(StationType.LondonTubeBasic);
+    });
+
+    it('edits station snapshots in the left panel while retaining the right preview and keyframe position', async () => {
+        const type = StationType.ShmetroBasic;
+        const baseAttrs = structuredClone(stations[type].defaultAttrs);
+        baseAttrs.names = ['Original', 'Original'];
+        projectContext.current.graph.addNode('stn_a', { x: 0, y: 0, type, [type]: baseAttrs } as NodeAttributes);
+        const track: TimelineEntry[] = [
+            { id: 'clip_a', kind: 'node', refId: 'stn_a', phase: 'enter', showAnimation: true },
+            { id: 'key_a', kind: 'keyframe', refId: 'stn_a', x: 50, y: 60 },
+            { id: 'key_b', kind: 'keyframe', refId: 'stn_a', x: 80, y: 90 },
+        ];
+        const store = renderPage(track);
+        fireEvent.click(screen.getByRole('button', { name: 'key_a' }));
+        expect(screen.queryByTestId('timeline-editor')).toBeNull();
+        expect(screen.getByRole('region', { name: 'header.timelinePage.keyframeEditor.title' })).toBeTruthy();
+        expect(screen.getByTestId('timeline-preview').getAttribute('data-editable-keyframe')).toBe('key_a');
+
+        fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'First keyframe' } });
+        await waitFor(() =>
+            expect(
+                (store.getState().project.active!.revision.timeline.track[1] as TimelineKeyframeEntry).station
+            ).toBeDefined()
+        );
+        const first = store.getState().project.active!.revision.timeline.track[1] as TimelineKeyframeEntry;
+        expect(first).toMatchObject({
+            x: 50,
+            y: 60,
+            station: { type, attrs: { names: ['First keyframe', 'Original'] } },
+        });
+        expect(projectContext.current.graph.getNodeAttribute('stn_a', type)).toEqual(baseAttrs);
+        expect(
+            (store.getState().project.active!.revision.timeline.track[2] as TimelineKeyframeEntry).station
+        ).toBeUndefined();
+
+        fireEvent.click(screen.getByRole('button', { name: 'key_b' }));
+        fireEvent.change(screen.getByRole('combobox', { name: 'panel.details.info.stationType' }), {
+            target: { value: StationType.GzmtrBasic },
+        });
+        fireEvent.change(screen.getAllByRole('textbox')[0], { target: { value: 'Second keyframe' } });
+        await waitFor(() =>
+            expect(
+                (store.getState().project.active!.revision.timeline.track[2] as TimelineKeyframeEntry).station?.attrs
+                    .names[0]
+            ).toBe('Second keyframe')
+        );
+        const updated = store.getState().project.active!.revision.timeline;
+        expect((updated.track[1] as TimelineKeyframeEntry).station).toEqual(first.station);
+        expect((updated.track[2] as TimelineKeyframeEntry).station).toMatchObject({
+            type: StationType.GzmtrBasic,
+            attrs: { names: ['Second keyframe', 'Original'] },
+        });
+        expect(screen.getByTestId('timeline-preview').getAttribute('data-editable-keyframe')).toBe('key_b');
+
+        act(() => store.dispatch(undo()));
+        expect(
+            (store.getState().project.active!.revision.timeline.track[2] as TimelineKeyframeEntry).station?.attrs
+                .names[0]
+        ).toBe('First keyframe');
+        fireEvent.click(screen.getByRole('button', { name: 'header.timelinePage.keyframeEditor.done' }));
+        expect(screen.getByTestId('timeline-editor')).toBeTruthy();
+        expect(screen.getByTestId('timeline-preview').hasAttribute('data-editable-keyframe')).toBe(false);
+    });
+
     it('toggles fixed resources with one click, stages the full-map preview and saves once on Done', () => {
         projectContext.current.graph.addNode('stn_a', { x: 0, y: 0 } as NodeAttributes);
         projectContext.current.graph.addNode('stn_b', { x: 100, y: 0 } as NodeAttributes);

@@ -11,6 +11,8 @@ import {
     TimelineDocument,
     TimelineEntry,
     TimelineLabelEntry,
+    TimelineKeyframeStation,
+    TimelineKeyframeEntry,
 } from '../../constants/timeline';
 import {
     getTimelineOverlayModules,
@@ -42,6 +44,7 @@ import { createVideoFrameWriter, NativeVideoEncodingError, VideoEncodingOptions 
 import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoFrameScene, VIDEO_FRAME_BASE_VARIANT } from './video-frame-scene';
+import { createVideoGraphBounds } from './video-graph-bounds';
 import { renderVideoSVGToCanvas } from './video-export-rasterizer';
 import { throwIfVideoExportAborted } from './video-export-control';
 import type { VideoExportDestinationFactory, VideoExportResult } from './video-export-destination';
@@ -473,8 +476,10 @@ const buildTimelineSequence = (
     return { steps, nodes, edges };
 };
 
-export const getOverviewZoom = (graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>): number => {
-    const bounds = calculateCanvasSize(graph);
+export const getOverviewZoom = (
+    graph: MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>,
+    bounds = calculateCanvasSize(graph)
+): number => {
     const graphWidth = Math.max(bounds.xMax - bounds.xMin, 1);
     const graphHeight = Math.max(bounds.yMax - bounds.yMin, 1);
     const fitWidthZoom = (CameraViewportWidth / (graphWidth * 1.12)) * 100;
@@ -893,7 +898,22 @@ const prepareVideoRenderer = async (
     exportRuntime?: VideoExportRuntime,
     background = '#fff'
 ) => {
-    languages = getVideoResourceLanguages(getNodes(graph), languages);
+    const keyframeStations: RenderElement[] = timeline.track.flatMap(entry =>
+        entry.kind === 'keyframe' && entry.station && graph.hasNode(entry.refId)
+            ? [
+                  {
+                      id: entry.refId,
+                      type: 'station' as const,
+                      station: {
+                          ...graph.getNodeAttributes(entry.refId),
+                          type: entry.station.type,
+                          [entry.station.type]: entry.station.attrs,
+                      },
+                  },
+              ]
+            : []
+    );
+    languages = getVideoResourceLanguages([...getNodes(graph), ...keyframeStations], languages);
     const { fps, speedMultiplier, resolution, autoChangeStationType, isSystemFontsOnly, hideWatermark } = {
         ...options,
         ...timeline.settings,
@@ -955,9 +975,6 @@ const prepareVideoRenderer = async (
         throw new Error('No timeline steps to animate');
     }
 
-    const fitToElementsZoom = getOverviewZoom(graph);
-    const currentZoom = fitToElementsZoom * (fixedOnly ? 1 : cameraZoom);
-    const fullscreenZoom = fitToElementsZoom;
     const playbackSegments: PlaybackSegment[] = [];
     let previousEdgeForPause: LineId | undefined;
     sequence.steps.forEach(step => {
@@ -989,6 +1006,13 @@ const prepareVideoRenderer = async (
         imageAssets,
         exportRuntime !== undefined
     );
+    // Measure the full prepared map once; the editor may be replaced by a keyframe panel,
+    // and the mounted preview may show only a subset or an already moved station.
+    const graphBounds = createVideoGraphBounds(graph, geometry);
+    const overviewZoomFor = (frameGraph: typeof graph) => getOverviewZoom(frameGraph, graphBounds(frameGraph));
+    const fitToElementsZoom = overviewZoomFor(graph);
+    const currentZoom = fitToElementsZoom * (fixedOnly ? 1 : cameraZoom);
+    const fullscreenZoom = fitToElementsZoom;
     const multiplier = Number.isFinite(speedMultiplier)
         ? Math.max(videoExportSpeedRange.min, Math.min(videoExportSpeedRange.max, speedMultiplier))
         : videoExportSpeedRange.default;
@@ -1071,10 +1095,22 @@ const prepareVideoRenderer = async (
         let focus: CameraFocus = { kind: 'none' };
         let nextZoom = currentZoom;
         let frameGraph = graph;
+        let stationOverrides = new Map<StnId, TimelineKeyframeStation>();
+        let nodeBlur = new Map<StnId, number>();
+        let stationTransitions = new Map<StnId, { from?: TimelineKeyframeStation; to: TimelineKeyframeStation }>();
 
         if (authoredPlayback) {
             const state = authoredPlayback.frameAt(Math.min(frame / fps, animationDuration));
-            ({ visibleNodes, visibleEdges, nodeProgress, edgeProgress, edgeDirections } = state);
+            ({
+                visibleNodes,
+                visibleEdges,
+                nodeProgress,
+                edgeProgress,
+                edgeDirections,
+                stationOverrides,
+                stationTransitions,
+            } = state);
+            nodeBlur = state.stationBlur;
             textProgress = nodeProgress;
             focus = state.focus;
             if (
@@ -1088,7 +1124,7 @@ const prepareVideoRenderer = async (
             }
             if (frame >= animationFrames) {
                 focus = { kind: 'none' };
-                const finalFullscreenZoom = getOverviewZoom(frameGraph);
+                const finalFullscreenZoom = overviewZoomFor(frameGraph);
                 nextZoom = interpolateCameraZoom(
                     currentZoom,
                     finalFullscreenZoom,
@@ -1212,7 +1248,7 @@ const prepareVideoRenderer = async (
             edgeProgress.set(id, 1);
             edgeDirections.set(id, false);
         }
-        if (cameraZoom === 1 || fixedOnly) nextZoom = getOverviewZoom(frameGraph);
+        if (cameraZoom === 1 || fixedOnly) nextZoom = overviewZoomFor(frameGraph);
         return {
             frameGraph,
             visibleNodes,
@@ -1223,6 +1259,9 @@ const prepareVideoRenderer = async (
             edgeDirections,
             focus,
             nextZoom,
+            stationOverrides,
+            nodeBlur,
+            stationTransitions,
         };
     };
 
@@ -1256,13 +1295,13 @@ const prepareVideoRenderer = async (
         if (changed) cameraLines = undefined;
     };
     updateCameraGraph(animationDuration);
-    const finalBounds = calculateCanvasSize(cameraGraph);
+    const finalBounds = graphBounds(cameraGraph);
     const overviewCenter = {
         x: (finalBounds.xMin + finalBounds.xMax) / 2,
         y: (finalBounds.yMin + finalBounds.yMax) / 2,
     };
-    const finalFullscreenZoom = getOverviewZoom(cameraGraph);
-    const baseBounds = calculateCanvasSize(graph);
+    const finalFullscreenZoom = overviewZoomFor(cameraGraph);
+    const baseBounds = graphBounds(graph);
     const baseCenter = { x: (baseBounds.xMin + baseBounds.xMax) / 2, y: (baseBounds.yMin + baseBounds.yMax) / 2 };
     const minimapExtents = { ...baseBounds };
     graph.forEachNode((_id, attrs) => {
@@ -1396,7 +1435,7 @@ const prepareVideoRenderer = async (
             };
         }
         if (!movingNodes.size) return baseCenter;
-        const bounds = calculateCanvasSize(cameraGraph);
+        const bounds = graphBounds(cameraGraph);
         return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
     };
     const prepareCameraCenters = (frame: number) => {
@@ -1417,7 +1456,7 @@ const prepareVideoRenderer = async (
         if (frame === totalFrames - 1) return overviewCenter;
         if (cameraZoom === 1 || fixedOnly) {
             const frameGraph = frameAt(frame).frameGraph;
-            const bounds = frameGraph === graph ? baseBounds : calculateCanvasSize(frameGraph);
+            const bounds = frameGraph === graph ? baseBounds : graphBounds(frameGraph);
             return { x: (bounds.xMin + bounds.xMax) / 2, y: (bounds.yMin + bounds.yMax) / 2 };
         }
         const position = (frame * VideoTimelineTimingFps) / fps;
@@ -1527,11 +1566,25 @@ const prepareVideoRenderer = async (
         stations: Map<StnId, { key: string; attrs: NodeAttributes }>;
     };
     const appearances = new Map<string, Appearance>();
-    const stationAppearanceAt = (visibleEdges: Set<LineId>): Appearance => {
-        const key = autoChangeStationType ? [...visibleEdges].join('|') : '';
+    const stationAppearanceAt = (
+        visibleEdges: Set<LineId>,
+        overrides: ReadonlyMap<StnId, TimelineKeyframeStation>
+    ): Appearance => {
+        const key = JSON.stringify([autoChangeStationType ? [...visibleEdges] : [], [...overrides]]);
         let appearance = appearances.get(key);
         if (appearance) return appearance;
-        const analysis = autoChangeStationType ? createFrameStationGraph(graph, visibleEdges) : graph;
+        const analysis = autoChangeStationType
+            ? createFrameStationGraph(graph, visibleEdges)
+            : overrides.size
+              ? graph.copy()
+              : graph;
+        // Authored station snapshots take precedence over automatic interchange inference.
+        for (const [id, station] of overrides)
+            if (analysis.hasNode(id))
+                analysis.mergeNodeAttributes(id, {
+                    type: station.type,
+                    [station.type]: structuredClone(station.attrs),
+                });
         appearance = { graph: analysis, stations: new Map() };
         analysis.forEachNode((id, attrs) => {
             const stationId = id as StnId;
@@ -1632,8 +1685,16 @@ const prepareVideoRenderer = async (
             } else {
                 const cacheKey = id + key;
                 const templates = prepared.get(cacheKey)!;
-                for (const [groupId, template] of templates)
-                    if (scene.getGroup(id)) scene.replaceGroup(groupId, key, template);
+                for (const suffix of ['', '.pre', '.post']) {
+                    const groupId = id + suffix;
+                    const template = templates.get(groupId);
+                    if (template) scene.replaceGroup(groupId, key, template);
+                    else if (scene.getGroup(groupId)) {
+                        const empty = document.createElementNS(geometry.namespaceURI, 'g') as SVGGElement;
+                        empty.id = groupId;
+                        scene.replaceGroup(groupId, key, empty);
+                    }
+                }
             }
             currentStationKeys.set(id, key);
         }
@@ -1707,6 +1768,7 @@ const prepareVideoRenderer = async (
     let overlay: SVGGElement | undefined;
     let annotationKey: string | undefined;
     let lastFrame = -1;
+    let lastKeyframeOverride: string | undefined;
     let layoutRevision = resourceLayout.revision;
     const refreshFontLayout = async () => {
         if (layoutRevision === resourceLayout.revision) return;
@@ -1751,23 +1813,48 @@ const prepareVideoRenderer = async (
         annotationKey = undefined;
         lastFrame = -1;
     };
-    const renderPreviewFrame = async (time: number, request: { force?: boolean } = {}): Promise<SVGSVGElement> => {
+    const renderPreviewFrame = async (
+        time: number,
+        request: { force?: boolean; keyframeOverride?: TimelineKeyframeEntry } = {}
+    ): Promise<SVGSVGElement> => {
         if (disposed) throw new DOMException('Video renderer disposed', 'AbortError');
         await refreshFontLayout();
         const frame = Math.max(
             0,
             Math.min(totalFrames - 1, Math.floor((Number.isFinite(time) ? time : 0) * fps + 1e-6))
         );
-        if (lastFrame === frame && !request.force) return geometry;
+        const overrideKey = request.keyframeOverride ? JSON.stringify(request.keyframeOverride) : undefined;
+        if (lastFrame === frame && lastKeyframeOverride === overrideKey && !request.force) return geometry;
         if (request.force) scene.invalidate();
-        const state = frameAt(frame);
-        const appearance = stationAppearanceAt(state.visibleEdges);
+        const playbackState = frameAt(frame);
+        const state = { ...playbackState, nodeBlur: new Map(playbackState.nodeBlur) };
+        // A first manual snapshot may match the automatic appearance even when it differs
+        // from the RMP source. Compare the actual inferred type before adding a blur.
+        if ([...state.stationTransitions.values()].some(transition => !transition.from)) {
+            const automatic = stationAppearanceAt(state.visibleEdges, new Map());
+            for (const [id, transition] of state.stationTransitions) {
+                if (transition.from) continue;
+                const previousKey = automatic.stations.get(id)?.key ?? baseStationKeys.get(id);
+                if (previousKey === JSON.stringify([transition.to.type, transition.to.attrs]))
+                    state.nodeBlur.delete(id);
+            }
+        }
+        const editing = request.keyframeOverride;
+        if (editing && graph.hasNode(editing.refId)) {
+            state.frameGraph = state.frameGraph.copy();
+            state.frameGraph.mergeNodeAttributes(editing.refId, { x: editing.x, y: editing.y });
+            state.stationOverrides = new Map(state.stationOverrides);
+            if (editing.station && isStationNodeId(editing.refId))
+                state.stationOverrides.set(editing.refId, editing.station);
+            state.nodeBlur.delete(editing.refId as StnId);
+        }
+        const appearance = stationAppearanceAt(state.visibleEdges, state.stationOverrides);
         updateGeometry(state.frameGraph);
         await updateStationAppearance(appearance);
         updateFills(state.frameGraph, state.visibleEdges);
         const nodeTransforms = new Map<NodeId, string>();
         for (const id of state.visibleNodes) {
-            if (movingNodes.has(id)) {
+            if (movingNodes.has(id) || editing?.refId === id) {
                 const attrs = state.frameGraph.getNodeAttributes(id);
                 nodeTransforms.set(id, `translate(${attrs.x}, ${attrs.y})`);
             }
@@ -1856,6 +1943,7 @@ const prepareVideoRenderer = async (
         } else
             overlay?.setAttribute('transform', `translate(${viewBox.x}, ${viewBox.y}) scale(${viewBox.width / 1280})`);
         lastFrame = frame;
+        lastKeyframeOverride = overrideKey;
         return geometry;
     };
     const renderFrame = async (time: number) => {
@@ -1867,7 +1955,7 @@ const prepareVideoRenderer = async (
     let resourceWarmup: number | undefined;
     let resourceWarmupRunning = false;
     const warmFrames = new Set<number>();
-    if (autoChangeStationType) {
+    if (autoChangeStationType || keyframeStations.length) {
         for (const time of [0, ...cursorTimes, ...cumulativeWeights, animationDuration]) {
             const frame = Math.floor(time * fps);
             for (const delta of [-1, 0, 1]) warmFrames.add(Math.max(0, Math.min(totalFrames - 1, frame + delta)));
@@ -1888,7 +1976,8 @@ const prepareVideoRenderer = async (
             if (disposed || !remainingWarmFrames.length) return;
             resourceWarmupRunning = true;
             const frame = remainingWarmFrames.shift()!;
-            void prepareStationAppearance(stationAppearanceAt(frameAt(frame).visibleEdges))
+            const state = frameAt(frame);
+            void prepareStationAppearance(stationAppearanceAt(state.visibleEdges, state.stationOverrides))
                 .catch(() => {
                     // The foreground request retries and reports a resource failure with its context.
                 })
@@ -1939,7 +2028,10 @@ export interface VideoPreviewRenderer {
     duration: number;
     cursorTimes: number[];
     renderFrame: (time: number) => Promise<SVGSVGElement>;
-    renderPreviewFrame: (time: number, options?: { force?: boolean }) => Promise<SVGSVGElement>;
+    renderPreviewFrame: (
+        time: number,
+        options?: { force?: boolean; keyframeOverride?: TimelineKeyframeEntry }
+    ) => Promise<SVGSVGElement>;
     setLabelTrack: (labels: readonly TimelineLabelEntry[]) => void;
     setOverlayModules: (modules: readonly TimelineOverlayModule[]) => void;
     setOverlayEditing: (editing: boolean) => void;
