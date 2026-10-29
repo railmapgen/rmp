@@ -86,12 +86,29 @@ export interface VideoExportOptions extends VideoEncodingOptions {
     hideWatermark: boolean;
 }
 
+/** Apply the output capabilities included with the active Export subscription. */
+export const normalizeVideoExportOptions = <T extends Pick<VideoExportOptions, 'resolution' | 'fps' | 'hideWatermark'>>(
+    options: T,
+    hasExportSubscription: boolean
+): T => {
+    if (hasExportSubscription) return options;
+    return {
+        ...options,
+        resolution: options.resolution === '2k' || options.resolution === '4k' ? '1080p' : options.resolution,
+        fps: Math.min(options.fps, 30),
+        hideWatermark: false,
+    };
+};
+
 export interface VideoExportEnvironment {
     mapEnabled: boolean;
     mapStyle: MapStyle;
     svgViewBoxMin: { x: number; y: number };
     svgViewBoxZoom: number;
+    /** Cloud access controls which line paths and styles can be rendered. */
     isSubscriber?: boolean;
+    /** Export access unlocks advanced output options and the top-right overlay region. */
+    hasExportSubscription?: boolean;
     getAudio?: (id: string) => Promise<Blob | undefined>;
     getImage?: (id: string) => Promise<string | undefined>;
 }
@@ -772,14 +789,15 @@ export const exportVideo = async (
     runtime: VideoExportRuntime = {}
 ): Promise<VideoExportResult> => {
     throwIfVideoExportAborted(runtime.signal);
-    if (!environment.isSubscriber && hasSubscriberOnlyTimelineOverlays(timeline))
+    if (!environment.hasExportSubscription && hasSubscriberOnlyTimelineOverlays(timeline))
         throw new Error(i18n.t('header.timelinePage.overlayEditor.subscriptionExport'));
+    const exportOptions = normalizeVideoExportOptions(options, !!environment.hasExportSubscription);
     const { mapEnabled, mapStyle, svgViewBoxMin, svgViewBoxZoom } = environment;
     const source = createVideoExportCanvas(
         mapEnabled,
         mapStyle,
         { ...svgViewBoxMin, zoom: svgViewBoxZoom },
-        getVideoExportDimensions(options.resolution),
+        getVideoExportDimensions(exportOptions.resolution),
         false
     );
     const abortSource = () => source.dispose();
@@ -797,7 +815,7 @@ export const exportVideo = async (
                 graph,
                 timeline,
                 languages,
-                options,
+                exportOptions,
                 bgColor,
                 source,
                 onProgress,
@@ -815,7 +833,7 @@ export const exportVideo = async (
                 graph,
                 timeline,
                 languages,
-                options,
+                exportOptions,
                 bgColor,
                 source,
                 onProgress,

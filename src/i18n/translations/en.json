@@ -1069,8 +1069,8 @@
                 "addToRegion": "Add to {{region}}",
                 "closeCatalog": "Close module catalog",
                 "addModule": "Add module",
-                "subscriberLocked": "This corner requires a subscription. Existing modules can be moved to a free corner.",
-                "subscriptionExport": "The top-right corner requires a subscription. Move its modules to another corner or restore your subscription before exporting.",
+                "subscriberLocked": "This corner requires a $t(RMP_EXPORT) subscription. Existing modules can be moved to a free corner.",
+                "subscriptionExport": "The top-right corner requires a $t(RMP_EXPORT) subscription. Move its modules to another corner or subscribe before exporting.",
                 "region": "Position",
                 "moveUp": "Move up",
                 "moveDown": "Move down",
@@ -1206,7 +1206,7 @@
                 "mp4Transparency": "MP4 does not support transparent backgrounds. The current interface background will be used.",
                 "error": "Video export failed. Please try again, or lower the resolution or frame rate.",
                 "noNodes": "Cannot export video: No nodes in the graph.",
-                "unavailableLines": "Some lines cannot be displayed in the current map or normal mode. Video export is unavailable until they are fixed."
+                "unavailableLines": "Some line combinations cannot be displayed in the current map or normal mode. Adjust these combinations before exporting."
             },
             "2rmg": {
                 "title": "Export to RMG project",

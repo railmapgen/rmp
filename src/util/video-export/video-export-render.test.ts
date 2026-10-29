@@ -67,6 +67,13 @@ const defaultOptions: VideoExportOptions = {
     quality: 95,
     hideWatermark: true,
 };
+const exportEnvironment = {
+    mapEnabled: false,
+    mapStyle: DEFAULT_MAP_STYLE,
+    svgViewBoxMin: { x: 0, y: 0 },
+    svgViewBoxZoom: 100,
+    hasExportSubscription: true,
+};
 
 beforeEach(() => {
     vi.clearAllMocks();
@@ -197,6 +204,37 @@ const makeFillGraph = () => {
 };
 
 describe('video export frame timing', () => {
+    it.each([false, true])(
+        'enforces output capabilities in actual encoded frames when Export access is %s',
+        async hasExportSubscription => {
+            const encodedSizes: number[][] = [];
+            vi.mocked(createVideoFrameWriter).mockImplementationOnce(async canvas => {
+                encodedSizes.push([canvas.width, canvas.height]);
+                return { addFrame, complete, dispose: vi.fn() };
+            });
+            await exportVideo(
+                makeGraph(200),
+                createEmptyTimelineDocument(),
+                [],
+                { ...defaultOptions, resolution: '4k', fps: 60, hideWatermark: true },
+                'white',
+                undefined,
+                { ...exportEnvironment, isSubscriber: !hasExportSubscription, hasExportSubscription }
+            );
+
+            const expectedWidth = hasExportSubscription ? 3840 : 1920;
+            const expectedHeight = hasExportSubscription ? 2160 : 1080;
+            const expectedFps = hasExportSubscription ? 60 : 30;
+            expect(encodedSizes).toEqual([[expectedWidth, expectedHeight]]);
+            expect(vi.mocked(createVideoFrameWriter).mock.calls[0][1].fps).toBe(expectedFps);
+            const frames = renderedSVGs.slice(1);
+            expect(frames).toHaveLength(3 * expectedFps + 1);
+            expect(frames.every(frame => frame.getAttribute('width') === String(expectedWidth))).toBe(true);
+            expect(frames.every(frame => frame.getAttribute('height') === String(expectedHeight))).toBe(true);
+            expect(frames.every(frame => !!frame.getElementById('rmp_info') === !hasExportSubscription)).toBe(true);
+        }
+    );
+
     it('burns the fixed watermark into every exported frame', async () => {
         await exportVideo(
             makeGraph(200),
@@ -304,6 +342,7 @@ const edgeEntry: TimelineEntry = {
 const geographicEnvironment = {
     mapEnabled: true,
     isSubscriber: true,
+    hasExportSubscription: true,
     mapStyle: DEFAULT_MAP_STYLE,
     svgViewBoxMin: { x: 0, y: 0 },
     svgViewBoxZoom: 100,
@@ -674,10 +713,24 @@ describe('geographic timeline overlays and frame coverage', () => {
         timeline.overlayModules = [createTimelineOverlayModule('minimap', 'top-right', 'pro')];
         const createSource = vi.spyOn(videoExportCanvas, 'createVideoExportCanvas');
         await expect(exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white')).rejects.toThrow();
+        await expect(
+            exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white', undefined, {
+                ...exportEnvironment,
+                isSubscriber: true,
+                hasExportSubscription: false,
+            })
+        ).rejects.toThrow();
         expect(createSource).not.toHaveBeenCalled();
         const renderer = await createVideoPreviewRenderer(makeGraph(200), timeline, [], defaultOptions);
         expect((await renderer.renderFrame(0.5)).querySelector('[data-overlay-region="top-right"]')).not.toBeNull();
         renderer.dispose();
+    });
+
+    it('unlocks top-right overlays with Export access independently of Cloud access', async () => {
+        const timeline = authoredTimeline(nodeEntry, edgeEntry);
+        timeline.overlayModules = [createTimelineOverlayModule('minimap', 'top-right', 'pro')];
+        await exportVideo(makeGraph(200), timeline, [], defaultOptions, 'white', undefined, exportEnvironment);
+        expect(renderedSVGs.at(-1)?.querySelector('[data-overlay-region="top-right"]')).not.toBeNull();
     });
 
     it('hot-updates module layouts without rebuilding geometry and reserves invisible edit placeholders', async () => {
@@ -984,7 +1037,15 @@ describe('authored video frames', () => {
             const entries: TimelineEntry[] = [nodeEntry, edgeEntry, { ...nodeEntry, id: 'enter_b', refId: 'stn_b' }];
             if (keyframes) entries.push({ id: 'marker', kind: 'keyframe', refId: 'stn_a', x: 0, y: 0 });
             entries.push({ ...edgeEntry, id: 'enter_bc', refId: 'line_bc' });
-            await exportVideo(graph, authoredTimeline(...entries), [], { ...defaultOptions, fps }, 'white');
+            await exportVideo(
+                graph,
+                authoredTimeline(...entries),
+                [],
+                { ...defaultOptions, fps },
+                'white',
+                undefined,
+                exportEnvironment
+            );
             expect(addFrame).toHaveBeenCalledTimes(5 * fps + 1);
             const frames = renderedSVGs.slice(1);
             const centerX = (frame: number) => {
@@ -1081,9 +1142,22 @@ describe('authored video frames', () => {
             .mockResolvedValueOnce({ addFrame, complete, dispose: secondDispose });
         vi.spyOn(console, 'warn').mockImplementation(() => undefined);
         const onProgress = vi.fn();
-        await exportVideo(makeGraph(200), createEmptyTimelineDocument(), [], defaultOptions, 'white', onProgress);
+        await exportVideo(
+            makeGraph(200),
+            createEmptyTimelineDocument(),
+            [],
+            { ...defaultOptions, fps: 60, resolution: '4k', hideWatermark: true },
+            'white',
+            onProgress
+        );
         const attempts = vi.mocked(createVideoFrameWriter).mock.calls;
         expect(attempts.map(call => call[2])).toEqual([false, true]);
+        attempts.forEach(([, options]) => expect(options).toMatchObject({ fps: 30, hideWatermark: false }));
+        expect(
+            renderedSVGs
+                .slice(1)
+                .every(frame => frame.getAttribute('width') === '1920' && frame.getElementById('rmp_info'))
+        ).toBe(true);
         expect(attempts[0][0]).not.toBe(attempts[1][0]);
         attempts.forEach(([canvas]) => expect([canvas.width, canvas.height]).toEqual([0, 0]));
         expect(firstDispose).toHaveBeenCalledOnce();
@@ -1475,7 +1549,15 @@ describe('shared real-time preview renderer', () => {
         if (cameraZoom === 1) {
             currentBox.forEach((value, index) => expect(value).toBeCloseTo(expectedFinal[index], 9));
         }
-        await exportVideo(graph, timeline, [], { ...defaultOptions, fps: 60, resolution: '1080p' }, 'white');
+        await exportVideo(
+            graph,
+            timeline,
+            [],
+            { ...defaultOptions, fps: 60, resolution: '1080p' },
+            'white',
+            undefined,
+            exportEnvironment
+        );
         // First SVG is measurement geometry; subsequent SVGs are actual exported frames.
         renderedSVGs[1 + 24]
             .getAttribute('viewBox')!
@@ -1750,7 +1832,7 @@ describe('shared real-time preview renderer', () => {
                 endTime: 2.5,
             },
         ];
-        await exportVideo(graph, timeline, [], defaultOptions, 'white');
+        await exportVideo(graph, timeline, [], defaultOptions, 'white', undefined, exportEnvironment);
         const exported = renderedSVGs.slice(1).map(rasterizedMarkup);
         vi.mocked(makeRenderReadySVGElement).mockClear();
         const renderer = await createVideoPreviewRenderer(graph, timeline, [], defaultOptions);

@@ -1,5 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
 import { MemoryRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -9,7 +9,8 @@ import { LinePathType, LineStyleType } from '../../constants/lines';
 import { createEmptyTimelineDocument } from '../../constants/timeline';
 import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../../map/map-style';
-import { setActiveSubscriptions } from '../../redux/account/account-slice';
+import i18n from '../../i18n/config';
+import { ActiveSubscriptions, setActiveSubscriptions } from '../../redux/account/account-slice';
 import { createTestLineGraph, render } from '../../test-utils';
 import { TimelineProjectProvider } from '../../timeline/timeline-project-context';
 import { TimelineProjectRecord } from '../../timeline/timeline-project';
@@ -41,7 +42,9 @@ beforeEach(() => {
 
 const renderDefaultModal = (
     graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>(),
-    mapEnabled = false
+    mapEnabled = false,
+    subscriptions: ActiveSubscriptions = { RMP_CLOUD: false, RMP_EXPORT: false },
+    videoOptions?: Parameters<typeof setVideoOptions>[0]
 ) => {
     const record: TimelineProjectRecord = {
         id: 'video-export-result-test',
@@ -61,6 +64,8 @@ const renderDefaultModal = (
     };
     const store = createTimelineStore();
     store.dispatch(openProject(record));
+    store.dispatch(setActiveSubscriptions(subscriptions));
+    if (videoOptions) store.dispatch(setVideoOptions(videoOptions));
     const view = render(
         <ChakraProvider>
             <Provider store={store}>
@@ -112,6 +117,7 @@ describe('VideoExportModal Timeline settings', () => {
         };
         const store = createTimelineStore();
         store.dispatch(openProject(record));
+        store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true }));
         store.dispatch(
             setVideoOptions({
                 format: 'webm',
@@ -252,16 +258,17 @@ describe('VideoExportModal subscription policy', () => {
         const exportTrigger = document.getElementById('video_export_button')!.parentElement!;
         fireEvent.pointerOver(exportTrigger);
         expect(await screen.findByRole('tooltip')).toHaveTextContent(
-            'Some lines cannot be displayed in the current map or normal mode.'
+            'Some line combinations cannot be displayed in the current map or normal mode.'
         );
+        expect(screen.getByRole('tooltip')).toHaveTextContent('Proceed Signal');
 
-        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
         expect(screen.getByRole('tooltip')).toHaveTextContent(
-            'Some lines cannot be displayed in the current map or normal mode.'
+            'Some line combinations cannot be displayed in the current map or normal mode.'
         );
         expect(document.getElementById('video_export_button')).toBeDisabled();
 
-        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
         await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument());
         fireEvent.pointerLeave(exportTrigger);
         await act(async () => {
@@ -288,7 +295,7 @@ describe('VideoExportModal subscription policy', () => {
     it.each([
         { type: LinePathType.Bezier, style: LineStyleType.GzmtrVirtualInt, mapEnabled: false },
         { type: LinePathType.Diagonal, style: LineStyleType.SingleColor, mapEnabled: true },
-    ])('requires Export access for $type / $style when mapEnabled=$mapEnabled', async ({ type, style, mapEnabled }) => {
+    ])('requires Cloud access for $type / $style when mapEnabled=$mapEnabled', async ({ type, style, mapEnabled }) => {
         const graph = createTestLineGraph([['A', 'B']]);
         graph.replaceEdgeAttributes('line_0', {
             type,
@@ -301,37 +308,138 @@ describe('VideoExportModal subscription policy', () => {
             parallelIndex: -1,
         });
         const { store } = renderDefaultModal(graph, mapEnabled);
-        const warning =
-            'Some lines cannot be displayed in the current map or normal mode. Video export is unavailable until they are fixed.';
+        const warning = i18n.t('header.download.videoExport.unavailableLines');
         const exportButton = document.getElementById('video_export_button')!;
 
         expect(screen.getByText(warning)).toBeInTheDocument();
-        expect(exportButton).toBeDisabled();
-        fireEvent.click(exportButton);
-        expect(exportVideo).not.toHaveBeenCalled();
-
-        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
-
-        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(
+            within(screen.getByText(warning).closest('[role="alert"]')!).getByText('Proceed Signal')
+        ).toBeInTheDocument();
         expect(exportButton).toBeDisabled();
         fireEvent.click(exportButton);
         expect(exportVideo).not.toHaveBeenCalled();
 
         act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
 
+        expect(screen.getByText(warning)).toBeInTheDocument();
+        expect(exportButton).toBeDisabled();
+        fireEvent.click(exportButton);
+        expect(exportVideo).not.toHaveBeenCalled();
+
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+
         expect(screen.queryByText(warning)).not.toBeInTheDocument();
         expect(exportButton).toBeEnabled();
         fireEvent.click(exportButton);
         await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
-        expect(vi.mocked(exportVideo).mock.calls[0][6]).toMatchObject({ isSubscriber: true, mapEnabled });
+        expect(vi.mocked(exportVideo).mock.calls[0][6]).toMatchObject({
+            isSubscriber: true,
+            hasExportSubscription: false,
+            mapEnabled,
+        });
         await waitFor(() => expect(downloadVideoExportResult).toHaveBeenCalledOnce());
 
-        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
 
         expect(screen.getByText(warning)).toBeInTheDocument();
         expect(exportButton).toBeDisabled();
         fireEvent.click(exportButton);
         expect(exportVideo).toHaveBeenCalledOnce();
+    });
+});
+
+describe('VideoExportModal output limits', () => {
+    const fpsSelect = () => screen.getByRole('combobox', { name: 'Frames per second (FPS)' });
+    const resolutionSelect = () => screen.getByRole('combobox', { name: 'Video resolution' });
+    const shareCheckbox = () => document.getElementById('share_info_video')!;
+    const highQualityOptions = {
+        format: 'webm' as const,
+        resolution: '4k' as const,
+        fps: 60,
+        hideWatermark: true,
+        isTransparent: true,
+        isSystemFontsOnly: true,
+    };
+
+    it.each([
+        { RMP_CLOUD: false, RMP_EXPORT: false },
+        { RMP_CLOUD: true, RMP_EXPORT: false },
+        { RMP_CLOUD: false, RMP_EXPORT: true },
+        { RMP_CLOUD: true, RMP_EXPORT: true },
+    ])('applies output access independently with %j', async subscriptions => {
+        const { store } = renderDefaultModal(undefined, false, subscriptions, highQualityOptions);
+        const hasExportSubscription = subscriptions.RMP_EXPORT;
+        const expectedOptions = hasExportSubscription
+            ? highQualityOptions
+            : { ...highQualityOptions, resolution: '1080p', fps: 30, hideWatermark: false };
+        expect(fpsSelect()).toHaveValue(String(expectedOptions.fps));
+        expect(resolutionSelect()).toHaveValue(expectedOptions.resolution);
+        expect(shareCheckbox()).toHaveProperty('checked', hasExportSubscription);
+        expect(shareCheckbox()).toHaveProperty('disabled', !hasExportSubscription);
+        expect(within(fpsSelect()).getByRole('option', { name: '60 FPS' })).toHaveProperty(
+            'disabled',
+            !hasExportSubscription
+        );
+        for (const name of ['2K (2560×1440)', '4K (3840×2160)']) {
+            expect(within(resolutionSelect()).getByRole('option', { name })).toHaveProperty(
+                'disabled',
+                !hasExportSubscription
+            );
+        }
+        expect(within(resolutionSelect()).getByRole('option', { name: '1080p (1920×1080)' })).toBeEnabled();
+        expect(screen.getAllByText('Stop and Proceed')).toHaveLength(3);
+        await waitFor(() => expect(store.getState().runtime.videoOptions).toEqual(expectedOptions));
+        fireEvent.click(document.getElementById('video_export_button')!);
+        await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());
+        expect(vi.mocked(exportVideo).mock.calls[0][3]).toMatchObject(expectedOptions);
+        expect(vi.mocked(exportVideo).mock.calls[0][6]).toMatchObject({
+            isSubscriber: subscriptions.RMP_CLOUD,
+            hasExportSubscription,
+        });
+    });
+
+    it('immediately downgrades current settings and lets a restored subscriber select them again', async () => {
+        const { store } = renderDefaultModal(
+            undefined,
+            false,
+            { RMP_CLOUD: true, RMP_EXPORT: true },
+            highQualityOptions
+        );
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
+        expect(fpsSelect()).toHaveValue('30');
+        expect(resolutionSelect()).toHaveValue('1080p');
+        expect(shareCheckbox()).not.toBeChecked();
+        expect(shareCheckbox()).toBeDisabled();
+        await waitFor(() =>
+            expect(store.getState().runtime.videoOptions).toMatchObject({
+                fps: 30,
+                resolution: '1080p',
+                hideWatermark: false,
+            })
+        );
+        fireEvent.change(fpsSelect(), { target: { value: '60' } });
+        fireEvent.change(resolutionSelect(), { target: { value: '4k' } });
+        expect(fpsSelect()).toHaveValue('30');
+        expect(resolutionSelect()).toHaveValue('1080p');
+        expect(shareCheckbox()).not.toBeChecked();
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: true })));
+        expect(fpsSelect()).toHaveValue('30');
+        expect(resolutionSelect()).toHaveValue('1080p');
+        fireEvent.change(fpsSelect(), { target: { value: '60' } });
+        fireEvent.change(resolutionSelect(), { target: { value: '4k' } });
+        fireEvent.click(shareCheckbox());
+        await waitFor(() => expect(store.getState().runtime.videoOptions).toEqual(highQualityOptions));
+    });
+
+    it.each(['720p', '1080p'] as const)('retains a permitted %s selection', async resolution => {
+        const { store } = renderDefaultModal(undefined, false, undefined, {
+            ...highQualityOptions,
+            resolution,
+            fps: 30,
+            hideWatermark: false,
+        });
+        expect(resolutionSelect()).toHaveValue(resolution);
+        await waitFor(() => expect(store.getState().runtime.videoOptions?.resolution).toBe(resolution));
     });
 });
 
