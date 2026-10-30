@@ -58,7 +58,7 @@ export const SearchPopover = () => {
         <Popover isOpen={isOpen} onOpen={() => setIsOpen(true)} onClose={() => setIsOpen(false)}>
             <PopoverTrigger>
                 <IconButton
-                    aria-label="zoom"
+                    aria-label={t('header.search')}
                     variant="ghost"
                     size="sm"
                     icon={<MdSearch />}

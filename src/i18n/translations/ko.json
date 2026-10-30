@@ -78,7 +78,8 @@
                 "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
                 "node": "노드",
                 "lineType": "선분 경로",
-                "lineStyle": "선분 스타일"
+                "lineStyle": "선분 스타일",
+                "linePath": "선 경로"
             },
             "nodes": {
                 "common": {
@@ -401,7 +402,8 @@
                     "scale": "역명 가로 크기 조절"
                 },
                 "mtr": {
-                    "displayName": "홍콩 MTR 역"
+                    "displayName": "홍콩 MTR 역",
+                    "rotate": "아이콘 회전"
                 },
                 "suzhouRTBasic": {
                     "displayName": "쑤저우 궤도교통 기본역",
@@ -1117,7 +1119,8 @@
                     "center": "가운데",
                     "right": "오른쪽"
                 }
-            }
+            },
+            "labelCaption": "자막: {{caption}}"
         },
         "mapToggle": {
             "show": "지리 지도 표시",
@@ -1515,5 +1518,19 @@
         "included": "이 기능은 현재 이용 중인 「{{subscription}}」 구독에 포함되어 있습니다.",
         "masterLimit": "마스터 노드는 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다.",
         "parallelLimit": "평행선은 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다."
-    }
+    },
+    "previous": "이전",
+    "Help": "도움말",
+    "Menu": "메뉴",
+    "open details panel": "세부 정보 패널 열기",
+    "Upload JSON file": "JSON 파일 업로드",
+    "Zoom out": "축소",
+    "Zoom in": "확대",
+    "Language": "언어",
+    "upload": "업로드",
+    "Missing from current graph": "현재 그래프에 없음",
+    "New": "새 기능",
+    "Unsupported configuration!": "지원하지 않는 설정입니다.",
+    "Zoom": "확대 비율",
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다."
 }

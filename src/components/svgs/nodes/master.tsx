@@ -354,7 +354,7 @@ const attrsComponent = (props: AttrsProps<MasterAttributes>) => {
                     </Flex>
                 </RmgLabel>
                 <Spacer />
-                <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label="upload" />
+                <IconButton icon={<MdUpload />} onClick={() => setOpenImport(true)} aria-label={t('upload')} />
             </Flex>
             <Button width="100%" leftIcon={<MdSettings />} onClick={() => setOpenManager(true)}>
                 {t('header.settings.procedures.masterManager.title')}

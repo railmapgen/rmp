@@ -580,7 +580,7 @@ function InterchangeCard(props: InterchangeCardProps) {
                             <IconButton
                                 size="sm"
                                 variant="ghost"
-                                aria-label={t('panel.details.stations.interchange.copy')}
+                                aria-label={t('copy')}
                                 onClick={() => {
                                     const info = structuredClone(interchangeList.slice(-1)[0]);
                                     info[4] = Math.max(...interchangeList.map(_ => _[4])) + 1;

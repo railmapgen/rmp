@@ -198,9 +198,9 @@ export default function TimelineClip({
                         noOfLines={1}
                         isTruncated
                         w="full"
-                        title="Missing from current graph"
+                        title={t('Missing from current graph')}
                     >
-                        Missing from current graph
+                        {t('Missing from current graph')}
                     </Text>
                 )}
             </VStack>
