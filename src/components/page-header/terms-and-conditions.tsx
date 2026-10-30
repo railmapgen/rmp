@@ -15,7 +15,7 @@ import { MdOpenInNew } from 'react-icons/md';
 
 const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }) => {
     const { isOpen, onClose } = props;
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} size="xl" scrollBehavior="inside">
@@ -56,9 +56,6 @@ const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }
                                 港铁公司 <Icon as={MdOpenInNew} />
                             </Link>
                             所设计。在产生的图像用作商业用途前，你应向相关公司取得适当之许可证或授权。
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.layout', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                         <ListItem>
                             The elements including shapes and lines on the image are drawn by{' '}
@@ -81,9 +78,6 @@ const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }
                                 Chito Wong <Icon as={MdOpenInNew} />
                             </Link>
                             基于上述公司设计标准或准则绘制。你可将其用于任何目的，但我们建议你于使用同时附以我们的名字以及本网站地址。
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.elements', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                         <ListItem>
                             Due to copyright, licensing and other legal restrictions, Rail Map Painter uses{' '}
@@ -100,18 +94,12 @@ const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }
                             </Link>
                             ，以及Vegur，以代替港铁样式标志牌所使用的地铁宋及Myriad
                             Pro。在产生之图像用作商业用途前，你应向字型生产厂商取得适当之许可证或授权。
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.fonts', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                         <ListItem>
                             The exported images in PNG or SVG format may be modified, published, or used for other
                             purposes except commercial use, under the conditions above.
                             <br />
                             输出的PNG或SVG图像可基于上述条款，在非商业使用时，用于修改、发行或其他用途。
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.images', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                         <ListItem>
                             All flag emojis shown on Windows platforms are designed by{' '}
@@ -139,9 +127,6 @@ const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }
                             >
                                 CC BY-SA 4.0 <Icon as={MdOpenInNew} />
                             </Link>
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.flags', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                         <ListItem>
                             We reserve the rights, without prior notice, to modify, add, or remove these terms. The
@@ -149,9 +134,6 @@ const TermsAndConditionsModal = (props: { isOpen: boolean; onClose: () => void }
                             version and the Chinese version, the English version shall prevail.
                             <br />
                             我们保留修改、新增或移除上述条款之权利，而无需另行通知。中文译本仅供参考，文义如与英文有歧异，概以英文本为准。
-                            {['ja', 'ko'].includes(i18n.resolvedLanguage ?? '') && (
-                                <p>{t('termsReference.changes', { app: 'Rail Map Painter' })}</p>
-                            )}
                         </ListItem>
                     </OrderedList>
                 </ModalBody>

@@ -1532,15 +1532,6 @@
     "Missing from current graph": "現在の図に存在しません",
     "New": "新機能",
     "Unsupported configuration!": "この設定には対応していません。",
-    "termsReference": {
-        "layout": "案内表示や路線図の要素の配置は、選択した様式に応じて Guangzhou Metro Group、MTR Corporation、Shanghai Shentong Metro Group が設計したものです。生成した画像を商用利用する際に許可や利用許諾が必要な場合は、事前に該当する会社から取得してください。",
-        "elements": "画像内の図形や線は、上記各社の設計基準に基づき Chito Wong と thekingofcity が描画したものです。どのような目的にも使用できますが、ソフトウェアの名称とリンクを併記することを推奨します。",
-        "fonts": "著作権、利用許諾などの法的制約により、{{app}} は MTR 様式の案内表示において、MTRSung と Myriad Pro の代わりに、それぞれ ButTaiwan の GenYoMin と Vegur を使用します。生成した画像を商用利用する前に、書体の提供元から適切な許可や利用許諾を取得してください。",
-        "images": "書き出した PNG または SVG 形式の画像は、上記の条件に従って、商用利用を除き、改変、公開、その他の目的に使用できます。",
-        "flags": "Windows 上に表示される国旗の絵文字は、オープンソースの絵文字・図標プロジェクト OpenMoji が設計したものです。利用許諾：CC BY-SA 4.0。",
-        "changes": "これらの条項を予告なく変更、追加、削除する権利を留保します。中国語訳は参考用であり、英語版と中国語版に相違がある場合は英語版が優先します。"
-    },
     "Zoom": "表示倍率",
-    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。",
-    "Rail Map Painter protocol... checked": "Rail Map Painter の初期確認が完了しました"
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。"
 }
