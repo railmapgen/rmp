@@ -21,6 +21,7 @@ import {
     TimelineOverlayRegion,
 } from '../../constants/timeline-overlays';
 import { moveTimelineOverlayModule } from '../../util/timeline';
+import SubscriptionBadge from '../subscription-badge';
 
 const prefix = 'header.timelinePage.overlayEditor';
 
@@ -28,7 +29,7 @@ interface TimelineOverlayPanelProps {
     modules: readonly TimelineOverlayModule[];
     selectedId?: string;
     addRegion?: TimelineOverlayRegion;
-    isSubscriber: boolean;
+    hasExportSubscription: boolean;
     mapEnabled: boolean;
     onChange: (modules: TimelineOverlayModule[]) => void;
     onSelect: (id: string | undefined) => void;
@@ -40,7 +41,7 @@ export default function TimelineOverlayPanel({
     modules,
     selectedId,
     addRegion,
-    isSubscriber,
+    hasExportSubscription,
     mapEnabled,
     onChange,
     onSelect,
@@ -51,7 +52,7 @@ export default function TimelineOverlayPanel({
     const background = useColorModeValue('white', 'gray.800');
     const muted = useColorModeValue('gray.600', 'gray.300');
     const selected = modules.find(module => module.id === selectedId);
-    const locked = selected?.region === 'top-right' && !isSubscriber;
+    const locked = selected?.region === 'top-right' && !hasExportSubscription;
     const definition = selected && TIMELINE_OVERLAY_REGISTRY[selected.type];
     const updateSettings = (key: string, value: unknown) => {
         if (!selected || locked) return;
@@ -101,7 +102,11 @@ export default function TimelineOverlayPanel({
             };
         }) ?? [];
     const add = (type: TimelineOverlayModule['type']) => {
-        if (!addRegion || (!isSubscriber && addRegion === 'top-right') || (type === 'line-length' && !mapEnabled))
+        if (
+            !addRegion ||
+            (!hasExportSubscription && addRegion === 'top-right') ||
+            (type === 'line-length' && !mapEnabled)
+        )
             return;
         const module = createTimelineOverlayModule(type, addRegion);
         const inserted = moveTimelineOverlayModule(
@@ -109,7 +114,7 @@ export default function TimelineOverlayPanel({
             module.id,
             addRegion,
             addRegion.startsWith('bottom') ? 0 : modules.filter(item => item.region === addRegion).length,
-            isSubscriber
+            hasExportSubscription
         );
         onChange(inserted);
         onCloseCatalog();
@@ -152,7 +157,9 @@ export default function TimelineOverlayPanel({
                                             width="full"
                                             justifyContent="flex-start"
                                             variant="outline"
-                                            isDisabled={unavailable || (addRegion === 'top-right' && !isSubscriber)}
+                                            isDisabled={
+                                                unavailable || (addRegion === 'top-right' && !hasExportSubscription)
+                                            }
                                             onClick={() => add(type as TimelineOverlayModule['type'])}
                                         >
                                             {t(item.labelKey)}
@@ -169,6 +176,7 @@ export default function TimelineOverlayPanel({
                             <HStack color={muted}>
                                 <MdLock />
                                 <Text fontSize="sm">{t(`${prefix}.subscriberLocked`)}</Text>
+                                <SubscriptionBadge subscription="RMP_EXPORT" />
                             </HStack>
                         )}
                         <Divider />

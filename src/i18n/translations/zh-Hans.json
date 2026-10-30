@@ -1068,8 +1068,8 @@
                 "addToRegion": "添加到{{region}}",
                 "closeCatalog": "关闭模块列表",
                 "addModule": "添加模块",
-                "subscriberLocked": "此区域仅订阅用户可编辑。已有模块可以移到免费区域。",
-                "subscriptionExport": "右上角区域需要订阅。请将其中的模块移到其他区域，或恢复订阅后导出。",
+                "subscriberLocked": "此区域需要订阅「$t(RMP_EXPORT)」才能编辑。已有模块可以移到免费区域。",
+                "subscriptionExport": "右上角区域需要订阅「$t(RMP_EXPORT)」。请将其中的模块移到其他区域，或订阅后导出。",
                 "region": "显示区域",
                 "moveUp": "上移",
                 "moveDown": "下移",
@@ -1205,7 +1205,7 @@
                 "mp4Transparency": "MP4 不支持透明背景，将使用当前界面背景色。",
                 "error": "视频导出失败，请重试或降低分辨率、帧率。",
                 "noNodes": "无法导出视频：图中没有节点。",
-                "unavailableLines": "当前地图或普通模式下有些线段无法显示。请修复这些线段后再导出视频。"
+                "unavailableLines": "当前地图或普通模式下有些线段组合无法显示。请调整这些组合后再导出视频。"
             },
             "2rmg": {
                 "title": "导出RMG项目",

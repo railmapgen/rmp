@@ -126,6 +126,7 @@ vi.mock('../timeline/timeline-preview', () => ({
         document,
         editableKeyframe,
         isSubscriber,
+        hasExportSubscription,
         previewOverlayModules,
         onPreviewOverlayModuleMove,
         onCancelOverlayModuleMove,
@@ -136,6 +137,7 @@ vi.mock('../timeline/timeline-preview', () => ({
         document: TimelineDocument;
         editableKeyframe?: TimelineKeyframeEntry;
         isSubscriber: boolean;
+        hasExportSubscription: boolean;
         previewOverlayModules?: TimelineOverlayModule[];
         onPreviewOverlayModuleMove: (id: string, region: TimelineOverlayRegion, index: number) => void;
         onCancelOverlayModuleMove: () => void;
@@ -159,6 +161,7 @@ vi.mock('../timeline/timeline-preview', () => ({
                 data-testid="timeline-preview"
                 data-editable-keyframe={editableKeyframe?.id}
                 data-subscriber={isSubscriber}
+                data-export-subscriber={hasExportSubscription}
             >
                 <span data-testid="module-preview-region">
                     {previewOverlayModules?.[0]?.region ?? document.overlayModules?.[0]?.region}
@@ -169,6 +172,12 @@ vi.mock('../timeline/timeline-preview', () => ({
                 <button onClick={onCancelOverlayModuleMove}>Cancel module drag</button>
                 <button onClick={() => onMoveOverlayModule(document.overlayModules![0].id, 'bottom-right', 0)}>
                     Drop module
+                </button>
+                <button onClick={() => onPreviewOverlayModuleMove(document.overlayModules![0].id, 'top-right', 0)}>
+                    Drag module into top right
+                </button>
+                <button onClick={() => onMoveOverlayModule(document.overlayModules![0].id, 'top-right', 0)}>
+                    Drop module into top right
                 </button>
             </div>
         );
@@ -297,7 +306,7 @@ describe('TimelinePage preview and export isolation', () => {
         expect(store.getState().project.past).toHaveLength(historyLength + 1);
     });
 
-    it('updates both the editor and video preview when Export access changes', () => {
+    it('updates both the editor and video preview when Cloud access changes', () => {
         const store = renderPage();
         const expectSubscriber = (subscriber: boolean) => {
             for (const pane of ['timeline-editor', 'timeline-preview']) {
@@ -307,11 +316,40 @@ describe('TimelinePage preview and export isolation', () => {
 
         expectSubscriber(false);
         act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: true, RMP_EXPORT: false })));
-        expectSubscriber(false);
-        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
         expectSubscriber(true);
+        act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
+        expectSubscriber(false);
         act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: false })));
         expectSubscriber(false);
+    });
+
+    it.each([
+        { RMP_CLOUD: false, RMP_EXPORT: false },
+        { RMP_CLOUD: true, RMP_EXPORT: false },
+        { RMP_CLOUD: false, RMP_EXPORT: true },
+        { RMP_CLOUD: true, RMP_EXPORT: true },
+    ])('keeps line and overlay access independent for %j', subscriptions => {
+        const store = renderPage();
+        act(() => store.dispatch(setActiveSubscriptions(subscriptions)));
+        for (const pane of ['timeline-editor', 'timeline-preview'])
+            expect(screen.getByTestId(pane).getAttribute('data-subscriber')).toBe(String(subscriptions.RMP_CLOUD));
+        expect(screen.getByTestId('timeline-preview').getAttribute('data-export-subscriber')).toBe(
+            String(subscriptions.RMP_EXPORT)
+        );
+
+        fireEvent.click(screen.getByRole('button', { name: 'Edit annotation layout' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Drag module into top right' }));
+        const region = subscriptions.RMP_EXPORT ? 'top-right' : 'top-left';
+        expect(screen.getByTestId('module-preview-region').textContent).toBe(region);
+        expect(store.getState().project.active!.revision.timeline.overlayModules?.[0].region).toBe('top-left');
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel module drag' }));
+        fireEvent.click(screen.getByRole('button', { name: 'Drop module into top right' }));
+        expect(store.getState().project.active!.revision.timeline.overlayModules?.[0].region).toBe(region);
+
+        fireEvent.click(screen.getByRole('button', { name: 'Choose fixed resources' }));
+        expect(screen.getByTestId('fixed-preview-canvas').getAttribute('data-subscriber')).toBe(
+            String(subscriptions.RMP_CLOUD)
+        );
     });
 
     it('keeps a fixed 720p/15 FPS preview without a watermark and ignores every export option', () => {

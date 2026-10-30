@@ -11,7 +11,7 @@ const date = createTimelineOverlayModule('date', 'top-left', 'date');
 const map = createTimelineOverlayModule('minimap', 'bottom-right', 'map');
 const modules = [date, map];
 
-const setup = (isSubscriber = false) => {
+const setup = (hasExportSubscription = false) => {
     const onMove = vi.fn();
     const onPreviewMove = vi.fn();
     const onCancelMove = vi.fn();
@@ -21,7 +21,7 @@ const setup = (isSubscriber = false) => {
                 modules={modules}
                 layout={getEmptyTimelineOverlayLayout(modules)}
                 editing
-                isSubscriber={isSubscriber}
+                hasExportSubscription={hasExportSubscription}
                 onMove={onMove}
                 onPreviewMove={onPreviewMove}
                 onCancelMove={onCancelMove}
@@ -73,5 +73,29 @@ describe('annotation drag preview', () => {
         expect(onPreviewMove).not.toHaveBeenCalled();
         expect(onMove).not.toHaveBeenCalled();
         expect(screen.getByRole('button', { name: 'Add to Top right' })).toBeDisabled();
+        expect(screen.getByText('Stop and Proceed')).toBeInTheDocument();
+    });
+
+    it('unlocks the top-right corner and accepts drops with Export access', () => {
+        const { handle, container, onMove, onPreviewMove } = setup(true);
+        expect(screen.getByRole('button', { name: 'Add to Top right' })).toBeEnabled();
+        expect(container.querySelector('[data-timeline-locked-glass]')).toBeNull();
+        expect(screen.queryByText('Stop and Proceed')).not.toBeInTheDocument();
+        fireEvent.pointerDown(handle, { button: 0, pointerId: 1, clientX: 80, clientY: 50 });
+        fireEvent.pointerMove(handle, { pointerId: 1, clientX: 1100, clientY: 100 });
+        expect(onPreviewMove).toHaveBeenLastCalledWith('date', 'top-right', 0);
+        fireEvent.pointerUp(handle, { pointerId: 1, clientX: 1100, clientY: 100 });
+        expect(onMove).toHaveBeenCalledExactlyOnceWith('date', 'top-right', 0);
+    });
+
+    it('identifies the Export subscription in the top-right lock with a working tooltip', async () => {
+        const { container } = setup();
+        const badge = screen.getByText('Stop and Proceed');
+        expect(container.querySelector('[data-timeline-locked-glass]')).toContainElement(badge);
+        expect(badge).toHaveStyle({ pointerEvents: 'auto' });
+        fireEvent.focus(badge);
+        expect(await screen.findByRole('tooltip')).toHaveTextContent(
+            'Subscribe to Rail Map Painter・Stop and Proceed to unlock this feature.'
+        );
     });
 });
