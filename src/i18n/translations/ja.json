@@ -1420,8 +1420,7 @@
             "github": "プロジェクトリポジトリ",
             "githubContent": "問題が発生しましたか？こちらで検索したり、問題を報告したりしてください！",
             "zulip": "Zulip コミュニティ",
-            "zulipContent": "Zulip でコミュニティに参加しましょう！",
-            "langonginc": "記憶に残る人生を送ろう。"
+            "zulipContent": "Zulip でコミュニティに参加しましょう！"
         }
     },
     "contextMenu": {
