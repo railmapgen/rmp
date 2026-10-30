@@ -424,14 +424,14 @@ export default function TimelineWindowHeader() {
                             <IconButton
                                 size="sm"
                                 variant="ghost"
-                                aria-label="Zoom out"
+                                aria-label={t('Zoom out')}
                                 icon={<MdZoomOut />}
                                 onClick={() => changeZoom(1.25)}
                             />
                             <IconButton
                                 size="sm"
                                 variant="ghost"
-                                aria-label="Zoom in"
+                                aria-label={t('Zoom in')}
                                 icon={<MdZoomIn />}
                                 onClick={() => changeZoom(0.8)}
                             />
@@ -444,7 +444,7 @@ export default function TimelineWindowHeader() {
                                 icon={<MdTranslate />}
                                 variant="ghost"
                                 size="sm"
-                                aria-label="Language"
+                                aria-label={t('Language')}
                             />
                             <MenuList>
                                 {(['en', 'zh-Hans', 'zh-Hant', 'ja', 'ko'] as LanguageCode[]).map(language => (
@@ -461,7 +461,7 @@ export default function TimelineWindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Help"
+                        aria-label={t('Help')}
                         icon={<MdHelp />}
                         onClick={() => setIsAboutOpen(true)}
                     />

@@ -325,7 +325,7 @@ export default function DownloadActions() {
                 <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>
                     {t('header.download.2rmg.title')}
                     <Badge ml="1" colorScheme="green">
-                        New
+                        {t('New')}
                     </Badge>
                 </MenuItem>
                 <MenuItem

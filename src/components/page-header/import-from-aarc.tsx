@@ -186,7 +186,7 @@ export default function ImportFromAarc({ isOpen, onClose }: ImportFromAarcProps)
                                         };
                                         reader.readAsText(file);
                                     }}
-                                    aria-label="Upload JSON file"
+                                    aria-label={t('Upload JSON file')}
                                 />
                             </VStack>
                         </ModalBody>

@@ -37,7 +37,7 @@ export default function AppRoot() {
                 transform: 'translate(-50%, -50%)',
             }}
         >
-            Rail Map Painter protocol... checked
+            {t('Rail Map Painter protocol... checked')}
         </p>
     );
 

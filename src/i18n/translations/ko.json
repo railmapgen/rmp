@@ -78,7 +78,8 @@
                 "error": "이런 :( 우리는 이 {{category}}를 인식할 수 없습니다. 아마도 더 최근 버전에서 생성되었을 것입니다.",
                 "node": "노드",
                 "lineType": "선분 경로",
-                "lineStyle": "선분 스타일"
+                "lineStyle": "선분 스타일",
+                "linePath": "선 경로"
             },
             "nodes": {
                 "common": {
@@ -401,7 +402,8 @@
                     "scale": "역명 가로 크기 조절"
                 },
                 "mtr": {
-                    "displayName": "홍콩 MTR 역"
+                    "displayName": "홍콩 MTR 역",
+                    "rotate": "아이콘 회전"
                 },
                 "suzhouRTBasic": {
                     "displayName": "쑤저우 궤도교통 기본역",
@@ -1117,7 +1119,8 @@
                     "center": "가운데",
                     "right": "오른쪽"
                 }
-            }
+            },
+            "labelCaption": "자막: {{caption}}"
         },
         "mapToggle": {
             "show": "지리 지도 표시",
@@ -1515,5 +1518,28 @@
         "included": "이 기능은 현재 이용 중인 「{{subscription}}」 구독에 포함되어 있습니다.",
         "masterLimit": "마스터 노드는 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다.",
         "parallelLimit": "평행선은 {{count}}개까지 무료입니다. 「$t(RMP_CLOUD)」을 구독하면 개수 제한이 해제됩니다."
-    }
+    },
+    "previous": "이전",
+    "Help": "도움말",
+    "Menu": "메뉴",
+    "open details panel": "세부 정보 패널 열기",
+    "Upload JSON file": "JSON 파일 업로드",
+    "Zoom out": "축소",
+    "Zoom in": "확대",
+    "Language": "언어",
+    "upload": "업로드",
+    "Missing from current graph": "현재 그래프에 없음",
+    "New": "새 기능",
+    "Unsupported configuration!": "지원하지 않는 설정입니다.",
+    "termsReference": {
+        "layout": "안내판이나 노선도 요소의 배치는 선택한 양식에 따라 Guangzhou Metro Group, MTR Corporation 또는 Shanghai Shentong Metro Group이 설계한 것입니다. 생성한 이미지를 상업적으로 이용할 때 허가나 이용허락이 필요한 경우 해당 회사에서 미리 받아야 합니다.",
+        "elements": "이미지의 도형과 선은 위 회사들의 설계 기준에 따라 Chito Wong과 thekingofcity가 그렸습니다. 어떤 목적으로도 사용할 수 있으나 소프트웨어의 이름과 링크를 함께 표시할 것을 권장합니다.",
+        "fonts": "저작권, 이용허락 및 기타 법적 제약으로 인해 {{app}}은 MTR 양식의 안내판에 MTRSung과 Myriad Pro 대신 각각 ButTaiwan의 GenYoMin과 Vegur를 사용합니다. 생성한 이미지를 상업적으로 이용하기 전에 글꼴 제작자로부터 적절한 허가나 이용허락을 받아야 합니다.",
+        "images": "내보낸 PNG 또는 SVG 이미지는 위 조건에 따라 상업적 이용을 제외하고 수정, 게시하거나 다른 목적으로 사용할 수 있습니다.",
+        "flags": "Windows에 표시되는 국기 이모지는 오픈 소스 이모지 및 아이콘 프로젝트 OpenMoji가 디자인했습니다. 이용허락: CC BY-SA 4.0.",
+        "changes": "이 약관을 사전 통지 없이 수정, 추가 또는 삭제할 권리를 보유합니다. 중국어 번역은 참고용이며 영어판과 중국어판에 차이가 있으면 영어판이 우선합니다."
+    },
+    "Zoom": "확대 비율",
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다.",
+    "Rail Map Painter protocol... checked": "Rail Map Painter 초기 확인 완료"
 }
