@@ -1,5 +1,6 @@
 import { RmgThemeProvider } from '@railmapgen/rmg-components';
-import { fireEvent, screen } from '@testing-library/react';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { fireEvent, screen, within } from '@testing-library/react';
 import React from 'react';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { LinePathType, LineStyleType } from '../../../constants/lines';
@@ -41,6 +42,13 @@ const renderToolsPanel = (mapEnabled: boolean, isSubscriber = true) => {
                 RMP_CLOUD: isSubscriber,
             },
         },
+        app: {
+            ...store.getState().app,
+            preference: {
+                ...store.getState().app.preference,
+                toolsPanel: { ...store.getState().app.preference.toolsPanel, expand: true },
+            },
+        },
         param: {
             ...store.getState().param,
             present: {
@@ -71,6 +79,22 @@ const pathNames: Record<LinePathType, string> = {
 };
 
 describe('ToolsPanel contextual line access', () => {
+    it('keeps the badge beside a disabled tool clickable without changing the selected tool', () => {
+        const standalone = vi.spyOn(rmgRuntime, 'isStandaloneWindow').mockReturnValue(false);
+        const postEvent = vi.spyOn(rmgRuntime, 'postEvent').mockImplementation(() => {});
+        const testStore = renderToolsPanel(false, false);
+        const tool = screen.getByRole('button', { name: pathNames[LinePathType.Simple], hidden: true });
+        const badge = within(tool.parentElement!).getByRole('button', { name: /Redeem.*Proceed Signal/, hidden: true });
+        const mode = testStore.getState().runtime.mode;
+        expect(tool).toBeDisabled();
+        expect(tool).not.toContainElement(badge);
+        fireEvent.click(badge);
+        expect(postEvent).toHaveBeenCalledExactlyOnceWith('OPEN_SUBSCRIPTION_REDEMPTION', undefined);
+        expect(testStore.getState().runtime.mode).toBe(mode);
+        standalone.mockRestore();
+        postEvent.mockRestore();
+    });
+
     it('shows every known path to subscribers with or without the map', () => {
         renderToolsPanel(false);
 
