@@ -238,7 +238,7 @@ export default function TimelineLineInfoModal({ isOpen, onClose }: TimelineLineI
                                                 leading={
                                                     <Input
                                                         type="color"
-                                                        aria-label={`${t('header.timelinePage.lineLabels.color')} picker`}
+                                                        aria-label={t('header.timelinePage.lineLabels.color')}
                                                         value={pickerColor(label.color)}
                                                         width="44px"
                                                         height="32px"

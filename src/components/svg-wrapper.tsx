@@ -546,7 +546,7 @@ const SvgWrapper = () => {
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
             {isPortraitClient() && isDetailsOpen === 'hide' && (
                 <IconButton
-                    aria-label="open details panel"
+                    aria-label={t('open details panel')}
                     icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}
                     onClick={() => dispatch(showDetailsPanel())}
                     style={{

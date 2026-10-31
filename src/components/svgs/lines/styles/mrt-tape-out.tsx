@@ -117,7 +117,7 @@ const MRTTapeOutSwitch = ({ id, attrs, handleAttrsUpdate }: AttrsProps<MRTTapeOu
 
     return (
         <IconButton
-            aria-label={t('panel.details.lines.mrtTapeOut.swap')}
+            aria-label={t('panel.details.lines.dualColor.swap')}
             icon={<MdOutlineSwapVert />}
             size="sm"
             onClick={() => handleAttrsUpdate(id, { ...attrs, colorA: attrs.colorB, colorB: attrs.colorA })}

@@ -117,7 +117,7 @@ export const MasterImport = (props: {
             };
             if (!isSupportedMasterVersion(param.version)) {
                 toast({
-                    title: 'Unsupported configuration!',
+                    title: t('Unsupported configuration!'),
                     status: 'error' as const,
                     duration: 9000,
                     isClosable: true,

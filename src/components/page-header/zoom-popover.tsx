@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { IconButton, Popover, PopoverBody, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { MdZoomOut, MdZoomIn } from 'react-icons/md';
 import { RmgFields, RmgFieldsField } from '@railmapgen/rmg-components';
@@ -14,6 +15,7 @@ const ZOOM_SLIDER_MARGIN = 10;
  * This will greatly decrease the width of the header in mobile device.
  */
 export const ZoomPopover = () => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = React.useState(false);
 
     const { mapEnabled, svgViewBoxZoom } = useRootSelector(state => state.param.present);
@@ -39,7 +41,7 @@ export const ZoomPopover = () => {
         <Popover isOpen={isOpen} onOpen={() => setIsOpen(true)} onClose={() => setIsOpen(false)}>
             <PopoverTrigger>
                 <IconButton
-                    aria-label="zoom"
+                    aria-label={t('Zoom')}
                     variant="ghost"
                     size="sm"
                     icon={<MdZoomIn />}

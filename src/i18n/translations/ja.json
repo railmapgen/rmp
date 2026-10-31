@@ -1120,7 +1120,8 @@
                     "center": "中央揃え",
                     "right": "右揃え"
                 }
-            }
+            },
+            "labelCaption": "字幕：{{caption}}"
         },
         "mapToggle": {
             "show": "地理地図を表示",
@@ -1519,5 +1520,19 @@
         "parallelLimit": "並列路線は {{count}} 本まで無料です。「$t(RMP_CLOUD)」を契約すると本数制限がなくなります。",
         "redeem": "クリックしてサブスクリプションを引き換えます。",
         "redeemNamed": "{{subscription}}を引き換える"
-    }
+    },
+    "previous": "前へ",
+    "Help": "操作案内",
+    "Menu": "操作一覧",
+    "open details panel": "詳細欄を開く",
+    "Upload JSON file": "JSON ファイルをアップロード",
+    "Zoom out": "縮小",
+    "Zoom in": "拡大",
+    "Language": "言語",
+    "upload": "アップロード",
+    "Missing from current graph": "現在の図に存在しません",
+    "New": "新機能",
+    "Unsupported configuration!": "この設定には対応していません。",
+    "Zoom": "表示倍率",
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。"
 }

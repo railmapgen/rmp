@@ -168,7 +168,7 @@ export default function TimelineLabelTrack({
                                 data-label-clip={entry.id}
                                 role="button"
                                 tabIndex={0}
-                                aria-label={`Label: ${caption}`}
+                                aria-label={t('header.timelinePage.labelCaption', { caption })}
                                 _focusVisible={{ outline: '2px solid', outlineColor: 'teal.300', outlineOffset: '2px' }}
                                 onPointerDown={event => handlePointerDown(event, entry, 'move')}
                                 onDoubleClick={() => edit(entry)}

@@ -185,7 +185,7 @@ const ToolsPanel = () => {
             transition={`width ${EXPAND_ANIMATION_DURATION}s ease-in-out`}
         >
             <Button
-                aria-label="Menu"
+                aria-label={t('Menu')}
                 leftIcon={
                     isTextShown ? (
                         <MdExpandMore size={40} transform="rotate(90)" />
@@ -220,7 +220,7 @@ const ToolsPanel = () => {
                             transition="background-color 0.2s"
                         />
                         <Button
-                            aria-label="select"
+                            aria-label={t('panel.tools.select')}
                             leftIcon={selectIcon}
                             onClick={() => dispatch(setMode(mode === 'select' ? 'free' : 'select'))}
                             variant={mode === 'select' ? 'solid' : 'ghost'}
@@ -275,7 +275,7 @@ const ToolsPanel = () => {
                                             transition="background-color 0.2s"
                                         />
                                         <Button
-                                            aria-label={type}
+                                            aria-label={t(linePaths[type].metadata.displayName)}
                                             leftIcon={linePaths[type].icon}
                                             onClick={() => handleLine(type)}
                                             variant={currentPath === type ? 'solid' : 'ghost'}
@@ -304,7 +304,7 @@ const ToolsPanel = () => {
                                     transition="background-color 0.2s"
                                 />
                                 <Button
-                                    aria-label={MiscNodeType.Virtual}
+                                    aria-label={t(miscNodes[MiscNodeType.Virtual].metadata.displayName)}
                                     leftIcon={miscNodes[MiscNodeType.Virtual].icon}
                                     onClick={() => handleMiscNode(MiscNodeType.Virtual)}
                                     variant={mode === `misc-node-${MiscNodeType.Virtual}` ? 'solid' : 'ghost'}
@@ -338,7 +338,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={styleType}
+                                        aria-label={t(lineStyles[styleType].metadata.displayName)}
                                         leftIcon={<LineStyleLeftIcon style={styleType} />}
                                         onClick={() => handleLineStyle(styleType)}
                                         variant={currentStyle === styleType ? 'solid' : 'ghost'}
@@ -402,7 +402,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(stations[type].metadata.displayName)}
                                         leftIcon={stations[type].icon}
                                         onClick={() => handleStation(type)}
                                         variant={mode === `station-${type}` ? 'solid' : 'ghost'}
@@ -445,7 +445,7 @@ const ToolsPanel = () => {
                                         transition="background-color 0.2s"
                                     />
                                     <Button
-                                        aria-label={type}
+                                        aria-label={t(miscNodes[type].metadata.displayName)}
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
                                         variant={mode === `misc-node-${type}` ? 'solid' : 'ghost'}

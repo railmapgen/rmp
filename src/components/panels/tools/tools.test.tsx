@@ -68,12 +68,22 @@ const renderToolsPanel = (mapEnabled: boolean, isSubscriber = true) => {
     return testStore;
 };
 
+const pathNames: Record<LinePathType, string> = {
+    [LinePathType.Diagonal]: '135° diagonal path',
+    [LinePathType.Perpendicular]: '90° perpendicular path',
+    [LinePathType.RotatePerpendicular]: '90° rotate perpendicular path',
+    [LinePathType.RayGuided]: 'Arbitrary angle path',
+    [LinePathType.Simple]: 'Simple path',
+    [LinePathType.Bezier]: 'Bezier curve',
+    [LinePathType.Freeform]: 'Freeform path',
+};
+
 describe('ToolsPanel contextual line access', () => {
     it('keeps the badge beside a disabled tool clickable without changing the selected tool', () => {
         const standalone = vi.spyOn(rmgRuntime, 'isStandaloneWindow').mockReturnValue(false);
         const postEvent = vi.spyOn(rmgRuntime, 'postEvent').mockImplementation(() => {});
         const testStore = renderToolsPanel(false, false);
-        const tool = screen.getByRole('button', { name: LinePathType.Simple, hidden: true });
+        const tool = screen.getByRole('button', { name: pathNames[LinePathType.Simple], hidden: true });
         const badge = within(tool.parentElement!).getByRole('button', { name: /Redeem.*Proceed Signal/, hidden: true });
         const mode = testStore.getState().runtime.mode;
         expect(tool).toBeDisabled();
@@ -89,34 +99,34 @@ describe('ToolsPanel contextual line access', () => {
         renderToolsPanel(false);
 
         for (const type of Object.values(LinePathType)) {
-            expect(screen.getByRole('button', { name: type, hidden: true })).toBeEnabled();
+            expect(screen.getByRole('button', { name: pathNames[type], hidden: true })).toBeEnabled();
         }
     });
 
     it('disables map-native and static Pro paths for free users while the map is hidden', () => {
         renderToolsPanel(false, false);
 
-        expect(screen.getByRole('button', { name: LinePathType.Diagonal, hidden: true })).toBeEnabled();
-        expect(screen.getByRole('button', { name: LinePathType.Bezier, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Freeform, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.RayGuided, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Simple, hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Diagonal], hidden: true })).toBeEnabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Bezier], hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Freeform], hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.RayGuided], hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Simple], hidden: true })).toBeDisabled();
     });
 
     it('disables diagram-native and static Pro paths for free users while the map is shown', () => {
         renderToolsPanel(true, false);
 
-        expect(screen.getByRole('button', { name: LinePathType.Diagonal, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Bezier, hidden: true })).toBeEnabled();
-        expect(screen.getByRole('button', { name: LinePathType.Freeform, hidden: true })).toBeEnabled();
-        expect(screen.getByRole('button', { name: LinePathType.RayGuided, hidden: true })).toBeDisabled();
-        expect(screen.getByRole('button', { name: LinePathType.Simple, hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Diagonal], hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Bezier], hidden: true })).toBeEnabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Freeform], hidden: true })).toBeEnabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.RayGuided], hidden: true })).toBeDisabled();
+        expect(screen.getByRole('button', { name: pathNames[LinePathType.Simple], hidden: true })).toBeDisabled();
     });
 
     it('uses an allowed map-native fallback for a free user selecting a style', () => {
         const testStore = renderToolsPanel(true, false);
 
-        fireEvent.click(screen.getByRole('button', { name: LineStyleType.SingleColor, hidden: true }));
+        fireEvent.click(screen.getByRole('button', { name: 'Single color style', hidden: true }));
 
         expect(testStore.getState().runtime.mode).toBe(`line-${LinePathType.Bezier}/${LineStyleType.SingleColor}`);
     });
