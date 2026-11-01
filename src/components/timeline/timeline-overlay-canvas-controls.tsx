@@ -19,7 +19,7 @@ interface Props {
     modules: readonly TimelineOverlayModule[];
     layout: readonly TimelineOverlayLayoutItem[];
     editing: boolean;
-    isSubscriber: boolean;
+    hasExportSubscription: boolean;
     selectedId?: string;
     onSelect?: (id: string) => void;
     onAdd?: (region: TimelineOverlayRegion) => void;
@@ -32,7 +32,7 @@ export default function TimelineOverlayCanvasControls({
     modules,
     layout,
     editing,
-    isSubscriber,
+    hasExportSubscription,
     selectedId,
     onSelect,
     onAdd,
@@ -77,7 +77,7 @@ export default function TimelineOverlayCanvasControls({
     const dropTarget = (point: { x: number; y: number }, current: NonNullable<typeof dragRef.current>) => {
         if (point.x < 0 || point.x > 1280 || point.y < 0 || point.y > 720) return;
         const region = regionAt(point.x, point.y);
-        if (region === 'top-right' && !isSubscriber) return;
+        if (region === 'top-right' && !hasExportSubscription) return;
         // Use the starting slots: live reflow must not move its own drop thresholds.
         const siblings = current.layout.filter(item => item.region === region && item.id !== current.id);
         const next = siblings.findIndex(item => point.y < item.y + item.height / 2);
@@ -125,7 +125,7 @@ export default function TimelineOverlayCanvasControls({
                 const top = items.length ? Math.min(...items.map(item => item.y)) : bottom ? 660 : 30;
                 const end = items.length ? Math.max(...items.map(item => item.y + item.height)) : top;
                 const plusY = bottom ? Math.max(5, top - 38) : Math.min(682, end + (items.length ? 8 : 0));
-                const locked = region === 'top-right' && !isSubscriber;
+                const locked = region === 'top-right' && !hasExportSubscription;
                 return (
                     <React.Fragment key={region}>
                         {editing && (
@@ -159,6 +159,8 @@ export default function TimelineOverlayCanvasControls({
                         {locked && (editing || items.length > 0) && (
                             <TimelineLockedGlass
                                 label={t(`${prefix}.subscriberLocked`)}
+                                subscription="RMP_EXPORT"
+                                justifyContent="flex-end"
                                 inset="auto"
                                 left={percentX(x)}
                                 top={percentY(top)}
@@ -245,7 +247,7 @@ export default function TimelineOverlayCanvasControls({
                     px={2}
                     py={1}
                     borderRadius="md"
-                    bg={regionAt(drag.x, drag.y) === 'top-right' && !isSubscriber ? 'gray.600' : 'purple.600'}
+                    bg={regionAt(drag.x, drag.y) === 'top-right' && !hasExportSubscription ? 'gray.600' : 'purple.600'}
                     color="white"
                     fontSize="xs"
                     boxShadow="md"

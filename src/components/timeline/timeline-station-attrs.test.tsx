@@ -170,7 +170,7 @@ describe('TimelineStationAttrs', () => {
         fireEvent.click(screen.getAllByRole('button', { name: 'panel.details.stations.interchange.add' })[0]);
         expect(onChange).toHaveBeenCalled();
         expect(transfers).toEqual(stations[StationType.TaipeiMetroInt].defaultAttrs.transfer);
-        fireEvent.click(screen.getAllByRole('button', { name: 'Color' })[0]);
+        fireEvent.click(screen.getAllByRole('button', { name: 'color' })[0]);
         fireEvent.click(await screen.findByRole('button', { name: 'Choose palette theme' }));
         await waitFor(() => {
             const next = onChange.mock.calls.at(

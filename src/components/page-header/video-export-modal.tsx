@@ -7,6 +7,8 @@ import {
     Button,
     Checkbox,
     Divider,
+    FormControl,
+    FormLabel,
     HStack,
     Icon,
     Link,
@@ -18,6 +20,7 @@ import {
     ModalHeader,
     ModalOverlay,
     Progress,
+    Select,
     Stack,
     Text,
     Tooltip,
@@ -29,11 +32,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdOpenInNew } from 'react-icons/md';
 import { Events } from '../../constants/constants';
-import { getTimelineSettings } from '../../constants/timeline';
+import { getTimelineSettings, TimelineEntry } from '../../constants/timeline';
 import { hasSubscriberOnlyTimelineOverlays } from '../../constants/timeline-overlays';
 import { useTimelineProjectContext } from '../../timeline/timeline-project-context';
 import { setError, setVideoOptions, useTimelineDispatch, useTimelineSelector } from '../../timeline/timeline-store';
-import { exportVideo, VideoExportOptions, VideoExportResolution } from '../../util/video-export/video-export';
+import {
+    exportVideo,
+    normalizeVideoExportOptions,
+    VideoExportOptions,
+    VideoExportResolution,
+} from '../../util/video-export/video-export';
 import {
     downloadVideoExportResult,
     prepareVideoExportDestination,
@@ -62,14 +70,15 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const isAllowAppTelemetry = rmgRuntime.isAllowAnalytics();
     const { t } = useTranslation();
     const mapEnabled = active.revision.mapEnabled;
-    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
-    const hasLockedOverlays = !isSubscriber && hasSubscriberOnlyTimelineOverlays(timeline);
+    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    const hasExportSubscription = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
+    const hasLockedOverlays = !hasExportSubscription && hasSubscriberOnlyTimelineOverlays(timeline);
     const unavailableLineCount = React.useMemo(() => {
         const unavailable = getUnavailableLineIds(graph, mapEnabled, isSubscriber);
         if (!timeline.fixedResources?.length) return unavailable.size;
         const renderedIds = new Set([
             ...timeline.fixedResources,
-            ...timeline.track.flatMap(entry => (entry.kind === 'edge' ? [entry.refId] : [])),
+            ...timeline.track.flatMap((entry: TimelineEntry) => (entry.kind === 'edge' ? [entry.refId] : [])),
         ]);
         return [...unavailable].filter(id => renderedIds.has(id)).length;
     }, [graph, mapEnabled, isSubscriber, timeline.fixedResources, timeline.track]);
@@ -80,7 +89,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [videoQuality, setVideoQuality] = React.useState(95);
     const [videoFormat, setVideoFormat] = React.useState<'webm' | 'mp4'>(savedVideoOptions?.format ?? 'mp4');
     const [videoResolution, setVideoResolution] = React.useState<VideoExportResolution>(
-        savedVideoOptions?.resolution ?? '720p'
+        savedVideoOptions?.resolution ?? '1080p'
     );
     const [videoProgress, setVideoProgress] = React.useState(0);
     const [isVideoGenerating, setIsVideoGenerating] = React.useState(false);
@@ -88,21 +97,43 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
     const [isTermsAndConditionsSelected, setIsTermsAndConditionsSelected] = React.useState(false);
     const [isTermsAndConditionsModalOpen, setIsTermsAndConditionsModalOpen] = React.useState(false);
     const exportController = React.useRef<AbortController | null>(null);
+    const {
+        fps: effectiveFps,
+        resolution: effectiveResolution,
+        hideWatermark: effectiveHideWatermark,
+    } = normalizeVideoExportOptions(
+        { fps: videoFps, resolution: videoResolution, hideWatermark: isAttachSelected },
+        hasExportSubscription
+    );
 
     React.useEffect(() => () => exportController.current?.abort(), []);
+
+    React.useEffect(() => {
+        setVideoFps(effectiveFps === 60 ? 60 : 30);
+        setVideoResolution(effectiveResolution);
+        setIsAttachSelected(effectiveHideWatermark);
+    }, [effectiveFps, effectiveResolution, effectiveHideWatermark]);
 
     React.useEffect(() => {
         dispatch(
             setVideoOptions({
                 format: videoFormat,
-                resolution: videoResolution,
-                fps: videoFps,
+                resolution: effectiveResolution,
+                fps: effectiveFps,
                 isTransparent,
                 isSystemFontsOnly,
-                hideWatermark: isAttachSelected,
+                hideWatermark: effectiveHideWatermark,
             })
         );
-    }, [dispatch, videoFormat, videoResolution, videoFps, isTransparent, isSystemFontsOnly, isAttachSelected]);
+    }, [
+        dispatch,
+        videoFormat,
+        effectiveResolution,
+        effectiveFps,
+        isTransparent,
+        isSystemFontsOnly,
+        effectiveHideWatermark,
+    ]);
 
     const handleClose = () => {
         if (!isVideoGenerating) {
@@ -128,14 +159,14 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             controller.signal.throwIfAborted();
             const options: VideoExportOptions = {
                 format: videoFormat,
-                fps: videoFps,
+                fps: effectiveFps,
                 speedMultiplier: settings.speedMultiplier,
-                resolution: videoResolution,
+                resolution: effectiveResolution,
                 isTransparent,
                 autoChangeStationType: settings.autoChangeStationType,
                 isSystemFontsOnly,
                 quality: videoQuality,
-                hideWatermark: isAttachSelected,
+                hideWatermark: effectiveHideWatermark,
             };
 
             result = await exportVideo(
@@ -151,6 +182,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                     svgViewBoxMin: active.revision.svgViewBoxMin,
                     svgViewBoxZoom: active.revision.svgViewBoxZoom,
                     isSubscriber,
+                    hasExportSubscription,
                     getAudio,
                     getImage,
                 },
@@ -177,7 +209,7 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
         }
     };
 
-    const outputFields: RmgFieldsField[] = [
+    const formatFields: RmgFieldsField[] = [
         {
             type: 'select',
             label: t('header.download.videoExport.format'),
@@ -193,30 +225,8 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
             },
             minW: 'full',
         },
-        {
-            type: 'select',
-            label: t('header.download.videoExport.fps'),
-            value: videoFps,
-            options: {
-                30: '30 FPS',
-                60: '60 FPS',
-            },
-            onChange: value => setVideoFps(value === 60 ? 60 : 30),
-            minW: 'full',
-        },
-        {
-            type: 'select',
-            label: t('header.download.videoExport.resolution'),
-            value: videoResolution,
-            options: {
-                '720p': t('header.download.videoExport.resolutions.720p'),
-                '1080p': t('header.download.videoExport.resolutions.1080p'),
-                '2k': t('header.download.videoExport.resolutions.2k'),
-                '4k': t('header.download.videoExport.resolutions.4k'),
-            },
-            onChange: value => setVideoResolution(value as VideoExportResolution),
-            minW: 'full',
-        },
+    ];
+    const qualityFields: RmgFieldsField[] = [
         {
             type: 'slider',
             label: `${t('header.download.videoExport.quality')} (${videoQuality}%)`,
@@ -260,13 +270,17 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             <AlertIcon />
                             <AlertDescription>
                                 {t('header.timelinePage.overlayEditor.subscriptionExport')}
+                                <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
                             </AlertDescription>
                         </Alert>
                     )}
                     {unavailableLineCount > 0 && (
                         <Alert status="warning" mb={4}>
                             <AlertIcon />
-                            <AlertDescription>{t('header.download.videoExport.unavailableLines')}</AlertDescription>
+                            <AlertDescription>
+                                {t('header.download.videoExport.unavailableLines')}
+                                <SubscriptionBadge subscription="RMP_CLOUD" ml="1" />
+                            </AlertDescription>
                         </Alert>
                     )}
                     <Text mb={4}>{t('header.download.videoExport.description')}</Text>
@@ -280,9 +294,74 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                             <Box>
                                 <Text fontSize="sm" fontWeight="semibold" color={sectionHeadingColor} mb={2}>
                                     {t('header.download.videoExport.groups.output')}
-                                    <SubscriptionBadge subscription="RMP_EXPORT" ml="1" />
                                 </Text>
-                                <RmgFields fields={outputFields} />
+                                <RmgFields fields={formatFields} />
+                                <Stack spacing={3} px={1} py={2}>
+                                    <FormControl>
+                                        <HStack mb={1} flexWrap="wrap">
+                                            <FormLabel htmlFor="video_export_fps" fontSize="sm" mb={0} mr={0}>
+                                                {t('header.download.videoExport.fps')}
+                                            </FormLabel>
+                                            <SubscriptionBadge subscription="RMP_EXPORT" />
+                                        </HStack>
+                                        <Select
+                                            id="video_export_fps"
+                                            variant="flushed"
+                                            size="sm"
+                                            h={6}
+                                            value={effectiveFps}
+                                            onChange={e =>
+                                                setVideoFps(hasExportSubscription && e.target.value === '60' ? 60 : 30)
+                                            }
+                                        >
+                                            <option value={30}>30 FPS</option>
+                                            <option value={60} disabled={!hasExportSubscription}>
+                                                60 FPS
+                                            </option>
+                                        </Select>
+                                    </FormControl>
+                                    <FormControl>
+                                        <HStack mb={1} flexWrap="wrap">
+                                            <FormLabel htmlFor="video_export_resolution" fontSize="sm" mb={0} mr={0}>
+                                                {t('header.download.videoExport.resolution')}
+                                            </FormLabel>
+                                            <SubscriptionBadge subscription="RMP_EXPORT" />
+                                        </HStack>
+                                        <Select
+                                            id="video_export_resolution"
+                                            variant="flushed"
+                                            size="sm"
+                                            h={6}
+                                            value={effectiveResolution}
+                                            onChange={e =>
+                                                setVideoResolution(
+                                                    normalizeVideoExportOptions(
+                                                        {
+                                                            fps: effectiveFps,
+                                                            resolution: e.target.value as VideoExportResolution,
+                                                            hideWatermark: effectiveHideWatermark,
+                                                        },
+                                                        hasExportSubscription
+                                                    ).resolution
+                                                )
+                                            }
+                                        >
+                                            {(['720p', '1080p', '2k', '4k'] as const).map(resolution => (
+                                                <option
+                                                    key={resolution}
+                                                    value={resolution}
+                                                    disabled={
+                                                        !hasExportSubscription &&
+                                                        (resolution === '2k' || resolution === '4k')
+                                                    }
+                                                >
+                                                    {t(`header.download.videoExport.resolutions.${resolution}`)}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Stack>
+                                <RmgFields fields={qualityFields} />
                             </Box>
 
                             <Box>
@@ -313,20 +392,28 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                                     {t('header.download.videoExport.groups.sharing')}
                                 </Text>
                                 <Stack spacing={2}>
-                                    <Checkbox
-                                        id="share_info_video"
-                                        isChecked={isAttachSelected}
-                                        size="sm"
-                                        onChange={e => setIsAttachSelected(e.target.checked)}
-                                    >
-                                        <Text>
-                                            {t('header.download.videoExport.shareInfo1')}
-                                            <Link color="teal.500" href="https://railmapgen.org/rmp">
-                                                {t('header.about.rmp')} <Icon as={MdOpenInNew} />
-                                            </Link>
-                                            {t('header.download.videoExport.shareInfo2')}
-                                        </Text>
-                                    </Checkbox>
+                                    <Box>
+                                        <HStack align="start" flexWrap="wrap">
+                                            <Checkbox
+                                                id="share_info_video"
+                                                isChecked={effectiveHideWatermark}
+                                                isDisabled={!hasExportSubscription}
+                                                size="sm"
+                                                onChange={e =>
+                                                    setIsAttachSelected(hasExportSubscription && e.target.checked)
+                                                }
+                                            >
+                                                <Text>
+                                                    {t('header.download.videoExport.shareInfo1')}
+                                                    <Link color="teal.500" href="https://railmapgen.org/rmp">
+                                                        {t('header.about.rmp')} <Icon as={MdOpenInNew} />
+                                                    </Link>
+                                                    {t('header.download.videoExport.shareInfo2')}
+                                                </Text>
+                                            </Checkbox>
+                                            <SubscriptionBadge subscription="RMP_EXPORT" />
+                                        </HStack>
+                                    </Box>
                                     <Checkbox
                                         id="agree_terms_video"
                                         isChecked={isTermsAndConditionsSelected}
@@ -386,11 +473,19 @@ export default function VideoExportModal({ isOpen, onClose }: VideoExportModalPr
                         )}
                         <Box>
                             <Tooltip
-                                label={t(
-                                    hasLockedOverlays
-                                        ? 'header.timelinePage.overlayEditor.subscriptionExport'
-                                        : 'header.download.videoExport.unavailableLines'
-                                )}
+                                label={
+                                    <Box>
+                                        {t(
+                                            hasLockedOverlays
+                                                ? 'header.timelinePage.overlayEditor.subscriptionExport'
+                                                : 'header.download.videoExport.unavailableLines'
+                                        )}
+                                        <SubscriptionBadge
+                                            subscription={hasLockedOverlays ? 'RMP_EXPORT' : 'RMP_CLOUD'}
+                                            ml="1"
+                                        />
+                                    </Box>
+                                }
                                 isDisabled={unavailableLineCount === 0 && !hasLockedOverlays}
                                 hasArrow
                             >

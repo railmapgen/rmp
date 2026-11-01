@@ -266,7 +266,7 @@ export const ImagePanelModal = (props: {
                                                             <Flex direction="row" width="100%">
                                                                 <IconButton
                                                                     m="1"
-                                                                    aria-label={t('download')}
+                                                                    aria-label={t('header.download.2rmg.download')}
                                                                     icon={<MdDownload />}
                                                                     colorScheme="blue"
                                                                     onClick={() => handleDownload(k)}
@@ -274,7 +274,7 @@ export const ImagePanelModal = (props: {
                                                                 <IconButton
                                                                     m="1"
                                                                     width="100%"
-                                                                    aria-label={t('select')}
+                                                                    aria-label={t('panel.tools.select')}
                                                                     icon={<MdCheck />}
                                                                     colorScheme={
                                                                         selected.find(s => s.id === k.id)
@@ -285,7 +285,7 @@ export const ImagePanelModal = (props: {
                                                                 />
                                                                 <IconButton
                                                                     m="1"
-                                                                    aria-label="Delete"
+                                                                    aria-label={t('contextMenu.delete')}
                                                                     icon={<MdDelete />}
                                                                     colorScheme="red"
                                                                     onClick={() => handleDelete(k.id)}

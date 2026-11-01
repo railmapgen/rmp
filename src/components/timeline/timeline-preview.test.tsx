@@ -125,7 +125,7 @@ describe('TimelinePreview video frames', () => {
         await waitFor(() => expect(mocks.renderPreviewFrame).toHaveBeenLastCalledWith(5.01, undefined));
     });
 
-    it('rebuilds video geometry when Export access changes', async () => {
+    it('rebuilds video geometry when Cloud access changes', async () => {
         const { container, rerender } = render(<TimelinePreview {...props} />);
         await waitFor(() => expect(container.querySelector('svg')).not.toBeNull());
         expect(mocks.prepare.mock.calls[0][4]).toMatchObject({ isSubscriber: false });
@@ -306,6 +306,24 @@ describe('TimelinePreview video frames', () => {
         expect(container.querySelector('[data-overlay-add-region="top-right"]')).toBeDisabled();
         expect(container.querySelector('[data-overlay-handle]')).not.toBeNull();
         expect(mocks.prepare).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        { isSubscriber: false, hasExportSubscription: false },
+        { isSubscriber: true, hasExportSubscription: false },
+        { isSubscriber: false, hasExportSubscription: true },
+        { isSubscriber: true, hasExportSubscription: true },
+    ])('uses Export access for the top-right corner independently of Cloud: %j', subscriptions => {
+        const { container } = render(
+            <TimelinePreview {...props} {...subscriptions} document={createEmptyTimelineDocument()} overlayEditing />
+        );
+        expect(container.querySelector('[data-overlay-add-region="top-right"]')).toHaveProperty(
+            'disabled',
+            !subscriptions.hasExportSubscription
+        );
+        expect(container.querySelector('[data-timeline-locked-glass]') !== null).toBe(
+            !subscriptions.hasExportSubscription
+        );
     });
 
     it('updates labels at the current frame without rebuilding geometry or resetting playback timing', async () => {

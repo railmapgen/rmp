@@ -18,7 +18,7 @@ export default function ThemeButton(props: ThemeButtonProps) {
 
     return (
         <IconButton
-            aria-label={t('Color')}
+            aria-label={t('color')}
             color={theme[3]}
             bg={theme[2]}
             size={size}

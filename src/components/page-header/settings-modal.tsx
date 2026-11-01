@@ -152,7 +152,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <HStack mb="1">
                                     <Text>{t('header.settings.preference.autoParallel')}</Text>
                                     <Badge ml="auto" colorScheme="green">
-                                        New
+                                        {t('New')}
                                     </Badge>
                                     <SubscriptionBadge
                                         subscription="RMP_CLOUD"
@@ -171,7 +171,7 @@ const SettingsModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <HStack mb="1">
                                     <Text flex="1">{t('header.settings.preference.randomStationNames.title')}</Text>
                                     <Badge ml="auto" colorScheme="green">
-                                        New
+                                        {t('New')}
                                     </Badge>
                                     <SubscriptionBadge subscription="RMP_CLOUD" ml="1" />
                                     <Select

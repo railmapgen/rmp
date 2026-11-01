@@ -42,7 +42,7 @@ const renderZoomPopover = (mapEnabled: boolean) => {
         </RmgThemeProvider>,
         { store: testStore }
     );
-    fireEvent.click(screen.getByRole('button', { name: 'zoom' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Zoom' }));
 };
 
 describe('ZoomPopover', () => {

@@ -76,7 +76,8 @@ export default function TimelinePage() {
     const { t } = useTranslation();
     const dispatch = useTimelineDispatch();
     const active = useTimelineSelector(state => state.project.active)!;
-    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
+    const isSubscriber = useTimelineSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    const hasExportSubscription = useTimelineSelector(state => state.account.activeSubscriptions.RMP_EXPORT);
     const timeline = active.revision.timeline;
     const latestTimeline = React.useRef(timeline);
     latestTimeline.current = timeline;
@@ -514,7 +515,7 @@ export default function TimelinePage() {
                             modules={overlayModules}
                             selectedId={selectedOverlayModuleId}
                             addRegion={addOverlayRegion}
-                            isSubscriber={isSubscriber}
+                            hasExportSubscription={hasExportSubscription}
                             mapEnabled={mapEnabled}
                             onChange={handleOverlayModulesChange}
                             onSelect={id => {
@@ -559,6 +560,7 @@ export default function TimelinePage() {
                             mapEnabled={mapEnabled}
                             mapStyle={mapStyle}
                             isSubscriber={isSubscriber}
+                            hasExportSubscription={hasExportSubscription}
                             overlayEditing={annotationEditing}
                             selectedOverlayModuleId={selectedOverlayModuleId}
                             onSelectOverlayModule={id => {
@@ -571,12 +573,18 @@ export default function TimelinePage() {
                             }}
                             onMoveOverlayModule={(id, region, index) =>
                                 handleOverlayModulesChange(
-                                    moveTimelineOverlayModule(overlayModules, id, region, index, isSubscriber)
+                                    moveTimelineOverlayModule(overlayModules, id, region, index, hasExportSubscription)
                                 )
                             }
                             previewOverlayModules={previewOverlayModules}
                             onPreviewOverlayModuleMove={(id, region, index) => {
-                                const next = moveTimelineOverlayModule(overlayModules, id, region, index, isSubscriber);
+                                const next = moveTimelineOverlayModule(
+                                    overlayModules,
+                                    id,
+                                    region,
+                                    index,
+                                    hasExportSubscription
+                                );
                                 setPreviewOverlayModules(current =>
                                     JSON.stringify(current) === JSON.stringify(next) ? current : next
                                 );

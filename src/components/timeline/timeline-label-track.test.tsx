@@ -6,7 +6,12 @@ import { TimelineDocument } from '../../constants/timeline';
 import TimelineLabelTrack from './timeline-label-track';
 import { createTimelineTrackTimeScale, getTimelineTrackLayout } from './timeline-track-layout';
 
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
+vi.mock('react-i18next', () => ({
+    useTranslation: () => ({
+        t: (key: string, options?: { caption?: string }) =>
+            key === 'header.timelinePage.labelCaption' ? `Label: ${options?.caption}` : key,
+    }),
+}));
 const timeline: TimelineDocument = {
     version: 2,
     track: [

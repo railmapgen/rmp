@@ -15,7 +15,8 @@ vi.mock('./timeline-line-info-modal', () => ({
 
 vi.mock('react-i18next', async importOriginal => {
     const actual = await importOriginal<typeof import('react-i18next')>();
-    const translate = (key: string, options?: Record<string, number>) => {
+    const translate = (key: string, options?: Record<string, string | number>) => {
+        if (key === 'header.timelinePage.labelCaption') return `Label: ${options?.caption}`;
         if (key === 'header.timelinePage.missingCoverage') {
             return `Nodes not added: ${options?.nodeCount}; line segments not added: ${options?.edgeCount}.`;
         }

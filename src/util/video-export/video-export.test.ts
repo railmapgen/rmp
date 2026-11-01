@@ -21,7 +21,9 @@ import {
     getStationActivationProgress,
     getVideoWatermarkLayout,
     interpolateCameraZoom,
+    normalizeVideoExportOptions,
     renderVideoFrameGeometry,
+    VideoExportResolution,
 } from './video-export';
 import { createVideoFrameScene } from './video-frame-scene';
 
@@ -93,6 +95,32 @@ const edgeEntry = (refId: `line_${string}`, index: number): TimelineElementEntry
     refId,
     phase: 'enter',
     showAnimation: true,
+});
+
+describe('video export subscription limits', () => {
+    it.each(['720p', '1080p', '2k', '4k'] as VideoExportResolution[])(
+        'caps saved %s output options without changing unrelated settings',
+        resolution => {
+            const saved = { resolution, fps: 60, hideWatermark: true, format: 'webm', isTransparent: true };
+            expect(normalizeVideoExportOptions(saved, false)).toEqual({
+                ...saved,
+                resolution: resolution === '2k' || resolution === '4k' ? '1080p' : resolution,
+                fps: 30,
+                hideWatermark: false,
+            });
+            expect(saved).toEqual({ resolution, fps: 60, hideWatermark: true, format: 'webm', isTransparent: true });
+        }
+    );
+
+    it('preserves lower frame rates', () => {
+        const options = { resolution: '720p' as const, fps: 15, hideWatermark: false };
+        expect(normalizeVideoExportOptions(options, false)).toEqual(options);
+    });
+
+    it('preserves all output options with an Export subscription', () => {
+        const options = { resolution: '4k' as const, fps: 60, hideWatermark: true, quality: 95 };
+        expect(normalizeVideoExportOptions(options, true)).toEqual(options);
+    });
 });
 
 describe('video export watermark', () => {

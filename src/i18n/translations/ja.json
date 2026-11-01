@@ -1077,8 +1077,8 @@
                 "addToRegion": "{{region}}に追加",
                 "closeCatalog": "モジュール一覧を閉じる",
                 "addModule": "モジュールを追加",
-                "subscriberLocked": "この領域の編集にはサブスクリプションが必要です。既存のモジュールは無料領域へ移動できます。",
-                "subscriptionExport": "右上の領域にはサブスクリプションが必要です。モジュールを他の領域へ移動するか、契約を再開してから書き出してください。",
+                "subscriberLocked": "この領域の編集には「$t(RMP_EXPORT)」の契約が必要です。既存のモジュールは無料領域へ移動できます。",
+                "subscriptionExport": "右上の領域には「$t(RMP_EXPORT)」の契約が必要です。モジュールを他の領域へ移動するか、契約してから書き出してください。",
                 "region": "表示位置",
                 "moveUp": "上へ移動",
                 "moveDown": "下へ移動",
@@ -1126,7 +1126,8 @@
                     "center": "中央揃え",
                     "right": "右揃え"
                 }
-            }
+            },
+            "labelCaption": "字幕：{{caption}}"
         },
         "mapToggle": {
             "show": "地理地図を表示",
@@ -1214,7 +1215,7 @@
                 "mp4Transparency": "MP4は透過背景に対応していないため、現在の画面背景色を使用します。",
                 "error": "ビデオの書き出しに失敗しました。再試行するか、解像度やフレームレートを下げてください。",
                 "noNodes": "ビデオを書き出せません: グラフにノードがありません。",
-                "unavailableLines": "現在の地図または通常モードでは表示できない路線があります。修正するまでビデオを書き出せません。"
+                "unavailableLines": "現在の地図または通常モードでは表示できない線分の組み合わせがあります。組み合わせを変更してから書き出してください。"
             },
             "2rmg": {
                 "title": "RMG作品へエクスポート",
@@ -1523,5 +1524,19 @@
         "included": "この機能はご契約中の「{{subscription}}」に含まれています。",
         "masterLimit": "大師節点は {{count}} 個まで無料です。「$t(RMP_CLOUD)」を契約すると個数制限がなくなります。",
         "parallelLimit": "並列路線は {{count}} 本まで無料です。「$t(RMP_CLOUD)」を契約すると本数制限がなくなります。"
-    }
+    },
+    "previous": "前へ",
+    "Help": "操作案内",
+    "Menu": "操作一覧",
+    "open details panel": "詳細欄を開く",
+    "Upload JSON file": "JSON ファイルをアップロード",
+    "Zoom out": "縮小",
+    "Zoom in": "拡大",
+    "Language": "言語",
+    "upload": "アップロード",
+    "Missing from current graph": "現在の図に存在しません",
+    "New": "新機能",
+    "Unsupported configuration!": "この設定には対応していません。",
+    "Zoom": "表示倍率",
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。"
 }

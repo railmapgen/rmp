@@ -142,7 +142,7 @@ export const makeRenderReadySVGElement = async (
         try {
             elem.prepend(await makeBase64EncodedFontsStyle(languages));
         } catch (err) {
-            alert('Failed to load fonts. Fonts in the exported PNG will be missing.');
+            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
             logger.warn(err);
         }
     }

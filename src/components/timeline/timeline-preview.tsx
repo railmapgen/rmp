@@ -27,6 +27,7 @@ interface TimelinePreviewProps {
     options: VideoExportOptions;
     mapEnabled: boolean;
     isSubscriber: boolean;
+    hasExportSubscription?: boolean;
     mapStyle: MapStyle;
     svgViewBoxMin: { x: number; y: number };
     svgViewBoxZoom: number;
@@ -53,6 +54,7 @@ export default function TimelinePreview({
     options,
     mapEnabled,
     isSubscriber,
+    hasExportSubscription = false,
     mapStyle,
     svgViewBoxMin,
     svgViewBoxZoom,
@@ -278,6 +280,7 @@ export default function TimelinePreview({
                 svgViewBoxMin,
                 svgViewBoxZoom,
                 isSubscriber,
+                hasExportSubscription,
                 getImage,
             },
             preparationController.signal
@@ -319,6 +322,7 @@ export default function TimelinePreview({
         options,
         mapEnabled,
         isSubscriber,
+        hasExportSubscription,
         mapStyle,
         svgViewBoxMin,
         svgViewBoxZoom,
@@ -417,7 +421,7 @@ export default function TimelinePreview({
                         !hasVisualResources && overlayEditing ? getEmptyTimelineOverlayLayout(modules) : overlayLayout
                     }
                     editing={overlayEditing}
-                    isSubscriber={isSubscriber}
+                    hasExportSubscription={hasExportSubscription}
                     selectedId={selectedOverlayModuleId}
                     onSelect={onSelectOverlayModule}
                     onAdd={onAddOverlayModule}

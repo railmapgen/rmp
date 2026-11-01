@@ -129,7 +129,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Settings"
+                        aria-label={t('header.settings.title')}
                         icon={<MdSettings />}
                         onClick={() => setIsSettingsModalOpen(true)}
                     />
@@ -137,7 +137,7 @@ export default function WindowHeader() {
                     <IconButton
                         size="sm"
                         variant="ghost"
-                        aria-label="Help"
+                        aria-label={t('Help')}
                         icon={<MdHelp />}
                         onClick={() => setIsAboutModalOpen(true)}
                     />

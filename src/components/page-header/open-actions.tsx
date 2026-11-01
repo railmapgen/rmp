@@ -194,14 +194,14 @@ export default function OpenActions() {
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenGallery(true)}>
                         {t('header.open.gallery')}
                         <Badge ml="1" colorScheme="green">
-                            New
+                            {t('New')}
                         </Badge>
                     </MenuItem>
 
                     <MenuItem icon={<MdOpenInNew />} onClick={() => setIsOpenAarc(true)}>
                         {t('header.open.otherPlatform.title')}
                         <Badge ml="1" colorScheme="green">
-                            New
+                            {t('New')}
                         </Badge>
                     </MenuItem>
 

@@ -85,7 +85,7 @@ const AboutModal = (props: { isOpen: boolean; onClose: () => void }) => {
                                 <Text fontSize="lg" fontWeight="bold" mb={1}>
                                     langonginc
                                 </Text>
-                                <Text fontSize="sm">{t('header.about.langonginc')}</Text>
+                                <Text fontSize="sm">Live a life you will remember.</Text>
                                 <Text fontSize="sm" align="right" mb={1}>
                                     --Avicii
                                 </Text>
