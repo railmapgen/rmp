@@ -1,6 +1,7 @@
 import { Id, LineId, NodeId } from '../../constants/constants';
 
 export const VIDEO_FRAME_BASE_VARIANT = 'base';
+let blurSequence = 0;
 
 export interface VideoFrameSceneOptions {
     nodeIds: Iterable<NodeId>;
@@ -15,6 +16,7 @@ export interface VideoSceneNodeState {
     /** Retained for the shared frame-state contract; the current animation fades names with their node. */
     textProgress?: number;
     transform?: string;
+    blur?: number;
 }
 
 export interface VideoSceneEdgeState {
@@ -31,6 +33,7 @@ export interface VideoFrameSceneState {
     edgeProgress: ReadonlyMap<LineId, number>;
     edgeDirections: ReadonlyMap<LineId, boolean>;
     nodeTransforms?: ReadonlyMap<NodeId, string>;
+    nodeBlur?: ReadonlyMap<NodeId, number>;
     viewBox?: string | { x: number; y: number; width: number; height: number };
 }
 
@@ -63,6 +66,7 @@ interface GroupRecord {
     opacity: number;
     transform: string | null;
     display: string | null;
+    filter: string | null;
     opacityTargets: OpacityTarget[];
     paths: PathTarget[];
 }
@@ -124,6 +128,7 @@ const captureBaselines = (record: GroupRecord) => {
     record.opacity = numericOpacity(element);
     record.transform = element.getAttribute('transform');
     record.display = element.getAttribute('display');
+    record.filter = element.getAttribute('filter');
     record.opacityTargets = Array.from(element.querySelectorAll<SVGElement>('*')).flatMap(child => {
         const tag = child.tagName.toLowerCase();
         if (tag === 'tspan') return [];
@@ -137,7 +142,7 @@ const captureBaselines = (record: GroupRecord) => {
 };
 
 const sameNodeState = (a: VideoSceneNodeState | undefined, b: VideoSceneNodeState) =>
-    a?.visible === b.visible && a.progress === b.progress && a.transform === b.transform;
+    a?.visible === b.visible && a.progress === b.progress && a.transform === b.transform && a.blur === b.blur;
 
 const sameEdgeState = (a: VideoSceneEdgeState | undefined, b: VideoSceneEdgeState) =>
     a?.visible === b.visible && a.progress === b.progress && a.reverse === b.reverse;
@@ -157,6 +162,30 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
     const visibleEdges = new Set(edgeIds);
     const nodeStates = new Map<NodeId, VideoSceneNodeState>();
     const edgeStates = new Map<LineId, VideoSceneEdgeState>();
+    const blurFilters = new Map<NodeId, { id: string; gaussian: SVGFEGaussianBlurElement }>();
+    const blurPrefix = `rmp_video_station_blur_${++blurSequence}_`;
+    let blurDefinitions: SVGDefsElement | undefined;
+    const blurFilter = (id: NodeId, radius: number) => {
+        let filter = blurFilters.get(id);
+        if (!filter) {
+            blurDefinitions ??= document.createElementNS(svg.namespaceURI, 'defs') as SVGDefsElement;
+            if (!blurDefinitions.parentNode) svg.prepend(blurDefinitions);
+            const element = document.createElementNS(svg.namespaceURI, 'filter');
+            const filterId = blurPrefix + id;
+            element.id = filterId;
+            element.setAttribute('x', '-100%');
+            element.setAttribute('y', '-100%');
+            element.setAttribute('width', '300%');
+            element.setAttribute('height', '300%');
+            const gaussian = document.createElementNS(svg.namespaceURI, 'feGaussianBlur') as SVGFEGaussianBlurElement;
+            element.append(gaussian);
+            blurDefinitions.append(element);
+            filter = { id: filterId, gaussian };
+            blurFilters.set(id, filter);
+        }
+        writeAttribute(filter.gaussian, 'stdDeviation', String(radius));
+        return `url(#${filter.id})`;
+    };
     const requestedLimit = options.maxCachedVariants ?? 8;
     const maxCachedVariants = Number.isFinite(requestedLimit) ? Math.max(2, Math.floor(requestedLimit)) : 8;
     const measurePath = options.measurePath ?? ((path: SVGPathElement) => path.getTotalLength());
@@ -171,6 +200,7 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
             opacity: 1,
             transform: null,
             display: null,
+            filter: null,
             opacityTargets: [],
             paths: [],
         };
@@ -212,12 +242,14 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
             visible: input.visible,
             progress: clamp01(input.progress),
             transform: input.transform,
+            blur: Number.isFinite(input.blur) ? Math.max(0, input.blur!) : 0,
         };
         if (!dirty.has(id) && sameNodeState(nodeStates.get(id), state)) return;
         for (const record of ownerGroups.get(id) ?? []) {
             writeAttribute(record.element, 'display', state.visible ? record.display : 'none');
             if (!state.visible) continue;
             writeAttribute(record.element, 'transform', state.transform ?? record.transform);
+            writeAttribute(record.element, 'filter', state.blur ? blurFilter(id, state.blur) : record.filter);
             if (id.startsWith('stn_')) {
                 writeAttribute(record.element, 'opacity', String(record.opacity * state.progress!));
             } else {
@@ -293,7 +325,9 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
             const owner = id.replace(/\.(pre|post)$/, '') as Id;
             const main = groups.get(owner)?.element;
             if (!main?.parentElement) throw new Error(`The main SVG group ${owner} is missing`);
-            const element = template.cloneNode(true) as SVGElement;
+            // This layer did not exist in the base drawing. Its base variant must stay empty
+            // so changing back from a station type with an extra pre/post layer cannot leak it.
+            const element = document.createElementNS(svg.namespaceURI, 'g') as SVGGElement;
             element.id = id;
             if (id.endsWith('.pre')) main.parentElement.insertBefore(element, main);
             else main.parentElement.insertBefore(element, main.nextSibling);
@@ -347,6 +381,7 @@ export const createVideoFrameScene = (svg: SVGSVGElement, options: VideoFrameSce
                 progress: state.nodeProgress.get(id),
                 textProgress: state.textProgress?.get(id),
                 transform: state.nodeTransforms?.get(id),
+                blur: state.nodeBlur?.get(id),
             });
         }
         for (const id of visibleEdges) {
