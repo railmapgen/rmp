@@ -46,6 +46,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
         ? t('subscription.included', { subscription: name })
         : (description ?? t('subscription.required', { subscription: name }));
 
+    // Paint above full-row button backgrounds, including disabled buttons' opacity stacking contexts.
     return (
         <Tooltip label={`${label} ${t('subscription.redeem')}`} hasArrow>
             <Badge
@@ -72,6 +73,7 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                 lineHeight="18px"
                 textTransform="none"
                 display="inline-flex"
+                position="relative"
                 alignItems="center"
                 gap="1"
                 verticalAlign="middle"
