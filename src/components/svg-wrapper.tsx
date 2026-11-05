@@ -1,10 +1,9 @@
-import { IconButton, useColorModeValue } from '@chakra-ui/react';
+import { useColorModeValue } from '@chakra-ui/react';
 import rmgRuntime from '@railmapgen/rmg-runtime';
 import { utils } from '@railmapgen/svg-assets';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdDoubleArrow } from 'react-icons/md';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE } from '../constants/canvas';
 import { Events, getLinePathAndStyle, Id, NodeId, RuntimeMode, StnId } from '../constants/constants';
@@ -12,7 +11,7 @@ import { MAX_MASTER_NODE_FREE } from '../constants/master';
 import { MiscNodeType } from '../constants/nodes';
 import { StationAttributes, StationType } from '../constants/stations';
 import { MAP_MAX_VIEWBOX_ZOOM } from '../map/map-config';
-import { useRootDispatch, useRootSelector } from '../redux';
+import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
 import { setSnapLines } from '../redux/app/app-slice';
 import { saveGraph } from '../redux/param/param-slice';
 import { redoAction, undoAction } from '../redux/project-history';
@@ -24,7 +23,6 @@ import {
     setKeepLastPath,
     setMode,
     setSelected,
-    showDetailsPanel,
 } from '../redux/runtime/runtime-slice';
 import { checkAndChangeStationIntType } from '../util/change-types';
 import { exportSelectedNodesAndEdges, importSelectedNodesAndEdges, parseClipboardData } from '../util/clipboard';
@@ -33,7 +31,6 @@ import {
     getCanvasSize,
     getMousePosition,
     isMacClient,
-    isPortraitClient,
     isTouchClient,
     pointerPosToSVGCoord,
     roundToMultiple,
@@ -54,17 +51,18 @@ import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import MapCanvas, { type MapCanvasHandle } from './map-canvas';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
+import OpenDetailsButton from './panels/details/open-details-button';
 import PredictNextNode from './predict-next-node';
-import SvgCanvas from './svg-canvas-graph';
+import SvgCanvas, { type CanvasLineDrawingHandle } from './svg-canvas-graph';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
-import RadialTouchMenu from './touch/radial-touch-menu';
 import TouchOverlay from './touch/touch-overlay';
 import VirtualJoystick from './touch/virtual-joystick';
 
 const SvgWrapper = () => {
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
+    const store = useRootStore();
     const graph = React.useRef(window.graph);
     const refreshAndSave = React.useCallback(() => {
         dispatch(saveGraph(graph.current.export()));
@@ -81,7 +79,6 @@ const SvgWrapper = () => {
     const {
         selected,
         active,
-        isDetailsOpen,
         mode,
         lastTool,
         keepLastPath,
@@ -94,6 +91,20 @@ const SvgWrapper = () => {
     const { height, width } = getCanvasSize(size);
     const canvasFilter = useColorModeValue('none', 'brightness(0.78) contrast(0.95)');
     const mapCanvasRef = React.useRef<MapCanvasHandle>(null);
+    const sceneRef = React.useRef<SVGGElement>(null);
+    const touchControlsRef = React.useRef<SVGGElement>(null);
+    const sceneId = `touch-scene-${React.useId().replace(/:/g, '')}`;
+    const backgroundPanPointer = React.useRef<number | null>(null);
+    const lineDrawingRef = React.useRef<CanvasLineDrawingHandle>(null);
+    // The assets provider recreates its context value on render; keep it outside parent gesture updates.
+    const graphCanvas = React.useMemo(
+        () => (
+            <utils.SvgAssetsContextProvider>
+                <SvgCanvas ref={lineDrawingRef} />
+            </utils.SvgAssetsContextProvider>
+        ),
+        [lineDrawingRef]
+    );
 
     /**
      * Intermediate pan/zoom frames bypass Redux for interaction performance.
@@ -126,6 +137,17 @@ const SvgWrapper = () => {
     } = useViewportController({
         viewport: { x: svgViewBoxMin.x, y: svgViewBoxMin.y, zoom: svgViewBoxZoom },
         onViewportChange: handleViewportChange,
+    });
+
+    const finishBackgroundPan = useEvent((point?: { x: number; y: number }) => {
+        if (backgroundPanPointer.current === null) return;
+        backgroundPanPointer.current = null;
+        if (touchControlsRef.current) touchControlsRef.current.style.visibility = '';
+        panEnd(point);
+        // Touch selection changes wait until release so they cannot block the first drag frame.
+        const runtime = store.getState().runtime;
+        if (runtime.selected.size > 0) dispatch(clearSelected());
+        if (runtime.active === 'background') dispatch(setActive(undefined));
     });
 
     const makeStationName = useMakeStationName();
@@ -193,10 +215,16 @@ const SvgWrapper = () => {
             }
 
             if (!e.shiftKey) {
-                // start background dragging and clear the current selection
-                dispatch(setActive('background'));
-                dispatch(clearSelected());
+                backgroundPanPointer.current = e.pointerId;
                 panStart({ x, y }, { publishLiveViewport: gridLines });
+                mapCanvasRef.current?.markViewportInteraction();
+                // A touch pan needs no scene-wide Redux update before it can move.
+                if (e.pointerType !== 'touch') {
+                    dispatch(setActive('background'));
+                    if (store.getState().runtime.selected.size > 0) dispatch(clearSelected());
+                } else if (touchControlsRef.current) {
+                    touchControlsRef.current.style.visibility = 'hidden';
+                }
             } else {
                 // when user holds shift and mis-clicks the background, preserve the current selection
             }
@@ -217,8 +245,9 @@ const SvgWrapper = () => {
                     })
                 );
             }
-        } else if (active === 'background') {
+        } else if (backgroundPanPointer.current === e.pointerId) {
             const { x, y } = getMousePosition(e);
+            mapCanvasRef.current?.markViewportInteraction();
             panMove({ x, y });
         }
     });
@@ -242,9 +271,9 @@ const SvgWrapper = () => {
         }
         // when user holding the shift key and mis-click the background
         // preserve the current selection
-        if (active === 'background' && !e.shiftKey) {
-            panEnd({ x, y });
-            dispatch(setActive(undefined));
+        if (backgroundPanPointer.current === e.pointerId && !e.shiftKey) {
+            // Lifting a finger can shift its contact point; only touch moves should advance the pan.
+            finishBackgroundPan(e.pointerType === 'touch' ? undefined : { x, y });
         }
     });
 
@@ -508,59 +537,67 @@ const SvgWrapper = () => {
                      * MapCanvas is a sibling of the editor content so it can own and clear its
                      * imperative tile root without taking ownership of SvgCanvas's React tree.
                      */}
-                    <MapCanvas ref={mapCanvasRef} />
-                    {/*
-                     * At geographic overview scale, editor geometry is too dense to be useful.
-                     * Keep it mounted to preserve editor state, but exclude it from rendering.
-                     */}
-                    <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
-                        {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
-                        {isTouchClient() && mode === 'free' && <TouchOverlay />}
-                        {predictNextNode && selected.size === 1 && mode === 'free' && !active && <PredictNextNode />}
-                        {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
-                        <utils.SvgAssetsContextProvider>
-                            <SvgCanvas />
-                        </utils.SvgAssetsContextProvider>
-                        {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
-                            <rect
-                                x={selectCoord.sx}
-                                y={selectCoord.sy}
-                                width={selectCoord.ex - selectCoord.sx}
-                                height={selectCoord.ey - selectCoord.sy}
-                                rx="2"
-                                stroke="#b5b5b6"
-                                strokeWidth="2"
-                                strokeOpacity="0.4"
-                                fill="#b5b5b6"
-                                opacity="0.75"
-                            />
-                        )}
+                    <g id={sceneId} ref={sceneRef}>
+                        <MapCanvas ref={mapCanvasRef} />
+                        {/*
+                         * At geographic overview scale, editor geometry is too dense to be useful.
+                         * Keep it mounted to preserve editor state, but exclude it from rendering.
+                         */}
+                        <g data-editor-layer="" display={isMapOverview ? 'none' : undefined}>
+                            {gridLines && <GridLines svgWidth={width} svgHeight={height} />}
+                            {predictNextNode && selected.size === 1 && mode === 'free' && !active && (
+                                <PredictNextNode />
+                            )}
+                            {/* Provide SvgAssetsContext for components with imperative handle. (fonts bbox after load)  */}
+                            {graphCanvas}
+                            {mode === 'select' && selectStart.x != 0 && selectStart.y != 0 && (
+                                <rect
+                                    x={selectCoord.sx}
+                                    y={selectCoord.sy}
+                                    width={selectCoord.ex - selectCoord.sx}
+                                    height={selectCoord.ey - selectCoord.sy}
+                                    rx="2"
+                                    stroke="#b5b5b6"
+                                    strokeWidth="2"
+                                    strokeOpacity="0.4"
+                                    fill="#b5b5b6"
+                                    opacity="0.75"
+                                />
+                            )}
+                        </g>
+                    </g>
+                    <g ref={touchControlsRef} display={isMapOverview ? 'none' : undefined}>
                         {isTouchClient() &&
+                            !mode.startsWith('line') &&
                             [...selected].some(id => id.startsWith('stn_') || id.startsWith('misc_node_')) && (
                                 <VirtualJoystick />
                             )}
-                        <RadialTouchMenu />
                     </g>
+                    {isTouchClient() && (
+                        <TouchOverlay
+                            svgRef={svgRef}
+                            sceneRef={sceneRef}
+                            getViewport={viewportGetLatest}
+                            onMenuTakeover={finishBackgroundPan}
+                            onPinchMove={viewport => viewportPreview(viewport, { publishLiveViewport: gridLines })}
+                            onPinchEnd={viewportCommitNow}
+                            lineDrawingRef={lineDrawingRef}
+                            onLinePanStart={point => {
+                                panStart(point, { publishLiveViewport: gridLines });
+                                mapCanvasRef.current?.markViewportInteraction();
+                            }}
+                            onLinePanMove={point => {
+                                panMove(point);
+                                mapCanvasRef.current?.markViewportInteraction();
+                            }}
+                            onLinePanEnd={panEnd}
+                            editorDisabled={isMapOverview}
+                        />
+                    )}
                 </g>
             </svg>
             <ContextMenu isOpen={contextMenu.isOpen} position={contextMenu.position} onClose={handleCloseContextMenu} />
-            {isPortraitClient() && isDetailsOpen === 'hide' && (
-                <IconButton
-                    aria-label={t('open details panel')}
-                    icon={<MdDoubleArrow style={{ transform: 'rotate(180deg)' }} />}
-                    onClick={() => dispatch(showDetailsPanel())}
-                    style={{
-                        position: 'fixed',
-                        bottom: 140,
-                        right: 0,
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                    }}
-                    colorScheme="blue"
-                    size="lg"
-                    isRound
-                />
-            )}
+            <OpenDetailsButton />
         </>
     );
 };

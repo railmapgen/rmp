@@ -117,10 +117,11 @@ describe('VirtualJoystick', () => {
         expect(circles && circles.length).toBeGreaterThan(0);
     });
 
-    it('applies transform based on param slice viewport values', () => {
+    it.each([25, 100, 150, 250])('keeps compact buttons and the bottom anchor at zoom %s', zoom => {
+        const min = { x: 100, y: 200 };
         const store = createTestStore(['stn_test1'], {
-            svgViewBoxZoom: 150,
-            svgViewBoxMin: { x: 100, y: 200 },
+            svgViewBoxZoom: zoom,
+            svgViewBoxMin: min,
         });
         const { container } = render(
             <Provider store={store}>
@@ -131,9 +132,23 @@ describe('VirtualJoystick', () => {
         );
         const rootGroup = container.querySelector('svg > g');
         expect(rootGroup).toBeTruthy();
-        const transform = rootGroup?.getAttribute('transform');
-        expect(transform).toBeTruthy();
-        expect(transform).toContain('translate');
-        expect(transform).toContain('scale');
+        const transform = rootGroup
+            ?.getAttribute('transform')
+            ?.match(/-?\d+(?:\.\d+)?/g)
+            ?.map(Number);
+        expect(transform).toHaveLength(3);
+        const [x, y, scale] = transform!;
+        const screenScale = (scale * 100) / zoom;
+        expect(screenScale).toBeCloseTo(1.1);
+        expect(((x - min.x) * 100) / zoom).toBeCloseTo(400);
+        expect(((y - min.y) * 100) / zoom).toBeCloseTo(500);
+
+        const circles = rootGroup!.querySelectorAll('circle');
+        for (const circle of Array.from(circles).slice(0, 4)) {
+            expect(Number(circle.getAttribute('r')) * 2 * screenScale).toBeCloseTo(44);
+        }
+        for (const circle of Array.from(circles).slice(4)) {
+            expect(Number(circle.getAttribute('r')) * 2 * screenScale).toBeCloseTo(35.2);
+        }
     });
 });

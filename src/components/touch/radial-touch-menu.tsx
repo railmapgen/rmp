@@ -1,25 +1,84 @@
 import React from 'react';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { closeRadialTouchMenu } from '../../redux/runtime/runtime-slice';
-import { MenuCategory, type MenuItemData, TOUCH_RADIUS } from '../../constants/touch';
+import { MenuCategory, type MenuItemData, type MenuLayerData, TOUCH_RADIUS } from '../../constants/touch';
 
 export { defaultRadialTouchMenuState } from '../../constants/touch';
 export type { RadialTouchMenuState } from '../../constants/touch';
 
 // Menu configuration
 const LAYER_SIZE = 5; // Maximum number of layers supported
-const CENTER_RADIUS = TOUCH_RADIUS;
-const QUADRANT_RADIUS = 40;
+const CENTER_RADIUS = TOUCH_RADIUS * 1.5;
+const QUADRANT_RADIUS = 36;
+const SCREEN_MARGIN = 8;
+const NOMINAL_SCALE = 1.2;
+
+export interface RadialTouchMenuViewport {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+    zoom: number;
+}
+
+interface RadialTouchMenuProps {
+    highlightedItem?: string;
+    viewport?: RadialTouchMenuViewport;
+}
+
+/** Fit the populated quadrants while keeping the original interaction position unchanged. */
+export const getRadialTouchMenuLayout = (
+    data: MenuLayerData,
+    position: { x: number; y: number },
+    zoom: number,
+    viewport?: RadialTouchMenuViewport
+) => {
+    if (!viewport || viewport.width <= 0 || viewport.height <= 0 || viewport.zoom <= 0) {
+        return { position, scale: (NOMINAL_SCALE * zoom) / 100 };
+    }
+
+    const radius = (category: MenuCategory) =>
+        CENTER_RADIUS + Math.min(data[category].length, LAYER_SIZE + 1) * QUADRANT_RADIUS + 1;
+    const left = Math.max(radius(MenuCategory.STATION), radius(MenuCategory.LINE));
+    const right = Math.max(radius(MenuCategory.MISC_NODE), radius(MenuCategory.OPERATION));
+    const top = Math.max(radius(MenuCategory.STATION), radius(MenuCategory.MISC_NODE));
+    const bottom = Math.max(radius(MenuCategory.LINE), radius(MenuCategory.OPERATION));
+    const marginX = Math.min(SCREEN_MARGIN, viewport.width / 2);
+    const marginY = Math.min(SCREEN_MARGIN, viewport.height / 2);
+    const screenScale = Math.min(
+        NOMINAL_SCALE,
+        (viewport.width - marginX * 2) / (left + right),
+        (viewport.height - marginY * 2) / (top + bottom)
+    );
+    const screenX = ((position.x - viewport.x) * 100) / viewport.zoom;
+    const screenY = ((position.y - viewport.y) * 100) / viewport.zoom;
+    const centerX = Math.max(
+        marginX + left * screenScale,
+        Math.min(screenX, viewport.width - marginX - right * screenScale)
+    );
+    const centerY = Math.max(
+        marginY + top * screenScale,
+        Math.min(screenY, viewport.height - marginY - bottom * screenScale)
+    );
+
+    return {
+        position: {
+            x: viewport.x + (centerX * viewport.zoom) / 100,
+            y: viewport.y + (centerY * viewport.zoom) / 100,
+        },
+        scale: (screenScale * viewport.zoom) / 100,
+    };
+};
 
 /**
  * Quadrant-based radial touch menu component.
  * Renders a circular menu divided into four quadrants:
  * - Top-left: Stations
- * - Top-right: Lines
- * - Bottom-left: Misc nodes
+ * - Top-right: Misc nodes
+ * - Bottom-left: Lines
  * - Bottom-right: Operations
  */
-export const RadialTouchMenu: React.FC = () => {
+export const RadialTouchMenu: React.FC<RadialTouchMenuProps> = ({ highlightedItem, viewport }) => {
     const dispatch = useRootDispatch();
     const { svgViewBoxZoom } = useRootSelector(state => state.param.present);
     const { visible, position, data } = useRootSelector(state => state.runtime.radialTouchMenu);
@@ -31,14 +90,18 @@ export const RadialTouchMenu: React.FC = () => {
 
     const handleItemClick = (e: React.PointerEvent<SVGGElement>, action: () => void) => {
         e.stopPropagation(); // stop background event handler
+        // A held touch is selected by the gesture controller on release.
+        if (e.pointerType === 'touch') return;
         action();
         dispatch(closeRadialTouchMenu());
     };
+    const layout = getRadialTouchMenuLayout(data, position, svgViewBoxZoom, viewport);
 
     return (
         <g
-            transform={`translate(${position.x}, ${position.y})scale(${(0.8 * svgViewBoxZoom) / 100})`}
+            transform={`translate(${layout.position.x}, ${layout.position.y})scale(${layout.scale})`}
             className="removeMe"
+            data-touch-menu=""
         >
             {(Object.entries(data) as [MenuCategory, MenuItemData[]][]).map(([category, layerData]) => {
                 if (!layerData || layerData.length === 0) return null;
@@ -74,6 +137,8 @@ export const RadialTouchMenu: React.FC = () => {
                     <g key={category}>
                         {/* Quadrant items */}
                         {layerData.slice(0, LAYER_SIZE + 1).map((item, itemIndex) => {
+                            const itemKey = `${category}:${itemIndex}`;
+                            const isHighlighted = highlightedItem === itemKey;
                             // Create quadrant sector path
                             const innerRadius = CENTER_RADIUS + itemIndex * QUADRANT_RADIUS;
                             const outerRadius = CENTER_RADIUS + (itemIndex + 1) * QUADRANT_RADIUS;
@@ -100,12 +165,17 @@ export const RadialTouchMenu: React.FC = () => {
                             const arcLength = textRadius * (Math.PI / 2);
 
                             return (
-                                <g key={item.elementId} onPointerDown={e => handleItemClick(e, item.action)}>
+                                <g
+                                    key={item.elementId}
+                                    data-touch-menu-item={itemKey}
+                                    data-active={isHighlighted ? '' : undefined}
+                                    onPointerDown={e => handleItemClick(e, item.action)}
+                                >
                                     <path
                                         d={quadrantPath}
-                                        fill={quadrantColor}
-                                        stroke="rgba(0,0,0,0.1)"
-                                        strokeWidth="1"
+                                        fill={isHighlighted ? 'hsl(210, 85%, 75%)' : quadrantColor}
+                                        stroke={isHighlighted ? '#1A365D' : 'rgba(0,0,0,0.1)'}
+                                        strokeWidth={isHighlighted ? 2 : 1}
                                         fillRule="evenodd"
                                     />
                                     {/* Item text */}
@@ -148,7 +218,10 @@ export const RadialTouchMenu: React.FC = () => {
                 fill="rgba(255, 255, 255, 0.3)"
                 stroke="rgba(0,0,0,0.2)"
                 strokeWidth="1"
-                onPointerDown={() => dispatch(closeRadialTouchMenu())}
+                onPointerDown={e => {
+                    e.stopPropagation();
+                    if (e.pointerType !== 'touch') dispatch(closeRadialTouchMenu());
+                }}
             />
         </g>
     );

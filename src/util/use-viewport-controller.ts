@@ -398,16 +398,21 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
      * This is used when an interaction is already complete, or when the caller
      * wants the latest viewport to become authoritative right away. Before
      * committing, we cancel pending frame work so a stale delayed commit cannot
-     * race with the immediate one.
+     * race with the immediate one. Flush the explicit or last published viewport
+     * to the DOM first, even if its persisted coordinates are already unchanged.
+     * Unpublished previews still require an explicit viewport to be committed.
      */
     const viewportCommitNow = React.useCallback(
         (nextViewport?: LiveViewport) => {
+            const committedViewport = nextViewport ?? store.getState().viewport.liveViewport;
             clearViewportRaf();
             clearPreviewTimeout();
             viewportFrameRef.current.publishLiveViewport = false;
-            dispatch(commitLiveViewport(nextViewport));
+            if (!committedViewport) return;
+            updateViewportTransform(committedViewport);
+            dispatch(commitLiveViewport(committedViewport));
         },
-        [clearPreviewTimeout, clearViewportRaf, dispatch]
+        [clearPreviewTimeout, clearViewportRaf, dispatch, store, updateViewportTransform]
     );
 
     /**
@@ -453,19 +458,20 @@ export const useViewportController = ({ viewport, onViewportChange }: UseViewpor
     /**
      * Ends the current drag session and commits the final viewport.
      *
-     * Call this on pointer up after a background drag. We first cancel any pending
-     * viewport RAF, then compute the final viewport from the last pointer position, and
-     * finally ask Redux to persist the settled result through `commitLiveViewport`.
+     * Call this on pointer up after a background drag. Omit the pointer to preserve
+     * the last move position instead of applying a potentially noisy release sample.
+     * Cancel any pending RAF, flush the final transform, and persist that same
+     * settled viewport through `commitLiveViewport`.
      *
      * This gives us the best of both worlds:
      * - smooth intermediate frames via imperative DOM updates
      * - a single persisted viewport update at interaction end
      */
     const panEnd = React.useCallback(
-        (pointer: Point) => {
+        (pointer?: Point) => {
             if (!dragRef.current.isDragging) return;
 
-            dragRef.current.latestPointer = pointer;
+            if (pointer) dragRef.current.latestPointer = pointer;
             clearViewportRaf();
 
             const nextViewport = calculateDraggedViewport();
