@@ -260,7 +260,7 @@ describe('VideoExportModal subscription policy', () => {
         expect(await screen.findByRole('tooltip')).toHaveTextContent(
             'Some line combinations cannot be displayed in the current map or normal mode.'
         );
-        expect(screen.getByRole('tooltip')).toHaveTextContent('Proceed Signal');
+        expect(screen.getByRole('tooltip')).toHaveTextContent('Rail Map Painter・Proceed Signal');
 
         act(() => store.dispatch(setActiveSubscriptions({ RMP_CLOUD: false, RMP_EXPORT: true })));
         expect(screen.getByRole('tooltip')).toHaveTextContent(
@@ -313,7 +313,7 @@ describe('VideoExportModal subscription policy', () => {
 
         expect(screen.getByText(warning)).toBeInTheDocument();
         expect(
-            within(screen.getByText(warning).closest('[role="alert"]')!).getByText('Proceed Signal')
+            within(screen.getByText(warning).closest('[role="alert"]')!).getByText('Rail Map Painter・Proceed Signal')
         ).toBeInTheDocument();
         expect(exportButton).toBeDisabled();
         fireEvent.click(exportButton);
@@ -387,7 +387,7 @@ describe('VideoExportModal output limits', () => {
             );
         }
         expect(within(resolutionSelect()).getByRole('option', { name: '1080p (1920×1080)' })).toBeEnabled();
-        expect(screen.getAllByText('Stop and Proceed')).toHaveLength(3);
+        expect(screen.getAllByText('Rail Map Painter・Stop and Proceed')).toHaveLength(3);
         await waitFor(() => expect(store.getState().runtime.videoOptions).toEqual(expectedOptions));
         fireEvent.click(document.getElementById('video_export_button')!);
         await waitFor(() => expect(exportVideo).toHaveBeenCalledOnce());

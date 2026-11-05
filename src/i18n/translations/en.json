@@ -1,5 +1,5 @@
 {
-    "color": "Color",
+    "color": "Colour",
     "warning": "Warning",
     "error": "Error",
     "cancel": "Cancel",
@@ -7,9 +7,9 @@
     "copy": "Copy",
     "copyAttrs": "Copy Specific Attributes",
     "pasteAttrs": "Paste Specific Attributes",
-    "remove": "Remove",
+    "remove": "Delete",
     "close": "Close",
-    "noShowAgain": "Don't show me again",
+    "noShowAgain": "Don't show again",
     "rmtPromotion": "The all-in-one toolkit you definitely do not want to miss!",
     "panel": {
         "tools": {
@@ -17,9 +17,9 @@
             "showOnlyFavorites": "Show only favorites",
             "section": {
                 "lineDrawing": "Line Drawing",
-                "lineStyles": "Line Styles",
-                "stations": "Stations",
-                "miscellaneousNodes": "Miscellaneous Nodes"
+                "lineStyles": "Line style",
+                "stations": "Station",
+                "miscellaneousNodes": "Miscellaneous node"
             },
             "select": "Select",
             "learnHowToAdd": {
@@ -34,9 +34,9 @@
                 "title": "Basic information",
                 "id": "ID",
                 "zIndex": "Depth",
-                "stationType": "Station Type",
-                "linePathType": "Line Path Type",
-                "lineStyleType": "Line Style Type",
+                "stationType": "Station type",
+                "linePathType": "Line path",
+                "lineStyleType": "Line style",
                 "type": "Type",
                 "visible": "Visible in export",
                 "parallel": "Parallel line",
@@ -47,13 +47,13 @@
                 "reconcileMembers": "Reconcile members"
             },
             "multipleSelection": {
-                "title": "Multiple Selection",
+                "title": "Multiple selection",
                 "change": "Change selected attributes",
                 "selected": "Selected Objects:",
                 "show": "Show",
-                "station": "Stations",
-                "miscNode": "MiscNodes",
-                "edge": "Lines",
+                "station": "Station",
+                "miscNode": "Miscellaneous node",
+                "edge": "Line segment",
                 "showingFirst500": "Showing first 500 items."
             },
             "changeStationTypeContent": "Changing station's type will remove all attributes from the station except its names.",
@@ -68,22 +68,22 @@
             },
             "lineExtremities": {
                 "title": "Line Extremities",
-                "source": "Source",
-                "target": "Target",
+                "source": "Start point",
+                "target": "End point",
                 "sourceName": "Source Name",
                 "targetName": "Target Name"
             },
             "specificAttrsTitle": "Specific Attributes",
             "unknown": {
                 "error": "Oops :( We can't recognize this {{category}}. Maybe it is created in a newer version.",
-                "node": "node",
-                "linePath": "line path",
-                "lineStyle": "line style"
+                "node": "Node",
+                "linePath": "Line path",
+                "lineStyle": "Line style"
             },
             "nodes": {
                 "common": {
-                    "nameZh": "Line name in Chinese",
-                    "nameEn": "Line name in English",
+                    "nameZh": "Chinese line name",
+                    "nameEn": "English line name",
                     "nameJa": "Line name in Japanese",
                     "num": "Line number"
                 },
@@ -173,7 +173,7 @@
                     "displayName": "Chengdu Rail Transit Line Badge",
                     "badgeType": {
                         "displayName": "Type",
-                        "normal": "Normal",
+                        "normal": "Standard",
                         "suburban": "Suburban railway",
                         "tram": "Tram"
                     }
@@ -208,7 +208,7 @@
                     "disney": "Disney",
                     "railway": "Railway",
                     "railway_2024": "Railway 2024",
-                    "hsr": "High Speed Railway",
+                    "hsr": "High-speed rail",
                     "airport_hk": "Airport Hongkong",
                     "disney_hk": "Disney Hongkong",
                     "ngong_ping_360": "Ngong Ping 360",
@@ -265,9 +265,9 @@
                     "fontSize": "Font size",
                     "lineHeight": "Line height",
                     "textAnchor": "Text anchor",
-                    "start": "Start",
+                    "start": "Text start",
                     "middle": "Middle",
-                    "end": "End",
+                    "end": "Text end",
                     "auto": "Auto",
                     "hanging": "Hanging",
                     "dominantBaseline": "Dominant baseline",
@@ -287,7 +287,7 @@
                     "rotate": "Rotation",
                     "italic": "Italic",
                     "bold": "Bold",
-                    "outline": "Outline"
+                    "outline": "Stroke"
                 },
                 "fill": {
                     "displayName": "Fill area",
@@ -334,18 +334,18 @@
                     "translateNameFailed": "Failed to translate station name."
                 },
                 "interchange": {
-                    "title": "Interchanges",
+                    "title": "Interchange",
                     "within": "Within-station interchange",
                     "outStation": "Out-of-station interchange",
                     "outSystem": "Out-of-system interchange",
                     "addGroup": "Add interchange group",
                     "noInterchanges": "No interchanges",
-                    "nameZh": "Chinese name",
-                    "nameEn": "English name",
+                    "nameZh": "Chinese line name",
+                    "nameEn": "English line name",
                     "add": "Add interchange",
                     "up": "Move up interchange",
                     "down": "Move down interchange",
-                    "remove": "Remove interchange"
+                    "remove": "Delete interchange"
                 },
                 "shmetroBasic": {
                     "displayName": "Shanghai Metro basic station"
@@ -366,14 +366,14 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "Guangzhou Metro basic station",
-                    "open": "Is opened",
+                    "open": "Operating",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",
                     "tram": "Tram"
                 },
                 "gzmtrInt": {
                     "displayName": "Guangzhou Metro interchange station",
-                    "open": "Is opened",
+                    "open": "Operating",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",
                     "foshan": "Foshan"
@@ -383,21 +383,21 @@
                     "columns": "Columns of stations",
                     "topHeavy": "Prefer more stations on the top row",
                     "anchorAt": "Anchor at",
-                    "anchorAtNone": "Center",
-                    "osiPosition": "Out-of-Station Interchange",
+                    "anchorAtNone": "Centre",
+                    "osiPosition": "Out-of-station interchange",
                     "osiPositionNone": "None",
                     "osiPositionLeft": "Left",
                     "osiPositionRight": "Right"
                 },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
-                    "open": "Is opened",
+                    "open": "Operating",
                     "construction": "Is under construction",
                     "scale": "Names horizontal scale"
                 },
                 "bjsubwayInt": {
                     "displayName": "Beijing Subway interchange station",
-                    "outOfStation": "Out of station interchange",
+                    "outOfStation": "Out-of-station interchange",
                     "scale": "Names horizontal scale"
                 },
                 "mtr": {
@@ -440,7 +440,7 @@
                 },
                 "foshanMetroBasic": {
                     "displayName": "Foshan Metro basic station",
-                    "open": "Is opened",
+                    "open": "Operating",
                     "secondaryNameZh": "Secondary name in Chinese",
                     "secondaryNameEn": "Secondary name in English",
                     "tram": "Tram"
@@ -488,7 +488,7 @@
                     "displayName": "London Underground basic station",
                     "terminal": "Terminal station",
                     "terminalNameRotate": "Terminal station name rotation",
-                    "shareTracks": "Track shares",
+                    "shareTracks": "Track sharing",
                     "noTrackShare": "No track shares",
                     "shareTracksIndex": "Index of the track shares"
                 },
@@ -518,7 +518,7 @@
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "Chongqing Rail Transit basic station (2021)",
-                    "open": "Is opened"
+                    "open": "Operating"
                 },
                 "chongqingRTInt2021": {
                     "displayName": "Chongqing Rail Transit interchange station (2021)",
@@ -535,7 +535,7 @@
                     "isVertical": "Is vertical station",
                     "stationType": {
                         "displayName": "Station type",
-                        "normal": "Normal",
+                        "normal": "Normal station",
                         "branchTerminal": "Branch terminal",
                         "joint": "Joint transfer station",
                         "tram": "Tram station"
@@ -547,8 +547,8 @@
                 },
                 "osakaMetro": {
                     "displayName": "Osaka Metro station",
-                    "stationType": "Station Type",
-                    "normalType": "Normal Station",
+                    "stationType": "Station type",
+                    "normalType": "Normal station",
                     "throughType": "Through-train Station",
                     "oldName": "Old Station Name",
                     "nameVertical": "Name Vertical Display",
@@ -572,7 +572,7 @@
                 },
                 "csmetroInt": {
                     "displayName": "Changsha Metro interchange station",
-                    "flipColor": "Flip color"
+                    "flipColor": "Flip colour"
                 },
                 "hzmetroBasic": {
                     "displayName": "Hangzhou Metro basic station",
@@ -601,8 +601,8 @@
                 },
                 "taipeiCommon": {
                     "nameOffset": "Station name position",
-                    "secondaryNameZh": "Secondary name (Chinese)",
-                    "secondaryNameEn": "Secondary name (English)",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English",
                     "secondaryNameOnNewLine": "Show secondary name on a new line",
                     "filled": "Filled number plate",
                     "align": "Number plate arrangement",
@@ -618,8 +618,8 @@
                     "startFrom": "Start From",
                     "startAngle": "Start Angle",
                     "endAngle": "End Angle",
-                    "from": "From",
-                    "to": "To",
+                    "from": "Start point",
+                    "to": "End point",
                     "roundCornerFactor": "Round Corner Factor",
                     "parallelDisabled": "Some attributes are disabled as this line is parallel.",
                     "changeInBaseLine": "Change them in the base line:",
@@ -666,14 +666,14 @@
                     "smoothing": "Smoothing",
                     "startCap": "Start cap",
                     "endCap": "End cap",
-                    "round": "Round",
-                    "flat": "Flat",
+                    "round": "Round cap",
+                    "flat": "Flat cap",
                     "arrow": "Arrow",
                     "arrowLength": "Arrow length",
                     "arrowWidth": "Arrow width"
                 },
                 "singleColor": {
-                    "displayName": "Single color style"
+                    "displayName": "Single colour style"
                 },
                 "shmetroVirtualInt": {
                     "displayName": "Shanghai Metro out-of-station interchange style"
@@ -692,7 +692,7 @@
                     "displayName": "China Railway style"
                 },
                 "bjsubwaySingleColor": {
-                    "displayName": "Beijing Subway single color style"
+                    "displayName": "Beijing Subway single colour style"
                 },
                 "bjsubwayTram": {
                     "displayName": "Beijing Subway tram style"
@@ -701,10 +701,10 @@
                     "displayName": "Beijing Subway dotted style"
                 },
                 "dualColor": {
-                    "displayName": "Dual color style",
-                    "swap": "Swap color",
-                    "colorA": "Color A",
-                    "colorB": "Color B"
+                    "displayName": "Dual colour style",
+                    "swap": "Swap colour",
+                    "colorA": "Colour A",
+                    "colorB": "Colour B"
                 },
                 "river": {
                     "displayName": "River style",
@@ -732,24 +732,24 @@
                     "displayName": "Singapore MRT Tap Out to Transfer style"
                 },
                 "jrEastSingleColor": {
-                    "displayName": "JR East single color style",
+                    "displayName": "JR East single colour style",
                     "decoration": {
                         "displayName": "Terminal display",
                         "none": "None",
                         "thinTail": "Other line section",
-                        "blackBlock": "Terminal"
+                        "blackBlock": "Terminal station"
                     },
                     "decorationAt": {
                         "displayName": "Display position",
-                        "from": "From",
-                        "to": "To"
+                        "from": "Start point",
+                        "to": "End point"
                     }
                 },
                 "jrEastSingleColorPattern": {
-                    "displayName": "JR East single color filled with crosshatch pattern style"
+                    "displayName": "JR East single colour filled with crosshatch pattern style"
                 },
                 "lrtSingleColor": {
-                    "displayName": "Singapore LRT single color style"
+                    "displayName": "Singapore LRT single colour style"
                 },
                 "londonTubeInternalInt": {
                     "displayName": "London Underground internal interchange style"
@@ -763,8 +763,8 @@
                 "londonRail": {
                     "displayName": "London rail style",
                     "limitedService": "Limited service/Peak hours only",
-                    "colorBackground": "Color background",
-                    "colorForeground": "Color foreground"
+                    "colorBackground": "Colour background",
+                    "colorForeground": "Colour foreground"
                 },
                 "londonSandwich": {
                     "displayName": "London sandwich style"
@@ -777,9 +777,9 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "Guangdong Intercity Railway style",
-                    "color": "Color",
+                    "color": "Colour",
                     "blue": "Blue",
-                    "gray": "Gray"
+                    "gray": "Grey"
                 },
                 "chongqingRTLineBadge": {
                     "displayName": "Chongqing Rail Transit line badge style"
@@ -800,9 +800,9 @@
                     "width": "Width",
                     "opacity": "Opacity",
                     "linecap": "Line cap",
-                    "linecapButt": "Butt",
-                    "linecapRound": "Round",
-                    "linecapSquare": "Square",
+                    "linecapButt": "Flat cap",
+                    "linecapRound": "Round cap",
+                    "linecapSquare": "Square cap",
                     "dash": "Dash",
                     "gap": "Gap",
                     "layerLimitWarning": "Subscribe to $t(RMP_CLOUD) to unlock additional layers.",
@@ -875,8 +875,8 @@
             "intervalDiagram": "Line interval and branches",
             "editInterval": "Edit line interval",
             "intervalHelp": "Drag the endpoint rings to preview a selection, or use the arrow keys. Click Separate or Extend to apply it; Cancel keeps the line unchanged.",
-            "rangeStart": "Start",
-            "rangeEnd": "End",
+            "rangeStart": "Start point",
+            "rangeEnd": "End point",
             "referenceStation": "Reference station",
             "pathStart": "Path start",
             "pathEnd": "Path end",
@@ -895,14 +895,14 @@
             "split": "Separate",
             "invalidDate": "Enter a valid date in YYYY-MM-DD format.",
             "insufficientStations": "At least two stations are required to export this line.",
-            "unsupportedTopology": "RMG cannot represent this topology from the selected starting station. Choose another start or separate the line first.",
-            "exportHelp": "Information is synced from Line information settings. Click a line to download its RMG configuration.",
+            "unsupportedTopology": "Rail Map Generator cannot represent this topology from the selected starting station. Choose another start or separate the line first.",
+            "exportHelp": "Information is synced from Line information settings. Click a line to download its Rail Map Generator configuration.",
             "downloadLine": "Download line",
             "unnamed": "Unnamed line",
             "unnamedStation": "Unnamed station"
         },
         "popoverHeader": "You're on <1>{{environment}}</1> environment!",
-        "popoverBody": "We are currently testing the latest RMP. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
+        "popoverBody": "We are currently testing the latest Rail Map Painter. If you have any suggestions, feel free to raise at https://github.com/railmapgen/rmp/issues",
         "search": "Search stations",
         "edit": "Edit",
         "undo": "Undo",
@@ -919,10 +919,10 @@
             "selectHint": "Select one node or edge above, then add it to the track.",
             "alreadyAdded": "Already added",
             "addSelected": "Add selected",
-            "addPathByColor": "Add a line by color",
-            "homeDescription": "Create a Chronicle project from the RMP project currently open in the painter, or import an existing Chronicle project file.",
+            "addPathByColor": "Add a line by colour",
+            "homeDescription": "Create a Chronicle project from the Rail Map Painter project currently open in the painter, or import an existing Chronicle project file.",
             "continueEditing": "Continue editing",
-            "startFromCurrentRmp": "Start from current RMP project",
+            "startFromCurrentRmp": "Start from current Rail Map Painter project",
             "importTimelineProject": "Import Chronicle project",
             "newProjectName": "Chronicle project",
             "recentProject": "Recent project",
@@ -932,7 +932,7 @@
             "deleteProjectConfirm": "Delete Chronicle project “{{name}}”?",
             "files": "Files",
             "backToMainMenu": "Back to main menu",
-            "importRmpData": "Import RMP data",
+            "importRmpData": "Import Rail Map Painter data",
             "importOpenPainterProject": "Project open in painter",
             "importLocalConfig": "Local configuration file",
             "renameProject": "Rename project",
@@ -940,7 +940,7 @@
             "downloadProject": "Download Chronicle project",
             "exportVideo": "Export video",
             "insert": "Insert",
-            "insertLabel": "Label",
+            "insertLabel": "Annotation",
             "editLabel": "Edit label",
             "labelText": "Label text",
             "saveLabel": "Save",
@@ -960,7 +960,7 @@
             "seconds": "seconds",
             "keyframe": "Keyframe",
             "enterPhase": "Enter",
-            "exitPhase": "Exit",
+            "exitPhase": "Exit animation",
             "showAnimation": "Show animation",
             "toggleAnimation": "Show/hide animation",
             "deleteEntry": "Delete",
@@ -968,7 +968,7 @@
             "editorPane": "Editor",
             "previewPane": "Preview",
             "keyframeHint": "Drag the station to set its keyframe position",
-            "selectLineColor": "Select a line color",
+            "selectLineColor": "Select a line colour",
             "selectDestNode": "Select destination station on canvas",
             "noPathFound": "No path found between selected stations along this line.",
             "pathAdded": "Successfully added {{count}} elements to the track.",
@@ -996,10 +996,10 @@
                     "title": "Insert a complete line section",
                     "description": "Choose a starting station and a destination to add the complete path between them to the timeline in order.",
                     "step1": "Select the starting station in the editor canvas above.",
-                    "step2": "In “Add a line by color” on the right side of the track panel, click the color of the line you want.",
+                    "step2": "In “Add a line by colour” on the right side of the track panel, click the colour of the line you want.",
                     "step3": "Select the destination station in the canvas. The complete path is inserted at the current timeline position.",
                     "tip": "To choose where it is inserted, first click an insertion point between two items in the track.",
-                    "imageAlt": "Three-step illustration: select a starting station, choose a line color, then select the destination station to add the route to the timeline"
+                    "imageAlt": "Three-step illustration: select a starting station, choose a line colour, then select the destination station to add the route to the timeline"
                 },
                 "exportVideo": {
                     "title": "Export your Chronicle video",
@@ -1022,23 +1022,23 @@
                 "done": "Done",
                 "cameraZoom": "Zoom",
                 "cameraZoomFull": "Full",
-                    "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
+                    "lineInformationHint": "Customize the line names, colours and dates shown in annotations.",
                     "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
                     "chooseFixedResources": "Choose fixed resources",
                     "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
             },
             "lineLabels": {
                 "title": "Line label information",
-                "description": "Customize the line names, color, and opening date shown in the video. These labels are saved only in this Chronicle project.",
-                "empty": "No line information is available. Import an RMP project with line definitions to customize its video labels.",
-                "color": "Label color",
-                "invalidColor": "Enter a valid hexadecimal color, such as #1677ff.",
+                "description": "Customize the line names, colour, and opening date shown in the video. These labels are saved only in this Chronicle project.",
+                "empty": "No line information is available. Import a Rail Map Painter project with line definitions to customize its video labels.",
+                "color": "Label colour",
+                "invalidColor": "Enter a valid hexadecimal colour, such as #1677ff.",
                 "reset": "Use imported line information",
-                "resetHint": "Restore this line’s labels from the imported RMP information.",
+                "resetHint": "Restore this line’s labels from the imported Rail Map Painter information.",
                 "saved": "Changes are saved in this Chronicle project and appear in preview and export."
             },
             "rmpImport": {
-                "title": "Import RMP data",
+                "title": "Import Rail Map Painter data",
                 "applyLineInfo": "Populate timeline from line information",
                 "description": "Draw lines by opening date, from each configured start station to its endpoints. Lines without a date follow last.",
                 "summary": "{{lines}} lines · {{nodes}} nodes · {{edges}} edges",
@@ -1114,9 +1114,9 @@
                     "small": "Small",
                     "medium": "Medium",
                     "large": "Large",
-                    "left": "Left",
-                    "center": "Center",
-                    "right": "Right"
+                    "left": "Align left",
+                    "center": "Align centre",
+                    "right": "Align right"
                 }
             },
             "labelCaption": "Label: {{caption}}"
@@ -1128,10 +1128,10 @@
         "open": {
             "new": "New project",
             "config": "Import project",
-            "projectRMG": "Import from RMG project",
+            "projectRMG": "Import from Rail Map Generator project",
             "invalidType": "Invalid file type! Only file in JSON format is accepted.",
             "unknownError": "Unknown error occurred while parsing the uploaded file! Please try again.",
-            "gallery": "Import from Gallery",
+            "gallery": "Import from gallery",
             "tutorial": "Start tutorial",
             "importOK": "Template {{id}} imported.",
             "importOKContent": "Not satisfied with this change? Undo via Ctrl + Z or the undo button.",
@@ -1172,7 +1172,7 @@
             "image": "Export image",
             "video": "Export video",
             "videoExport": {
-                "title": "Export Video",
+                "title": "Export video",
                 "groups": {
                     "output": "Output settings",
                     "rendering": "Rendering settings",
@@ -1210,19 +1210,19 @@
                 "unavailableLines": "Some line combinations cannot be displayed in the current map or normal mode. Adjust these combinations before exporting."
             },
             "2rmg": {
-                "title": "Export to RMG project",
+                "title": "Export to Rail Map Generator project",
                 "type": {
-                    "line": "Line",
-                    "loop": "Loop",
+                    "line": "Straight line",
+                    "loop": "Loop line",
                     "branch": "Branch"
                 },
                 "placeholder": {
-                    "chinese": "Chinese name",
-                    "english": "English name",
+                    "chinese": "Chinese line name",
+                    "english": "English line name",
                     "lineCode": "Line code"
                 },
-                "info1": "This function is designed to convert the RMP project into RMG projects.",
-                "info2": "Information is synced from Line information settings. Click a line to download its RMG configuration.",
+                "info1": "This function is designed to convert the Rail Map Painter project into Rail Map Generator projects.",
+                "info2": "Information is synced from Line information settings. Click a line to download its Rail Map Generator configuration.",
                 "noline": "No available lines found.",
                 "download": "Download",
                 "downloadInfo": "Please select one of the following stations as the starting station and click it to download."
@@ -1250,9 +1250,9 @@
         "donation": {
             "title": "Donation",
             "openCollective": "Open Collective",
-            "viaUSD": "Donate in USD via Paypal or Visa card.",
+            "viaUSD": "Donate in USD via PayPal or Visa card.",
             "afdian": "爱发电",
-            "viaCNY": "Donate in CNY via Alipay or Wechat Pay."
+            "viaCNY": "Donate in CNY via Alipay or WeChat Pay."
         },
         "settings": {
             "title": "Settings",
@@ -1315,14 +1315,14 @@
                 "arrows": "Move the canvas a little bit.",
                 "ijkl": "Move the selected station(s) a little bit.",
                 "rotate": "Rotate selected nodes clockwise. Hold Alt for 5° steps.",
-                "shift": "Multiple selection.",
+                "shift": "Multiple selection",
                 "alt": "Hold down while dragging to temporarily disable auto-snapping.",
                 "delete": "Delete the selected station(s).",
-                "cut": "Cut.",
-                "copy": "Copy.",
-                "paste": "Paste.",
-                "undo": "Undo.",
-                "redo": "Redo."
+                "cut": "Cut",
+                "copy": "Copy",
+                "paste": "Paste",
+                "undo": "Undo",
+                "redo": "Redo"
             },
             "procedures": {
                 "title": "Procedures",
@@ -1360,28 +1360,28 @@
                     "changeTo": "To this path:"
                 },
                 "changeColor": {
-                    "title": "Change color in batch",
-                    "changeFrom": "Change all objects from this color:",
-                    "changeTo": "To this color:",
-                    "any": "From any color"
+                    "title": "Change colour in batch",
+                    "changeFrom": "Change all objects from this colour:",
+                    "changeTo": "To this colour:",
+                    "any": "From any colour"
                 },
                 "removeLines": {
-                    "title": "Remove lines with single color",
-                    "content": "Remove lines that have this color: "
+                    "title": "Remove lines with single colour",
+                    "content": "Remove lines that have this colour: "
                 },
                 "updateColor": {
-                    "title": "Update color",
-                    "content": "Update all colors with their latest value.",
-                    "success": "Successfully update all colors.",
-                    "error": "Error in updating all colors: {{e}}."
+                    "title": "Update colour",
+                    "content": "Update all colours with their latest value.",
+                    "success": "Successfully update all colours.",
+                    "error": "Error in updating all colours: {{e}}."
                 },
                 "masterManager": {
                     "title": "Manage all master nodes",
-                    "id": "Id",
+                    "id": "ID",
                     "label": "Label",
                     "type": "Type",
                     "types": {
-                        "MiscNode": "MiscNode",
+                        "MiscNode": "Miscellaneous node",
                         "Station": "Station"
                     },
                     "importTitle": "Upload master parameter",
@@ -1409,12 +1409,12 @@
             "content1": "In memory of all the freedom and equality we once had.",
             "content2": "06/01/2022 in Shanghai",
             "contributors": "Contributors",
-            "coreContributors": "Core Contributors",
+            "coreContributors": "Core contributors",
             "styleContributors": "Style Contributors",
             "203IhzElttil": "Special thanks for his diligent work in ensuring that the stations of Shanghai Metro match the original design.",
             "Swiftiecott": "Special thanks for his diligent work in ensuring that the stations of Beijing Subway match the original design.",
             "Minwtraft": "Special thanks for his diligent work in ensuring that the stations of Guangzhou Metro match the original design.",
-            "contactUs": "Contact Us",
+            "contactUs": "Contact us",
             "github": "Project repository",
             "githubContent": "Face any problems? Search or raise an issue here!",
             "zulip": "Zulip community",
@@ -1459,24 +1459,24 @@
             "widthScale": "Width scale",
             "roads": {
                 "title": "Roads",
-                "casingColor": "Outline",
+                "casingColor": "Stroke",
                 "color": "Surface",
-                "path": "Path",
-                "local": "Local",
+                "path": "Walking path",
+                "local": "Local road",
                 "collector": "Collector",
                 "arterial": "Arterial"
             },
             "rails": {
                 "title": "Railways",
                 "metro": "Metro",
-                "national": "National railway"
+                "national": "National rail"
             },
             "labels": {
                 "title": "Labels",
                 "enabled": "Show all labels",
                 "sizeScale": "Size scale",
-                "color": "Text",
-                "strokeColor": "Outline",
+                "color": "Text colour",
+                "strokeColor": "Stroke",
                 "groups": {
                     "places": "Places",
                     "roads": "Roads",
@@ -1518,5 +1518,12 @@
         "parallelLimit": "Up to {{count}} parallel lines are free. Subscribe to $t(RMP_CLOUD) for unlimited parallel lines.",
         "redeem": "Click to redeem a subscription.",
         "redeemNamed": "Redeem {{subscription}}"
-    }
+    },
+    "colorA": "Colour A",
+    "colorB": "Colour B",
+    "New": "New feature",
+    "previous": "Previous",
+    "upload": "Upload",
+    "RMP_CLOUD_SHORT_NAME": "Rail Map Painter・Proceed Signal",
+    "RMP_EXPORT_SHORT_NAME": "Rail Map Painter・Stop and Proceed"
 }

@@ -7,13 +7,13 @@
     "copy": "复制",
     "copyAttrs": "复制独特属性",
     "pasteAttrs": "粘贴独特属性",
-    "remove": "移除",
+    "remove": "删除",
     "close": "关闭",
     "noShowAgain": "不再显示",
     "rmtPromotion": "您绝对不想错过的全能工具包！",
     "panel": {
         "tools": {
-            "showLess": "显示更少",
+            "showLess": "收起",
             "showOnlyFavorites": "仅显示收藏",
             "section": {
                 "lineDrawing": "线段绘制",
@@ -21,7 +21,7 @@
                 "stations": "车站",
                 "miscellaneousNodes": "杂项节点"
             },
-            "select": "多选",
+            "select": "选择",
             "learnHowToAdd": {
                 "station": "了解如何添加车站！",
                 "misc-node": "了解如何添加节点！",
@@ -32,22 +32,22 @@
             "header": "详情",
             "info": {
                 "title": "基本信息",
-                "id": "唯一识别符",
+                "id": "标识符",
                 "zIndex": "深度",
                 "stationType": "车站类型",
-                "linePathType": "线段路径类型",
-                "lineStyleType": "线段样式类型",
+                "linePathType": "线段路径",
+                "lineStyleType": "线段样式",
                 "type": "类型",
                 "visible": "导出时可见",
                 "parallel": "平行线段",
                 "parallelIndex": "平行线段索引",
                 "reconcile": "合并线段",
                 "reconcileId": "合并线段唯一识别符",
-                "reconcileAssign": "指派",
+                "reconcileAssign": "分配",
                 "reconcileMembers": "合并线段成员"
             },
             "multipleSelection": {
-                "title": "多重选取",
+                "title": "多选",
                 "change": "修改选中对象的属性",
                 "selected": "选中的对象:",
                 "show": "显示",
@@ -85,7 +85,7 @@
                     "nameZh": "中文线路名称",
                     "nameEn": "英文线路名称",
                     "nameJa": "日语线路名称",
-                    "num": "线路号"
+                    "num": "线路编号"
                 },
                 "virtual": {
                     "displayName": "虚拟节点"
@@ -132,7 +132,7 @@
                 },
                 "shenzhenMetroNumLineBadge": {
                     "displayName": "深圳地铁数字线路标识",
-                    "branch": "是否为支线"
+                    "branch": "是否支线"
                 },
                 "mrtDestinationNumbers": {
                     "displayName": "新加坡MRT终点数字"
@@ -162,7 +162,7 @@
                 },
                 "londonTubeLineBadge": {
                     "displayName": "伦敦地铁线路标牌",
-                    "lineName": "线路名",
+                    "lineName": "线路名称",
                     "walking": "步行",
                     "walkingTarget": "步行目标",
                     "distance": "距离",
@@ -173,7 +173,7 @@
                     "displayName": "成都轨道交通线路标识",
                     "badgeType": {
                         "displayName": "类型",
-                        "normal": "普通",
+                        "normal": "标准",
                         "suburban": "市域铁路",
                         "tram": "有轨电车"
                     }
@@ -186,10 +186,10 @@
                     "displayName": "武汉轨道交通线路标识"
                 },
                 "image": {
-                    "displayName": "图像",
+                    "displayName": "图片",
                     "label": "标签",
-                    "scale": "缩放",
-                    "rotate": "旋转",
+                    "scale": "缩放比例",
+                    "rotate": "旋转角度",
                     "opacity": "不透明度",
                     "preview": "预览"
                 },
@@ -208,7 +208,7 @@
                     "disney": "迪士尼",
                     "railway": "火车站",
                     "railway_2024": "火车站 2024",
-                    "hsr": "高铁",
+                    "hsr": "高速铁路",
                     "airport_hk": "香港机场",
                     "disney_hk": "香港迪士尼",
                     "ngong_ping_360": "昂坪360",
@@ -262,12 +262,12 @@
                 "text": {
                     "displayName": "任意文字",
                     "content": "内容",
-                    "fontSize": "文字大小",
+                    "fontSize": "字号",
                     "lineHeight": "行高度",
                     "textAnchor": "文字锚点",
-                    "start": "开始",
-                    "middle": "居中",
-                    "end": "结束",
+                    "start": "文字起始端",
+                    "middle": "中间",
+                    "end": "文字末尾端",
                     "auto": "自动",
                     "hanging": "悬挂",
                     "dominantBaseline": "显性基线",
@@ -284,7 +284,7 @@
                     "tube": "伦敦地铁",
                     "taipei": "台北捷运",
                     "fontSynthesisWarning": "粗体和斜体样式仅在字体支持时可用。",
-                    "rotate": "旋转",
+                    "rotate": "旋转角度",
                     "italic": "斜体",
                     "bold": "粗体",
                     "outline": "描边"
@@ -319,12 +319,12 @@
                     "nameJa": "日语名称",
                     "nameOffsetX": "名称横向偏移",
                     "nameOffsetY": "名称纵向偏移",
-                    "rotate": "车站旋转角度",
-                    "lineCode": "路线编号",
+                    "rotate": "图标旋转角度",
+                    "lineCode": "线路代码",
                     "stationCode": "车站编号",
-                    "left": "左",
+                    "left": "左侧",
                     "middle": "中间",
-                    "right": "右",
+                    "right": "右侧",
                     "top": "顶部",
                     "bottom": "底部",
                     "custom": "自定义",
@@ -339,9 +339,9 @@
                     "outStation": "出站换乘",
                     "outSystem": "系统外换乘",
                     "addGroup": "添加换乘组合",
-                    "noInterchanges": "非换乘站",
-                    "nameZh": "中文名称",
-                    "nameEn": "英文名称",
+                    "noInterchanges": "无换乘",
+                    "nameZh": "中文线路名称",
+                    "nameEn": "英文线路名称",
                     "add": "添加换乘",
                     "up": "上移换乘站",
                     "down": "下移换乘站",
@@ -366,16 +366,16 @@
                 },
                 "gzmtrBasic": {
                     "displayName": "广州地铁基本车站",
-                    "open": "是否开通",
-                    "secondaryNameZh": "中文第二名称",
-                    "secondaryNameEn": "英文第二名称",
+                    "open": "运营中",
+                    "secondaryNameZh": "中文次要名称",
+                    "secondaryNameEn": "英文次要名称",
                     "tram": "有轨电车"
                 },
                 "gzmtrInt": {
                     "displayName": "广州地铁换乘车站",
-                    "open": "是否开通",
-                    "secondaryNameZh": "中文第二名称",
-                    "secondaryNameEn": "英文第二名称",
+                    "open": "运营中",
+                    "secondaryNameZh": "中文次要名称",
+                    "secondaryNameEn": "英文次要名称",
                     "foshan": "佛山"
                 },
                 "gzmtrInt2024": {
@@ -383,7 +383,7 @@
                     "columns": "站点列数",
                     "topHeavy": "优先将更多站点放在上方",
                     "anchorAt": "锚点位置",
-                    "anchorAtNone": "居中",
+                    "anchorAtNone": "中心",
                     "osiPosition": "出站换乘",
                     "osiPositionNone": "无",
                     "osiPositionLeft": "左侧",
@@ -391,7 +391,7 @@
                 },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
-                    "open": "开通",
+                    "open": "运营中",
                     "construction": "施工",
                     "scale": "站名横向缩放"
                 },
@@ -405,7 +405,7 @@
                 },
                 "suzhouRTBasic": {
                     "displayName": "苏州轨道交通基本车站",
-                    "textVertical": "垂直名称"
+                    "textVertical": "竖排名称"
                 },
                 "suzhouRTInt": {
                     "displayName": "苏州轨道交通换乘车站"
@@ -427,21 +427,21 @@
                     "displayName": "JR东日本基本车站",
                     "nameOffset": "名称偏移",
                     "textOneLine": "名称在一行中",
-                    "textVertical": "垂直名称",
+                    "textVertical": "竖排名称",
                     "important": "重要车站",
                     "lines": "换乘线偏移"
                 },
                 "jrEastImportant": {
                     "displayName": "JR东日本重要车站",
-                    "textVertical": "垂直名称",
+                    "textVertical": "竖排名称",
                     "mostImportant": "最重要车站",
                     "minLength": "车站的最小长度"
                 },
                 "foshanMetroBasic": {
                     "displayName": "佛山地铁基本车站",
-                    "open": "是否开通",
-                    "secondaryNameZh": "中文第二名称",
-                    "secondaryNameEn": "英文第二名称",
+                    "open": "运营中",
+                    "secondaryNameZh": "中文次要名称",
+                    "secondaryNameEn": "英文次要名称",
                     "tram": "有轨电车"
                 },
                 "qingdaoMetro": {
@@ -451,7 +451,7 @@
                 "tokyoMetroBasic": {
                     "displayName": "东京地铁基本车站",
                     "nameOffset": "名称偏移",
-                    "textVertical": "垂直站名"
+                    "textVertical": "竖排名称"
                 },
                 "tokyoMetroInt": {
                     "displayName": "东京地铁换乘车站",
@@ -462,13 +462,13 @@
                         "left2": "左 (较大)",
                         "right1": "右 (较少)",
                         "right2": "右 (较大)",
-                        "up": "上",
-                        "down": "下"
+                        "up": "向上",
+                        "down": "向下"
                     },
                     "importance": {
                         "displayName": "车站重要性",
                         "default": "默认",
-                        "middle": "中",
+                        "middle": "中间",
                         "high": "高"
                     },
                     "align": {
@@ -487,7 +487,7 @@
                     "displayName": "伦敦地铁基本车站",
                     "terminal": "终点站",
                     "terminalNameRotate": "终点站名旋转",
-                    "shareTracks": "轨道共享",
+                    "shareTracks": "共线",
                     "noTrackShare": "无轨道共享",
                     "shareTracksIndex": "轨道共享索引"
                 },
@@ -499,8 +499,8 @@
                 },
                 "guangdongIntercityRailway": {
                     "displayName": "广东城际铁路车站",
-                    "secondaryNameZh": "中文第二名称",
-                    "secondaryNameEn": "英文第二名称"
+                    "secondaryNameZh": "中文次要名称",
+                    "secondaryNameEn": "英文次要名称"
                 },
                 "chongqingRTBasic": {
                     "displayName": "重庆轨道交通基本车站",
@@ -517,7 +517,7 @@
                 },
                 "chongqingRTBasic2021": {
                     "displayName": "重庆轨道交通基本车站（2021）",
-                    "open": "是否开通"
+                    "open": "运营中"
                 },
                 "chongqingRTInt2021": {
                     "displayName": "重庆轨道交通换乘车站（2021）",
@@ -534,7 +534,7 @@
                     "isVertical": "纵向车站",
                     "stationType": {
                         "displayName": "车站类型",
-                        "normal": "普通站",
+                        "normal": "普通车站",
                         "branchTerminal": "支线终点站",
                         "joint": "共线换乘站",
                         "tram": "有轨电车站"
@@ -547,7 +547,7 @@
                 "osakaMetro": {
                     "displayName": "大阪地铁站",
                     "stationType": "车站类型",
-                    "normalType": "一般车站",
+                    "normalType": "普通车站",
                     "throughType": "贯通运营",
                     "oldName": "车站旧称",
                     "nameVertical": "名称纵向显示",
@@ -557,8 +557,8 @@
                     "nameMaxWidth": "日文名称长度",
                     "oldNameMaxWidth": "车站旧称长度",
                     "translationMaxWidth": "英文名称长度",
-                    "up": "上",
-                    "down": "下"
+                    "up": "向上",
+                    "down": "向下"
                 },
                 "wuhanRTBasic": {
                     "displayName": "武汉轨道交通基本车站"
@@ -600,8 +600,8 @@
                 },
                 "taipeiCommon": {
                     "nameOffset": "站名位置",
-                    "secondaryNameZh": "第二站名（中文）",
-                    "secondaryNameEn": "第二站名（英文）",
+                    "secondaryNameZh": "中文次要名称",
+                    "secondaryNameEn": "英文次要名称",
                     "secondaryNameOnNewLine": "换行展示第二名称",
                     "filled": "实心编号牌",
                     "align": "编号牌排列",
@@ -618,8 +618,8 @@
                     "startAngle": "起始点角度",
                     "endAngle": "结束点角度",
                     "roundCornerFactor": "转折圆角因子",
-                    "from": "从",
-                    "to": "到",
+                    "from": "起点",
+                    "to": "终点",
                     "parallelDisabled": "由于此线段是平行的，因此某些属性已被禁用。",
                     "changeInBaseLine": "在基准线段中更改它们：",
                     "reconcileDisabled": "此线段属于合并线段链，偏移已禁用。整条链作为一条合并路径渲染。",
@@ -657,16 +657,16 @@
                     "displayName": "自由绘制线段",
                     "outlineSettingsUnavailable": "可变宽度和两端端头设置暂未开放。",
                     "controlPointHint": "拖动蓝色控制点可调整线路走向；双击线路可在对应位置添加控制点，右击蓝色控制点可将其删除。",
-                    "widthStops": "宽度点",
+                    "widthStops": "宽度控制点",
                     "widthStopIndex": "#",
                     "widthStopPosition": "位置 (%)",
                     "widthStopWidth": "宽度 (px)",
                     "baseWidthHint": "5px 是线段基准宽度",
                     "smoothing": "平滑度",
-                    "startCap": "起点端帽",
-                    "endCap": "终点端帽",
-                    "round": "圆形",
-                    "flat": "平直",
+                    "startCap": "起点形状",
+                    "endCap": "终点形状",
+                    "round": "圆头",
+                    "flat": "平头",
                     "arrow": "箭头",
                     "arrowLength": "箭头长度",
                     "arrowWidth": "箭头宽度"
@@ -702,8 +702,8 @@
                 "dualColor": {
                     "displayName": "双色样式",
                     "swap": "切换颜色",
-                    "colorA": "颜色A",
-                    "colorB": "颜色B"
+                    "colorA": "颜色 A",
+                    "colorB": "颜色 B"
                 },
                 "river": {
                     "displayName": "河流样式",
@@ -736,7 +736,7 @@
                         "displayName": "终端显示",
                         "none": "无",
                         "thinTail": "其他线区",
-                        "blackBlock": "终点"
+                        "blackBlock": "终点站"
                     },
                     "decorationAt": {
                         "displayName": "显示位置",
@@ -797,8 +797,8 @@
                     "layers": "线层",
                     "layer": "第{{index}}层",
                     "width": "宽度",
-                    "opacity": "透明度",
-                    "linecap": "线帽",
+                    "opacity": "不透明度",
+                    "linecap": "线端形状",
                     "linecapButt": "平头",
                     "linecapRound": "圆头",
                     "linecapSquare": "方头",
@@ -838,7 +838,7 @@
                 "loading": "正在加载图像..."
             },
             "footer": {
-                "duplicate": "重复"
+                "duplicate": "创建副本"
             },
             "taipeiOpacity": {
                 "preset": "预设",
@@ -894,14 +894,14 @@
             "split": "分离",
             "invalidDate": "请输入有效日期，格式为 YYYY-MM-DD。",
             "insufficientStations": "此线路需要至少两个站点才能导出。",
-            "unsupportedTopology": "RMG 无法从所选起始站表达此拓扑，请更换起始站或先分离线路。",
-            "exportHelp": "信息自动同步自线路信息设置。点击对应线路即可下载 RMG 配置文件。",
+            "unsupportedTopology": "地铁线路图生成器无法从所选起始站表达此拓扑，请更换起始站或先分离线路。",
+            "exportHelp": "信息自动同步自线路信息设置。点击对应线路即可下载地铁线路图生成器配置文件。",
             "downloadLine": "下载线路",
             "unnamed": "未命名线路",
             "unnamedStation": "未命名站点"
         },
         "popoverHeader": "你正在浏览<1>{{environment}}</1>环境！",
-        "popoverBody": "我们正在测试最新的RMP。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
+        "popoverBody": "我们正在测试最新的地铁线路图绘制器。如果你有任何建议，欢迎在 https://github.com/railmapgen/rmp/issues 上提出。",
         "search": "搜索车站",
         "edit": "编辑",
         "undo": "撤销",
@@ -919,9 +919,9 @@
             "alreadyAdded": "已添加",
             "addSelected": "添加已选项",
             "addPathByColor": "按颜色添加一条线路",
-            "homeDescription": "从绘制器当前打开的 RMP 项目创建编年器项目，或导入已有的编年器项目文件。",
+            "homeDescription": "从绘制器当前打开的地铁线路图绘制器项目创建编年器项目，或导入已有的编年器项目文件。",
             "continueEditing": "继续编辑",
-            "startFromCurrentRmp": "从当前 RMP 项目开始",
+            "startFromCurrentRmp": "从当前地铁线路图绘制器项目开始",
             "importTimelineProject": "导入编年器项目",
             "newProjectName": "编年器项目",
             "recentProject": "最近项目",
@@ -931,7 +931,7 @@
             "deleteProjectConfirm": "确定删除编年器项目“{{name}}”吗？",
             "files": "文件",
             "backToMainMenu": "返回主菜单",
-            "importRmpData": "导入 RMP 数据",
+            "importRmpData": "导入地铁线路图绘制器数据",
             "importOpenPainterProject": "绘制器打开的项目",
             "importLocalConfig": "本地配置文件",
             "renameProject": "项目重命名",
@@ -959,7 +959,7 @@
             "seconds": "秒",
             "keyframe": "关键帧",
             "enterPhase": "进入",
-            "exitPhase": "离开",
+            "exitPhase": "退场",
             "showAnimation": "显示动画",
             "toggleAnimation": "显示/隐藏动画",
             "deleteEntry": "删除",
@@ -1019,7 +1019,7 @@
                 "showLineLengthMapOnly": "仅开启真实地理地图时可用。",
                 "savedWithProject": "随当前编年器项目保存",
                 "done": "完成",
-                "cameraZoom": "放大倍率",
+                "cameraZoom": "显示倍率",
                 "cameraZoomFull": "全屏（Full）",
                     "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
                     "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
@@ -1029,15 +1029,15 @@
             "lineLabels": {
                 "title": "线路标签信息",
                 "description": "设置视频中显示的线路名称、标志色与开通日期。这些标注信息仅保存在当前编年器项目中。",
-                "empty": "暂无线路信息。导入包含线路信息的 RMP 存档后，即可设置视频线路标签。",
+                "empty": "暂无线路信息。导入包含线路信息的地铁线路图绘制器存档后，即可设置视频线路标签。",
                 "color": "标签标志色",
                 "invalidColor": "请输入有效的十六进制颜色，例如 #1677ff。",
                 "reset": "恢复导入的线路信息",
-                "resetHint": "将此线路的标签恢复为导入时的 RMP 线路信息。",
+                "resetHint": "将此线路的标签恢复为导入时的地铁线路图绘制器线路信息。",
                 "saved": "修改会保存在当前编年器项目中，并同时应用于预览和导出。"
             },
             "rmpImport": {
-                "title": "导入 RMP 数据",
+                "title": "导入地铁线路图绘制器数据",
                 "applyLineInfo": "按线路信息自动填入时间线",
                 "description": "按开通日期排列线路，并从设定的起点向终点依次绘制。未填写开通日期的线路排在最后。",
                 "summary": "{{lines}} 条线路 · {{nodes}} 个节点 · {{edges}} 条线段",
@@ -1070,9 +1070,9 @@
                 "addModule": "添加模块",
                 "subscriberLocked": "此区域需要订阅「$t(RMP_EXPORT)」才能编辑。已有模块可以移到免费区域。",
                 "subscriptionExport": "右上角区域需要订阅「$t(RMP_EXPORT)」。请将其中的模块移到其他区域，或订阅后导出。",
-                "region": "显示区域",
-                "moveUp": "上移",
-                "moveDown": "下移",
+                "region": "位置",
+                "moveUp": "向上移动",
+                "moveDown": "向下移动",
                 "remove": "删除模块",
                 "timedTextHint": "文字内容与出现时间由文字轨道控制。",
                 "trackLocked": "调整画面标注期间，轨道内容已锁定。",
@@ -1096,9 +1096,9 @@
                     "dateLayout": "日期布局",
                     "showAppearedLines": "在下方显示所有已出现过的线路",
                     "lengthScope": "长度统计",
-                    "unit": "长度单位",
-                    "size": "小窗大小",
-                    "fontSize": "文字大小",
+                    "unit": "单位",
+                    "size": "大小",
+                    "fontSize": "字号",
                     "alignment": "文字对齐"
                 },
                 "options": {
@@ -1114,7 +1114,7 @@
                     "medium": "中",
                     "large": "大",
                     "left": "左对齐",
-                    "center": "居中",
+                    "center": "居中对齐",
                     "right": "右对齐"
                 }
             }
@@ -1124,12 +1124,12 @@
             "hide": "隐藏地理地图"
         },
         "open": {
-            "new": "新项目",
+            "new": "新建项目",
             "config": "导入项目",
-            "projectRMG": "从RMG项目中导入",
-            "invalidType": "无效的文件类型！仅接受JSON格式的文件。",
+            "projectRMG": "从地铁线路图生成器项目导入",
+            "invalidType": "无效的文件类型！只接受JSON种类的文件。",
             "unknownError": "解析上传文件时发生未知错误！请重试。",
-            "gallery": "从画廊中导入",
+            "gallery": "从画廊导入",
             "tutorial": "开始教程",
             "importOK": "作品 {{id}} 已导入。",
             "importOKContent": "对此更改不满意？可通过 Ctrl + Z 或撤销按钮进行撤销。",
@@ -1208,7 +1208,7 @@
                 "unavailableLines": "当前地图或普通模式下有些线段组合无法显示。请调整这些组合后再导出视频。"
             },
             "2rmg": {
-                "title": "导出RMG项目",
+                "title": "导出地铁线路图生成器项目",
                 "type": {
                     "line": "直线",
                     "loop": "环线",
@@ -1217,22 +1217,22 @@
                 "placeholder": {
                     "chinese": "中文线路名称",
                     "english": "英文线路名称",
-                    "lineCode": "路线编号"
+                    "lineCode": "线路代码"
                 },
-                "info1": "这个功能可将RMP项目导出为RMG项目。",
-                "info2": "信息自动同步自线路信息设置。点击对应线路即可下载 RMG 配置文件。",
+                "info1": "这个功能可将地铁线路图绘制器项目导出为地铁线路图生成器项目。",
+                "info2": "信息自动同步自线路信息设置。点击对应线路即可下载地铁线路图生成器配置文件。",
                 "noline": "未找到可用线路。",
                 "download": "下载",
                 "downloadInfo": "请选择一个起始车站，并点击它。"
             },
-            "format": "文件种类",
-            "png": "PNG图像",
-            "svg": "SVG图像",
+            "format": "格式",
+            "png": "PNG",
+            "svg": "SVG",
             "svgVersion": "版本",
             "svg1.1": "1.1（适用于Adobe Illustrator）",
             "svg2": "2（适用于现代浏览器）",
             "transparent": "透明背景",
-            "scale": "缩放",
+            "scale": "缩放比例",
             "disabledScaleOptions": "图像对于此浏览器来说太大。",
             "disabledScaleOptionsSolution": "<link1>订阅「$t(RMP_EXPORT)」</link1>并<link2>下载</link2>我们的桌面应用程序以渲染大型图像。",
             "imageTooBig": "图像太大，无法在您的浏览器中生成！",
@@ -1248,7 +1248,7 @@
         "donation": {
             "title": "捐赠",
             "openCollective": "Open Collective",
-            "viaUSD": "通过Paypal或Visa卡以美元捐赠。",
+            "viaUSD": "通过PayPal或Visa卡以美元捐赠。",
             "afdian": "爱发电",
             "viaCNY": "通过支付宝或微信支付以人民币捐赠。"
         },
@@ -1284,7 +1284,7 @@
                 "randomStationNames": {
                     "title": "创建时的站名",
                     "default": "默认",
-                    "empty": "空白",
+                    "empty": "空值",
                     "shmetro": "上海",
                     "bjsubway": "北京"
                 },
@@ -1313,14 +1313,14 @@
                 "arrows": "稍微移动画布。",
                 "ijkl": "稍微移动所选站点。",
                 "rotate": "顺时针旋转所选节点（按住 Alt 为 5° 步进）。",
-                "shift": "多选。",
+                "shift": "多选",
                 "alt": "拖动时按下临时停用磁性布局。",
                 "delete": "删除所选站点。",
-                "cut": "剪切。",
-                "copy": "复制。",
-                "paste": "粘贴。",
-                "undo": "撤销。",
-                "redo": "重做。"
+                "cut": "剪切",
+                "copy": "复制",
+                "paste": "粘贴",
+                "undo": "撤销",
+                "redo": "重做"
             },
             "procedures": {
                 "title": "过程",
@@ -1375,7 +1375,7 @@
                 },
                 "masterManager": {
                     "title": "管理全部大师节点",
-                    "id": "唯一标识",
+                    "id": "标识符",
                     "label": "标签",
                     "type": "类型",
                     "types": {
@@ -1391,18 +1391,18 @@
             "telemetry": {
                 "title": "遥测",
                 "info": "为了帮助改进地铁线路图绘制器并激励贡献者提升项目，我们通过 Google Analytics 收集匿名使用数据。这些数据仅用于增强用户体验和优化工具功能，绝不会与第三方共享。",
-                "essential": "基础",
+                "essential": "基本",
                 "essentialTooltip": "在地铁线路图工具包中更改此全局设置",
                 "essentialInfo": "地铁线路图绘制器收集一些基本使用数据，以帮助我们了解用户如何以及何时与工具交互。请放心，我们从不收集任何可识别个人身份的信息或您的项目数据。",
-                "essentialLink": "点击此链接查看 Google Analytics 可能收集的详细字段。",
-                "additional": "额外",
+                "essentialLink": "点击此链接查看Google Analytics可能收集的详细字段。",
+                "additional": "附加",
                 "additionalInfo": "地铁线路图绘制器还会收集有关交互的数据，例如项目创建或站点添加等操作。这些额外数据同样是匿名的，仅用于统计分析以帮助我们改进工具。"
             }
         },
         "about": {
             "title": "关于",
             "rmp": "地铁线路图绘制器",
-            "railmapgen": "一个线路图工具包项目",
+            "railmapgen": "地铁线路图工具包项目",
             "desc": "通过自由拖动来自不同城市的车站并以 90 或 135 度圆角线段将它们连接起来，设计您自己的铁路地图！",
             "content1": "谨以此纪念我们曾拥有的自由与平等。",
             "content2": "06/01/2022于上海",
@@ -1414,7 +1414,7 @@
             "Minwtraft": "特别感谢他勤勉工作，确保广州地铁站与原始设计相符。",
             "contactUs": "联系我们",
             "github": "项目仓库",
-            "githubContent": "遇到任何问题？在这里搜索或提出一个问题！",
+            "githubContent": "遇到问题？在这里搜索或提交问题！",
             "zulip": "Zulip 社区",
             "zulipContent": "加入我们的 Zulip 社区！"
         }
@@ -1451,7 +1451,7 @@
         "zoomInToEdit": "请放大地图以进行编辑。",
         "style": {
             "title": "地图样式",
-            "reset": "恢复默认",
+            "reset": "重置",
             "type": "类型",
             "enabled": "显示",
             "widthScale": "宽度倍率",
@@ -1459,7 +1459,7 @@
                 "title": "道路",
                 "casingColor": "描边",
                 "color": "路面",
-                "path": "小径",
+                "path": "步道",
                 "local": "支路",
                 "collector": "次干路",
                 "arterial": "主干路"
@@ -1473,7 +1473,7 @@
                 "title": "标签",
                 "enabled": "显示全部标签",
                 "sizeScale": "字号倍率",
-                "color": "文字",
+                "color": "文字颜色",
                 "strokeColor": "描边",
                 "groups": {
                     "places": "地名",
@@ -1516,5 +1516,9 @@
         "parallelLimit": "免费可使用 {{count}} 条平行线段，订阅「$t(RMP_CLOUD)」后不限数量。",
         "redeem": "点击前往兑换订阅。",
         "redeemNamed": "兑换{{subscription}}"
-    }
+    },
+    "Language": "语言",
+    "RMP_CLOUD_SHORT_NAME": "地铁线路图绘制器・出发进行",
+    "RMP_EXPORT_SHORT_NAME": "地铁线路图绘制器・一度停车",
+    "Remove": "移除"
 }

@@ -55,7 +55,7 @@ describe('OpenActions', () => {
 
         fireEvent.click(container.querySelector('button')!);
 
-        expect(await screen.findByText('Import from RMG project')).toBeInTheDocument();
+        expect(await screen.findByText('Import from Rail Map Generator project')).toBeInTheDocument();
     });
 
     it('starts a new project with the map hidden while preserving its style in project history', async () => {

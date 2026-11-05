@@ -126,7 +126,7 @@ describe('ToolsPanel contextual line access', () => {
     it('uses an allowed map-native fallback for a free user selecting a style', () => {
         const testStore = renderToolsPanel(true, false);
 
-        fireEvent.click(screen.getByRole('button', { name: 'Single color style', hidden: true }));
+        fireEvent.click(screen.getByRole('button', { name: 'Single colour style', hidden: true }));
 
         expect(testStore.getState().runtime.mode).toBe(`line-${LinePathType.Bezier}/${LineStyleType.SingleColor}`);
     });
