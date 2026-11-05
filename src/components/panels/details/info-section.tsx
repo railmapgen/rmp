@@ -32,12 +32,12 @@ const ExportVisibilityField = (props: {
 
     return (
         <FormControl aria-label={props.label} className="rmg-label__one-line" flex={1} minW={276} sx={styles}>
-            <FormLabel size="xs">
-                <HStack spacing="1">
+            <HStack spacing="1">
+                <FormLabel size="xs" mb="0" mr="0">
                     <Text>{props.label}</Text>
-                    {props.isDisabled && <SubscriptionBadge subscription="RMP_CLOUD" />}
-                </HStack>
-            </FormLabel>
+                </FormLabel>
+                {props.isDisabled && <SubscriptionBadge subscription="RMP_CLOUD" />}
+            </HStack>
             <Switch
                 isChecked={props.isChecked}
                 isDisabled={props.isDisabled}

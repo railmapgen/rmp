@@ -1,5 +1,7 @@
 import { Badge, BadgeProps, Image, Tooltip, useColorModeValue } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
+import rmgRuntime from '@railmapgen/rmg-runtime';
+import { OPEN_SUBSCRIPTION_REDEMPTION } from '../constants/subscription';
 import { useRootSelector } from '../redux';
 import type { ActiveSubscriptions } from '../redux/account/account-slice';
 
@@ -44,9 +46,24 @@ export default function SubscriptionBadge({ subscription, description, ...props 
         ? t('subscription.included', { subscription: name })
         : (description ?? t('subscription.required', { subscription: name }));
 
+    // Paint above full-row button backgrounds, including disabled buttons' opacity stacking contexts.
     return (
-        <Tooltip label={label} hasArrow>
+        <Tooltip label={`${label} ${t('subscription.redeem')}`} hasArrow>
             <Badge
+                {...props}
+                as="button"
+                type="button"
+                aria-label={t('subscription.redeemNamed', { subscription: name })}
+                onClick={event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (!rmgRuntime.isStandaloneWindow()) {
+                        rmgRuntime.postEvent(OPEN_SUBSCRIPTION_REDEMPTION, undefined);
+                    }
+                }}
+                onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') event.stopPropagation();
+                }}
                 {...colors[subscription]}
                 borderWidth="1px"
                 borderRadius="4px"
@@ -56,12 +73,15 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                 lineHeight="18px"
                 textTransform="none"
                 display="inline-flex"
+                position="relative"
                 alignItems="center"
                 gap="1"
                 verticalAlign="middle"
                 flexShrink={0}
+                cursor="pointer"
+                _hover={{ filter: 'brightness(0.95)' }}
+                _focusVisible={{ outline: '2px solid', outlineColor: 'blue.400', outlineOffset: '2px' }}
                 tabIndex={0}
-                {...props}
             >
                 <Image
                     src={import.meta.env.BASE_URL + `images/subscriptions/${icon}`}

@@ -1,7 +1,8 @@
-import { logger } from '@railmapgen/rmg-runtime';
+import rmgRuntime, { logger } from '@railmapgen/rmg-runtime';
 import type { Dispatch } from '@reduxjs/toolkit';
 import { LocalStorageKey } from '../constants/constants';
 import { subscription_endpoint } from '../constants/server';
+import { SUBSCRIPTION_REDEEMED } from '../constants/subscription';
 import {
     type ActiveSubscriptions,
     defaultActiveSubscriptions,
@@ -91,7 +92,16 @@ export const onLocalStorageChangeRMT = (store: { dispatch: Dispatch }, options: 
         const accountState = JSON.parse(accountString) as AccountState;
         const { token } = accountState;
         updateToken(store, token);
-        fetchLoginStateAndSubscriptions(store.dispatch, token, options);
+        // Ignore an in-flight response if the account changed while it was being fetched.
+        const dispatch: Dispatch = action => {
+            if (localStorage.getItem(LocalStorageKey.ACCOUNT) === accountString) store.dispatch(action);
+            return action;
+        };
+        void fetchLoginStateAndSubscriptions(dispatch, token, {
+            onCloudSubscription: () => {
+                if (localStorage.getItem(LocalStorageKey.ACCOUNT) === accountString) options.onCloudSubscription?.();
+            },
+        }).catch(error => logger.warn('Unable to refresh subscriptions', error));
     };
 
     // Record the previous account string and only handle the change.
@@ -108,4 +118,10 @@ export const onLocalStorageChangeRMT = (store: { dispatch: Dispatch }, options: 
         logger.debug(`Account string changed to: ${accountString}`);
         handleAccountChange(accountString ?? undefined);
     };
+
+    rmgRuntime.onMessage(SUBSCRIPTION_REDEEMED, () => {
+        // Redemption need not change the stored token, so storage events alone are insufficient.
+        const accountString = localStorage.getItem(LocalStorageKey.ACCOUNT);
+        if (accountString) handleAccountChange(accountString);
+    });
 };
