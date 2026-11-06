@@ -373,7 +373,7 @@ describe('TimelineWindowHeader', () => {
         expect(screen.getByRole('button', { name: 'Zoom in' })).toBeInTheDocument();
     });
 
-    it('stacks the timeline header sections for narrow viewports', async () => {
+    it('keeps the timeline header in one row with directly accessible scrolling right-side controls', async () => {
         await i18n.changeLanguage('en');
         setWindowWidth(390);
         const store = createTimelineStore();
@@ -397,11 +397,13 @@ describe('TimelineWindowHeader', () => {
             </I18nextProvider>
         );
 
-        await waitFor(() =>
-            expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'column' })
-        );
+        await waitFor(() => expect(screen.getByTestId('timeline-header-layout')).toHaveStyle({ flexDirection: 'row' }));
         expect(screen.queryByText('Files')).not.toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Export video' })).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Menu' })).not.toBeInTheDocument();
+        expect(screen.getByRole('toolbar')).toHaveStyle({ flexWrap: 'nowrap', overflowX: 'auto' });
+        expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
+        expect(screen.getByRole('button', { name: 'Zoom in' })).toBeVisible();
     });
 
     it('hides left menu text while keeping one-row layout at medium widths', async () => {

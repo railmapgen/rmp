@@ -3,13 +3,13 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { NODES_MOVE_DISTANCE, SnapLine, SnapPoint } from '../constants/canvas';
-import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, StnId } from '../constants/constants';
+import { Events, getLinePathAndStyle, LineId, MiscNodeId, NodeId, RuntimeMode, StnId } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
 import { StationType } from '../constants/stations';
-import { useRootDispatch, useRootSelector } from '../redux';
-import { saveGraph } from '../redux/param/param-slice';
+import { useRootDispatch, useRootSelector, useRootStore } from '../redux';
+import { saveGraph, type ParamGraph } from '../redux/param/param-slice';
 import { loadFont } from '../redux/fonts/fonts-slice';
 import {
     addSelected,
@@ -39,17 +39,10 @@ import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
 import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
-import {
-    getNearestSnapLine,
-    getNearestSnapPoints,
-    getSnapLineDistance,
-    getSnapLines,
-    isNodeSupportSnapLine,
-    makeSnapLinesPath,
-} from '../util/snap-lines';
+import { getSnapLines, getSnappedNodePosition, isNodeSupportSnapLine } from '../util/snap-lines';
 import { LineCreationPreview, type LineDrawingGesture } from './line-creation-preview';
 import { Overlay } from './overlay';
-import SnapPointGuideLines from './snap-point-guide-lines';
+import NodeSnapGuides from './node-snap-guides';
 import SvgLayer from './svg-layer';
 import { SvgRenderProvider, type SvgRenderContextValue } from './svg-render-context';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
@@ -70,6 +63,20 @@ const connectableNodesType = [
 ];
 const connectableTargetPrefixes = ['stn_core_', 'virtual_circle_', 'misc_node_connectable_'] as const;
 
+export interface CanvasLineDrawingHandle {
+    begin: (source: NodeId, pointer: PathPoint) => boolean;
+    update: (pointer: PathPoint, client: { x: number; y: number }) => void;
+    finish: (pointer: PathPoint, client: { x: number; y: number }) => boolean;
+    cancel: () => void;
+}
+
+interface CanvasLineGesture extends LineDrawingGesture {
+    style: LineStyleType;
+    mode: RuntimeMode;
+    snapshot: ParamGraph;
+    highlightTarget: boolean;
+}
+
 export const findConnectableTarget = (elements: Element[]) => {
     for (const element of elements) {
         let current: Element | null = element;
@@ -88,8 +95,9 @@ export const findConnectableTarget = (elements: Element[]) => {
     }
 };
 
-const SvgCanvas = () => {
+const SvgCanvas = React.forwardRef<CanvasLineDrawingHandle>((_, ref) => {
     const dispatch = useRootDispatch();
+    const store = useRootStore();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
         dispatch(saveGraph(graph.current.export()));
@@ -100,7 +108,12 @@ const SvgCanvas = () => {
         telemetry: { project: isAllowProjectTelemetry },
         preference: { autoParallel, snapLines: useSnapLines, autoChangeStationType },
     } = useRootSelector(state => state.app);
-    const { mapEnabled, svgViewBoxZoom, svgViewBoxMin } = useRootSelector(state => state.param.present);
+    const {
+        mapEnabled,
+        svgViewBoxZoom,
+        svgViewBoxMin,
+        graph: projectGraph,
+    } = useRootSelector(state => state.param.present);
     const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
     const { selected, pointerPosition, active, refresh, mode, keepLastPath, theme } = useRootSelector(
         state => state.runtime
@@ -120,7 +133,7 @@ const SvgCanvas = () => {
     const [pointerOffset, setPointerOffset] = React.useState({ dx: 0, dy: 0 });
     // Path-specific sessions keep high-frequency drawing data out of React while endpoint-derived paths retain the
     // existing preview when they do not provide custom drawing behaviour.
-    const drawingGesture = React.useRef<LineDrawingGesture | undefined>(undefined);
+    const drawingGesture = React.useRef<CanvasLineGesture | undefined>(undefined);
 
     const getNodePoint = (node: NodeId): PathPoint => ({
         x: graph.current.getNodeAttribute(node, 'x'),
@@ -134,8 +147,8 @@ const SvgCanvas = () => {
         const bbox = document.getElementById('canvas')!.getBoundingClientRect();
         return pointerPosToSVGCoord(event.clientX - bbox.left, event.clientY - bbox.top, svgViewBoxZoom, svgViewBoxMin);
     };
-    const getConnectableNodeFromPointer = (event: React.PointerEvent<SVGElement>): NodeId | undefined => {
-        const target = findConnectableTarget(document.elementsFromPoint(event.clientX, event.clientY));
+    const getConnectableNodeFromClient = (client: { x: number; y: number }): NodeId | undefined => {
+        const target = findConnectableTarget(document.elementsFromPoint(client.x, client.y));
         const node = target?.id.slice(target.matchedPrefix.length);
         return isConnectableNode(node) ? node : undefined;
     };
@@ -151,6 +164,9 @@ const SvgCanvas = () => {
     // note only the nearest 2 of them will be drawn
     React.useEffect(
         () => {
+            // A touch hold can take over a drag without reaching the node's pointerup handler.
+            setActiveSnapLines([]);
+            setActiveSnapPoint(undefined);
             if (!pointerPosition || !useSnapLines) return;
             const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
             const nodesInViewRange = findNodesInRectangle(
@@ -169,26 +185,171 @@ const SvgCanvas = () => {
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
 
+    const selectLineNodes = (source: NodeId, target?: NodeId) => {
+        const currentSelection = store.getState().runtime.selected;
+        if (
+            currentSelection.size !== (target ? 2 : 1) ||
+            !currentSelection.has(source) ||
+            (target && !currentSelection.has(target))
+        ) {
+            dispatch(setSelected(new Set<NodeId>(target ? [source, target] : [source])));
+        }
+    };
+    const cancelLine = useEvent(() => {
+        const gesture = drawingGesture.current;
+        drawingGesture.current = undefined;
+        setPointerOffset({ dx: 0, dy: 0 });
+        setActiveSnapLines([]);
+        setActiveSnapPoint(undefined);
+        dispatch(setPointerPosition(undefined));
+        dispatch(setActive(undefined));
+        const state = store.getState();
+        if (
+            gesture?.highlightTarget &&
+            gesture.mode === state.runtime.mode &&
+            gesture.snapshot === state.param.present.graph &&
+            isConnectableNode(gesture.source)
+        ) {
+            selectLineNodes(gesture.source);
+        }
+    });
+    const isCurrentLineGesture = (gesture: CanvasLineGesture) => {
+        const state = store.getState();
+        return (
+            gesture.mode === state.runtime.mode &&
+            gesture.snapshot === state.param.present.graph &&
+            isConnectableNode(gesture.source) &&
+            canUseLine(
+                gesture.type,
+                gesture.style,
+                state.param.present.mapEnabled,
+                state.account.activeSubscriptions.RMP_CLOUD
+            )
+        );
+    };
+    const beginLine = useEvent((source: NodeId, pointer: PathPoint, highlightTarget = true) => {
+        cancelLine();
+        const state = store.getState();
+        const { path, style } = getLinePathAndStyle(state.runtime.mode);
+        if (
+            !path ||
+            !style ||
+            !isConnectableNode(source) ||
+            !canUseLine(path, style, state.param.present.mapEnabled, state.account.activeSubscriptions.RMP_CLOUD)
+        ) {
+            return false;
+        }
+        const sourcePoint = getNodePoint(source);
+        drawingGesture.current = {
+            type: path,
+            style,
+            mode: state.runtime.mode,
+            snapshot: state.param.present.graph,
+            highlightTarget,
+            source,
+            sourcePoint,
+            pointer,
+            session: linePaths[path].drawingBehavior?.createSession(sourcePoint, pointer),
+        };
+        setPointerOffset({ dx: sourcePoint.x - pointer.x, dy: sourcePoint.y - pointer.y });
+        if (highlightTarget) selectLineNodes(source);
+        dispatch(setActive(source));
+        return true;
+    });
+    const updateLine = useEvent((pointer: PathPoint, client: { x: number; y: number }) => {
+        const gesture = drawingGesture.current;
+        if (!gesture) return;
+        if (!isCurrentLineGesture(gesture)) {
+            cancelLine();
+            return;
+        }
+        gesture.pointer = pointer;
+        const target = getConnectableNodeFromClient(client);
+        const nextTarget = target === gesture.source ? undefined : target;
+        if (gesture.highlightTarget && gesture.target !== nextTarget) selectLineNodes(gesture.source, nextTarget);
+        gesture.target = nextTarget;
+        gesture.session?.pointerMove(pointer);
+        setPointerOffset({ dx: gesture.sourcePoint.x - pointer.x, dy: gesture.sourcePoint.y - pointer.y });
+    });
+    const finishLine = useEvent((pointer: PathPoint, client: { x: number; y: number }) => {
+        const gesture = drawingGesture.current;
+        const isCurrent = !!gesture && isCurrentLineGesture(gesture);
+        const target = isCurrent ? getConnectableNodeFromClient(client) : undefined;
+        // Consume the session before dispatching, so repeated releases cannot create another edge.
+        cancelLine();
+        if (!gesture || !isCurrent || !target || gesture.source === target) return false;
+
+        const { type, style, source } = gesture;
+        const targetPoint = getNodePoint(target);
+        gesture.session?.pointerMove(pointer);
+        const pathAttrs = gesture.session
+            ? gesture.session.createAttrs(targetPoint, pointer)
+            : structuredClone(linePaths[type].defaultAttrs);
+        if (!pathAttrs) return false;
+
+        const newLineId: LineId = `line_${nanoid(10)}`;
+        const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
+        // TODO: there should be some way for a style to disable auto theme injection
+        if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
+        const parallelIndex =
+            autoParallel && supportsParallelLinePath(type)
+                ? makeParallelIndex(graph.current, type, source, target, 'from')
+                : -1;
+        graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
+            visible: true,
+            zIndex: 0,
+            type,
+            [type]: pathAttrs,
+            style,
+            [style]: styleAttr,
+            reconcileId: '',
+            parallelIndex,
+        });
+
+        let nodesChanged = false;
+        if (autoChangeStationType && source.startsWith('stn')) {
+            nodesChanged = checkAndChangeStationIntType(graph.current, source as StnId) || nodesChanged;
+        }
+        if (autoChangeStationType && target.startsWith('stn')) {
+            nodesChanged = checkAndChangeStationIntType(graph.current, target as StnId) || nodesChanged;
+        }
+
+        dispatch(setSelected(new Set([newLineId])));
+        if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
+        normalizeEdgeAttributes(graph.current, [newLineId], 'created');
+        dispatch(saveGraph(graph.current.export()));
+        dispatch(refreshEdgesThunk());
+        if (nodesChanged) dispatch(refreshNodesThunk());
+        if (!store.getState().runtime.keepLastPath) dispatch(setMode('free'));
+        return true;
+    });
+
+    React.useImperativeHandle(
+        ref,
+        () => ({ begin: beginLine, update: updateLine, finish: finishLine, cancel: cancelLine }),
+        [beginLine, updateLine, finishLine, cancelLine]
+    );
+    React.useEffect(() => {
+        const gesture = drawingGesture.current;
+        if (gesture && !isCurrentLineGesture(gesture)) cancelLine();
+    }, [mode, projectGraph, mapEnabled, isSubscriber, refreshNodes, cancelLine]);
+    React.useEffect(
+        () => () => {
+            if (!drawingGesture.current) return;
+            drawingGesture.current = undefined;
+            dispatch(setPointerPosition(undefined));
+            dispatch(setActive(undefined));
+        },
+        [dispatch]
+    );
+
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
         e.currentTarget.setPointerCapture(e.pointerId);
         const { x, y } = getMousePosition(e);
 
-        drawingGesture.current = undefined;
-        const { path, style } = getLinePathAndStyle(mode);
-        if (path && style && canUseLine(path, style, mapEnabled, isSubscriber)) {
-            const sourcePoint = getNodePoint(node);
-            const pointer = getSvgPointerPosition(e);
-            const behavior = linePaths[path].drawingBehavior;
-            drawingGesture.current = {
-                type: path,
-                source: node,
-                sourcePoint,
-                pointer,
-                session: isConnectableNode(node) ? behavior?.createSession(sourcePoint, pointer) : undefined,
-            };
-            setPointerOffset({ dx: 0, dy: 0 });
-        }
+        if (mode.startsWith('line')) beginLine(node, getSvgPointerPosition(e), false);
+        else drawingGesture.current = undefined;
 
         if (mode === 'select') dispatch(setMode('free'));
         // Exit reconcile assign mode when clicking a node
@@ -243,91 +404,18 @@ const SvgCanvas = () => {
                 let newY = toY;
 
                 if (isNodeSupportSnapLine(node, graph.current)) {
-                    // previous move operation may have active polylines
-                    // use and check if they are still valid, if not, remove and recalculate
-                    let nowSnapLines = activeSnapLines;
-                    let nowSnapPoint = activeSnapPoint;
-
-                    // check if cursor left the polyline and remove it from active polylines
-                    if (nowSnapLines.length !== 0) {
-                        nowSnapLines = nowSnapLines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
-                    }
-
-                    // check if the current snap point should be removed
-                    if (nowSnapPoint) {
-                        if (nowSnapLines.length === 0) {
-                            // no active snap line, remove the snap point
-                            nowSnapPoint = undefined;
-                        } else if (Math.hypot(toX - nowSnapPoint.x, toY - nowSnapPoint.y) > 6) {
-                            // cursor left the snap point, remove it
-                            nowSnapPoint = undefined;
-                        }
-                    }
-
-                    // when there is no snap point and only one snap line, add a snap point from this snap line to give visual hint
-                    if (!nowSnapPoint && nowSnapLines.length === 1) {
-                        const snapLine = nowSnapLines[0];
-                        const { snapPoint, distance } = getNearestSnapPoints(
-                            graph.current,
-                            nodesInViewRange.filter(node => !selected.has(node)),
-                            toX,
-                            toY,
-                            snapLine
-                        );
-
-                        // the cursor is close enough to the snap point, make it active snap point
-                        if (distance <= 3) {
-                            nowSnapPoint = snapPoint;
-                        }
-                    }
-
-                    // find the nearest polyline to the cursor and add it to active polylines
-                    if ((nowSnapLines.length === 1 && !nowSnapPoint) || nowSnapLines.length === 0) {
-                        const { l, d } = getNearestSnapLine(
-                            toX,
-                            toY,
-                            snapLines,
-                            nodesInViewRange.filter(
-                                node => !selected.has(node) && !nowSnapLines.some(ap => ap.node === node)
-                            )
-                        );
-                        // two parallel lines cannot intersect at a point
-                        const flag =
-                            nowSnapLines.length === 0 || !nowSnapLines.some(ap => ap.a === l.a && ap.b === l.b);
-                        // Two non-parallel lines intersect at a point
-                        if (d < 3 && nowSnapLines.length < 2 && flag) {
-                            nowSnapLines.push(l);
-                        }
-                    }
-
-                    // calculate the final position based on the activePolylines
-                    if (nowSnapLines.length === 1) {
-                        if (nowSnapPoint) {
-                            newX = nowSnapPoint.x;
-                            newY = nowSnapPoint.y;
-                        } else {
-                            const l = nowSnapLines[0];
-                            if (l.a == 0) {
-                                newY = -l.c / l.b;
-                            } else if (l.b == 0) {
-                                newX = -l.c / l.a;
-                            } else {
-                                const k = -l.a / l.b;
-                                const b = -l.c / l.b;
-                                newY = k * newX + b;
-                            }
-                        }
-                    } else if (nowSnapLines.length === 2) {
-                        const l1 = nowSnapLines[0];
-                        const l2 = nowSnapLines[1];
-                        const determinant = l1.a * l2.b - l2.a * l1.b;
-                        if (determinant !== 0) {
-                            newX = -(l1.c * l2.b - l2.c * l1.b) / determinant;
-                            newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
-                        }
-                    }
-                    setActiveSnapLines(nowSnapLines);
-                    setActiveSnapPoint(nowSnapPoint);
+                    const snapped = getSnappedNodePosition(
+                        graph.current,
+                        { x: toX, y: toY },
+                        snapLines,
+                        nodesInViewRange.filter(node => !selected.has(node)),
+                        activeSnapLines,
+                        activeSnapPoint
+                    );
+                    newX = snapped.x;
+                    newY = snapped.y;
+                    setActiveSnapLines(snapped.activeSnapLines);
+                    setActiveSnapPoint(snapped.activeSnapPoint);
                 }
 
                 // update all the selected nodes' position based on the offset of the current moving node
@@ -379,84 +467,17 @@ const SvgCanvas = () => {
                 );
             }
         } else if (mode.startsWith('line') && active) {
-            const nextPointerOffset = {
-                dx: ((pointerPosition!.x - x) * svgViewBoxZoom) / 100,
-                dy: ((pointerPosition!.y - y) * svgViewBoxZoom) / 100,
-            };
-            setPointerOffset(nextPointerOffset);
-            const gesture = drawingGesture.current;
-            if (gesture && gesture.type === getLinePathAndStyle(mode).path) {
-                const pointer = getSvgPointerPosition(e);
-                gesture.pointer = pointer;
-                const target = getConnectableNodeFromPointer(e);
-                gesture.target = target === gesture.source ? undefined : target;
-                gesture.session?.pointerMove(pointer);
-            }
+            updateLine(getSvgPointerPosition(e), { x: e.clientX, y: e.clientY });
         }
     });
     const handlePointerUp = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.currentTarget.releasePointerCapture(e.pointerId);
         const gesture = drawingGesture.current;
-        drawingGesture.current = undefined;
 
         if (mode.startsWith('line')) {
-            if (!keepLastPath) dispatch(setMode('free'));
-
-            const { path, style: style_ } = getLinePathAndStyle(mode);
-            const [type, style] = [path!, style_!]; // assured by startsWith('line') check
-            const source = isConnectableNode(active) ? active : undefined;
-            const target = getConnectableNodeFromPointer(e);
-            const gestureMatches = !gesture || (gesture.type === type && gesture.source === source);
-
-            if (
-                source &&
-                target &&
-                source !== target &&
-                gestureMatches &&
-                canUseLine(type, style, mapEnabled, isSubscriber)
-            ) {
-                const newLineId: LineId = `line_${nanoid(10)}`;
-                const sourcePoint = gesture?.sourcePoint ?? getNodePoint(source);
-                const targetPoint = getNodePoint(target);
-                const pointer = getSvgPointerPosition(e);
-                const pathAttrs = gesture?.session
-                    ? gesture.session.createAttrs(targetPoint, pointer)
-                    : structuredClone(linePaths[type].defaultAttrs);
-                if (pathAttrs) {
-                    const styleAttr = structuredClone(lineStyles[style].defaultAttrs);
-                    // TODO: there should be some way for a style to disable auto theme injection
-                    if ('color' in styleAttr && style !== LineStyleType.River) styleAttr.color = theme;
-                    const parallelIndex =
-                        autoParallel && supportsParallelLinePath(type)
-                            ? makeParallelIndex(graph.current, type, source, target, 'from')
-                            : -1;
-                    graph.current.addDirectedEdgeWithKey(newLineId, source, target, {
-                        visible: true,
-                        zIndex: 0,
-                        type,
-                        [type]: pathAttrs,
-                        style,
-                        [style]: styleAttr,
-                        reconcileId: '',
-                        parallelIndex,
-                    });
-
-                    let nodesChanged = false;
-                    if (autoChangeStationType && source.startsWith('stn')) {
-                        nodesChanged = checkAndChangeStationIntType(graph.current, source as StnId) || nodesChanged;
-                    }
-                    if (autoChangeStationType && target.startsWith('stn')) {
-                        nodesChanged = checkAndChangeStationIntType(graph.current, target as StnId) || nodesChanged;
-                    }
-
-                    dispatch(setSelected(new Set([newLineId])));
-                    if (isAllowProjectTelemetry) rmgRuntime.event(Events.ADD_LINE, { type });
-                    normalizeEdgeAttributes(graph.current, [newLineId], 'created');
-                    dispatch(saveGraph(graph.current.export()));
-                    dispatch(refreshEdgesThunk());
-                    if (nodesChanged) dispatch(refreshNodesThunk());
-                }
-            }
+            const created = finishLine(getSvgPointerPosition(e), { x: e.clientX, y: e.clientY });
+            if (!created && !keepLastPath) dispatch(setMode('free'));
+            return;
         } else if (mode === 'free' && !gesture) {
             if (active) {
                 // the node is pointed down before
@@ -475,7 +496,7 @@ const SvgCanvas = () => {
         }
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
-        setPointerPosition(undefined);
+        dispatch(setPointerPosition(undefined));
         dispatch(setActive(undefined));
         // console.log('up ', graph.current.getNodeAttributes(node));
     });
@@ -637,25 +658,21 @@ const SvgCanvas = () => {
                     isSubscriber={isSubscriber}
                 />
             </SvgRenderProvider>
-            <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
+            <g className="removeMe" pointerEvents="none">
+                <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
+            </g>
             <Overlay />
-            {activeSnapLines.length !== 0 &&
-                activeSnapLines.map(p => (
-                    <path
-                        key={`snap_line_${p.a}_${p.b}_${p.c}_${p.node}`}
-                        d={
-                            linePaths[LinePathType.Simple].generatePath(
-                                ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
-                                linePaths[LinePathType.Simple].defaultAttrs
-                            ).d
-                        }
-                        stroke="cyan"
-                        strokeWidth={svgViewBoxZoom / 75}
-                    />
-                ))}
-            {activeSnapPoint && <SnapPointGuideLines activeSnapPoint={activeSnapPoint} />}
+            <NodeSnapGuides
+                activeSnapLines={activeSnapLines}
+                activeSnapPoint={activeSnapPoint}
+                viewport={{ ...svgViewBoxMin, zoom: svgViewBoxZoom }}
+                width={width}
+                height={height}
+            />
         </>
     );
-};
+});
+
+SvgCanvas.displayName = 'SvgCanvas';
 
 export default SvgCanvas;
