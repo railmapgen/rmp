@@ -536,8 +536,8 @@ describe('line information and export panels', () => {
             </RmgThemeProvider>,
             { store }
         );
-        const chinese = await screen.findByRole('textbox', { name: 'Chinese name' });
-        const english = screen.getByRole('textbox', { name: 'English name' });
+        const chinese = await screen.findByRole('textbox', { name: 'Chinese line name' });
+        const english = screen.getByRole('textbox', { name: 'English line name' });
         fireEvent.change(chinese, { target: { value: '一号线' } });
         fireEvent.blur(chinese);
         fireEvent.change(english, { target: { value: 'Line One' } });
@@ -561,7 +561,7 @@ describe('line information and export panels', () => {
             { store }
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
-        const name = screen.getByRole('textbox', { name: 'Chinese name' });
+        const name = screen.getByRole('textbox', { name: 'Chinese line name' });
         fireEvent.change(name, { target: { value: '一号线' } });
         expect(store.getState().param.present.graph.attributes.lineDefinitions![0].name[0]).toBe('');
         fireEvent.blur(name);
@@ -597,8 +597,8 @@ describe('line information and export panels', () => {
         expect(screen.queryByRole('button', { name: 'A — E' })).not.toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
         expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start point' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowLeft' });
         expect(store.getState().param.past).toHaveLength(0);
         expect(screen.getByRole('button', { name: 'Separate' })).toBeEnabled();
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
@@ -629,7 +629,7 @@ describe('line information and export panels', () => {
         fireEvent.change(screen.getByRole('combobox', { name: 'Path end' }), { target: { value: 'stn_E' } });
         expect(diagram.querySelector('[data-station-id="stn_E"]')).toHaveAttribute('data-on-route', 'true');
         expect(diagram.querySelector('[data-station-id="stn_C"]')).toHaveAttribute('data-on-route', 'false');
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowLeft' });
         expect(store.getState().param.present.graph).toEqual(before);
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
         const after = store.getState().param.present.graph;
@@ -673,8 +673,8 @@ describe('line information and export panels', () => {
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
         expect(screen.queryByRole('combobox', { name: 'Interval action' })).not.toBeInTheDocument();
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start point' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowLeft' });
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
         const leftId = store.getState().param.present.graph.attributes.lineDefinitions![1].id;
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
@@ -711,7 +711,7 @@ describe('line information and export panels', () => {
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'Home' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'Home' });
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Move line to unassigned: B — E' }));
@@ -723,10 +723,10 @@ describe('line information and export panels', () => {
         const diagram = screen.getByLabelText('Line interval and branches');
         expect(diagram.querySelectorAll('line[data-unassigned="true"]')).toHaveLength(3);
         expect(diagram.querySelector('[data-interval-edges="line_1"]')).toHaveAttribute('stroke-dasharray', '8 6');
-        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'A');
-        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'B');
+        expect(screen.getByRole('slider', { name: 'Start point' })).toHaveAttribute('aria-valuetext', 'A');
+        expect(screen.getByRole('slider', { name: 'End point' })).toHaveAttribute('aria-valuetext', 'B');
         expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowRight' });
         expect(screen.getByRole('button', { name: 'Extend' })).toBeEnabled();
         expect(store.getState().param.present.graph).toEqual(before);
         expect(store.getState().param.past).toHaveLength(historyCount);
@@ -734,8 +734,8 @@ describe('line information and export panels', () => {
         expect(store.getState().param.present.graph).toEqual(before);
 
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — B' }));
-        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'B');
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        expect(screen.getByRole('slider', { name: 'End point' })).toHaveAttribute('aria-valuetext', 'B');
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
         const after = store.getState().param.present.graph;
         expect(after.attributes.lineDefinitions![0].edgeIds).toEqual(['line_0', 'line_1']);
@@ -765,10 +765,10 @@ describe('line information and export panels', () => {
         );
         expect(screen.getByRole('combobox', { name: 'Path start' })).toHaveValue('stn_A');
         expect(screen.getByRole('combobox', { name: 'Path end' })).toHaveValue('stn_E');
-        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'B');
-        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
+        expect(screen.getByRole('slider', { name: 'Start point' })).toHaveAttribute('aria-valuetext', 'B');
+        expect(screen.getByRole('slider', { name: 'End point' })).toHaveAttribute('aria-valuetext', 'C');
         expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
         expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual(['line_1', 'line_2']);
         expect(apply.mock.calls[0][0].attributes.unassignedLineEdgeIds).toEqual(['line_0', 'line_3']);
@@ -797,8 +797,8 @@ describe('line information and export panels', () => {
         expect(
             [...diagram.querySelectorAll('[data-station-id]')].map(node => node.getAttribute('data-station-id'))
         ).toEqual(['stn_A', 'stn_B', 'stn_C']);
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'End' });
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'End' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start point' }), { key: 'ArrowRight' });
         expect(screen.getByRole('button', { name: 'Extend' })).toBeDisabled();
         expect(apply).not.toHaveBeenCalled();
     });
@@ -827,8 +827,8 @@ describe('line information and export panels', () => {
         const diagram = screen.getByLabelText('Line interval and branches');
         expect(diagram.querySelector('[data-branch-edges="line_5"]')).toHaveAttribute('data-unassigned', 'true');
         expect(diagram.querySelector('[data-branch-edges="line_5"]')).toHaveAttribute('stroke-dasharray', '8 6');
-        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowRight' });
+        expect(screen.getByRole('slider', { name: 'End point' })).toHaveAttribute('aria-valuetext', 'C');
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
         expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual([
             'line_0',
@@ -859,11 +859,11 @@ describe('line information and export panels', () => {
             { store }
         );
         expect(screen.getByRole('combobox', { name: 'Reference station' })).toHaveValue('stn_A');
-        expect(screen.getByRole('slider', { name: 'Start' })).toHaveAttribute('aria-valuetext', 'A');
-        expect(screen.getByRole('slider', { name: 'End' })).toHaveAttribute('aria-valuetext', 'C');
+        expect(screen.getByRole('slider', { name: 'Start point' })).toHaveAttribute('aria-valuetext', 'A');
+        expect(screen.getByRole('slider', { name: 'End point' })).toHaveAttribute('aria-valuetext', 'C');
         expect(screen.getByRole('button', { name: 'Separate' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Select the other arc' })).toBeEnabled();
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'End' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'End' });
         fireEvent.click(screen.getByRole('button', { name: 'Extend' }));
         expect(apply.mock.calls[0][0].attributes.lineDefinitions[0].edgeIds).toEqual([
             'line_0',
@@ -904,7 +904,7 @@ describe('line information and export panels', () => {
         expect(within(unavailable).getByTestId(`line-info-${branch.id}`)).toBeInTheDocument();
         expect(within(unavailable).queryByTestId(`line-info-${normal.id}`)).not.toBeInTheDocument();
         expect(screen.queryByText('At least two stations are required to export this line.')).not.toBeInTheDocument();
-        expect(within(unavailable).getByText(/RMG cannot represent/)).toBeInTheDocument();
+        expect(within(unavailable).getByText(/Rail Map Generator cannot represent/)).toBeInTheDocument();
         expect(within(unavailable).queryByRole('textbox')).not.toBeInTheDocument();
         expect(within(unavailable).queryByRole('combobox')).not.toBeInTheDocument();
         expect(within(unavailable).getByRole('button', { name: /^Adjust interval:/ })).toBeEnabled();
@@ -930,7 +930,7 @@ describe('line information and export panels', () => {
         expect(within(unavailable).queryByTestId(`line-info-${single.id}`)).not.toBeInTheDocument();
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         expect(
-            within(screen.getByTestId(`line-info-${single.id}`)).getByRole('textbox', { name: 'Chinese name' })
+            within(screen.getByTestId(`line-info-${single.id}`)).getByRole('textbox', { name: 'Chinese line name' })
         ).toHaveValue('补齐线路');
         expect(screen.queryByText('At least two stations are required to export this line.')).not.toBeInTheDocument();
     });
@@ -1020,7 +1020,7 @@ describe('line information and export panels', () => {
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
         fireEvent.click(screen.getByRole('button', { name: 'Adjust interval: A — E' }));
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start point' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
         expect(store.getState().param.present).toEqual(before);
         expect(store.getState().param.past).toHaveLength(0);
@@ -1051,7 +1051,7 @@ describe('line information and export panels', () => {
             { store }
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
-        const handle = screen.getByRole('slider', { name: 'Start' });
+        const handle = screen.getByRole('slider', { name: 'Start point' });
         vi.spyOn(handle.closest('svg')!, 'getBoundingClientRect').mockReturnValue({
             left: 0,
             top: 0,
@@ -1086,7 +1086,7 @@ describe('line information and export panels', () => {
             { store }
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
-        const handle = screen.getByRole('slider', { name: 'Start' });
+        const handle = screen.getByRole('slider', { name: 'Start point' });
         vi.spyOn(handle.closest('svg')!, 'getBoundingClientRect').mockReturnValue({
             left: 0,
             top: 0,
@@ -1127,9 +1127,9 @@ describe('line information and export panels', () => {
             { store }
         );
         await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'End' }), { key: 'ArrowLeft' });
-        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start' }), { key: 'ArrowRight' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowLeft' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'End point' }), { key: 'ArrowLeft' });
+        fireEvent.keyDown(screen.getByRole('slider', { name: 'Start point' }), { key: 'ArrowRight' });
         fireEvent.click(screen.getByRole('button', { name: 'Select the other arc' }));
         fireEvent.click(screen.getByRole('button', { name: 'Separate' }));
         const result = split.mock.calls[0][0];
@@ -1184,7 +1184,7 @@ describe('line information and export panels', () => {
         expect(first).toBeEnabled();
         expect(second).toBeEnabled();
         expect(unavailable).toBeDisabled();
-        expect(screen.getByText(/RMG cannot represent/)).toBeInTheDocument();
+        expect(screen.getByText(/Rail Map Generator cannot represent/)).toBeInTheDocument();
         fireEvent.click(unavailable);
         expect(exportToRmg).not.toHaveBeenCalled();
         fireEvent.click(first);

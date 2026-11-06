@@ -81,7 +81,7 @@ describe('InterchangeCard extension metadata', () => {
         expect(transfer()).toHaveLength(3);
         expect(transfer()[2][6]).toBe('filled');
         rerender(ui());
-        fireEvent.click(buttons().find(button => /remove|删除|刪除/i.test(button.getAttribute('aria-label') ?? ''))!);
+        fireEvent.click(buttons().find(button => /delete|删除|刪除/i.test(button.getAttribute('aria-label') ?? ''))!);
         expect(transfer()).toHaveLength(2);
         expect(transfer()[1][6]).toBe('filled');
     });

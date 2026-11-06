@@ -93,7 +93,7 @@ describe('MapStyleSection', () => {
 
         const pathRowElement = screen.getByTestId('map-style-road-path');
         const pathRow = within(pathRowElement);
-        expect(pathRow.getByRole('checkbox', { name: 'Path Show' })).toBeInTheDocument();
+        expect(pathRow.getByRole('checkbox', { name: 'Walking path Show' })).toBeInTheDocument();
         expect(pathRow.getByRole('button', { name: 'Color' })).toBeInTheDocument();
         expect(pathRow.getByRole('slider')).toBeInTheDocument();
         expect(pathRow.getByRole('checkbox').closest('td')).toBe(pathRowElement.lastElementChild);
@@ -125,7 +125,7 @@ describe('MapStyleSection', () => {
         const store = renderSection();
         const pathRow = within(screen.getByTestId('map-style-road-path'));
 
-        fireEvent.click(pathRow.getByRole('checkbox', { name: 'Path Show' }));
+        fireEvent.click(pathRow.getByRole('checkbox', { name: 'Walking path Show' }));
 
         expect(store.getState().param.present.mapStyle.roads.path.enabled).toBe(false);
         expect(pathRow.getByRole('button', { name: 'Color' })).toBeDisabled();
@@ -139,7 +139,7 @@ describe('MapStyleSection', () => {
         expect(resetButton).toBeEnabled();
 
         const roadRow = within(screen.getByTestId('map-style-road-path'));
-        expect(roadRow.getByRole('checkbox', { name: 'Path Show' })).toBeDisabled();
+        expect(roadRow.getByRole('checkbox', { name: 'Walking path Show' })).toBeDisabled();
         expect(roadRow.getByRole('button', { name: 'Color' })).toBeDisabled();
         expect(roadRow.getByRole('slider')).toHaveAttribute('aria-disabled', 'true');
 

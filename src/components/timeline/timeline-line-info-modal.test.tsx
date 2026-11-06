@@ -113,11 +113,11 @@ describe('Timeline video label information', () => {
     it('autosaves isolated label metadata, persists it, and leaves both painter and imported map data intact', async () => {
         const { project, painterStore, painterSnapshot } = await setup();
         const painterState = structuredClone(painterStore.getState().param.present);
-        saveField('Chinese name', '视频线路');
-        saveField('English name', 'Video Line');
+        saveField('Chinese line name', '视频线路');
+        saveField('English line name', 'Video Line');
         saveField('Opening date', '2024-02-29');
         saveField('Line number', 'V1');
-        saveField('Label color', '#0088cc');
+        saveField('Label colour', '#0088cc');
         expect(currentLine().videoLabel).toEqual({
             name: ['视频线路', 'Video Line'],
             openingDate: '2024-02-29',
@@ -151,13 +151,13 @@ describe('Timeline video label information', () => {
     it('supports undo, redo and restoring imported labels without changing the global label switches', async () => {
         await setup();
         const settings = structuredClone(timelineStore.getState().project.active!.revision.timeline.settings);
-        saveField('Chinese name', 'Temporary video name');
+        saveField('Chinese line name', 'Temporary video name');
         expect(currentLine().videoLabel?.name[0]).toBe('Temporary video name');
         act(() => timelineStore.dispatch(undo()));
-        expect(screen.getByRole('textbox', { name: 'Chinese name' })).toHaveValue('导入线路');
+        expect(screen.getByRole('textbox', { name: 'Chinese line name' })).toHaveValue('导入线路');
         expect(currentLine().videoLabel).toBeUndefined();
         act(() => timelineStore.dispatch(redo()));
-        expect(screen.getByRole('textbox', { name: 'Chinese name' })).toHaveValue('Temporary video name');
+        expect(screen.getByRole('textbox', { name: 'Chinese line name' })).toHaveValue('Temporary video name');
         fireEvent.click(
             screen.getByRole('button', { name: 'Use imported line information: 导入线路 / Imported Line' })
         );
@@ -173,10 +173,10 @@ describe('Timeline video label information', () => {
         saveField('Opening date', '2025-02-29');
         expect(currentLine().videoLabel).toBeUndefined();
         expect(screen.getByText('Enter a valid date in YYYY-MM-DD format.')).toBeInTheDocument();
-        saveField('Label color', 'blue');
+        saveField('Label colour', 'blue');
         expect(currentLine().videoLabel).toBeUndefined();
-        expect(screen.getByText('Enter a valid hexadecimal color, such as #1677ff.')).toBeInTheDocument();
-        const name = screen.getByRole('textbox', { name: 'Chinese name' });
+        expect(screen.getByText('Enter a valid hexadecimal colour, such as #1677ff.')).toBeInTheDocument();
+        const name = screen.getByRole('textbox', { name: 'Chinese line name' });
         act(() => name.focus());
         fireEvent.change(name, { target: { value: 'Saved on close' } });
         fireEvent.click(screen.getAllByRole('button', { name: 'Close' }).at(-1)!);
@@ -188,7 +188,7 @@ describe('Timeline video label information', () => {
         await setup(true);
         expect(
             screen.getByText(
-                'No line information is available. Import an RMP project with line definitions to customize its video labels.'
+                'No line information is available. Import a Rail Map Painter project with line definitions to customize its video labels.'
             )
         ).toBeInTheDocument();
         expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
