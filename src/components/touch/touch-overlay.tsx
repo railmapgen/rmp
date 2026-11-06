@@ -1,6 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import useEvent from 'react-use-event-hook';
+import { SnapLine, SnapPoint } from '../../constants/canvas';
 import { NodeId } from '../../constants/constants';
 import { TOUCH_RADIUS } from '../../constants/touch';
 import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
@@ -16,9 +17,12 @@ import {
     setSelected,
 } from '../../redux/runtime/runtime-slice';
 import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
-import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
+import { findNodesInRectangle } from '../../util/graph';
+import { getCanvasSize, getViewpointSize, pointerPosToSVGCoord, roundToMultiple } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { moveNodesAndRedrawLines } from '../../util/imperative-dom';
+import { getSnappedNodePosition, getSnapLines, isNodeSupportSnapLine } from '../../util/snap-lines';
+import NodeSnapGuides from '../node-snap-guides';
 import type { CanvasLineDrawingHandle } from '../svg-canvas-graph';
 import RadialTouchMenu from './radial-touch-menu';
 
@@ -53,6 +57,16 @@ interface PinchGesture {
     latest: Viewport;
 }
 
+interface NodeSnapGuidesState {
+    activeSnapLines: SnapLine[];
+    activeSnapPoint?: SnapPoint;
+}
+
+interface NodeSnapSession extends NodeSnapGuidesState {
+    snapLines: SnapLine[];
+    nodes: NodeId[];
+}
+
 interface TouchGesture {
     pointerId: number;
     target: Element;
@@ -66,6 +80,7 @@ interface TouchGesture {
     menuMoved: boolean;
     moveCandidate?: NodeId;
     movingNode?: NodeId;
+    nodeSnap?: NodeSnapSession;
     linePhase?: 'pick-source' | 'pending-draw' | 'drawing' | 'panning';
     linePanActive?: boolean;
 }
@@ -93,6 +108,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
     const { width, height } = getCanvasSize(size);
     const [lensPoint, setLensPoint] = React.useState<Point | null>(null);
     const [highlightedItem, setHighlightedItem] = React.useState<string>();
+    const [nodeSnapGuides, setNodeSnapGuides] = React.useState<NodeSnapGuidesState | null>(null);
     const gesture = React.useRef<TouchGesture | null>(null);
     const lockedSource = React.useRef<{ id: NodeId; mode: typeof mode } | null>(null);
     const pointers = React.useRef(new Map<number, Point>());
@@ -120,6 +136,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         }
         setLensPoint(null);
         setHighlightedItem(undefined);
+        setNodeSnapGuides(null);
         dispatch(closeRadialTouchMenu());
         if (previous?.menuOpen) dispatch(setActive(undefined));
     });
@@ -217,7 +234,32 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
     const moveNodeToPoint = useEvent((current: TouchGesture, point: Point) => {
         const node = current.movingNode;
         if (!node || !window.graph.hasNode(node)) return;
-        const position = svgPoint(point);
+        let position = svgPoint(point);
+        if (store.getState().app.preference.snapLines && isNodeSupportSnapLine(node, window.graph)) {
+            // Prepare candidates synchronously: the takeover's first move precedes React's pointer-session effect.
+            let snap = current.nodeSnap;
+            if (!snap) {
+                const viewport = getViewport();
+                const { xMin, yMin, xMax, yMax } = getViewpointSize(viewport, viewport.zoom, width, height);
+                const nodes = findNodesInRectangle(window.graph, xMin, yMin, xMax, yMax).filter(id => id !== node);
+                snap = { nodes, snapLines: getSnapLines(window.graph, nodes), activeSnapLines: [] };
+            }
+            const result = getSnappedNodePosition(
+                window.graph,
+                position,
+                snap.snapLines,
+                snap.nodes,
+                snap.activeSnapLines,
+                snap.activeSnapPoint
+            );
+            const guides = { activeSnapLines: result.activeSnapLines, activeSnapPoint: result.activeSnapPoint };
+            current.nodeSnap = { ...snap, ...guides };
+            setNodeSnapGuides(guides);
+            position = { x: roundToMultiple(result.x, 0.01), y: roundToMultiple(result.y, 0.01) };
+        } else {
+            current.nodeSnap = undefined;
+            setNodeSnapGuides(null);
+        }
         const { x, y } = window.graph.getNodeAttributes(node);
         const dx = position.x - x;
         const dy = position.y - y;
@@ -310,6 +352,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
 
     const cancelEditor = useEvent((current: TouchGesture, notify = true) => {
         if (current.movingNode) {
+            setNodeSnapGuides(null);
             if (current.dragging && window.graph.hasNode(current.movingNode)) {
                 dispatch(saveGraph(window.graph.export()));
                 dispatch(refreshNodesThunk());
@@ -664,6 +707,14 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
     const viewport = getViewport();
     return (
         <>
+            {nodeSnapGuides &&
+                sceneRef.current &&
+                createPortal(
+                    <g className="removeMe" data-touch-snap-guides="" pointerEvents="none" aria-hidden="true">
+                        <NodeSnapGuides {...nodeSnapGuides} viewport={viewport} width={width} height={height} />
+                    </g>,
+                    sceneRef.current
+                )}
             {radialTouchMenu.visible && (
                 <rect
                     className="removeMe"

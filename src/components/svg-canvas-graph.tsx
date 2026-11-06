@@ -39,17 +39,10 @@ import { canReconcileLine } from '../util/reconcile-ui';
 import { findConnectedSameStyleEdges } from '../util/same-style';
 import { getLines, getNodes } from '../util/process-elements';
 import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
-import {
-    getNearestSnapLine,
-    getNearestSnapPoints,
-    getSnapLineDistance,
-    getSnapLines,
-    isNodeSupportSnapLine,
-    makeSnapLinesPath,
-} from '../util/snap-lines';
+import { getSnapLines, getSnappedNodePosition, isNodeSupportSnapLine } from '../util/snap-lines';
 import { LineCreationPreview, type LineDrawingGesture } from './line-creation-preview';
 import { Overlay } from './overlay';
-import SnapPointGuideLines from './snap-point-guide-lines';
+import NodeSnapGuides from './node-snap-guides';
 import SvgLayer from './svg-layer';
 import { SvgRenderProvider, type SvgRenderContextValue } from './svg-render-context';
 import { linePaths, lineStyles, normalizeEdgeAttributes } from './svgs/lines/lines';
@@ -411,91 +404,18 @@ const SvgCanvas = React.forwardRef<CanvasLineDrawingHandle>((_, ref) => {
                 let newY = toY;
 
                 if (isNodeSupportSnapLine(node, graph.current)) {
-                    // previous move operation may have active polylines
-                    // use and check if they are still valid, if not, remove and recalculate
-                    let nowSnapLines = activeSnapLines;
-                    let nowSnapPoint = activeSnapPoint;
-
-                    // check if cursor left the polyline and remove it from active polylines
-                    if (nowSnapLines.length !== 0) {
-                        nowSnapLines = nowSnapLines.filter(l => getSnapLineDistance(l, toX, toY) <= 6);
-                    }
-
-                    // check if the current snap point should be removed
-                    if (nowSnapPoint) {
-                        if (nowSnapLines.length === 0) {
-                            // no active snap line, remove the snap point
-                            nowSnapPoint = undefined;
-                        } else if (Math.hypot(toX - nowSnapPoint.x, toY - nowSnapPoint.y) > 6) {
-                            // cursor left the snap point, remove it
-                            nowSnapPoint = undefined;
-                        }
-                    }
-
-                    // when there is no snap point and only one snap line, add a snap point from this snap line to give visual hint
-                    if (!nowSnapPoint && nowSnapLines.length === 1) {
-                        const snapLine = nowSnapLines[0];
-                        const { snapPoint, distance } = getNearestSnapPoints(
-                            graph.current,
-                            nodesInViewRange.filter(node => !selected.has(node)),
-                            toX,
-                            toY,
-                            snapLine
-                        );
-
-                        // the cursor is close enough to the snap point, make it active snap point
-                        if (distance <= 3) {
-                            nowSnapPoint = snapPoint;
-                        }
-                    }
-
-                    // find the nearest polyline to the cursor and add it to active polylines
-                    if ((nowSnapLines.length === 1 && !nowSnapPoint) || nowSnapLines.length === 0) {
-                        const { l, d } = getNearestSnapLine(
-                            toX,
-                            toY,
-                            snapLines,
-                            nodesInViewRange.filter(
-                                node => !selected.has(node) && !nowSnapLines.some(ap => ap.node === node)
-                            )
-                        );
-                        // two parallel lines cannot intersect at a point
-                        const flag =
-                            nowSnapLines.length === 0 || !nowSnapLines.some(ap => ap.a === l.a && ap.b === l.b);
-                        // Two non-parallel lines intersect at a point
-                        if (d < 3 && nowSnapLines.length < 2 && flag) {
-                            nowSnapLines.push(l);
-                        }
-                    }
-
-                    // calculate the final position based on the activePolylines
-                    if (nowSnapLines.length === 1) {
-                        if (nowSnapPoint) {
-                            newX = nowSnapPoint.x;
-                            newY = nowSnapPoint.y;
-                        } else {
-                            const l = nowSnapLines[0];
-                            if (l.a == 0) {
-                                newY = -l.c / l.b;
-                            } else if (l.b == 0) {
-                                newX = -l.c / l.a;
-                            } else {
-                                const k = -l.a / l.b;
-                                const b = -l.c / l.b;
-                                newY = k * newX + b;
-                            }
-                        }
-                    } else if (nowSnapLines.length === 2) {
-                        const l1 = nowSnapLines[0];
-                        const l2 = nowSnapLines[1];
-                        const determinant = l1.a * l2.b - l2.a * l1.b;
-                        if (determinant !== 0) {
-                            newX = -(l1.c * l2.b - l2.c * l1.b) / determinant;
-                            newY = -(l1.a * l2.c - l2.a * l1.c) / determinant;
-                        }
-                    }
-                    setActiveSnapLines(nowSnapLines);
-                    setActiveSnapPoint(nowSnapPoint);
+                    const snapped = getSnappedNodePosition(
+                        graph.current,
+                        { x: toX, y: toY },
+                        snapLines,
+                        nodesInViewRange.filter(node => !selected.has(node)),
+                        activeSnapLines,
+                        activeSnapPoint
+                    );
+                    newX = snapped.x;
+                    newY = snapped.y;
+                    setActiveSnapLines(snapped.activeSnapLines);
+                    setActiveSnapPoint(snapped.activeSnapPoint);
                 }
 
                 // update all the selected nodes' position based on the offset of the current moving node
@@ -742,21 +662,13 @@ const SvgCanvas = React.forwardRef<CanvasLineDrawingHandle>((_, ref) => {
                 <LineCreationPreview pointerOffset={pointerOffset} gesture={drawingGesture.current} />
             </g>
             <Overlay />
-            {activeSnapLines.length !== 0 &&
-                activeSnapLines.map(p => (
-                    <path
-                        key={`snap_line_${p.a}_${p.b}_${p.c}_${p.node}`}
-                        d={
-                            linePaths[LinePathType.Simple].generatePath(
-                                ...makeSnapLinesPath(p, getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height)),
-                                linePaths[LinePathType.Simple].defaultAttrs
-                            ).d
-                        }
-                        stroke="cyan"
-                        strokeWidth={svgViewBoxZoom / 75}
-                    />
-                ))}
-            {activeSnapPoint && <SnapPointGuideLines activeSnapPoint={activeSnapPoint} />}
+            <NodeSnapGuides
+                activeSnapLines={activeSnapLines}
+                activeSnapPoint={activeSnapPoint}
+                viewport={{ ...svgViewBoxMin, zoom: svgViewBoxZoom }}
+                width={width}
+                height={height}
+            />
         </>
     );
 });

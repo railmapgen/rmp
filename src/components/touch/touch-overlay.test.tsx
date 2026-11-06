@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MenuCategory } from '../../constants/touch';
 import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
 import { createStore } from '../../redux';
+import { setSnapLines } from '../../redux/app/app-slice';
 import { initializeProject, setMapEnabled } from '../../redux/param/param-slice';
 import { setActive, setMode, setPointerPosition, setSelected } from '../../redux/runtime/runtime-slice';
 import { createTestLineGraph } from '../../test-utils';
@@ -388,6 +389,75 @@ describe('TouchOverlay', () => {
 
     describe('selected-node long-press move', () => {
         it.each([
+            { guide: 'horizontal', anchor: { x: 300, y: 182 }, expected: { x: 120, y: 182 } },
+            { guide: 'vertical', anchor: { x: 122, y: 400 }, expected: { x: 122, y: 180 } },
+            { guide: 'diagonal', anchor: { x: 300, y: 362 }, expected: { x: 120, y: 182 } },
+            { guide: 'opposite diagonal', anchor: { x: 300, y: 2 }, expected: { x: 120, y: 182 } },
+        ])('snaps to a $guide guide on the first long-press frame', ({ anchor, expected }) => {
+            window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+            window.graph.mergeNodeAttributes('stn_B', anchor);
+            const { svg, container, store } = setup({ selected: true });
+            pointer(svg, 'pointerdown');
+            advanceHold();
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject(expected);
+            const guide = container.querySelector('[data-touch-snap-guides] path[stroke="cyan"]');
+            expect(guide).not.toBeNull();
+            expect(guide?.closest('#touch-test-scene')).not.toBeNull();
+            pointer(svg, 'pointerup', 162, 224);
+            expect(store.getState().param.present.graph.nodes?.[0].attributes).toMatchObject(expected);
+            expect(store.getState().param.past).toHaveLength(1);
+            expect(container.querySelector('[data-touch-snap-guides]')).toBeNull();
+        });
+
+        it('keeps, releases, and reacquires a guide as the held finger moves', () => {
+            window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+            window.graph.mergeNodeAttributes('stn_B', { x: 300, y: 182 });
+            const { svg, container } = setup({ selected: true });
+            pointer(svg, 'pointerdown');
+            advanceHold();
+            pointer(svg, 'pointermove', 180, 225);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 140, y: 182 });
+            pointer(svg, 'pointermove', 190, 229);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 150, y: 189 });
+            expect(container.querySelector('[data-touch-snap-guides] path')).toBeNull();
+            pointer(svg, 'pointermove', 200, 223);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 160, y: 182 });
+            expect(container.querySelector('[data-touch-snap-guides] path[stroke="cyan"]')).not.toBeNull();
+            pointer(svg, 'pointerup', 200, 223);
+        });
+
+        it('snaps to the midpoint of two stationary nodes and shows its spacing guides', () => {
+            window.graph = createTestLineGraph([
+                ['A', 'B'],
+                ['B', 'C'],
+            ]);
+            window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+            window.graph.mergeNodeAttributes('stn_B', { x: 100, y: 182 });
+            window.graph.mergeNodeAttributes('stn_C', { x: 200, y: 182 });
+            const { svg, container } = setup({ selected: true });
+            pointer(svg, 'pointerdown');
+            advanceHold();
+            pointer(svg, 'pointermove', 190, 223);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 150, y: 182 });
+            expect(container.querySelector('[data-touch-snap-guides] line[stroke="#FC8181"]')).not.toBeNull();
+            pointer(svg, 'pointerup', 190, 223);
+        });
+
+        it('follows the finger freely when snapping is disabled, including between grid positions', () => {
+            window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+            window.graph.mergeNodeAttributes('stn_B', { x: 300, y: 182 });
+            const { svg, container, store } = setup({ selected: true });
+            act(() => store.dispatch(setSnapLines(false)));
+            pointer(svg, 'pointerdown');
+            advanceHold();
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 120, y: 180 });
+            pointer(svg, 'pointermove', 181, 223);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 141, y: 183 });
+            expect(container.querySelector('[data-touch-snap-guides]')).toBeNull();
+            pointer(svg, 'pointerup', 181, 223);
+        });
+
+        it.each([
             { node: 'stn_A', target: 'station' },
             { node: 'stn_A', target: 'canvas' },
             { node: 'misc_node_A', target: 'canvas' },
@@ -461,9 +531,11 @@ describe('TouchOverlay', () => {
             'saves the immediate reposition once when %s ends a stationary hold',
             end => {
                 window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+                window.graph.mergeNodeAttributes('stn_B', { x: 300, y: 182 });
                 const harness = setup({ selected: true });
                 pointer(harness.svg, 'pointerdown');
                 advanceHold();
+                expect(harness.container.querySelector('[data-touch-snap-guides] path[stroke="cyan"]')).not.toBeNull();
                 if (end === 'release') pointer(harness.svg, 'pointerup');
                 else if (end === 'pinch') {
                     pointer(harness.svg, 'pointerdown', 260, 300, 2);
@@ -473,11 +545,12 @@ describe('TouchOverlay', () => {
                 else pointer(harness.svg, end);
                 expect(harness.store.getState().param.present.graph.nodes?.[0].attributes).toMatchObject({
                     x: 120,
-                    y: 180,
+                    y: 182,
                 });
                 expect(harness.store.getState().param.past).toHaveLength(1);
                 expect(harness.store.getState().runtime.active).toBeUndefined();
                 expect(harness.lens()).toBeNull();
+                expect(harness.container.querySelector('[data-touch-snap-guides]')).toBeNull();
                 pointer(harness.svg, 'pointerup');
                 expect(harness.store.getState().param.past).toHaveLength(1);
             }
