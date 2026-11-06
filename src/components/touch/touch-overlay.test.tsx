@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MenuCategory } from '../../constants/touch';
 import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
 import { createStore } from '../../redux';
-import { setMapEnabled } from '../../redux/param/param-slice';
+import { initializeProject, setMapEnabled } from '../../redux/param/param-slice';
 import { setActive, setMode, setPointerPosition, setSelected } from '../../redux/runtime/runtime-slice';
 import { createTestLineGraph } from '../../test-utils';
 import { findNearbyElements } from '../../util/graph-nearby-elements';
@@ -45,6 +45,7 @@ const advanceHold = (time = 450) => act(() => vi.advanceTimersByTime(time));
 
 const setup = ({ selected = false, lineDrawing = false } = {}) => {
     const store = createStore();
+    store.dispatch(initializeProject({ ...store.getState().param.present, graph: window.graph.export() }));
     if (selected) store.dispatch(setSelected(new Set(['stn_A'])));
     let viewport = { x: 0, y: 0, zoom: 100 };
     const onMenuTakeover = vi.fn();
@@ -349,6 +350,7 @@ describe('TouchOverlay', () => {
     });
 
     it.each(['name', 'control'])('keeps %s editing independent from radial selection', targetId => {
+        window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
         const { getByTestId, store, lens } = setup({ selected: true });
         const target = getByTestId(targetId);
         pointer(target, 'pointerdown');
@@ -382,6 +384,123 @@ describe('TouchOverlay', () => {
         expect(store.getState().runtime.radialTouchMenu.visible).toBe(false);
         expect(lens()).toBeNull();
         pointer(svg, 'pointerup');
+    });
+
+    describe('selected-node long-press move', () => {
+        it.each([
+            { node: 'stn_A', target: 'station' },
+            { node: 'stn_A', target: 'canvas' },
+            { node: 'misc_node_A', target: 'canvas' },
+        ] as const)('snaps $node from a hold on $target and drags without reopening the tray', ({ node, target }) => {
+            window.graph = createTestLineGraph([['A', 'B']], node.startsWith('misc') ? ['A'] : []);
+            window.graph.mergeNodeAttributes(node, { x: 110, y: 180 });
+            const { svg, station, store, lens, move, up } = setup();
+            act(() => store.dispatch(setSelected(new Set([node]))));
+            const heldTarget = target === 'station' ? station : svg;
+            pointer(heldTarget, 'pointerdown');
+            advanceHold(449);
+            expect(window.graph.getNodeAttribute(node, 'x')).toBe(110);
+            advanceHold(1);
+            expect(window.graph.getNodeAttributes(node)).toMatchObject({ x: 120, y: 180 });
+            expect(store.getState().runtime.selected).toEqual(new Set([node]));
+            expect(store.getState().runtime.active).toBe(node);
+            expect(store.getState().runtime.pointerPosition).toEqual({ x: 120, y: 180 });
+            expect(store.getState().runtime.radialTouchMenu.visible).toBe(false);
+            expect(findNearbyElements).not.toHaveBeenCalled();
+            expect(lens()).not.toBeNull();
+            // The old node capture can be lost as the overlay takes ownership.
+            if (target === 'station') pointer(heldTarget, 'lostpointercapture');
+            pointer(station, 'pointermove', 190, 245);
+            expect(move).not.toHaveBeenCalled();
+            expect(window.graph.getNodeAttributes(node)).toMatchObject({ x: 150, y: 205 });
+            pointer(station, 'pointerup', 192, 244);
+            expect(up).not.toHaveBeenCalled();
+            expect(
+                store.getState().param.present.graph.nodes?.find(item => item.key === node)?.attributes
+            ).toMatchObject({
+                x: 150,
+                y: 205,
+            });
+            expect(store.getState().param.past).toHaveLength(1);
+            expect(store.getState().runtime.active).toBeUndefined();
+            expect(store.getState().runtime.pointerPosition).toBeUndefined();
+            expect(store.getState().runtime.selected).toEqual(new Set([node]));
+            expect(lens()).toBeNull();
+        });
+
+        it('uses the current viewport when starting and moving the node', () => {
+            window.graph.mergeNodeAttributes('stn_A', { x: 330, y: 560 });
+            const { svg, store, setViewport } = setup({ selected: true });
+            setViewport({ x: 100, y: 200, zoom: 200 });
+            pointer(svg, 'pointerdown');
+            pointer(svg, 'pointermove', 164, 223);
+            setViewport({ x: 110, y: 210, zoom: 200 });
+            advanceHold();
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 358, y: 576 });
+            pointer(svg, 'pointermove', 170, 230);
+            expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 370, y: 590 });
+            pointer(svg, 'pointerup', 170, 230);
+            expect(store.getState().param.past).toHaveLength(1);
+        });
+
+        it('keeps direct editing of a different nearby node independent', () => {
+            window.graph.mergeNodeAttributes('stn_B', { x: 110, y: 180 });
+            const { station, store, move } = setup();
+            act(() => store.dispatch(setSelected(new Set(['stn_B']))));
+            pointer(station, 'pointerdown');
+            pointer(station, 'pointermove', 164, 223);
+            advanceHold();
+            expect(window.graph.getNodeAttributes('stn_B')).toMatchObject({ x: 110, y: 180 });
+            expect(store.getState().runtime.active).toBe('stn_A');
+            expect(store.getState().runtime.selected).toEqual(new Set(['stn_A']));
+            expect(move).toHaveBeenCalledOnce();
+            pointer(station, 'pointerup', 164, 223);
+        });
+
+        it.each(['release', 'pointercancel', 'lostpointercapture', 'pinch', 'disable', 'unmount'])(
+            'saves the immediate reposition once when %s ends a stationary hold',
+            end => {
+                window.graph.mergeNodeAttributes('stn_A', { x: 110, y: 180 });
+                const harness = setup({ selected: true });
+                pointer(harness.svg, 'pointerdown');
+                advanceHold();
+                if (end === 'release') pointer(harness.svg, 'pointerup');
+                else if (end === 'pinch') {
+                    pointer(harness.svg, 'pointerdown', 260, 300, 2);
+                    pointer(harness.svg, 'pointerup', 260, 300, 2);
+                    pointer(harness.svg, 'pointerup');
+                } else if (end === 'disable' || end === 'unmount') harness[end]();
+                else pointer(harness.svg, end);
+                expect(harness.store.getState().param.present.graph.nodes?.[0].attributes).toMatchObject({
+                    x: 120,
+                    y: 180,
+                });
+                expect(harness.store.getState().param.past).toHaveLength(1);
+                expect(harness.store.getState().runtime.active).toBeUndefined();
+                expect(harness.lens()).toBeNull();
+                pointer(harness.svg, 'pointerup');
+                expect(harness.store.getState().param.past).toHaveLength(1);
+            }
+        );
+
+        it.each(['tap', 'pan', 'outside', 'multiple', 'line', 'deleted'])(
+            'does not start a node move for %s',
+            action => {
+                window.graph.mergeNodeAttributes('stn_A', { x: action === 'outside' ? 89 : 110, y: 180 });
+                const { svg, store, lens } = setup({ selected: true });
+                if (action === 'multiple') act(() => store.dispatch(setSelected(new Set(['stn_A', 'stn_B']))));
+                if (action === 'line') act(() => store.dispatch(setSelected(new Set(['line_0']))));
+                pointer(svg, 'pointerdown');
+                if (action === 'tap') pointer(svg, 'pointerup');
+                if (action === 'pan') pointer(svg, 'pointermove', 169, 220);
+                if (action === 'deleted') window.graph.dropNode('stn_A');
+                advanceHold();
+                expect(store.getState().runtime.active).not.toBe('stn_A');
+                expect(store.getState().param.past).toHaveLength(0);
+                expect(lens()).toBeNull();
+                pointer(svg, 'pointerup');
+            }
+        );
     });
 
     it.each(['prediction', 'joystick'])('preserves pointer events for the excluded %s control', targetId => {

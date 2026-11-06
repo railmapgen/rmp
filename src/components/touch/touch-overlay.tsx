@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import useEvent from 'react-use-event-hook';
 import { NodeId } from '../../constants/constants';
+import { TOUCH_RADIUS } from '../../constants/touch';
 import { MAP_MAX_VIEWBOX_ZOOM } from '../../map/map-config';
 import { useRootDispatch, useRootSelector, useRootStore } from '../../redux';
 import { saveGraph } from '../../redux/param/param-slice';
@@ -17,6 +18,7 @@ import {
 import { MenuCategory, findNearbyElements } from '../../util/graph-nearby-elements';
 import { getCanvasSize, pointerPosToSVGCoord } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
+import { moveNodesAndRedrawLines } from '../../util/imperative-dom';
 import type { CanvasLineDrawingHandle } from '../svg-canvas-graph';
 import RadialTouchMenu from './radial-touch-menu';
 
@@ -62,6 +64,8 @@ interface TouchGesture {
     dragging: boolean;
     menuOpen: boolean;
     menuMoved: boolean;
+    moveCandidate?: NodeId;
+    movingNode?: NodeId;
     linePhase?: 'pick-source' | 'pending-draw' | 'drawing' | 'panning';
     linePanActive?: boolean;
 }
@@ -111,7 +115,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         clearTimer();
         const previous = gesture.current;
         gesture.current = null;
-        if (previous && (previous.menuOpen || previous.linePhase)) {
+        if (previous && (previous.menuOpen || previous.linePhase || previous.movingNode)) {
             releaseCapture(svgRef.current ?? undefined, previous.pointerId);
         }
         setLensPoint(null);
@@ -198,12 +202,29 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         while (current && current !== sceneRef.current) {
             const id = current.id.replace(/\.(pre|post)$/, '');
             if (id && (window.graph.hasNode(id) || window.graph.hasEdge(id))) {
-                return { precision: true, radialCandidate: mode === 'free' };
+                return {
+                    precision: true,
+                    radialCandidate: mode === 'free',
+                    node: window.graph.hasNode(id) ? (id as NodeId) : undefined,
+                };
             }
             current = current.parentElement;
         }
         // Editor overlays are inside the scene; map tiles and grid lines do not accept pointer events.
         return { precision: true, radialCandidate: false };
+    });
+
+    const moveNodeToPoint = useEvent((current: TouchGesture, point: Point) => {
+        const node = current.movingNode;
+        if (!node || !window.graph.hasNode(node)) return;
+        const position = svgPoint(point);
+        const { x, y } = window.graph.getNodeAttributes(node);
+        const dx = position.x - x;
+        const dy = position.y - y;
+        if (dx === 0 && dy === 0) return;
+        current.dragging = true;
+        window.graph.mergeNodeAttributes(node, position);
+        moveNodesAndRedrawLines(window.graph, [node], dx, dy);
     });
 
     const openLongPress = useEvent(() => {
@@ -226,6 +247,20 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             return;
         }
         if (current.linePhase === 'panning' || current.linePhase === 'drawing') return;
+        if (current.moveCandidate && window.graph.hasNode(current.moveCandidate)) {
+            // Claim the gesture before transferring capture away from its original editor.
+            current.movingNode = current.moveCandidate;
+            current.precision = true;
+            onMenuTakeover(canvasPoint(current.latest));
+            // Ending a background pan may clear the selection; restore it after the takeover.
+            dispatch(setSelected(new Set([current.movingNode])));
+            dispatch(setActive(current.movingNode));
+            dispatch(setPointerPosition(canvasPoint(current.latest)));
+            moveNodeToPoint(current, current.latest);
+            setLensPoint(current.latest);
+            svgRef.current?.setPointerCapture?.(current.pointerId);
+            return;
+        }
         if (current.precision && store.getState().runtime.active !== 'background') setLensPoint(current.latest);
         if (!current.radialCandidate && current.linePhase !== 'pick-source') return;
         const point = canvasPoint(current.latest);
@@ -274,6 +309,15 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
     });
 
     const cancelEditor = useEvent((current: TouchGesture, notify = true) => {
+        if (current.movingNode) {
+            if (current.dragging && window.graph.hasNode(current.movingNode)) {
+                dispatch(saveGraph(window.graph.export()));
+                dispatch(refreshNodesThunk());
+            }
+            dispatch(setActive(undefined));
+            dispatch(setPointerPosition(undefined));
+            return;
+        }
         if (current.linePhase) {
             internalCancel.current = true;
             try {
@@ -331,6 +375,17 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         if (!(target instanceof Element)) return;
         const kind = classifyTarget(target);
         if (!kind) return;
+        // Snapshot before graph/background pointerdown handlers can change the selection.
+        const selected = store.getState().runtime.selected;
+        const selectedNode = selected.size === 1 ? ([...selected][0] as NodeId) : undefined;
+        const moveCandidate =
+            kind.radialCandidate &&
+            selectedNode &&
+            (!kind.node || kind.node === selectedNode) &&
+            window.graph.hasNode(selectedNode) &&
+            distance(window.graph.getNodeAttributes(selectedNode), svgPoint(point)) <= TOUCH_RADIUS
+                ? selectedNode
+                : undefined;
         const linePhase = mode.startsWith('line')
             ? editorDisabled
                 ? 'panning'
@@ -345,7 +400,8 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             latest: point,
             ...kind,
             // Graph pointerdown may select its target; only an existing selection blocks this hold.
-            radialCandidate: kind.radialCandidate && store.getState().runtime.selected.size === 0,
+            radialCandidate: kind.radialCandidate && selected.size === 0,
+            moveCandidate,
             dragging: false,
             menuOpen: false,
             menuMoved: false,
@@ -386,6 +442,12 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             return;
         }
         current.latest = point;
+        if (current.movingNode) {
+            consume(event);
+            moveNodeToPoint(current, point);
+            setLensPoint(point);
+            return;
+        }
         if (current.menuOpen) {
             consume(event);
             current.menuMoved ||= distance(current.start, point) >= MOVE_THRESHOLD;
@@ -437,7 +499,11 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             if (pointers.current.size === 0) afterPinch.current = false;
             return;
         }
-        if (current.linePhase && !current.menuOpen) {
+        if (current.movingNode) {
+            consume(event);
+            cancelEditor(current);
+            reset();
+        } else if (current.linePhase && !current.menuOpen) {
             consume(event);
             const point = { x: event.clientX, y: event.clientY };
             if (current.linePhase === 'drawing') {
@@ -490,7 +556,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         }
         const current = gesture.current;
         if (!current || current.pointerId !== event.pointerId || internalCancel.current) return;
-        if (current.menuOpen && event.target !== svgRef.current) return;
+        if ((current.menuOpen || current.movingNode) && event.target !== svgRef.current) return;
         handleCancel(event);
     });
     const handleContextMenu = useEvent((event: Event) => {

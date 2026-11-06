@@ -171,6 +171,9 @@ const SvgCanvas = React.forwardRef<CanvasLineDrawingHandle>((_, ref) => {
     // note only the nearest 2 of them will be drawn
     React.useEffect(
         () => {
+            // A touch hold can take over a drag without reaching the node's pointerup handler.
+            setActiveSnapLines([]);
+            setActiveSnapPoint(undefined);
             if (!pointerPosition || !useSnapLines) return;
             const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
             const nodesInViewRange = findNodesInRectangle(

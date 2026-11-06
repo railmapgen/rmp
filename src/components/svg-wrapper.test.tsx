@@ -262,6 +262,60 @@ describe('SvgWrapper touch pan release', () => {
     });
 });
 
+describe('SvgWrapper selected-node long-press move', () => {
+    it.each([
+        { x: 0, y: 0 },
+        { x: 4, y: 3 },
+    ])('takes over a background pan after a $x,$y touch move and commits one node move', pan => {
+        window.graph.mergeNodeAttributes('stn_A', { x: 150, y: 160 });
+        const { store, svg, viewport } = setup(true);
+        const originalGraph = store.getState().param.present.graph;
+        pointer(svg, 'pointerdown', 200, 200);
+        if (pan.x || pan.y) pointer(svg, 'pointermove', 200 + pan.x, 200 + pan.y);
+        flushFrame();
+        act(() => vi.advanceTimersByTime(450));
+
+        expect(window.graph.getNodeAttributes('stn_A')).toMatchObject({ x: 160, y: 160 });
+        expect(store.getState().runtime.selected).toEqual(new Set(['stn_A']));
+        expect(store.getState().runtime.active).toBe('stn_A');
+        expect(store.getState().runtime.radialTouchMenu.visible).toBe(false);
+        expect(svg.querySelector('[data-touch-magnifier]')).not.toBeNull();
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -pan.x || 0, y: -pan.y || 0 });
+        expect(store.getState().param.present.graph).toBe(originalGraph);
+        expect(store.getState().param.past).toHaveLength(0);
+
+        const move = pointerEvent('pointermove', 223, 229);
+        act(() => svg.dispatchEvent(move));
+        flushFrame();
+        const finalPosition = { x: 183 - pan.x, y: 189 - pan.y };
+        expect(move.defaultPrevented).toBe(true);
+        expect(window.graph.getNodeAttributes('stn_A')).toMatchObject(finalPosition);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -pan.x || 0, y: -pan.y || 0 });
+        expect(viewport).toHaveAttribute('transform', `translate(${pan.x}, ${pan.y}) scale(1)`);
+
+        const up = pointerEvent('pointerup', 223, 229);
+        act(() => svg.dispatchEvent(up));
+        flushFrame();
+        expect(up.defaultPrevented).toBe(true);
+        expect(store.getState().param.past).toHaveLength(1);
+        expect(store.getState().param.past[0]).toMatchObject({ scope: 'graph', graph: originalGraph });
+        expect(
+            store.getState().param.present.graph.nodes?.find(node => node.key === 'stn_A')?.attributes
+        ).toMatchObject(finalPosition);
+        expect(store.getState().runtime.selected).toEqual(new Set(['stn_A']));
+        expect(store.getState().runtime.active).toBeUndefined();
+        expect(store.getState().runtime.pointerPosition).toBeUndefined();
+        expect(svg.querySelector('[data-touch-magnifier]')).toBeNull();
+
+        pointer(svg, 'pointermove', 260, 260);
+        flushFrame();
+        expect(window.graph.getNodeAttributes('stn_A')).toMatchObject(finalPosition);
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -pan.x || 0, y: -pan.y || 0 });
+        expect(viewport).toHaveAttribute('transform', `translate(${pan.x}, ${pan.y}) scale(1)`);
+        expect(store.getState().param.past).toHaveLength(1);
+    });
+});
+
 describe('SvgWrapper touch line-tool pan integration', () => {
     it('pans one pixel on the first frame without exiting the line tool or clearing its selection', () => {
         const { store, svg, viewport } = setup(true, LINE_MODE);
