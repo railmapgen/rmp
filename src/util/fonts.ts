@@ -22,6 +22,8 @@ export enum TextLanguage {
     taipei = 'taipei',
 }
 
+export const DEFAULT_LANGUAGES: TextLanguage[] = [TextLanguage.zh, TextLanguage.en];
+
 export const Node2Font: {
     [k in NodeType]?: TextLanguage[];
 } = {
@@ -90,11 +92,11 @@ export const getLangStyle = (lang: TextLanguage) => {
 };
 const LANG_STYLE: Record<TextLanguage, FontStyle> = {
     zh: {
-        fontFamily: "SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
+        fontFamily: "'Noto Sans CJK SC', SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
         fontSynthesis: 'none',
     },
     en: {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'Arimo, Arial, sans-serif',
     },
     berlin: {
         fontFamily: 'Roboto, Arial, Helvetica, sans-serif',
@@ -171,6 +173,14 @@ type FontFaceConfig = {
 
 const getBundledFontSource = (fileName: string) => `url("${import.meta.env.BASE_URL}fonts/${fileName}")`;
 
+const NotoSansCJKSC: FontFaceConfig = {
+    source: getBundledFontSource('NotoSansCJKsc-Regular.otf'),
+    descriptors: { display: 'swap' },
+};
+const Arimo: FontFaceConfig = {
+    source: getBundledFontSource('Arimo-Regular.ttf'),
+    descriptors: { display: 'swap' },
+};
 const LTAIdentity: FontFaceConfig = {
     source: getBundledFontSource('LTAIdentity-Medium.ttf'),
     descriptors: { display: 'swap' },
@@ -191,6 +201,8 @@ const TaipeiSansTC: FontFaceConfig = {
 };
 
 const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; name: string }>> = {
+    zh: { config: NotoSansCJKSC, name: 'Noto Sans CJK SC' },
+    en: { config: Arimo, name: 'Arimo' },
     mtr_zh: { config: undefined, name: 'GenYoMinTW-SB' },
     mtr_en: { config: undefined, name: 'Vegur-Bold' },
     mrt: { config: LTAIdentity, name: 'LTAIdentity' },
@@ -269,6 +281,10 @@ export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSign
 };
 
 export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
+    // Export can start while the editor is still downloading its first font faces.
+    // Keep successfully loaded faces even if another requested font is unavailable.
+    await Promise.allSettled(languages.map(loadFont));
+    await document.fonts?.ready;
     const s = document.createElement('style');
 
     const cssPromises = await Promise.allSettled(

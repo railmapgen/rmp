@@ -6,9 +6,9 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants
 import { MiscNodeType } from '../../constants/nodes';
 import { StationType } from '../../constants/stations';
 import i18n from '../../i18n/config';
-import { waitForFonts } from '../fonts';
+import { TextLanguage, waitForFonts } from '../fonts';
 import { getNodes } from '../process-elements';
-import { createVideoResourceLayout } from './video-resource-layout';
+import { createVideoResourceLayout, getVideoResourceLanguages } from './video-resource-layout';
 
 vi.mock('../fonts', async importOriginal => ({
     ...(await importOriginal<typeof import('../fonts')>()),
@@ -120,6 +120,27 @@ describe('video resource layout preparation', () => {
         expect(document.body.children).toHaveLength(bodyChildren);
     });
 
+    it('collects default fonts for resources without a special font mapping', () => {
+        const graph = makeGraph();
+        graph.dropNode('stn_jr');
+
+        expect(getVideoResourceLanguages(getNodes(graph))).toEqual([TextLanguage.zh, TextLanguage.en]);
+    });
+
+    it('preserves initial and special languages without duplicating default fonts', () => {
+        const graph = makeGraph();
+
+        expect(
+            getVideoResourceLanguages(getNodes(graph), [TextLanguage.en, TextLanguage.taipei, TextLanguage.taipei])
+        ).toEqual([
+            TextLanguage.zh,
+            TextLanguage.en,
+            TextLanguage.taipei,
+            TextLanguage.jreast_ja,
+            TextLanguage.jreast_en,
+        ]);
+    });
+
     it('handles vertical JR text and permits zero-width empty text', async () => {
         const layout = createLayout();
         const verticalGraph = makeGraph('東京品川新宿池袋', '', true);
@@ -134,7 +155,7 @@ describe('video resource layout preparation', () => {
         expect(markup).not.toMatch(/NaN|Infinity/);
     });
 
-    it('waits for fonts before mounting and measuring resources', async () => {
+    it('waits for default and special fonts before mounting and measuring resources', async () => {
         const fonts = deferred();
         vi.mocked(waitForFonts).mockReturnValueOnce(fonts.promise);
         const layout = createLayout();
@@ -142,6 +163,12 @@ describe('video resource layout preparation', () => {
         const preparation = layout.prepare(graph, getNodes(graph));
 
         await vi.waitFor(() => expect(waitForFonts).toHaveBeenCalled());
+        expect(vi.mocked(waitForFonts).mock.calls[0][0]).toEqual([
+            TextLanguage.zh,
+            TextLanguage.en,
+            TextLanguage.jreast_ja,
+            TextLanguage.jreast_en,
+        ]);
         expect(getBBox).not.toHaveBeenCalled();
         fonts.resolve();
         await preparation;

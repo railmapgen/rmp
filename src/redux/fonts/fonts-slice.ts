@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TextLanguage } from '../../util/fonts';
+import { DEFAULT_LANGUAGES, TextLanguage } from '../../util/fonts';
 
 interface FontsState {
     /**
@@ -12,7 +12,7 @@ interface FontsState {
 }
 
 const initialState: FontsState = {
-    languages: [],
+    languages: [...DEFAULT_LANGUAGES],
 };
 
 const fontSlice = createSlice({

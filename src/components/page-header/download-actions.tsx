@@ -35,7 +35,7 @@ import { isTauri } from '../../constants/server';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { setGlobalAlert } from '../../redux/runtime/runtime-slice';
 import { downloadAs, downloadBlobAs, makeRenderReadySVGElement, shouldForceRmpInfo } from '../../util/download';
-import { ExportCanvasSize, getExportCanvasSize, testExportCanvasSize } from '../../util/export-canvas';
+import { getExportCanvasSize, testExportCanvasSize } from '../../util/export-canvas';
 import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
@@ -208,13 +208,7 @@ export default function DownloadActions() {
                         : {}
                 );
 
-            let exportCanvasSize: ExportCanvasSize | undefined;
-            if (format === 'png') {
-                const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph.current);
-                exportCanvasSize = getExportCanvasSize(xMax - xMin, yMax - yMin, scale);
-            }
-
-            const { elem } = await makeRenderReadySVGElement(
+            const { elem, width, height } = await makeRenderReadySVGElement(
                 graph.current,
                 param.present.mapEnabled,
                 isAttachSelected,
@@ -232,6 +226,8 @@ export default function DownloadActions() {
                 downloadAs(`RMP_${new Date().valueOf()}.svg`, 'image/svg+xml', svgString);
                 return;
             }
+
+            const exportCanvasSize = getExportCanvasSize(width, height, scale);
 
             // always use resvg as mac has saving issues with downloadAs tauri-apps/tauri#4633
             if (isTauri) {
@@ -259,7 +255,7 @@ export default function DownloadActions() {
 
             // prepare a clean canvas to be drawn on
             const canvas = document.createElement('canvas');
-            const { width: canvasWidth, height: canvasHeight } = exportCanvasSize!;
+            const { width: canvasWidth, height: canvasHeight } = exportCanvasSize;
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
             const ctx = canvas.getContext('2d');
