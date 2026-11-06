@@ -1516,9 +1516,5 @@
         "parallelLimit": "免费可使用 {{count}} 条平行线段，订阅「$t(RMP_CLOUD)」后不限数量。",
         "redeem": "点击前往兑换订阅。",
         "redeemNamed": "兑换{{subscription}}"
-    },
-    "Language": "语言",
-    "RMP_CLOUD_SHORT_NAME": "地铁线路图绘制器・出发进行",
-    "RMP_EXPORT_SHORT_NAME": "地铁线路图绘制器・一度停车",
-    "Remove": "移除"
+    }
 }

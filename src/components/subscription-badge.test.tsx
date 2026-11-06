@@ -52,7 +52,7 @@ describe('SubscriptionBadge', () => {
 
         render(<SubscriptionBadge subscription="RMP_EXPORT" />, { store });
 
-        fireEvent.focus(screen.getByText('Rail Map Painter・Stop and Proceed'));
+        fireEvent.focus(screen.getByText('Stop and Proceed'));
         expect(await screen.findByRole('tooltip')).toHaveTextContent(expectedDescription);
     });
 
@@ -65,7 +65,7 @@ describe('SubscriptionBadge', () => {
             { store: createStore() }
         );
 
-        fireEvent.focus(screen.getByText('Rail Map Painter・Proceed Signal'));
+        fireEvent.focus(screen.getByText('Proceed Signal'));
         expect(await screen.findByRole('tooltip')).toHaveTextContent(
             'Up to 3 master nodes are free. Subscribe to Rail Map Painter・Proceed Signal for unlimited master nodes.'
         );

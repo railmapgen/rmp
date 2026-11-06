@@ -72,15 +72,12 @@ export default function SubscriptionBadge({ subscription, description, ...props 
                 fontWeight="600"
                 lineHeight="18px"
                 textTransform="none"
-                whiteSpace="normal"
-                textAlign="left"
-                maxW="100%"
                 display="inline-flex"
                 position="relative"
                 alignItems="center"
                 gap="1"
                 verticalAlign="middle"
-                flexShrink={1}
+                flexShrink={0}
                 cursor="pointer"
                 _hover={{ filter: 'brightness(0.95)' }}
                 _focusVisible={{ outline: '2px solid', outlineColor: 'blue.400', outlineOffset: '2px' }}

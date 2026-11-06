@@ -1527,19 +1527,10 @@
     "Upload JSON file": "JSON 파일 업로드",
     "Zoom out": "축소",
     "Zoom in": "확대",
-    "Language": "언어",
     "upload": "업로드",
     "Missing from current graph": "현재 그래프에 없음",
     "New": "새 기능",
     "Unsupported configuration!": "지원하지 않는 설정입니다.",
     "Zoom": "확대 비율",
-    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다.",
-    "Previous": "이전",
-    "RMP_CLOUD": "철도 노선도 그리기・출발 진행",
-    "RMP_CLOUD_SHORT_NAME": "철도 노선도 그리기・출발 진행",
-    "RMP_EXPORT": "철도 노선도 그리기・일단 정지",
-    "RMP_EXPORT_SHORT_NAME": "철도 노선도 그리기・일단 정지",
-    "Remove": "제거",
-    "Reset": "초기화",
-    "Settings": "설정"
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다."
 }

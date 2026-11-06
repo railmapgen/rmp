@@ -1528,15 +1528,10 @@
     "Upload JSON file": "JSON ファイルをアップロード",
     "Zoom out": "縮小",
     "Zoom in": "拡大",
-    "Language": "言語",
     "upload": "アップロード",
     "Missing from current graph": "現在の図に存在しません",
     "New": "新機能",
     "Unsupported configuration!": "この設定には対応していません。",
     "Zoom": "表示倍率",
-    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。",
-    "Cancel": "取消",
-    "RMP_CLOUD_SHORT_NAME": "地下鉄路線図画家・出発進行",
-    "RMP_EXPORT_SHORT_NAME": "地下鉄路線図画家・一旦停止",
-    "Reset": "初期化"
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。"
 }

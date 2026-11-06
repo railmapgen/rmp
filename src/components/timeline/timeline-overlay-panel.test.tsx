@@ -81,7 +81,7 @@ describe('Timeline overlay settings panel', () => {
         expect(screen.getByRole('combobox', { name: 'Date content' })).toBeDisabled();
         expect(screen.getByRole('combobox', { name: 'Date layout' })).toBeDisabled();
         expect(screen.getByRole('button', { name: 'Remove module' })).toBeDisabled();
-        expect(screen.getByText('Rail Map Painter・Stop and Proceed')).toBeInTheDocument();
+        expect(screen.getByText('Stop and Proceed')).toBeInTheDocument();
         expect(screen.queryByRole('combobox', { name: 'Position' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Move up' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Move down' })).not.toBeInTheDocument();
@@ -94,7 +94,7 @@ describe('Timeline overlay settings panel', () => {
         panel({ modules: [date], selectedId: 'date', hasExportSubscription: true, onChange });
         expect(screen.getByRole('combobox', { name: 'Date content' })).toBeEnabled();
         expect(screen.getByRole('button', { name: 'Remove module' })).toBeEnabled();
-        expect(screen.queryByText('Rail Map Painter・Stop and Proceed')).not.toBeInTheDocument();
+        expect(screen.queryByText('Stop and Proceed')).not.toBeInTheDocument();
         fireEvent.change(screen.getByRole('combobox', { name: 'Date content' }), { target: { value: 'false' } });
         expect(onChange).toHaveBeenCalledExactlyOnceWith([
             { ...date, settings: { showMonthDay: false, layout: 'double' } },
