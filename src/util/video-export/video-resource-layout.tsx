@@ -10,7 +10,7 @@ import { RenderGraph, SvgRenderProvider } from '../../components/svg-render-cont
 import { Id } from '../../constants/constants';
 import { MiscNodeType } from '../../constants/nodes';
 import i18n from '../../i18n/config';
-import { Node2Font, TextLanguage, waitForFonts } from '../fonts';
+import { DEFAULT_LANGUAGES, Node2Font, TextLanguage, waitForFonts } from '../fonts';
 import { Element as RenderElement } from '../process-elements';
 import { throwIfVideoExportAborted, waitForVideoExportOperation } from './video-export-control';
 
@@ -63,7 +63,7 @@ export const renderStaticVideoElements = (graph: RenderGraph, elements: RenderEl
     renderToStaticMarkup(resourceTree(graph, elements, options));
 
 export const getVideoResourceLanguages = (elements: RenderElement[], initial: TextLanguage[] = []) => {
-    const languages = new Set(initial);
+    const languages = new Set([...DEFAULT_LANGUAGES, ...initial]);
     for (const element of elements) {
         const attrs = element.station ?? element.miscNode;
         if (!attrs) continue;

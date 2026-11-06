@@ -6,6 +6,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
 import { createMapAttribution } from '../map/map-attribution';
 import * as fonts from './fonts';
+import * as helpers from './helpers';
 import {
     makeRenderReadySVGElement,
     positionMapAttributionForExport,
@@ -30,6 +31,84 @@ describe('download RMP info rules', () => {
 });
 
 describe('map export attribution', () => {
+    it('waits for fonts before measuring and cloning updated text resource geometry', async () => {
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        const canvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        canvas.innerHTML = '<g><g id="badge"><rect width="32" height="16" /><text x="16">线路</text></g></g>';
+        const rect = canvas.querySelector('rect')!;
+        const text = canvas.querySelector('text')!;
+        const fontStyle = document.createElement('style');
+        fontStyle.textContent = '@font-face { font-family: Arimo; }';
+        let finishFonts!: (style: HTMLStyleElement) => void;
+        const fontPreparation = new Promise<HTMLStyleElement>(resolve => {
+            finishFonts = resolve;
+        });
+        const prepareFonts = vi.spyOn(fonts, 'makeBase64EncodedFontsStyle').mockReturnValue(fontPreparation);
+        const measure = vi.spyOn(helpers, 'calculateCanvasSize').mockImplementation(() => ({
+            xMin: 0,
+            yMin: 0,
+            xMax: Number(rect.getAttribute('width')),
+            yMax: 16,
+        }));
+        const clone = vi.spyOn(canvas, 'cloneNode');
+        try {
+            const preparation = makeRenderReadySVGElement(
+                graph,
+                false,
+                true,
+                false,
+                fonts.DEFAULT_LANGUAGES,
+                false,
+                2,
+                undefined,
+                canvas
+            );
+
+            expect(prepareFonts).toHaveBeenCalledOnce();
+            expect(measure).not.toHaveBeenCalled();
+            expect(clone).not.toHaveBeenCalled();
+            rect.setAttribute('width', '90');
+            text.setAttribute('x', '45');
+            finishFonts(fontStyle);
+
+            const { elem, width, height } = await preparation;
+            expect(measure).toHaveBeenCalledOnce();
+            expect(clone).toHaveBeenCalledOnce();
+            expect({ width, height }).toEqual({ width: 90, height: 16 });
+            expect(elem.getAttribute('viewBox')).toBe('0 0 90 16');
+            expect(elem.querySelector('rect')?.getAttribute('width')).toBe('90');
+            expect(elem.querySelector('text')?.getAttribute('x')).toBe('45');
+            expect(elem.querySelector('style')).toBe(fontStyle);
+        } finally {
+            clone.mockRestore();
+            measure.mockRestore();
+            prepareFonts.mockRestore();
+        }
+    });
+
+    it('skips downloadable font preparation for system-font-only exports', async () => {
+        const canvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const prepareFonts = vi.spyOn(fonts, 'makeBase64EncodedFontsStyle');
+        try {
+            const { elem } = await makeRenderReadySVGElement(
+                new MultiDirectedGraph(),
+                false,
+                true,
+                true,
+                fonts.DEFAULT_LANGUAGES,
+                false,
+                2,
+                undefined,
+                canvas
+            );
+
+            expect(prepareFonts).not.toHaveBeenCalled();
+            expect(elem.querySelector('style')).toBeNull();
+        } finally {
+            prepareFonts.mockRestore();
+        }
+    });
+
     it('prepares self-contained fonts, facility symbols and images that can be reused by detached video frames', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         for (const [index, name] of ['airport-one', 'airport-two'].entries()) {

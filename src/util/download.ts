@@ -51,6 +51,18 @@ export const makeRenderReadySVGElement = async (
     renderGraph?: (clone: SVGSVGElement) => void,
     sourceCanvas?: SVGSVGElement
 ) => {
+    // Font loading can resize text and the resources that measure it. Prepare
+    // fonts before reading bounds or freezing the editor DOM into an export.
+    let fontsStyle: HTMLStyleElement | undefined;
+    if (!isSystemFontsOnly) {
+        try {
+            fontsStyle = await makeBase64EncodedFontsStyle(languages);
+        } catch (err) {
+            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
+            logger.warn(err);
+        }
+    }
+
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
     const [width, height] = [xMax - xMin, yMax - yMin];
@@ -137,15 +149,7 @@ export const makeRenderReadySVGElement = async (
         positionMapAttributionForExport(elem, { xMin, yMax });
     }
 
-    if (!isSystemFontsOnly) {
-        // add additional fonts data to the final svg in encoded base64 format
-        try {
-            elem.prepend(await makeBase64EncodedFontsStyle(languages));
-        } catch (err) {
-            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
-            logger.warn(err);
-        }
-    }
+    if (fontsStyle) elem.prepend(fontsStyle);
 
     await loadFacilitiesSvg(elem, graph);
 

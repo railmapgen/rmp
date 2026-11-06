@@ -4,6 +4,7 @@ import { TextLanguage } from './fonts';
 const runtime = vi.hoisted(() => ({
     loadFont: vi.fn(),
     getLoadedFonts: vi.fn(),
+    getFontCSS: vi.fn(),
 }));
 
 vi.mock('@railmapgen/rmg-runtime', () => ({ default: runtime }));
@@ -35,6 +36,10 @@ describe('font preparation', () => {
         loadedFonts = {};
         runtime.getLoadedFonts.mockReturnValue(loadedFonts);
         runtime.loadFont.mockImplementation(async (name: string) => (loadedFonts[name] ??= makeFont()));
+        runtime.getFontCSS.mockImplementation(async (family: string) => {
+            if (!loadedFonts[family]) throw new Error(`Font family ${family} is not loaded`);
+            return `@font-face { font-family: '${family}'; }`;
+        });
         Object.defineProperty(document, 'fonts', {
             configurable: true,
             value: { ready: Promise.resolve(), delete: vi.fn() },
@@ -67,6 +72,61 @@ describe('font preparation', () => {
                 },
             ],
         });
+    });
+
+    it.each([
+        [TextLanguage.zh, 'Noto Sans CJK SC', 'NotoSansCJKsc-Regular.otf'],
+        [TextLanguage.en, 'Arimo', 'Arimo-Regular.ttf'],
+    ])('loads the bundled default %s font from the application base', async (language, family, fileName) => {
+        await fonts.loadFont(language as TextLanguage);
+
+        expect(runtime.loadFont).toHaveBeenCalledWith(family, {
+            configs: [
+                {
+                    source: `url("/rmp/fonts/${fileName}")`,
+                    descriptors: { display: 'swap' },
+                },
+            ],
+        });
+        expect(loadedFonts[family].configs[0].font.load).toHaveBeenCalledOnce();
+    });
+
+    it('waits for both default fonts and browser layout before embedding a first export', async () => {
+        const chinese = deferred<FontFace>();
+        const english = deferred<FontFace>();
+        const browserReady = deferred();
+        const chineseFont = makeFont();
+        const englishFont = makeFont();
+        vi.mocked(chineseFont.configs[0].font.load).mockReturnValue(chinese.promise);
+        vi.mocked(englishFont.configs[0].font.load).mockReturnValue(english.promise);
+        loadedFonts['Noto Sans CJK SC'] = chineseFont;
+        loadedFonts.Arimo = englishFont;
+        Object.defineProperty(document.fonts, 'ready', { configurable: true, value: browserReady.promise });
+
+        const embedding = fonts.makeBase64EncodedFontsStyle(fonts.DEFAULT_LANGUAGES);
+        await vi.waitFor(() => expect(englishFont.configs[0].font.load).toHaveBeenCalledOnce());
+        expect(runtime.getFontCSS).not.toHaveBeenCalled();
+        chinese.resolve(chineseFont.configs[0].font);
+        await chinese.promise;
+        expect(runtime.getFontCSS).not.toHaveBeenCalled();
+        english.resolve(englishFont.configs[0].font);
+        await english.promise;
+        expect(runtime.getFontCSS).not.toHaveBeenCalled();
+        browserReady.resolve();
+
+        const style = await embedding;
+        expect(runtime.getFontCSS.mock.calls).toEqual([['Noto Sans CJK SC'], ['Arimo']]);
+        expect(style.textContent).toContain("font-family: 'Noto Sans CJK SC'");
+        expect(style.textContent).toContain("font-family: 'Arimo'");
+    });
+
+    it('keeps successful font faces when another default font fails to download', async () => {
+        runtime.loadFont.mockRejectedValueOnce(new Error('Font download failed'));
+
+        const style = await fonts.makeBase64EncodedFontsStyle(fonts.DEFAULT_LANGUAGES);
+
+        expect(style.textContent).toContain("font-family: 'Arimo'");
+        expect(style.textContent).not.toContain("font-family: 'Noto Sans CJK SC'");
     });
 
     it('shares the in-flight download across languages using the same font and reuses success', async () => {
