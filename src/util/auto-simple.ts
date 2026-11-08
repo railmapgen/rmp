@@ -116,8 +116,16 @@ export const reconcileSimplePathWithParallel = (
  */
 const checkKAndType = (type: LinePathType, x1: number, y1: number, x2: number, y2: number) => {
     if ((x1 === x2 || y1 === y2) && [LinePathType.Diagonal, LinePathType.Perpendicular].includes(type)) return true;
+    const dx = Math.abs(x2 - x1);
+    const dy = Math.abs(y2 - y1);
+    // Decimal coordinates can round differently when subtracted. Compare the
+    // deltas at coordinate precision instead of requiring an exactly unit slope.
+    const tolerance = Number.EPSILON * 8 * Math.max(1, Math.abs(x1), Math.abs(y1), Math.abs(x2), Math.abs(y2));
     if (
-        Math.abs((y2 - y1) / (x2 - x1)) === 1 &&
+        dx > 0 &&
+        dy > 0 &&
+        Number.isFinite(tolerance) &&
+        Math.abs(dx - dy) <= tolerance &&
         [LinePathType.Diagonal, LinePathType.RotatePerpendicular].includes(type)
     )
         return true;

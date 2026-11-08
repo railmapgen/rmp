@@ -14,7 +14,7 @@ import {
     makePoint,
     moveTo,
 } from '../constants/path';
-import { getLineIntersection, makeOffsetSegment } from './geometry';
+import { distanceToSegment, getLineIntersection, makeOffsetSegment } from './geometry';
 import { dropInitialMoveTo, getEndPoint, getStartPoint, makeOpenPathFromCommands } from './path';
 
 type OffsetDrawCommand = {
@@ -39,6 +39,15 @@ const toPathPoint = (point: { x: number; y: number }): PathPoint => makePoint(po
 const translatePointByVector = (point: PathPoint, dx: number, dy: number): PathPoint =>
     makePoint(point.x + dx, point.y + dy);
 
+/** Rounded corners can collapse to straight or zero-length cubics after coordinate rounding. */
+const isStraightCubic = (start: PathPoint, command: CubicTo) => {
+    const points = [start, command.c1, command.c2, command.to];
+    const tolerance =
+        Number.EPSILON * 8 * Math.max(1, ...points.flatMap(point => [Math.abs(point.x), Math.abs(point.y)]));
+    // Distance to the finite segment also excludes controls that overshoot its endpoints.
+    return [command.c1, command.c2].every(point => distanceToSegment(point, start, command.to).distance <= tolerance);
+};
+
 /**
  * Offset every draw command independently while retaining enough original
  * geometry to reconnect the pieces afterwards.
@@ -52,43 +61,44 @@ const makeOffsetDrawCommands = (path: OpenPath, d: number): [OffsetDrawCommand, 
     const offsetCommands = dropInitialMoveTo(path).map(command => {
         const originalStart = start;
         const originalEnd = command.to;
-        const result = isLineTo(command)
-            ? (() => {
-                  // Straight segments can be offset exactly by translating both
-                  // endpoints along the segment normal.
-                  const offset = makeOffsetSegment(originalStart, originalEnd, d);
-                  return {
-                      originalStart,
-                      originalEnd,
-                      offsetStart: offset.start,
-                      command: lineTo(offset.end),
-                  };
-              })()
-            : (() => {
-                  // A cubic's offset endpoints and controls depend on curve
-                  // curvature, so defer that calculation to bezier-js.
-                  const bezier = new Bezier([
-                      originalStart.x,
-                      originalStart.y,
-                      command.c1.x,
-                      command.c1.y,
-                      command.c2.x,
-                      command.c2.y,
-                      command.to.x,
-                      command.to.y,
-                  ]);
-                  const scaled = bezier.scale(d);
-                  return {
-                      originalStart,
-                      originalEnd,
-                      offsetStart: toPathPoint(scaled.points[0]),
-                      command: cubicTo(
-                          toPathPoint(scaled.points[1]),
-                          toPathPoint(scaled.points[2]),
-                          toPathPoint(scaled.points[3])
-                      ),
-                  };
-              })();
+        const result =
+            isLineTo(command) || isStraightCubic(originalStart, command)
+                ? (() => {
+                      // Straight segments can be offset exactly by translating both
+                      // endpoints along the segment normal.
+                      const offset = makeOffsetSegment(originalStart, originalEnd, d);
+                      return {
+                          originalStart,
+                          originalEnd,
+                          offsetStart: offset.start,
+                          command: lineTo(offset.end),
+                      };
+                  })()
+                : (() => {
+                      // A cubic's offset endpoints and controls depend on curve
+                      // curvature, so defer that calculation to bezier-js.
+                      const bezier = new Bezier([
+                          originalStart.x,
+                          originalStart.y,
+                          command.c1.x,
+                          command.c1.y,
+                          command.c2.x,
+                          command.c2.y,
+                          command.to.x,
+                          command.to.y,
+                      ]);
+                      const scaled = bezier.scale(d);
+                      return {
+                          originalStart,
+                          originalEnd,
+                          offsetStart: toPathPoint(scaled.points[0]),
+                          command: cubicTo(
+                              toPathPoint(scaled.points[1]),
+                              toPathPoint(scaled.points[2]),
+                              toPathPoint(scaled.points[3])
+                          ),
+                      };
+                  })();
 
         start = command.to;
         return result;
