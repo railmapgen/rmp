@@ -9,8 +9,16 @@ import { isMacClient } from '../../../util/helpers';
 import { translateStationNameByPinyin, translateStationNameBySemantic } from '../../../util/station-name-translation';
 import { sendErrorNotification } from '../../../util/notifications';
 
-const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsProps<T>) => {
-    const { id, attrs, handleAttrsUpdate } = props;
+interface StationNameTranslateButtonProps<T extends StationAttributes> extends AttrsProps<T> {
+    /** Names to translate, defaults to `attrs.names`. */
+    names?: [string, ...string[]];
+    /** Called with the translated English name instead of writing it back to `attrs.names`. */
+    onTranslated?: (en: string) => void;
+}
+
+const StationNameTranslateButton = <T extends StationAttributes>(props: StationNameTranslateButtonProps<T>) => {
+    const { id, attrs, handleAttrsUpdate, names: namesProp, onTranslated } = props;
+    const names = namesProp ?? attrs.names;
     const { t } = useTranslation();
     const dispatch = useRootDispatch();
     const { token, activeSubscriptions } = useRootSelector(state => state.account);
@@ -64,7 +72,7 @@ const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsPro
     }, []);
 
     const handleClick = React.useCallback(async () => {
-        const zhName = attrs.names[0]?.trim();
+        const zhName = names[0]?.trim();
         if (!zhName) {
             sendErrorNotification(
                 t('panel.details.stations.common.translateName'),
@@ -88,8 +96,12 @@ const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsPro
                     ? await translateStationNameBySemantic(zhName, token!)
                     : translateStationNameByPinyin(zhName, stationNameTranslationMode);
             const nextAttrs = structuredClone(attrs);
-            nextAttrs.names[1] = en;
-            handleAttrsUpdate(id, nextAttrs);
+            if (onTranslated) {
+                onTranslated(en);
+            } else {
+                nextAttrs.names[1] = en;
+                handleAttrsUpdate(id, nextAttrs);
+            }
             focusEnglishNameTextarea(en);
         } catch {
             sendErrorNotification(
@@ -105,6 +117,8 @@ const StationNameTranslateButton = <T extends StationAttributes>(props: AttrsPro
         focusEnglishNameTextarea,
         handleAttrsUpdate,
         id,
+        names,
+        onTranslated,
         stationNameTranslationMode,
         t,
         token,

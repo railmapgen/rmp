@@ -43,6 +43,7 @@ import taipeiMetroBasicStation from './taipei-metro-basic';
 import taipeiMetroIntStation from './taipei-metro-int';
 import taipeiLightRailStation from './taipei-light-rail';
 import taipeiMaokongGondolaStation from './taipei-maokong-gondola';
+import gzmtrPaidAreaIntPairStation from './gzmtr-paid-area-int-pair';
 
 const stations = {
     [StationType.ShmetroBasic]: shmetroBasicStation,
@@ -53,6 +54,7 @@ const stations = {
     [StationType.GzmtrBasic]: gzmtrBasicStation,
     [StationType.GzmtrInt]: gzmtrIntStation,
     [StationType.GzmtrInt2024]: gzmtrInt2024Station,
+    [StationType.GzmtrPaidAreaIntPair]: gzmtrPaidAreaIntPairStation,
     [StationType.BjsubwayBasic]: bjsubwayBasicStation,
     [StationType.BjsubwayInt]: bjsubwayIntStation,
     [StationType.MTR]: mtrStation,
