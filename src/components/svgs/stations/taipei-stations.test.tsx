@@ -68,7 +68,7 @@ describe('Taipei station resources', () => {
             "'Taipei Sans TC Beta', Arial, sans-serif"
         );
         const englishName = texts.find(text => text.textContent === 'Tamsui');
-        expect(englishName).toHaveAttribute('font-family', 'Arial, sans-serif');
+        expect(englishName).toHaveAttribute('font-family', 'Arimo, Arial, sans-serif');
         expect(englishName).toHaveAttribute('font-size', '5.05');
         expect(englishName).toHaveAttribute('dy', '1.4');
         const Component = taipeiMetroBasicStation.component;

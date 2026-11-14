@@ -22,6 +22,8 @@ export enum TextLanguage {
     taipei = 'taipei',
 }
 
+export const DEFAULT_LANGUAGES: TextLanguage[] = [TextLanguage.zh, TextLanguage.en];
+
 export const Node2Font: {
     [k in NodeType]?: TextLanguage[];
 } = {
@@ -90,11 +92,11 @@ export const getLangStyle = (lang: TextLanguage) => {
 };
 const LANG_STYLE: Record<TextLanguage, FontStyle> = {
     zh: {
-        fontFamily: "SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
+        fontFamily: "'Noto Sans CJK SC', SimHei, 'STHeiti T0C', 'PingFang SC', sans-serif",
         fontSynthesis: 'none',
     },
     en: {
-        fontFamily: 'Arial, sans-serif',
+        fontFamily: 'Arimo, Arial, sans-serif',
     },
     berlin: {
         fontFamily: 'Roboto, Arial, Helvetica, sans-serif',
@@ -185,12 +187,10 @@ const MontaguSlab: FontFaceConfig = {
     descriptors: { display: 'swap' },
 };
 const Railway: FontFaceConfig = { source: getBundledFontSource('Railway-PlyE.otf'), descriptors: { display: 'swap' } };
-const TaipeiSansTC: FontFaceConfig = {
-    source: getBundledFontSource('TaipeiSansTCBeta-Regular.ttf'),
-    descriptors: { display: 'swap' },
-};
 
 const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; name: string }>> = {
+    zh: { config: undefined, name: 'Noto Sans CJK SC' },
+    en: { config: undefined, name: 'Arimo' },
     mtr_zh: { config: undefined, name: 'GenYoMinTW-SB' },
     mtr_en: { config: undefined, name: 'Vegur-Bold' },
     mrt: { config: LTAIdentity, name: 'LTAIdentity' },
@@ -199,11 +199,11 @@ const FONTS: Partial<Record<TextLanguage, { config: FontFaceConfig | undefined; 
     tokyo_en: { config: MontaguSlab, name: 'MontaguSlab' },
     berlin: { config: Roboto, name: 'Roboto' },
     tube: { config: Railway, name: 'Railway' },
-    taipei: { config: TaipeiSansTC, name: 'Taipei Sans TC Beta' },
+    taipei: { config: undefined, name: 'Taipei Sans TC Beta' },
 };
 
 // Languages such as Japanese JR East and Tokyo Metro use the same font face.
-// Keep the actual loading task so concurrent callers also wait for its completion.
+// Share only pending registration; later requests let runtime recover failed faces.
 const fontLoadTasks = new Map<string, Promise<void>>();
 export const loadFont = (lang: TextLanguage): Promise<void> => {
     const fontObj = FONTS[lang];
@@ -217,34 +217,20 @@ export const loadFont = (lang: TextLanguage): Promise<void> => {
         .then(async () => {
             const loadedFont = await rmgRuntime.loadFont(name, config && { configs: [config] });
             if (!loadedFont?.configs.length) throw new Error(`Unable to load font ${name}`);
-
-            // The runtime registers remote faces without starting their downloads.
-            // Explicitly load them before measuring an offscreen SVG that uses them.
-            try {
-                await Promise.all(loadedFont.configs.map(({ font }) => font.load()));
-            } catch (error) {
-                // A failed FontFace cannot be loaded again. Remove the runtime's
-                // failed entry as well so the next request creates fresh faces.
-                const loadedFonts = rmgRuntime.getLoadedFonts();
-                if (loadedFonts[name] === loadedFont) {
-                    delete loadedFonts[name];
-                    loadedFont.configs.forEach(({ font }) => document.fonts?.delete(font));
-                }
-                throw error;
-            }
         })
-        .catch(error => {
+        .finally(() => {
             if (fontLoadTasks.get(name) === task) fontLoadTasks.delete(name);
-            throw error;
         });
     fontLoadTasks.set(name, task);
     return task;
 };
 
-/** Wait for downloadable faces and browser font layout without cancelling shared loads. */
+/** Wait for registration and browser layout, which does not guarantee every subset loaded successfully. */
 export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSignal): Promise<void> => {
     signal?.throwIfAborted();
     const preparation = Promise.all([...new Set(languages)].map(loadFont)).then(async () => {
+        // Mounted text requests its Unicode subsets when layout is flushed.
+        document.body.getBoundingClientRect();
         await document.fonts?.ready;
     });
     if (!signal) return preparation;
@@ -269,15 +255,24 @@ export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSign
 };
 
 export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
+    await Promise.allSettled([...new Set(languages)].map(loadFont));
+    await waitForFonts([]);
     const s = document.createElement('style');
+    s.dataset.rmpFonts = '';
 
-    const cssPromises = await Promise.allSettled(
-        languages.filter(lang => lang in FONTS).map(lang => rmgRuntime.getFontCSS(FONTS[lang]!.name))
-    );
+    const families = new Set(languages.filter(lang => lang in FONTS).map(lang => FONTS[lang]!.name));
+    const cssPromises = await Promise.allSettled([...families].map(family => rmgRuntime.getFontCSS(family)));
     const cssTexts = cssPromises
         .filter((promise): promise is PromiseFulfilledResult<string> => promise.status === 'fulfilled')
         .map(promise => promise.value);
     s.textContent += cssTexts.join('\n');
 
     return s;
+};
+
+/** Refresh embedded subsets after a video resource changes its text. */
+export const updateEmbeddedFonts = async (svg: SVGSVGElement, languages: TextLanguage[]): Promise<void> => {
+    const style = await makeBase64EncodedFontsStyle(languages);
+    svg.querySelectorAll('style[data-rmp-fonts]').forEach(existing => existing.remove());
+    svg.prepend(style);
 };

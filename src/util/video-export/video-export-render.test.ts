@@ -16,6 +16,7 @@ import type { LiveViewport } from '../../redux/viewport/viewport-slice';
 import { createEmptyTimelineDocument, TimelineDocument, TimelineEntry } from '../../constants/timeline';
 import { createTimelineOverlayModule } from '../../constants/timeline-overlays';
 import { makeRenderReadySVGElement } from '../download';
+import { updateEmbeddedFonts } from '../fonts';
 import { calculateCanvasSize } from '../helpers';
 import * as canvasHelpers from '../helpers';
 import * as videoExportCanvas from './video-export-canvas';
@@ -46,6 +47,7 @@ vi.mock('../fonts', async importOriginal => ({
     ...(await importOriginal<typeof import('../fonts')>()),
     waitForFonts: vi.fn(async () => undefined),
     loadFont: vi.fn(async () => undefined),
+    updateEmbeddedFonts: vi.fn(async () => undefined),
 }));
 vi.mock('./video-export-rasterizer', () => ({
     renderVideoSVGToCanvas: vi.fn(async (svg: SVGSVGElement) => {
@@ -77,6 +79,7 @@ const exportEnvironment = {
 
 beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(updateEmbeddedFonts).mockReset().mockResolvedValue(undefined);
     originalGetBBox = Object.getOwnPropertyDescriptor(SVGElement.prototype, 'getBBox');
     Object.defineProperty(SVGElement.prototype, 'getBBox', {
         configurable: true,
@@ -1181,6 +1184,47 @@ describe('authored video frames', () => {
         expect(onProgress).not.toHaveBeenCalledWith(1);
     });
 
+    it.each(['cancellation', 'timeout'] as const)(
+        'releases the writer and canvas on %s while embedded fonts remain pending',
+        async scenario => {
+            const controller = new AbortController();
+            const dispose = vi.fn();
+            let fontsStarted!: () => void;
+            const started = new Promise<void>(resolve => (fontsStarted = resolve));
+            vi.mocked(updateEmbeddedFonts).mockImplementationOnce(() => {
+                fontsStarted();
+                return new Promise<void>(() => {});
+            });
+            vi.mocked(createVideoFrameWriter).mockResolvedValueOnce({ addFrame, complete, dispose });
+            vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+            try {
+                const exporting = exportVideo(
+                    makeGraph(200),
+                    createEmptyTimelineDocument(),
+                    [],
+                    { ...defaultOptions, isSystemFontsOnly: false },
+                    'white',
+                    undefined,
+                    exportEnvironment,
+                    { signal: controller.signal }
+                );
+                const rejected = expect(exporting).rejects.toThrow(
+                    scenario === 'cancellation' ? 'Canceled while loading fonts' : 'Video encoding timed out'
+                );
+                await started;
+                if (scenario === 'cancellation') controller.abort(new Error('Canceled while loading fonts'));
+                else await vi.advanceTimersByTimeAsync(30_000);
+                await rejected;
+                expect(dispose).toHaveBeenCalledOnce();
+                const canvas = vi.mocked(createVideoFrameWriter).mock.calls[0][0];
+                expect([canvas.width, canvas.height]).toEqual([0, 0]);
+                expect(complete).not.toHaveBeenCalled();
+            } finally {
+                vi.useRealTimers();
+            }
+        }
+    );
+
     it('moves nodes and their connected line geometry while preserving the editor graph and final keyframe', async () => {
         const graph = makeGraph(200);
         const original = structuredClone(graph.export());
@@ -2095,3 +2139,67 @@ it.each([
         }
     }
 );
+
+it('embeds newly translated font shards before snapshots and reuses them for unchanged resources', async () => {
+    const previousLanguage = i18n.language;
+    let renderer: Awaited<ReturnType<typeof createVideoPreviewRenderer>> | undefined;
+    const embeddedText: string[] = [];
+    vi.mocked(updateEmbeddedFonts).mockImplementation(async svg => {
+        const text = svg.getElementById('misc_node_translated_text')?.textContent ?? '';
+        embeddedText.push(text);
+        let style = svg.querySelector('style[data-rmp-fonts]');
+        if (!style) {
+            style = document.createElementNS(svg.namespaceURI, 'style');
+            style.setAttribute('data-rmp-fonts', '');
+            svg.prepend(style);
+        }
+        const shard = text.includes('中文') ? 'chinese-shard' : 'latin-shard';
+        style.textContent = `@font-face{font-family:test;src:url('${shard}.woff2')}`;
+    });
+    try {
+        await i18n.changeLanguage('en');
+        const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('misc_node_translated_text', {
+            type: MiscNodeType.I18nText,
+            x: 0,
+            y: 0,
+            visible: true,
+            zIndex: 0,
+            [MiscNodeType.I18nText]: {
+                ...structuredClone(miscNodes[MiscNodeType.I18nText].defaultAttrs),
+                contents: { en: 'English title', 'zh-Hans': '中文标题' },
+            },
+        } as NodeAttributes);
+        const timeline: TimelineDocument = {
+            ...createEmptyTimelineDocument(),
+            track: [
+                {
+                    id: 'translated',
+                    kind: 'node',
+                    refId: 'misc_node_translated_text',
+                    phase: 'enter',
+                    showAnimation: true,
+                },
+            ],
+        };
+        renderer = await createVideoPreviewRenderer(graph, timeline, [], {
+            ...defaultOptions,
+            isSystemFontsOnly: false,
+        });
+        const first = await renderer.renderFrame(0.5);
+        expect(first.querySelector('style[data-rmp-fonts]')?.textContent).toContain('latin-shard.woff2');
+        await renderer.renderFrame(0.75);
+        expect(updateEmbeddedFonts).toHaveBeenCalledOnce();
+
+        await i18n.changeLanguage('zh-Hans');
+        const translated = await renderer.renderFrame(0.75);
+        expect(translated.getElementById('misc_node_translated_text')?.textContent).toContain('中文标题');
+        expect(translated.querySelector('style[data-rmp-fonts]')?.textContent).toContain('chinese-shard.woff2');
+        await renderer.renderFrame(0.9);
+        expect(updateEmbeddedFonts).toHaveBeenCalledTimes(2);
+        expect(embeddedText).toEqual(['English title', '中文标题']);
+    } finally {
+        renderer?.dispose();
+        await i18n.changeLanguage(previousLanguage);
+    }
+});

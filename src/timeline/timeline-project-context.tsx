@@ -3,7 +3,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { blobToBase64 } from '../util/binary';
-import { loadFont, Node2Font, TextLanguage } from '../util/fonts';
+import { DEFAULT_LANGUAGES, loadFont, Node2Font, TextLanguage } from '../util/fonts';
 import { SvgRenderProvider } from '../components/svg-render-context';
 import { timelineProjectDB } from './timeline-project-db';
 
@@ -28,7 +28,7 @@ export const useTimelineProjectContext = () => {
 export const useOptionalTimelineProjectContext = () => React.useContext(TimelineProjectContext);
 
 const getGraphLanguages = (graph: TimelineGraph) => {
-    const languages = new Set<TextLanguage>();
+    const languages = new Set(DEFAULT_LANGUAGES);
 
     graph.forEachNode((_id, attributes) => {
         for (const language of Node2Font[attributes.type] ?? []) languages.add(language);
@@ -73,15 +73,26 @@ export function TimelineProjectProvider({
     }, []);
     React.useEffect(() => {
         let cancelled = false;
+        let scheduled = false;
+        const refreshFonts = () => {
+            if (scheduled || cancelled) return;
+            scheduled = true;
+            queueMicrotask(() => {
+                scheduled = false;
+                if (!cancelled) setFontRevision(current => current + 1);
+            });
+        };
+        // Registration no longer downloads every face. Later text edits can
+        // load new subsets that also need to invalidate svg-assets measurements.
+        document.fonts?.addEventListener?.('loadingdone', refreshFonts);
 
         void Promise.allSettled(languages.map(language => loadFont(language)))
             .then(() => document.fonts?.ready)
-            .then(() => {
-                if (!cancelled) setFontRevision(current => current + 1);
-            });
+            .then(refreshFonts);
 
         return () => {
             cancelled = true;
+            document.fonts?.removeEventListener?.('loadingdone', refreshFonts);
         };
     }, [languages]);
     const getAudio = React.useCallback(

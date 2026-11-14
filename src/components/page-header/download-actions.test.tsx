@@ -111,4 +111,34 @@ describe('DownloadActions', () => {
         await waitFor(() => expect(downloadButton).toBeEnabled());
         expect(consoleError).toHaveBeenCalledWith('Failed to export image', expect.any(Error));
     }, 10_000);
+
+    it('sizes the PNG canvas from prepared SVG geometry after fonts have loaded', async () => {
+        vi.spyOn(console, 'error').mockImplementation(() => undefined);
+        const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+        const elem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        vi.mocked(makeRenderReadySVGElement).mockResolvedValue({ elem, width: 123.25, height: 78.5 });
+
+        render(
+            <RmgThemeProvider>
+                <MemoryRouter>
+                    <DownloadActions />
+                </MemoryRouter>
+            </RmgThemeProvider>,
+            { store: createStore() }
+        );
+
+        fireEvent.click(document.querySelector<HTMLButtonElement>('#menu-button-download')!);
+        fireEvent.click(await screen.findByText('Export image'));
+        await waitFor(() => expect(testExportCanvasSize).toHaveBeenCalledOnce());
+        fireEvent.click(document.querySelector<HTMLInputElement>('#agree_terms')!);
+        const downloadButton = document.querySelector<HTMLButtonElement>('#download_button')!;
+        await waitFor(() => expect(downloadButton).toBeEnabled());
+        fireEvent.click(downloadButton);
+
+        await waitFor(() => expect(getContext).toHaveBeenCalledOnce());
+        const canvas = getContext.mock.contexts[0] as HTMLCanvasElement;
+        expect(canvas.width).toBe(247);
+        expect(canvas.height).toBe(157);
+        await waitFor(() => expect(downloadButton).toBeEnabled());
+    }, 10_000);
 });
