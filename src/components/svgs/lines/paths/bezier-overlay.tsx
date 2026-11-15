@@ -3,10 +3,11 @@ import useEvent from 'react-use-event-hook';
 import { LineId, OverlayProps } from '../../../../constants/constants';
 import { LinePathType } from '../../../../constants/lines';
 import { PathPoint, makePoint } from '../../../../constants/path';
+import { TOUCH_CONTROL_POINT_RADIUS } from '../../../../constants/touch';
 import { useRootDispatch, useRootSelector } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import { pointerPosToSVGCoord } from '../../../../util/helpers';
+import { isTouchClient, pointerPosToSVGCoord } from '../../../../util/helpers';
 import { getBezierControlPoint, getBezierEffectiveEndpoints, getBezierLocalCoordinates } from './bezier-geometry';
 import { defaultBezierPathAttributes, isStraightBezierPathAttributes } from './bezier-model';
 import {
@@ -100,6 +101,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overlay
     const dispatch = useRootDispatch();
     const snapLines = useRootSelector(state => state.app.preference.snapLines);
     const [dragging, setDragging] = React.useState(false);
+    const dragOffset = React.useRef(makePoint(0, 0));
     const [snapEndpoints, setSnapEndpoints] = React.useState<BezierSnapEndpoints>(INACTIVE_BEZIER_SNAP_ENDPOINTS);
     const editable = getBezierEditable(id);
 
@@ -126,6 +128,11 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overlay
         const currentControl = current
             ? getBezierControlPoint(current.source, current.target, current.attrs)
             : undefined;
+        const pointer = getPointerPosition(event);
+        dragOffset.current =
+            event.pointerType === 'touch' && currentControl && pointer
+                ? makePoint(currentControl.x - pointer.x, currentControl.y - pointer.y)
+                : makePoint(0, 0);
         // During a drag, rendered color comes from state instead of recomputing
         // from graph data. Seed that state from the selected line's current
         // alignment so a perfectly aligned handle does not flicker blue before
@@ -141,8 +148,9 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overlay
     const handlePointerMove = useEvent((event: React.PointerEvent<SVGElement>) => {
         if (!dragging) return;
         const current = getBezierEditable(id);
-        const pointer = getPointerPosition(event);
-        if (!current || !pointer) return;
+        const position = getPointerPosition(event);
+        if (!current || !position) return;
+        const pointer = makePoint(position.x + dragOffset.current.x, position.y + dragOffset.current.y);
 
         event.stopPropagation();
         // Scale the snap radius by viewBox zoom so users feel roughly the same
@@ -222,6 +230,20 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overlay
                 strokeDasharray={dashArray}
                 pointerEvents="none"
             />
+            {isTouchClient() && (
+                <circle
+                    cx={control.x}
+                    cy={control.y}
+                    r={TOUCH_CONTROL_POINT_RADIUS * screenToSvgScale}
+                    fill="#3182CE"
+                    opacity={0.15}
+                    cursor={dragging ? 'grabbing' : 'grab'}
+                    pointerEvents="all"
+                    data-touch-control-target=""
+                    data-touch-editor=""
+                    onPointerDown={handlePointerDown}
+                />
+            )}
             <circle
                 cx={control.x}
                 cy={control.y}
@@ -230,6 +252,7 @@ export const BezierLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overlay
                 stroke="#FFFFFF"
                 strokeWidth={handleStrokeWidth}
                 cursor={dragging ? 'grabbing' : 'grab'}
+                data-touch-editor=""
                 onPointerDown={handlePointerDown}
             />
         </g>

@@ -114,6 +114,9 @@ const setup = ({ selected = false, lineDrawing = false } = {}) => {
                             >
                                 <rect data-testid="station" width="20" height="20" />
                             </g>
+                            <g id="stn_B">
+                                <rect data-testid="station-b" width="20" height="20" />
+                            </g>
                             <g
                                 id="stn_name_stn_A"
                                 onPointerDown={event => event.stopPropagation()}
@@ -865,22 +868,155 @@ describe('TouchOverlay', () => {
         expect(chooseStation).not.toHaveBeenCalled();
     });
 
-    it('pans immediately in line mode without starting a preview before choosing a source', () => {
-        const { station, store, lens, drawing, move, onLinePanMove } = setupLine();
-        pointer(station, 'pointerdown');
-        pointer(station, 'pointermove', 161, 220);
+    it('pans immediately from empty canvas in line mode before choosing a source', () => {
+        const { svg, store, lens, drawing, move, onLinePanMove } = setupLine();
+        pointer(svg, 'pointerdown');
+        pointer(svg, 'pointermove', 161, 220);
         expect(onLinePanMove).toHaveBeenCalledWith({ x: 121, y: 180 });
-        pointer(station, 'pointermove', 180, 240);
+        pointer(svg, 'pointermove', 180, 240);
         expect(move).not.toHaveBeenCalled();
         expect(lens()).toBeNull();
         advanceHold();
         expect(store.getState().runtime.radialTouchMenu.visible).toBe(false);
         expect(drawing.begin).not.toHaveBeenCalled();
-        pointer(station, 'pointerup', 180, 240);
+        pointer(svg, 'pointerup', 180, 240);
         expect(lens()).toBeNull();
     });
 
     describe('touch line drawing', () => {
+        it.each([false, true])('draws immediately from a station without panning with preselection=%s', selected => {
+            const harness = setupLine(selected);
+            harness.setViewport({ x: 100, y: 200, zoom: 200 });
+            const initialNode = { ...window.graph.getNodeAttributes('stn_A') };
+
+            pointer(harness.station, 'pointerdown');
+            expect(harness.drawing.begin).toHaveBeenCalledExactlyOnceWith('stn_A', { x: 340, y: 560 });
+            expect(harness.lens()).not.toBeNull();
+            pointer(harness.svg, 'pointermove', 180, 240);
+            expect(harness.drawing.update).toHaveBeenCalledExactlyOnceWith({ x: 380, y: 600 }, { x: 180, y: 240 });
+            advanceHold();
+            expect(harness.store.getState().runtime.radialTouchMenu.visible).toBe(false);
+            expect(findNearbyElements).not.toHaveBeenCalled();
+            pointer(harness.svg, 'pointerup', 185, 245);
+            expect(harness.drawing.finish).toHaveBeenCalledExactlyOnceWith({ x: 390, y: 610 }, { x: 185, y: 245 });
+            expect(harness.lens()).toBeNull();
+            expect(harness.onLinePanStart).not.toHaveBeenCalled();
+            expect(harness.onLinePanMove).not.toHaveBeenCalled();
+            expect(harness.onLinePanEnd).not.toHaveBeenCalled();
+            expect(harness.move).not.toHaveBeenCalled();
+            expect(harness.up).not.toHaveBeenCalled();
+            expect(window.graph.getNodeAttributes('stn_A')).toEqual(initialNode);
+        });
+
+        it.each(['pointercancel', 'lostpointercapture', 'pinch'])(
+            'cancels a direct station drag on %s and allows another drag',
+            cancelBy => {
+                const harness = setupLine();
+                pointer(harness.station, 'pointerdown');
+                expect(harness.drawing.begin).toHaveBeenCalledOnce();
+                pointer(harness.svg, 'pointermove', 180, 240);
+                if (cancelBy === 'pinch') {
+                    pointer(harness.svg, 'pointerdown', 260, 240, 2);
+                    pointer(harness.svg, 'pointermove', 280, 240, 2);
+                    pointer(harness.svg, 'pointerup', 280, 240, 2);
+                    pointer(harness.svg, 'pointerup', 180, 240);
+                    expect(harness.onPinchMove).toHaveBeenCalled();
+                    expect(harness.onPinchEnd).toHaveBeenCalledOnce();
+                } else {
+                    pointer(harness.svg, cancelBy, 180, 240);
+                }
+                expect(harness.drawing.cancel).toHaveBeenCalledOnce();
+                expect(harness.drawing.finish).not.toHaveBeenCalled();
+                expect(harness.lens()).toBeNull();
+
+                pointer(harness.station, 'pointerdown');
+                pointer(harness.svg, 'pointermove', 190, 250);
+                pointer(harness.svg, 'pointerup', 190, 250);
+                expect(harness.drawing.begin).toHaveBeenCalledTimes(2);
+                expect(harness.drawing.finish).toHaveBeenCalledOnce();
+                expect(harness.onLinePanStart).not.toHaveBeenCalled();
+            }
+        );
+
+        it('keeps station touches as pans while the editor is disabled', () => {
+            const harness = setupLine();
+            harness.setEditorDisabled(true);
+            pointer(harness.station, 'pointerdown');
+            pointer(harness.svg, 'pointermove', 180, 240);
+            pointer(harness.svg, 'pointerup', 180, 240);
+            expect(harness.drawing.begin).not.toHaveBeenCalled();
+            expect(harness.onLinePanStart).toHaveBeenCalledOnce();
+            expect(harness.onLinePanMove).toHaveBeenCalledOnce();
+            expect(harness.onLinePanEnd).toHaveBeenCalledOnce();
+            expect(harness.lens()).toBeNull();
+        });
+
+        it('falls back to panning when the controller rejects a touched station', () => {
+            const harness = setupLine();
+            harness.drawing.begin.mockReturnValueOnce(false);
+            pointer(harness.station, 'pointerdown');
+            expect(harness.drawing.begin).toHaveBeenCalledOnce();
+            expect(harness.lens()).toBeNull();
+            pointer(harness.svg, 'pointermove', 180, 240);
+            advanceHold();
+            pointer(harness.svg, 'pointerup', 180, 240);
+            expect(harness.drawing.finish).not.toHaveBeenCalled();
+            expect(harness.onLinePanStart).toHaveBeenCalledOnce();
+            expect(harness.onLinePanMove).toHaveBeenCalledOnce();
+            expect(harness.onLinePanEnd).toHaveBeenCalledOnce();
+        });
+
+        it('keeps the station picker available when a direct station touch is held still', () => {
+            const harness = setupLine();
+            vi.mocked(findNearbyElements).mockReturnValue({
+                ...getNearbyData(),
+                [MenuCategory.LINE]: [{ label: 'Line', elementId: 'line_0', action: vi.fn() }],
+            });
+            pointer(harness.station, 'pointerdown');
+            expect(harness.drawing.begin).toHaveBeenCalledOnce();
+            advanceHold();
+            expect(harness.drawing.cancel).toHaveBeenCalledOnce();
+            expect(harness.store.getState().runtime.radialTouchMenu.visible).toBe(true);
+            const items = harness.container.querySelectorAll('[data-touch-menu-item]');
+            expect([...items].map(item => item.getAttribute('data-touch-menu-item'))).toEqual(['station:0']);
+            expect(harness.lens()).toBeNull();
+            pointer(harness.svg, 'pointerup');
+            expect(harness.drawing.finish).not.toHaveBeenCalled();
+        });
+
+        it('continues a held direct drag when no station picker items are available', () => {
+            const harness = setupLine();
+            vi.mocked(findNearbyElements).mockReturnValue({ ...getNearbyData(), [MenuCategory.STATION]: [] });
+            pointer(harness.station, 'pointerdown');
+            advanceHold();
+            expect(harness.drawing.begin).toHaveBeenCalledOnce();
+            expect(harness.drawing.cancel).not.toHaveBeenCalled();
+            expect(harness.store.getState().runtime.radialTouchMenu.visible).toBe(false);
+            expect(harness.lens()).not.toBeNull();
+            pointer(harness.svg, 'pointermove', 180, 240);
+            pointer(harness.svg, 'pointerup', 180, 240);
+            expect(harness.drawing.update).toHaveBeenCalledExactlyOnceWith({ x: 140, y: 200 }, { x: 180, y: 240 });
+            expect(harness.drawing.finish).toHaveBeenCalledExactlyOnceWith({ x: 140, y: 200 }, { x: 180, y: 240 });
+            expect(harness.onLinePanStart).not.toHaveBeenCalled();
+            expect(harness.onLinePanMove).not.toHaveBeenCalled();
+            expect(harness.onLinePanEnd).not.toHaveBeenCalled();
+        });
+
+        it('uses the locked source when a second hold starts on another station', () => {
+            const harness = setupLine();
+            lockLineSource(harness);
+            pointer(harness.getByTestId('station-b'), 'pointerdown');
+            expect(harness.drawing.begin).toHaveBeenCalledExactlyOnceWith('stn_B', { x: 120, y: 180 });
+            advanceHold();
+            expect(harness.drawing.begin).toHaveBeenLastCalledWith('stn_A', { x: 120, y: 180 });
+            expect(harness.drawing.begin).toHaveBeenCalledTimes(2);
+            expect(harness.lens()).not.toBeNull();
+            expect(harness.store.getState().runtime.radialTouchMenu.visible).toBe(false);
+            pointer(harness.svg, 'pointermove', 180, 240);
+            pointer(harness.svg, 'pointerup', 180, 240);
+            expect(harness.drawing.finish).toHaveBeenCalledExactlyOnceWith({ x: 140, y: 200 }, { x: 180, y: 240 });
+        });
+
         it.each([false, true])('locks a station through a station-only picker with preselection=%s', selected => {
             const harness = setupLine(selected);
             vi.mocked(findNearbyElements).mockReturnValue({

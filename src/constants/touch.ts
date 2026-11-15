@@ -3,6 +3,9 @@ import type { ReactNode } from 'react';
 /** Radius in SVG units to search for nearby elements. */
 export const TOUCH_RADIUS = 30;
 
+/** Control-point touch target radius in CSS pixels, scaled into SVG coordinates by the overlay. */
+export const TOUCH_CONTROL_POINT_RADIUS = 22;
+
 export enum MenuCategory {
     STATION = 'station',
     MISC_NODE = 'misc-node',

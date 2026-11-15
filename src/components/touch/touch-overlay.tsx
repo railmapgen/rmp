@@ -74,6 +74,7 @@ interface TouchGesture {
     start: Point;
     latest: Point;
     precision: boolean;
+    editor?: boolean;
     radialCandidate: boolean;
     dragging: boolean;
     menuOpen: boolean;
@@ -82,6 +83,7 @@ interface TouchGesture {
     movingNode?: NodeId;
     nodeSnap?: NodeSnapSession;
     linePhase?: 'pick-source' | 'pending-draw' | 'drawing' | 'panning';
+    lineHoldPhase?: 'pick-source' | 'pending-draw';
     linePanActive?: boolean;
 }
 
@@ -207,6 +209,9 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             return { precision: false, radialCandidate: mode === 'free' };
         }
         if (!sceneRef.current?.contains(target)) return;
+        if (target.closest('[data-touch-editor]')) {
+            return { precision: true, radialCandidate: false, editor: true };
+        }
         const name = target.closest('[id^="stn_name_"]');
         if (
             name &&
@@ -273,6 +278,13 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         timer.current = undefined;
         const current = gesture.current;
         if (!current || pointers.current.size !== 1 || disabled || editorDisabled) return;
+        if (current.lineHoldPhase === 'pending-draw') {
+            // A stationary press can still resume the source armed through the long-press picker.
+            lineDrawingRef?.current?.cancel();
+            current.linePhase = current.lineHoldPhase;
+            current.lineHoldPhase = undefined;
+            setLensPoint(null);
+        }
         if (current.linePhase === 'pending-draw') {
             const source = getLockedSource();
             if (!source || !lineDrawingRef?.current) return;
@@ -288,7 +300,11 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             }
             return;
         }
-        if (current.linePhase === 'panning' || current.linePhase === 'drawing') return;
+        if (
+            current.linePhase === 'panning' ||
+            (current.linePhase === 'drawing' && current.lineHoldPhase !== 'pick-source')
+        )
+            return;
         if (current.moveCandidate && window.graph.hasNode(current.moveCandidate)) {
             // Claim the gesture before transferring capture away from its original editor.
             current.movingNode = current.moveCandidate;
@@ -304,7 +320,8 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             return;
         }
         if (current.precision && store.getState().runtime.active !== 'background') setLensPoint(current.latest);
-        if (!current.radialCandidate && current.linePhase !== 'pick-source') return;
+        const pickSource = current.linePhase === 'pick-source' || current.lineHoldPhase === 'pick-source';
+        if (!current.radialCandidate && !pickSource) return;
         const point = canvasPoint(current.latest);
         const viewport = getViewport();
         const position = pointerPosToSVGCoord(point.x, point.y, viewport.zoom, viewport);
@@ -314,7 +331,7 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             dispatch,
             !store.getState().account.activeSubscriptions.RMP_CLOUD
         );
-        if (current.linePhase === 'pick-source') {
+        if (pickSource) {
             data[MenuCategory.STATION] = data[MenuCategory.STATION]
                 .filter(item => window.graph.hasNode(item.elementId))
                 .map(item => ({
@@ -330,8 +347,16 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             data[MenuCategory.MISC_NODE] = [];
             data[MenuCategory.OPERATION] = [];
         }
-        if (![...data[MenuCategory.STATION], ...data[MenuCategory.MISC_NODE], ...data[MenuCategory.LINE]].length)
+        if (![...data[MenuCategory.STATION], ...data[MenuCategory.MISC_NODE], ...data[MenuCategory.LINE]].length) {
+            current.lineHoldPhase = undefined;
             return;
+        }
+        if (current.lineHoldPhase === 'pick-source') {
+            // Keep the direct draft usable if this node has no nearby station menu to take over the gesture.
+            lineDrawingRef?.current?.cancel();
+            current.linePhase = 'pick-source';
+            current.lineHoldPhase = undefined;
+        }
         current.menuOpen = true;
         const active = store.getState().runtime.active;
         if (current.dragging && active && active !== 'background') {
@@ -429,13 +454,15 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             distance(window.graph.getNodeAttributes(selectedNode), svgPoint(point)) <= TOUCH_RADIUS
                 ? selectedNode
                 : undefined;
-        const linePhase = mode.startsWith('line')
-            ? editorDisabled
-                ? 'panning'
-                : getLockedSource()
-                  ? 'pending-draw'
-                  : 'pick-source'
-            : undefined;
+        // Selected line handles keep their own drag gesture while continuous drawing leaves the line tool active.
+        const linePhase =
+            mode.startsWith('line') && !kind.editor
+                ? editorDisabled
+                    ? 'panning'
+                    : getLockedSource()
+                      ? 'pending-draw'
+                      : 'pick-source'
+                : undefined;
         gesture.current = {
             pointerId: event.pointerId,
             target,
@@ -455,9 +482,18 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
             gesture.current.precision = false;
             gesture.current.radialCandidate = false;
             svgRef.current?.setPointerCapture?.(event.pointerId);
-            onLinePanStart?.(canvasPoint(point));
+            if (!editorDisabled && kind.node && lineDrawingRef?.current?.begin(kind.node, svgPoint(point))) {
+                // Node drags draw immediately; a hold can still fall back to the previous touch workflow.
+                gesture.current.lineHoldPhase = linePhase === 'pending-draw' ? 'pending-draw' : 'pick-source';
+                gesture.current.linePhase = 'drawing';
+                gesture.current.linePanActive = false;
+                setLensPoint(point);
+            } else {
+                onLinePanStart?.(canvasPoint(point));
+            }
             consume(event);
         }
+        if (kind.editor) setLensPoint(point);
         if (!editorDisabled) timer.current = setTimeout(openLongPress, LONG_PRESS_MS);
     });
 
@@ -500,6 +536,13 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         if (current.linePhase) {
             consume(event);
             if (current.linePhase === 'drawing') {
+                if (distance(current.start, point) > MOVE_THRESHOLD) {
+                    clearTimer();
+                    if (current.lineHoldPhase) {
+                        current.lineHoldPhase = undefined;
+                        lockedSource.current = null;
+                    }
+                }
                 lineDrawingRef?.current?.update(svgPoint(point), point);
                 setLensPoint(point);
             } else {
@@ -516,7 +559,10 @@ export const TouchOverlay: React.FC<TouchOverlayProps> = ({
         // Movement is delivered immediately; the timer only observes whether this is still a hold.
         if (displacement > MOVE_THRESHOLD) clearTimer();
         setLensPoint(
-            current.dragging && current.precision && !editorDisabled && store.getState().runtime.active !== 'background'
+            current.dragging &&
+                current.precision &&
+                !editorDisabled &&
+                (current.editor || store.getState().runtime.active !== 'background')
                 ? point
                 : null
         );
