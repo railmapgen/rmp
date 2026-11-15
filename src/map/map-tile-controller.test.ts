@@ -45,6 +45,35 @@ const bundle = (zoom: number, x: number, y: number) => {
     return buffer;
 };
 
+const bundleV2 = (zoom: number, side: number, tiles: { x: number; y: number }[]) => {
+    const ordered = [...tiles].sort((a, b) => a.y - b.y || a.x - b.x);
+    const payloads = ordered.map(({ x, y }) =>
+        new TextEncoder().encode(
+            `<svg xmlns="http://www.w3.org/2000/svg" data-z="${zoom}" data-x="${x}" data-y="${y}" viewBox="0 0 256 256"><rect class="water" width="256" height="256"/></svg>`
+        )
+    );
+    const payloadOffset = 24 + tiles.length * 12;
+    const buffer = new ArrayBuffer(payloadOffset + payloads.reduce((total, payload) => total + payload.length, 0));
+    const bytes = new Uint8Array(buffer);
+    bytes.set([82, 77, 80, 66, 2, zoom, side, 0]);
+    const view = new DataView(buffer);
+    view.setUint32(8, tiles.length, true);
+    view.setUint32(12, Math.floor(ordered[0].x / side), true);
+    view.setUint32(16, Math.floor(ordered[0].y / side), true);
+    view.setUint32(20, payloadOffset, true);
+    let relativeOffset = 0;
+    ordered.forEach(({ x, y }, index) => {
+        const offset = 24 + index * 12;
+        bytes[offset] = x % side;
+        bytes[offset + 1] = y % side;
+        view.setUint32(offset + 4, relativeOffset, true);
+        view.setUint32(offset + 8, payloads[index].length, true);
+        bytes.set(payloads[index], payloadOffset + relativeOffset);
+        relativeOffset += payloads[index].length;
+    });
+    return buffer;
+};
+
 const BASE_URL = 'https://tiles.example/';
 const JAPAN_BASE_URL = 'https://jp.tiles.example/';
 const OVERVIEW_TILE = { zoom: 8, x: 214, y: 104 } as const;
@@ -77,6 +106,8 @@ const createSvgRoot = () => {
 
 const createMapSourceFixture = (options?: {
     exportOnlyOverviewX?: number;
+    bundleSide?: number;
+    declaredBundleFormat?: 'RMPB1' | 'RMPB2';
     beforeResponse?: (url: string) => void | Promise<void>;
 }) => {
     const overviewXs = [
@@ -86,6 +117,7 @@ const createMapSourceFixture = (options?: {
     const overviewMaxX = Math.max(...overviewXs);
     const overviewWidth = overviewMaxX - OVERVIEW_TILE.x + 1;
     const overviewBits = overviewXs.reduce((bits, x) => bits | (1 << (x - OVERVIEW_TILE.x)), 0);
+    const bundleFormat = options?.declaredBundleFormat ?? (options?.bundleSide === undefined ? 'RMPB1' : 'RMPB2');
     const routing = decodeMapRouting({
         formatVersion: 1,
         ownerZoom: 8,
@@ -106,7 +138,7 @@ const createMapSourceFixture = (options?: {
             {
                 name: 'overview',
                 zoom: OVERVIEW_TILE.zoom,
-                bundleFormat: 'RMPB1',
+                bundleFormat,
                 bundleIndex: 'bundle-index/z8.json',
                 bundleTemplate: 'bundles/overview/8/{side}/{x}/{y}.rmpb',
                 availability: 'availability/z8.bin',
@@ -120,7 +152,7 @@ const createMapSourceFixture = (options?: {
             {
                 name: 'zoomed',
                 zoom: ZOOMED_TILE.zoom,
-                bundleFormat: 'RMPB1',
+                bundleFormat,
                 bundleIndex: 'bundle-index/z13.json',
                 bundleTemplate: 'bundles/zoomed/13/{side}/{x}/{y}.rmpb',
                 availability: 'availability/z13.bin',
@@ -140,36 +172,31 @@ const createMapSourceFixture = (options?: {
             availability(OVERVIEW_TILE.zoom, OVERVIEW_TILE.x, OVERVIEW_TILE.y, overviewWidth, overviewBits),
         ],
         [`${BASE_URL}availability/z13.bin`, availability(ZOOMED_TILE.zoom, ZOOMED_TILE.x, ZOOMED_TILE.y)],
-        [
-            `${BASE_URL}bundle-index/z8.json`,
-            JSON.stringify({
-                formatVersion: 1,
-                level: 'overview',
-                zoom: OVERVIEW_TILE.zoom,
-                bundles: overviewXs.map(x => ({ side: 1, x, y: OVERVIEW_TILE.y })),
-            }),
-        ],
-        [
-            `${BASE_URL}bundle-index/z13.json`,
-            JSON.stringify({
-                formatVersion: 1,
-                level: 'zoomed',
-                zoom: ZOOMED_TILE.zoom,
-                bundles: [{ side: 1, x: ZOOMED_TILE.x, y: ZOOMED_TILE.y }],
-            }),
-        ],
-        ...overviewXs.map(
-            x =>
-                [
-                    `${BASE_URL}bundles/overview/8/1/${x}/${OVERVIEW_TILE.y}.rmpb`,
-                    bundle(OVERVIEW_TILE.zoom, x, OVERVIEW_TILE.y),
-                ] as [string, BodyInit]
-        ),
-        [
-            `${BASE_URL}bundles/zoomed/13/1/${ZOOMED_TILE.x}/${ZOOMED_TILE.y}.rmpb`,
-            bundle(ZOOMED_TILE.zoom, ZOOMED_TILE.x, ZOOMED_TILE.y),
-        ],
     ]);
+    for (const level of manifest.levels) {
+        const side = options?.bundleSide ?? 1;
+        const tiles = level.name === 'overview' ? overviewXs.map(x => ({ ...OVERVIEW_TILE, x })) : [ZOOMED_TILE];
+        const groups = new Map<string, { x: number; y: number }[]>();
+        for (const tile of tiles) {
+            const key = `${Math.floor(tile.x / side)}/${Math.floor(tile.y / side)}`;
+            groups.set(key, [...(groups.get(key) ?? []), tile]);
+        }
+        const bundles = [];
+        for (const [key, group] of groups) {
+            const [x, y] = key.split('/').map(Number);
+            bundles.push({ side, x, y });
+            responses.set(
+                `${BASE_URL}bundles/${level.name}/${level.zoom}/${side}/${key}.rmpb`,
+                options?.bundleSide === undefined
+                    ? bundle(level.zoom, group[0].x, group[0].y)
+                    : bundleV2(level.zoom, side, group)
+            );
+        }
+        responses.set(
+            `${BASE_URL}${level.bundleIndex}`,
+            JSON.stringify({ formatVersion: 1, level: level.name, zoom: level.zoom, bundles })
+        );
+    }
     const fetcherMock = vi.fn(async (input: URL | RequestInfo, _init?: RequestInit) => {
         const requestUrl = new URL(input instanceof URL ? input.href : String(input));
         requestUrl.searchParams.delete('rmp-source-epoch');
@@ -302,6 +329,125 @@ describe('MapTileController', () => {
         vi.useRealTimers();
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+    });
+
+    it.each([16, 32, 64])(
+        'loads and exports RMPB2 tiles from side-%i bundles with one download per bundle',
+        async side => {
+            stubAnimationFrame();
+            const { fetcher, fetcherMock, routing } = createMapSourceFixture({
+                bundleSide: side,
+                exportOnlyOverviewX: 217,
+            });
+            const { svg, root } = createSvgRoot();
+            const controller = new MapTileController({
+                root,
+                routing,
+                getViewportSize: () => ({ width: 100, height: 100 }),
+                fetch: fetcher,
+                rasterCache: null,
+                rasterEnabled: false,
+            });
+            try {
+                const viewport = { x: -390, y: -390, zoom: 780 };
+                controller.updateViewport(viewport);
+                await controller.initialize();
+                await vi.waitFor(() => expect(root.querySelector('[data-tile-key="8/214/104"] .water')).not.toBeNull());
+
+                const tileSize = MAP_TILE_SIZE * 2 ** (MAP_COMMON_ZOOM - OVERVIEW_TILE.zoom);
+                const min = worldPixelToGraph({ x: 217 * tileSize, y: 104 * tileSize });
+                const exportRoot = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                await renderMapLayerForExport(root, exportRoot, {
+                    xMin: min.x,
+                    yMin: min.y,
+                    xMax: min.x + tileSize - 1,
+                    yMax: min.y + tileSize - 1,
+                });
+                expect(exportRoot.querySelector('[data-tile-key="8/217/104"] .water')).not.toBeNull();
+                expect(root.querySelector('[data-tile-key="8/217/104"]')).toBeNull();
+
+                controller.updateViewport({ ...viewport, zoom: MAP_ZOOMED_SWITCH_THRESHOLD });
+                await vi.waitFor(() =>
+                    expect(root.querySelector('[data-tile-key="13/6860/3347"] .water')).not.toBeNull()
+                );
+                expect(root.querySelector('[data-tile-key="8/214/104"]')).toBeNull();
+                const bundlePaths = fetcherMock.mock.calls
+                    .map(([input]) => new URL(String(input)).pathname)
+                    .filter(path => path.endsWith('.rmpb'));
+                expect(bundlePaths).toEqual([
+                    `/bundles/overview/8/${side}/${Math.floor(214 / side)}/${Math.floor(104 / side)}.rmpb`,
+                    `/bundles/zoomed/13/${side}/${Math.floor(6860 / side)}/${Math.floor(3347 / side)}.rmpb`,
+                ]);
+            } finally {
+                controller.dispose();
+                svg.remove();
+            }
+        }
+    );
+
+    it.each([{ bundleSide: 1, declaredBundleFormat: 'RMPB1' as const }, { declaredBundleFormat: 'RMPB2' as const }])(
+        'rejects a bundle whose version differs from manifest $declaredBundleFormat',
+        async options => {
+            stubAnimationFrame();
+            const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+            const { fetcher, routing } = createMapSourceFixture(options);
+            const { svg, root } = createSvgRoot();
+            const controller = new MapTileController({
+                root,
+                routing,
+                getViewportSize: () => ({ width: 100, height: 100 }),
+                fetch: fetcher,
+                rasterCache: null,
+                rasterEnabled: false,
+            });
+            try {
+                controller.updateViewport({ x: -390, y: -390, zoom: 780 });
+                await controller.initialize();
+                await vi.waitFor(() =>
+                    expect(errorSpy).toHaveBeenCalledWith(
+                        expect.any(String),
+                        expect.objectContaining({ message: expect.stringContaining('RMPB format mismatch') })
+                    )
+                );
+                expect(root.querySelector('[data-tile-key]')).toBeNull();
+            } finally {
+                controller.dispose();
+                svg.remove();
+            }
+        }
+    );
+
+    it('rejects oversized bundle indexes advertised as RMPB1 before downloading tiles', async () => {
+        stubAnimationFrame();
+        const onSourceError = vi.fn();
+        const { fetcher, fetcherMock, routing } = createMapSourceFixture({
+            bundleSide: 64,
+            declaredBundleFormat: 'RMPB1',
+        });
+        const { svg, root } = createSvgRoot();
+        const controller = new MapTileController({
+            root,
+            routing,
+            getViewportSize: () => ({ width: 100, height: 100 }),
+            fetch: fetcher,
+            onSourceError,
+            rasterCache: null,
+            rasterEnabled: false,
+        });
+        try {
+            controller.updateViewport({ x: -390, y: -390, zoom: 780 });
+            await controller.initialize();
+            await vi.waitFor(() =>
+                expect(onSourceError).toHaveBeenCalledWith(
+                    expect.anything(),
+                    expect.objectContaining({ message: 'Invalid bundle index entry for overview' })
+                )
+            );
+            expect(fetcherMock.mock.calls.some(([input]) => String(input).includes('.rmpb'))).toBe(false);
+        } finally {
+            controller.dispose();
+            svg.remove();
+        }
     });
 
     it('mounts tiles from two routed regional origins in one viewport', async () => {

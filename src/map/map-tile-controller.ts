@@ -30,6 +30,7 @@ import { MapRegionSource, MapRouting, ownerForTile } from './map-routing';
 import {
     AvailabilityIndex,
     BundleAddress,
+    BundleFormat,
     hasAvailableTile,
     ParsedBundle,
     parseAvailability,
@@ -47,7 +48,7 @@ export type MapLevelName = 'overview' | 'zoomed';
 interface MapLevelManifest {
     name: MapLevelName;
     zoom: number;
-    bundleFormat: 'RMPB1';
+    bundleFormat: BundleFormat;
     bundleIndex: string;
     bundleTemplate: string;
     availability: string;
@@ -182,7 +183,7 @@ const requireLevel = (manifest: MapManifest, name: MapLevelName): MapLevelManife
     const level = matches[0];
     if (
         !Number.isInteger(level.zoom) ||
-        level.bundleFormat !== 'RMPB1' ||
+        (level.bundleFormat !== 'RMPB1' && level.bundleFormat !== 'RMPB2') ||
         typeof level.bundleIndex !== 'string' ||
         typeof level.bundleTemplate !== 'string' ||
         typeof level.availability !== 'string'
@@ -592,6 +593,7 @@ export class MapTileController {
             // Accept only bundle shapes the resolver knows how to address; silently accepting another size loses tiles.
             if (
                 !(MAP_BUNDLE_SIDES as readonly number[]).includes(entry.side) ||
+                (level.bundleFormat === 'RMPB1' && entry.side > 8) ||
                 !Number.isInteger(entry.x) ||
                 !Number.isInteger(entry.y)
             ) {
@@ -902,7 +904,12 @@ export class MapTileController {
         if (cached) return Promise.resolve(cached);
         const inFlight = this.tileRequests.get(request.key);
         if (inFlight) return inFlight;
-        const promise = this.loadBundle(request.url, request.address, request.source.session)
+        const promise = this.loadBundle(
+            request.url,
+            request.address,
+            request.level.bundleFormat,
+            request.source.session
+        )
             .then(bundle => {
                 const entry = bundle.entries.get(request.key);
                 if (!entry) throw new Error(`RMPB tile is missing ${request.key}`);
@@ -945,14 +952,19 @@ export class MapTileController {
     }
 
     /**
-     * Shares a bundle download among all contained tile requests. Address
+     * Shares a bundle download among all contained tile requests. Address and format
      * validation still runs for cache hits and joined promises because URL
      * identity alone cannot prove the server published the expected content.
      */
-    private loadBundle(url: string, expectedAddress: BundleAddress, session: MapSourceSession): Promise<ParsedBundle> {
+    private loadBundle(
+        url: string,
+        expectedAddress: BundleAddress,
+        expectedFormat: BundleFormat,
+        session: MapSourceSession
+    ): Promise<ParsedBundle> {
         const cached = this.bundleCache.get(url);
         if (cached) {
-            this.assertBundleAddress(cached, expectedAddress, url);
+            this.assertBundleMetadata(cached, expectedAddress, expectedFormat, url);
             return Promise.resolve(cached);
         }
         let inFlight = this.bundleRequests.get(url);
@@ -966,14 +978,23 @@ export class MapTileController {
         }
         return inFlight.then(bundle => {
             // URLs are cache keys, but embedded coordinates remain the authority for detecting a mispublished bundle.
-            this.assertBundleAddress(bundle, expectedAddress, url);
+            this.assertBundleMetadata(bundle, expectedAddress, expectedFormat, url);
             this.bundleCache.set(url, bundle, bundle.bytes.byteLength);
             return bundle;
         });
     }
 
     /** Evicts mismatched cached data so a bad response cannot remain a reusable success. */
-    private assertBundleAddress(bundle: ParsedBundle, expected: BundleAddress, url: string) {
+    private assertBundleMetadata(
+        bundle: ParsedBundle,
+        expected: BundleAddress,
+        expectedFormat: BundleFormat,
+        url: string
+    ) {
+        if (bundle.format !== expectedFormat) {
+            this.bundleCache.delete(url);
+            throw new Error(`RMPB format mismatch for ${url}: expected ${expectedFormat}, received ${bundle.format}`);
+        }
         const actual = bundle.address;
         if (
             actual.zoom !== expected.zoom ||
