@@ -55,6 +55,7 @@ export const BasicToIntStationTypeMap: Partial<Record<StationType, StationType>>
     [StationType.ShmetroInt]: StationType.ShmetroBasic,
     [StationType.GzmtrInt]: StationType.GzmtrBasic,
     [StationType.GzmtrInt2024]: StationType.GzmtrBasic,
+    [StationType.GzmtrPaidAreaIntPair]: StationType.GzmtrBasic,
     [StationType.BjsubwayInt]: StationType.BjsubwayBasic,
     [StationType.SuzhouRTInt]: StationType.SuzhouRTBasic,
     [StationType.KunmingRTInt]: StationType.KunmingRTBasic,

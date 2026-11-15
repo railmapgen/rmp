@@ -9,6 +9,7 @@ import type { ShanghaiSuburbanRailwayStationAttributes } from '../components/svg
 import type { GzmtrBasicStationAttributes } from '../components/svgs/stations/gzmtr-basic';
 import type { GzmtrIntStationAttributes } from '../components/svgs/stations/gzmtr-int';
 import type { GzmtrInt2024StationAttributes } from '../components/svgs/stations/gzmtr-int-2024';
+import type { GzmtrPaidAreaIntPairStationAttributes } from '../components/svgs/stations/gzmtr-paid-area-int-pair';
 import type { BjsubwayBasicStationAttributes } from '../components/svgs/stations/bjsubway-basic';
 import type { BjsubwayIntStationAttributes } from '../components/svgs/stations/bjsubway-int';
 import type { MTRStationAttributes } from '../components/svgs/stations/mtr';
@@ -55,6 +56,7 @@ export enum StationType {
     GzmtrBasic = 'gzmtr-basic',
     GzmtrInt = 'gzmtr-int',
     GzmtrInt2024 = 'gzmtr-int-2024',
+    GzmtrPaidAreaIntPair = 'gzmtr-paid-area-int-pair',
     BjsubwayBasic = 'bjsubway-basic',
     BjsubwayInt = 'bjsubway-int',
     MTR = 'mtr',
@@ -102,6 +104,7 @@ export interface ExternalStationAttributes {
     [StationType.GzmtrBasic]?: GzmtrBasicStationAttributes;
     [StationType.GzmtrInt]?: GzmtrIntStationAttributes;
     [StationType.GzmtrInt2024]?: GzmtrInt2024StationAttributes;
+    [StationType.GzmtrPaidAreaIntPair]?: GzmtrPaidAreaIntPairStationAttributes;
     [StationType.BjsubwayBasic]?: BjsubwayBasicStationAttributes;
     [StationType.BjsubwayInt]?: BjsubwayIntStationAttributes;
     [StationType.MTR]?: MTRStationAttributes;

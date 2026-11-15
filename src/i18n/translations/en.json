@@ -389,6 +389,32 @@
                     "osiPositionLeft": "Left",
                     "osiPositionRight": "Right"
                 },
+                "gzmtrPaidAreaIntPair": {
+                    "displayName": "GZ Metro paid-area interchange pair",
+                    "layout": "Layout",
+                    "station1": "Station 1",
+                    "station2": "Station 2",
+                    "dx": "Station 2 X offset (px)",
+                    "dy": "Station 2 Y offset (px)",
+                    "anchorPosition": "Anchor position",
+                    "anchorPositionCenter": "Centre of the pair",
+                    "anchorPositionStation1": "Station 1",
+                    "anchorPositionStation2": "Station 2",
+                    "open": "Is opened",
+                    "secondaryNameZh": "Secondary name in Chinese",
+                    "secondaryNameEn": "Secondary name in English",
+                    "columns": "Columns of badges",
+                    "direction": "Access direction",
+                    "directionVertical": "Vertical",
+                    "directionHorizontal": "Horizontal",
+                    "attachPosition": "Attach position",
+                    "attachPositionTopLeft": "Top left",
+                    "attachPositionBottomLeft": "Bottom left",
+                    "attachPositionTopRight": "Top right",
+                    "attachPositionBottomRight": "Bottom right",
+                    "anchorAt": "Anchor badge",
+                    "anchorAtCenter": "Sub-station centre"
+                },
                 "bjsubwayBasic": {
                     "displayName": "Beijing Subway basic station",
                     "open": "Is opened",
@@ -1022,10 +1048,10 @@
                 "done": "Done",
                 "cameraZoom": "Zoom",
                 "cameraZoomFull": "Full",
-                    "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
-                    "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
-                    "chooseFixedResources": "Choose fixed resources",
-                    "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
+                "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
+                "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
+                "chooseFixedResources": "Choose fixed resources",
+                "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
             },
             "lineLabels": {
                 "title": "Line label information",

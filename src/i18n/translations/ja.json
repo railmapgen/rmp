@@ -391,6 +391,32 @@
                     "osiPositionLeft": "左",
                     "osiPositionRight": "右"
                 },
+                "gzmtrPaidAreaIntPair": {
+                    "displayName": "広州地下鉄 有料エリア乗換ペア駅",
+                    "layout": "レイアウト",
+                    "station1": "駅 1",
+                    "station2": "駅 2",
+                    "dx": "駅 2 の X オフセット（px）",
+                    "dy": "駅 2 の Y オフセット（px）",
+                    "anchorPosition": "アンカーの位置",
+                    "anchorPositionCenter": "ペアの中央",
+                    "anchorPositionStation1": "駅 1",
+                    "anchorPositionStation2": "駅 2",
+                    "open": "開業済み",
+                    "secondaryNameZh": "中国語の補助駅名",
+                    "secondaryNameEn": "英語の補助駅名",
+                    "columns": "バッジの列数",
+                    "direction": "接続方向",
+                    "directionVertical": "垂直",
+                    "directionHorizontal": "水平",
+                    "attachPosition": "接続位置",
+                    "attachPositionTopLeft": "左上",
+                    "attachPositionBottomLeft": "左下",
+                    "attachPositionTopRight": "右上",
+                    "attachPositionBottomRight": "右下",
+                    "anchorAt": "アンカーのバッジ",
+                    "anchorAtCenter": "子駅の中心"
+                },
                 "bjsubwayBasic": {
                     "displayName": "北京地下鉄基本駅",
                     "open": "開業済み",
@@ -1024,10 +1050,10 @@
                 "done": "完了",
                 "cameraZoom": "ズーム",
                 "cameraZoomFull": "全体（Full）",
-                    "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
-                    "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
-                    "chooseFixedResources": "固定リソースを選択",
-                    "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
+                "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
+                "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
+                "chooseFixedResources": "固定リソースを選択",
+                "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
             },
             "lineLabels": {
                 "title": "路線ラベル情報",

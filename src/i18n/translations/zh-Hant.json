@@ -389,6 +389,32 @@
                     "osiPositionLeft": "左側",
                     "osiPositionRight": "右側"
                 },
+                "gzmtrPaidAreaIntPair": {
+                    "displayName": "廣州地鐵付費區換乘成對車站",
+                    "layout": "版面",
+                    "station1": "車站 1",
+                    "station2": "車站 2",
+                    "dx": "車站 2 的 X 偏移（px）",
+                    "dy": "車站 2 的 Y 偏移（px）",
+                    "anchorPosition": "錨點位置",
+                    "anchorPositionCenter": "成對中心",
+                    "anchorPositionStation1": "車站 1",
+                    "anchorPositionStation2": "車站 2",
+                    "open": "是否開通",
+                    "secondaryNameZh": "中文第二名稱",
+                    "secondaryNameEn": "英文第二名稱",
+                    "columns": "徽章列數",
+                    "direction": "接入方向",
+                    "directionVertical": "垂直",
+                    "directionHorizontal": "水平",
+                    "attachPosition": "接入位置",
+                    "attachPositionTopLeft": "左上",
+                    "attachPositionBottomLeft": "左下",
+                    "attachPositionTopRight": "右上",
+                    "attachPositionBottomRight": "右下",
+                    "anchorAt": "錨點徽章",
+                    "anchorAtCenter": "子車站中心"
+                },
                 "bjsubwayBasic": {
                     "displayName": "北京地鐵基本車站",
                     "open": "開通",
@@ -1021,10 +1047,10 @@
                 "done": "完成",
                 "cameraZoom": "放大倍率",
                 "cameraZoomFull": "全螢幕（Full）",
-                    "lineInformationHint": "修改畫面標註中使用的路線名稱、顏色和日期。",
-                    "editPositionsHint": "在預覽區域新增、排列並設定畫面標註模組。",
-                    "chooseFixedResources": "選擇固定資源",
-                    "fixedResourcesHint": "讓選取的節點和路線區段從首幀起持續顯示。"
+                "lineInformationHint": "修改畫面標註中使用的路線名稱、顏色和日期。",
+                "editPositionsHint": "在預覽區域新增、排列並設定畫面標註模組。",
+                "chooseFixedResources": "選擇固定資源",
+                "fixedResourcesHint": "讓選取的節點和路線區段從首幀起持續顯示。"
             },
             "lineLabels": {
                 "title": "路線標籤資訊",
