@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { CityCode, EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
+import { getEndPoint, getStartPoint } from './path';
 import { getLines } from './process-elements';
 
 type TestGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
@@ -60,6 +61,45 @@ const makeFutureLineAttrs = (): EdgeAttributes =>
     }) as EdgeAttributes;
 
 describe('getLines', () => {
+    it('keeps decimal 45-degree parallel lines finite without changing their authored data', () => {
+        const graph = makeGraph();
+        addNode(graph, 'misc_node_a', 217.27, 387.73);
+        addNode(graph, 'misc_node_b', 247.88, 357.12);
+        for (const [id, parallelIndex] of [
+            ['line_base', -1],
+            ['line_parallel', 1],
+        ] as const) {
+            graph.addDirectedEdgeWithKey(id, 'misc_node_a', 'misc_node_b', {
+                ...makeLineAttrs(''),
+                type: LinePathType.Diagonal,
+                [LinePathType.Diagonal]: {
+                    startFrom: 'from',
+                    offsetFrom: 0,
+                    offsetTo: 0,
+                    roundCornerFactor: 10,
+                },
+                parallelIndex,
+            });
+        }
+        const original = structuredClone(graph.export());
+
+        const lines = getLines(graph);
+
+        expect(lines).toHaveLength(2);
+        for (const line of lines) expect(line.line!.path.d).not.toMatch(/NaN|Infinity/);
+        const base = lines.find(line => line.id === 'line_base')!.line!.path;
+        const parallel = lines.find(line => line.id === 'line_parallel')!.line!.path;
+        const start = getStartPoint(base);
+        const end = getEndPoint(base);
+        const dx = end.x - start.x;
+        const dy = end.y - start.y;
+        for (const point of [getStartPoint(parallel), getEndPoint(parallel)]) {
+            const distance = Math.abs(dx * (point.y - start.y) - dy * (point.x - start.x)) / Math.hypot(dx, dy);
+            expect(distance).toBeCloseTo(5);
+        }
+        expect(graph.export()).toEqual(original);
+    });
+
     it('renders an unknown future path as a straight line without rewriting its authored data', () => {
         const graph = makeGraph();
         addNode(graph, 'misc_node_a', 0, 0);

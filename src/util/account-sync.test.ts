@@ -9,7 +9,8 @@ import accountReducer, {
 } from '../redux/account/account-slice';
 import { type APISubscription, fetchLoginStateAndSubscriptions, onLocalStorageChangeRMT } from './account-sync';
 
-vi.mock('@railmapgen/rmg-runtime', () => ({ logger: { debug: vi.fn() } }));
+const runtime = vi.hoisted(() => ({ onMessage: vi.fn() }));
+vi.mock('@railmapgen/rmg-runtime', () => ({ default: runtime, logger: { debug: vi.fn(), warn: vi.fn() } }));
 
 const createAccountStore = () => configureStore({ reducer: { account: accountReducer } });
 const cloudSubscription: APISubscription = { type: 'RMP_CLOUD', expires: '2099-01-01T00:00:00Z' };
@@ -25,6 +26,7 @@ const notifyStorage = (key: string | null = LocalStorageKey.ACCOUNT) => {
 
 let previousStorageHandler: typeof window.onstorage;
 beforeEach(() => {
+    runtime.onMessage.mockReset();
     localStorage.clear();
     previousStorageHandler = window.onstorage;
 });
@@ -123,6 +125,70 @@ describe('account subscription verification compatibility', () => {
 });
 
 describe('RMT account synchronization compatibility', () => {
+    it('rechecks the API after redemption even when the account token did not change', async () => {
+        const fetch = vi
+            .fn()
+            .mockResolvedValueOnce(response())
+            .mockResolvedValueOnce(response([cloudSubscription]));
+        vi.stubGlobal('fetch', fetch);
+        setAccount('same-token');
+        localStorage.setItem(LocalStorageKey.PARAM, 'keep-the-project');
+        const store = createAccountStore();
+        const onCloudSubscription = vi.fn();
+        onLocalStorageChangeRMT(store, { onCloudSubscription });
+        await vi.waitFor(() => expect(store.getState().account.state).toBe('free'));
+        const onRedeemed = runtime.onMessage.mock.calls.find(([event]) => event === 'SUBSCRIPTION_REDEEMED')![1];
+        onRedeemed();
+        await vi.waitFor(() => expect(store.getState().account.activeSubscriptions.RMP_CLOUD).toBe(true));
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(onCloudSubscription).toHaveBeenCalledOnce();
+        expect(localStorage.getItem(LocalStorageKey.PARAM)).toBe('keep-the-project');
+    });
+
+    it('does not refresh without an account or trust subscription flags in a notification', async () => {
+        const fetch = vi.fn().mockResolvedValue(response());
+        vi.stubGlobal('fetch', fetch);
+        const store = createAccountStore();
+        onLocalStorageChangeRMT(store);
+        const onRedeemed = runtime.onMessage.mock.calls.find(([event]) => event === 'SUBSCRIPTION_REDEEMED')![1];
+        onRedeemed({ RMP_CLOUD: true });
+        expect(fetch).not.toHaveBeenCalled();
+        setAccount('free-token');
+        onRedeemed({ RMP_CLOUD: true });
+        await vi.waitFor(() => expect(store.getState().account.state).toBe('free'));
+        expect(store.getState().account.activeSubscriptions).toEqual(defaultActiveSubscriptions);
+    });
+
+    it('ignores a refresh response that arrives after logout', async () => {
+        let resolveRefresh!: (value: Response) => void;
+        const fetch = vi
+            .fn()
+            .mockResolvedValueOnce(response())
+            .mockImplementationOnce(
+                () =>
+                    new Promise<Response>(resolve => {
+                        resolveRefresh = resolve;
+                    })
+            );
+        vi.stubGlobal('fetch', fetch);
+        setAccount('old-token');
+        const store = createAccountStore();
+        const onCloudSubscription = vi.fn();
+        onLocalStorageChangeRMT(store, { onCloudSubscription });
+        await vi.waitFor(() => expect(store.getState().account.state).toBe('free'));
+        runtime.onMessage.mock.calls.find(([event]) => event === 'SUBSCRIPTION_REDEEMED')![1]();
+        setAccount();
+        notifyStorage();
+        const readSubscriptions = vi.fn().mockResolvedValue({ subscriptions: [cloudSubscription] });
+        resolveRefresh({ status: 200, json: readSubscriptions } as unknown as Response);
+        await vi.waitFor(() => expect(readSubscriptions).toHaveBeenCalledOnce());
+        expect(store.getState().account).toMatchObject({
+            state: 'logged-out',
+            activeSubscriptions: defaultActiveSubscriptions,
+        });
+        expect(onCloudSubscription).not.toHaveBeenCalled();
+    });
+
     it('initializes from the current RMT account without reading or changing project storage', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response([cloudSubscription])));
         setAccount('initial-token');
@@ -138,7 +204,8 @@ describe('RMT account synchronization compatibility', () => {
 
         await vi.waitFor(() => expect(store.getState().account.activeSubscriptions.RMP_CLOUD).toBe(true));
         expect(store.getState().account.token).toBe('initial-token');
-        expect(readStorage.mock.calls).toEqual([[LocalStorageKey.ACCOUNT]]);
+        expect(readStorage).toHaveBeenCalled();
+        expect(readStorage.mock.calls.every(([key]) => key === LocalStorageKey.ACCOUNT)).toBe(true);
         expect(writeStorage).not.toHaveBeenCalled();
         expect(onCloudSubscription).toHaveBeenCalledOnce();
     });

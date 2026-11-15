@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { makeLinearPath, makePoint, makeRoundedTurnPath, makeSharpTurnPath } from '../constants/path';
+import { makeCubicPath, makeLinearPath, makePoint, makeRoundedTurnPath, makeSharpTurnPath } from '../constants/path';
 import { concatOpenPaths } from './path';
 import { makeOpenPathOutline, makeOpenPathParallel } from './bezier-parallel';
 
@@ -10,6 +10,42 @@ describe('makeOpenPathParallel', () => {
 
         expect(pathA.d).toBe('M 0 -1 L 10 -1');
         expect(pathB.d).toBe('M 0 1 L 10 1');
+    });
+
+    it('offsets a straight cubic with zero endpoint tangents as a line', () => {
+        const start = makePoint(0, 0);
+        const end = makePoint(10, 0);
+        const path = makeCubicPath(start, start, end, end);
+        const [pathA, pathB] = makeOpenPathParallel(path, 1);
+
+        expect(pathA.d).toBe('M 0 -1 L 10 -1');
+        expect(pathB.d).toBe('M 0 1 L 10 1');
+    });
+
+    it('keeps a zero-length cubic finite', () => {
+        const point = makePoint(10, 20);
+        const path = makeCubicPath(point, point, point, point);
+        const [pathA, pathB] = makeOpenPathParallel(path, 1);
+
+        expect(pathA.d).toBe('M 10 20 L 10 20');
+        expect(pathB.d).toBe('M 10 20 L 10 20');
+    });
+
+    it('preserves shallow curves and collinear controls that overshoot the endpoints', () => {
+        const start = makePoint(0, 0);
+        const end = makePoint(10, 0);
+        const paths = [
+            makeCubicPath(start, makePoint(3, 1e-6), makePoint(7, 1e-6), end),
+            makeCubicPath(start, makePoint(-5, 0), makePoint(15, 0), end),
+        ];
+
+        for (const path of paths) {
+            const offsets = makeOpenPathParallel(path, 1);
+            for (const offset of offsets) {
+                expect(offset.kind).toBe('mc');
+                expect(offset.d).not.toMatch(/NaN|Infinity/);
+            }
+        }
     });
 
     it('offsets a sharp turn with line-line intersections', () => {

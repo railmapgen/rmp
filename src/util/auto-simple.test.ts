@@ -2,6 +2,24 @@ import { describe, expect, it } from 'vitest';
 import { LinePathType } from '../constants/lines';
 import { checkSimplePathAvailability } from './auto-simple';
 
+describe.each([LinePathType.Diagonal, LinePathType.RotatePerpendicular])('checkSimplePathAvailability for %s', type => {
+    const attrs = { startFrom: 'from' as const, offsetFrom: 0, offsetTo: 0, roundCornerFactor: 10 };
+
+    it('recognizes a decimal 45-degree line despite rounding', () => {
+        expect(checkSimplePathAvailability(type, 217.27, 387.73, 247.88, 357.12, attrs)).toEqual({
+            x1: 217.27,
+            y1: 387.73,
+            x2: 247.88,
+            y2: 357.12,
+            offset: 0,
+        });
+    });
+
+    it('preserves a real bend close to 45 degrees', () => {
+        expect(checkSimplePathAvailability(type, 217.27, 387.73, 247.88, 357.12000001, attrs)).toBeUndefined();
+    });
+});
+
 describe('checkSimplePathAvailability for Bezier', () => {
     it('uses a simple path for an exactly straight control between the endpoints', () => {
         expect(

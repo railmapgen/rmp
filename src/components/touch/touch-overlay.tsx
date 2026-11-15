@@ -21,8 +21,8 @@ import { findNodesInRectangle } from '../../util/graph';
 import { getCanvasSize, getViewpointSize, pointerPosToSVGCoord, roundToMultiple } from '../../util/helpers';
 import { useWindowSize } from '../../util/hooks';
 import { moveNodesAndRedrawLines } from '../../util/imperative-dom';
-import { getSnappedNodePosition, getSnapLines, isNodeSupportSnapLine } from '../../util/snap-lines';
-import NodeSnapGuides from '../node-snap-guides';
+import { getSnapLines, isNodeSupportSnapLine } from '../../util/snap-lines';
+import NodeSnapGuides, { getSnappedNodePosition } from '../node-snap-guides';
 import type { CanvasLineDrawingHandle } from '../svg-canvas-graph';
 import RadialTouchMenu from './radial-touch-menu';
 

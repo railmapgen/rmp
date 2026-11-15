@@ -51,6 +51,14 @@ const buttonStyle: SystemStyleObject = {
     _focus: { boxShadow: 'none' },
 };
 
+// Keep the label and badge adjacent while the tool still owns the rest of its row.
+const badgedButtonStyle: SystemStyleObject = {
+    ...buttonStyle,
+    w: 'auto',
+    position: 'static',
+    _before: { content: '""', position: 'absolute', inset: 0, zIndex: -1, bg: 'inherit' },
+};
+
 const accordionButtonStyle: SystemStyleObject = {
     p: 2.5,
     h: 10,
@@ -260,7 +268,7 @@ const ToolsPanel = () => {
                                         ));
 
                                 return (
-                                    <Flex key={type} w="100%" align="stretch">
+                                    <Flex key={type} w="100%" align="stretch" position="relative" isolation="isolate">
                                         <Box
                                             w="4px"
                                             bg={currentPath === type ? 'blue.500' : 'transparent'}
@@ -272,14 +280,19 @@ const ToolsPanel = () => {
                                             onClick={() => handleLine(type)}
                                             variant={currentPath === type ? 'solid' : 'ghost'}
                                             isDisabled={isLinePathDisabled}
-                                            sx={buttonStyle}
-                                            flex={1}
+                                            sx={isTextShown && isProLinePath ? badgedButtonStyle : buttonStyle}
+                                            flex={isTextShown && isProLinePath ? '0 1 auto' : 1}
                                         >
                                             {isTextShown ? t(linePaths[type].metadata.displayName) : undefined}
-                                            {isTextShown && isProLinePath ? (
-                                                <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
-                                            ) : undefined}
                                         </Button>
+                                        {isTextShown && isProLinePath && (
+                                            <SubscriptionBadge
+                                                subscription="RMP_CLOUD"
+                                                ml="1"
+                                                mr="auto"
+                                                alignSelf="center"
+                                            />
+                                        )}
                                     </Flex>
                                 );
                             })}
@@ -318,7 +331,7 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {getFilteredLineStyles().map(styleType => (
-                                <Flex key={styleType} w="100%" align="stretch">
+                                <Flex key={styleType} w="100%" align="stretch" position="relative" isolation="isolate">
                                     <Box
                                         w="4px"
                                         bg={currentStyle === styleType ? 'blue.500' : 'transparent'}
@@ -339,14 +352,21 @@ const ToolsPanel = () => {
                                                 )
                                             )
                                         }
-                                        sx={buttonStyle}
-                                        flex={1}
+                                        sx={
+                                            isTextShown && lineStyles[styleType].isPro ? badgedButtonStyle : buttonStyle
+                                        }
+                                        flex={isTextShown && lineStyles[styleType].isPro ? '0 1 auto' : 1}
                                     >
                                         {isTextShown ? t(lineStyles[styleType].metadata.displayName) : undefined}
-                                        {isTextShown && !!lineStyles[styleType].isPro ? (
-                                            <SubscriptionBadge subscription="RMP_CLOUD" ml="1" mr="auto" />
-                                        ) : undefined}
                                     </Button>
+                                    {isTextShown && !!lineStyles[styleType].isPro && (
+                                        <SubscriptionBadge
+                                            subscription="RMP_CLOUD"
+                                            ml="1"
+                                            mr="auto"
+                                            alignSelf="center"
+                                        />
+                                    )}
                                     {isTextShown && (
                                         <FavoriteButton
                                             isFavorite={favorites.lineStyles.includes(styleType)}
@@ -418,7 +438,7 @@ const ToolsPanel = () => {
                         </AccordionButton>
                         <AccordionPanel sx={accordionPanelStyle}>
                             {getFilteredMiscNodes().map(type => (
-                                <Flex key={type} w="100%" align="stretch">
+                                <Flex key={type} w="100%" align="stretch" position="relative" isolation="isolate">
                                     <Box
                                         w="4px"
                                         bg={mode === `misc-node-${type}` ? 'blue.500' : 'transparent'}
@@ -429,21 +449,26 @@ const ToolsPanel = () => {
                                         leftIcon={miscNodes[type].icon}
                                         onClick={() => handleMiscNode(type)}
                                         variant={mode === `misc-node-${type}` ? 'solid' : 'ghost'}
-                                        sx={buttonStyle}
-                                        flex={1}
+                                        sx={
+                                            isTextShown && type === MiscNodeType.Master
+                                                ? badgedButtonStyle
+                                                : buttonStyle
+                                        }
+                                        flex={isTextShown && type === MiscNodeType.Master ? '0 1 auto' : 1}
                                     >
                                         {isTextShown ? t(miscNodes[type].metadata.displayName) : undefined}
-                                        {isTextShown && type === MiscNodeType.Master && (
-                                            <SubscriptionBadge
-                                                subscription="RMP_CLOUD"
-                                                description={t('subscription.masterLimit', {
-                                                    count: MAX_MASTER_NODE_FREE,
-                                                })}
-                                                ml="1"
-                                                mr="auto"
-                                            />
-                                        )}
                                     </Button>
+                                    {isTextShown && type === MiscNodeType.Master && (
+                                        <SubscriptionBadge
+                                            subscription="RMP_CLOUD"
+                                            description={t('subscription.masterLimit', {
+                                                count: MAX_MASTER_NODE_FREE,
+                                            })}
+                                            ml="1"
+                                            mr="auto"
+                                            alignSelf="center"
+                                        />
+                                    )}
                                     {isTextShown && (
                                         <FavoriteButton
                                             isFavorite={favorites.miscNodes.includes(type)}

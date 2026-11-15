@@ -339,7 +339,12 @@ export default function DownloadActions() {
                 </MenuItem>
             </MenuList>
 
-            <Modal size="2xl" isOpen={isDownloadModalOpen} onClose={() => setIsDownloadModalOpen(false)}>
+            <Modal
+                size="2xl"
+                isOpen={isDownloadModalOpen}
+                onClose={() => setIsDownloadModalOpen(false)}
+                lockFocusAcrossFrames={false}
+            >
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>{t('header.download.image')}</ModalHeader>
