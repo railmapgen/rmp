@@ -41,7 +41,7 @@ import { imageStoreIndexedDB } from '../util/image-store-indexed-db';
 import { getSnapLines, isNodeSupportSnapLine } from '../util/snap-lines';
 import { LineCreationPreview } from './line-creation-preview';
 import { Overlay } from './overlay';
-import NodeSnapGuides, { getSnappedNodePosition } from './node-snap-guides';
+import NodeSnapGuides, { getSnappedNodePosition } from './node-snapping';
 import SvgLayer from './svg-layer';
 import { SvgRenderProvider, type SvgRenderContextValue } from './svg-render-context';
 import { linePaths, normalizeEdgeAttributes } from './svgs/lines/lines';

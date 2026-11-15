@@ -22,7 +22,7 @@ import { getCanvasSize, getViewpointSize, pointerPosToSVGCoord, roundToMultiple 
 import { useWindowSize } from '../../util/hooks';
 import { moveNodesAndRedrawLines } from '../../util/imperative-dom';
 import { getSnapLines, isNodeSupportSnapLine } from '../../util/snap-lines';
-import NodeSnapGuides, { getSnappedNodePosition } from '../node-snap-guides';
+import NodeSnapGuides, { getSnappedNodePosition } from '../node-snapping';
 import type { CanvasLineDrawingHandle } from '../use-canvas-line-drawing';
 import RadialTouchMenu from './radial-touch-menu';
 
