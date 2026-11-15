@@ -8,7 +8,7 @@ import { createStore } from '../redux';
 import { initializeProject } from '../redux/param/param-slice';
 import { setMode, setSelected } from '../redux/runtime/runtime-slice';
 import { createTestLineGraph, render } from '../test-utils';
-import type { CanvasLineDrawingHandle } from './svg-canvas-graph';
+import type { CanvasLineDrawingHandle } from './use-canvas-line-drawing';
 import SvgWrapper from './svg-wrapper';
 
 const lineDrawing = vi.hoisted(() => ({

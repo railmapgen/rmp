@@ -23,7 +23,7 @@ import { useWindowSize } from '../../util/hooks';
 import { moveNodesAndRedrawLines } from '../../util/imperative-dom';
 import { getSnapLines, isNodeSupportSnapLine } from '../../util/snap-lines';
 import NodeSnapGuides, { getSnappedNodePosition } from '../node-snap-guides';
-import type { CanvasLineDrawingHandle } from '../svg-canvas-graph';
+import type { CanvasLineDrawingHandle } from '../use-canvas-line-drawing';
 import RadialTouchMenu from './radial-touch-menu';
 
 const LONG_PRESS_MS = 450;
