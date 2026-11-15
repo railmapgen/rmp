@@ -5,7 +5,7 @@ import { EdgeAttributes, GraphAttributes, NodeAttributes, NodeId } from '../cons
 import { MiscNodeType } from '../constants/nodes';
 import { PathPoint } from '../constants/path';
 import { getSnapLines } from '../util/snap-lines';
-import { getSnappedNodePosition } from './node-snap-guides';
+import { getSnappedNodePosition } from './node-snapping';
 
 const setup = (...positions: PathPoint[]) => {
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
