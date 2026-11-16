@@ -97,7 +97,7 @@ export default function InterchangeCard(props: InterchangeCardProps) {
             )}
 
             {interchangeList.map((it, i) => (
-                <VStack key={`${it.toString()}-${i}`} spacing={0.5} data-testid={`interchange-card-stack-${i}`} my={2}>
+                <VStack key={i} spacing={0.5} data-testid={`interchange-card-stack-${i}`} my={2}>
                     <HStack>
                         <ThemeButton
                             theme={[it[0], it[1], it[2], it[3]]}

@@ -155,7 +155,7 @@ export const InterchangeField = (props: {
     return (
         <VStack align="flex-start" ml="1">
             {transfer.map((infoList, i) => (
-                <React.Fragment key={`${infoList.toString()}-${i}`}>
+                <React.Fragment key={i}>
                     <FormLabel fontSize="xs">
                         {i === 0
                             ? t('panel.details.stations.interchange.within')
