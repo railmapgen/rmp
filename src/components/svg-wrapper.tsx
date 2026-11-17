@@ -51,12 +51,12 @@ import ContextMenu from './context-menu';
 import GridLines from './grid-lines';
 import MapCanvas, { type MapCanvasHandle } from './map-canvas';
 import { AttributesWithColor, dynamicColorInjection } from './panels/details/color-field';
-import OpenDetailsButton from './panels/details/open-details-button';
 import PredictNextNode from './predict-next-node';
 import SvgCanvas from './svg-canvas-graph';
 import type { CanvasLineDrawingHandle } from './use-canvas-line-drawing';
 import miscNodes from './svgs/nodes/misc-nodes';
 import stations from './svgs/stations/stations';
+import OpenDetailsButton from './touch/open-details-button';
 import TouchOverlay from './touch/touch-overlay';
 import VirtualJoystick from './touch/virtual-joystick';
 

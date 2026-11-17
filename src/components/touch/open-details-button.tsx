@@ -2,14 +2,14 @@ import { Button, Text, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdEdit } from 'react-icons/md';
-import { MiscNodeType } from '../../../constants/nodes';
-import { StationType } from '../../../constants/stations';
-import { useRootDispatch, useRootSelector } from '../../../redux';
-import { showDetailsPanel } from '../../../redux/runtime/runtime-slice';
-import { isPortraitClient, isTouchClient } from '../../../util/helpers';
-import { linePaths } from '../../svgs/lines/lines';
-import miscNodes from '../../svgs/nodes/misc-nodes';
-import stations from '../../svgs/stations/stations';
+import { MiscNodeType } from '../../constants/nodes';
+import { StationType } from '../../constants/stations';
+import { useRootDispatch, useRootSelector } from '../../redux';
+import { showDetailsPanel } from '../../redux/runtime/runtime-slice';
+import { isPortraitClient, isTouchClient } from '../../util/helpers';
+import { linePaths } from '../svgs/lines/lines';
+import miscNodes from '../svgs/nodes/misc-nodes';
+import stations from '../svgs/stations/stations';
 
 export default function OpenDetailsButton() {
     const { t } = useTranslation();
@@ -44,7 +44,8 @@ export default function OpenDetailsButton() {
             }}
             colorScheme="blue"
             variant="outline"
-            borderWidth="2.5px"
+            borderWidth="3px"
+            borderRightWidth={0}
             borderColor="blue.500"
             bg={background}
             color={color}
