@@ -1024,10 +1024,10 @@
                 "done": "完了",
                 "cameraZoom": "ズーム",
                 "cameraZoomFull": "全体（Full）",
-                    "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
-                    "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
-                    "chooseFixedResources": "固定リソースを選択",
-                    "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
+                "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
+                "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
+                "chooseFixedResources": "固定リソースを選択",
+                "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
             },
             "lineLabels": {
                 "title": "路線ラベル情報",
@@ -1534,5 +1534,26 @@
     "New": "新機能",
     "Unsupported configuration!": "この設定には対応していません。",
     "Zoom": "表示倍率",
-    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。"
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "書体を読み込めませんでした。書き出した PNG には書体が反映されません。",
+    "mapLibrary": {
+        "title": "地図パネル",
+        "noMap": "地図なし",
+        "rmwMap": "RMW 地図",
+        "noMapHint": "背景地図を表示しません。",
+        "realMapHint": "実際の地理地図を背景として使用します。",
+        "hint": "地図はこのブラウザーに保存されます。インポート後に「使用」を押すと背景地図が切り替わります。",
+        "imported": "地図をライブラリに追加しました",
+        "importFile": "地図パッケージをインポート",
+        "fromRmw": "RMW からインポート",
+        "transferHelp": "両方のアプリを同一オリジンで開いてください。RMW から .rmpmap を書き出して読み込むこともできます。",
+        "downloadPackage": "地図パッケージをダウンロード",
+        "realMap": "実際の地理地図",
+        "current": "使用中",
+        "use": "使用",
+        "empty": "ローカル地図はまだありません。",
+        "revision": "リビジョン {{revision}}",
+        "deleteConfirm": "このブラウザーから「{{name}}」を削除しますか？この地図を参照する他のプロジェクトでは再インポートが必要です。",
+        "locate": "使用して移動",
+        "missing": "ローカル地図を利用できません。対応する .rmpmap を再インポートしてください。"
+    }
 }

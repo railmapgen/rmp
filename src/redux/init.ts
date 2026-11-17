@@ -3,6 +3,7 @@ import { MultiDirectedGraph } from 'graphology';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
 import { GlobalAlertId } from '../constants/global-alerts';
 import i18n from '../i18n/config';
+import { restoreMapPackages } from '../map/local-map';
 import { onLocalStorageChangeRMT, onRMPSaveUpdate } from '../util/rmt-save';
 import { RMPSave, stringifyParam, upgrade } from '../util/save';
 import { RootStore, startRootListening } from '.';
@@ -107,7 +108,8 @@ export const initStore = async (store: RootStore) => {
     // treating application startup as an undoable project replacement.
     const param = await upgrade(paramState);
 
-    const { version, images: _images, ...project } = JSON.parse(param) as RMPSave;
+    const { version, images: _images, mapPackages, ...project } = JSON.parse(param) as RMPSave;
+    await restoreMapPackages(project.mapStyle.mapSource, mapPackages);
     window.graph = MultiDirectedGraph.from(project.graph);
     store.dispatch(initializeProject(project));
     // TODO(graph-mutation-pipeline): Route initialization through one explicit

@@ -2,6 +2,7 @@ import type { SerializedGraph } from 'graphology-types';
 import type { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import type { TimelineDocument } from '../constants/timeline';
 import type { MapStyle } from '../map/map-style';
+import type { EmbeddedMapPackage } from '../map/local-map';
 
 export const TIMELINE_PROJECT_VERSION = 2 as const;
 export const TIMELINE_PROJECT_APP = 'rmp-timeline' as const;
@@ -55,6 +56,7 @@ export interface TimelineProjectFile {
     name: string;
     revision: TimelineProjectRevision;
     assets: TimelineProjectFileAsset[];
+    mapPackages?: EmbeddedMapPackage[];
 }
 
 export const makeTimelineAssetKey = (projectId: string, kind: TimelineAssetKind, id: string) =>

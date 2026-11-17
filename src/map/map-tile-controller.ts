@@ -82,7 +82,7 @@ interface MapLevel extends MapLevelManifest {
 interface LoadedMapSource extends MapRegionSource {
     attribution: string;
     manifestUrl: URL;
-    levels: Record<MapLevelName, MapLevel>;
+    levels: Partial<Record<MapLevelName, MapLevel>>;
     session: MapSourceSession;
 }
 
@@ -137,6 +137,8 @@ export interface MapTileControllerOptions {
     rasterEnabled?: boolean;
     /** Retain detailed geometry at every viewport scale, as required by Timeline. */
     forceDetailed?: boolean;
+    /** Only real geographic sources display the map copyright control. Defaults to true. */
+    showAttribution?: boolean;
     rasterIdleDelayMs?: number;
     now?: () => number;
 }
@@ -321,7 +323,8 @@ export class MapTileController {
 
         // The basemap is visual context; editor gestures must continue to target the SVG interaction layer above it.
         options.root.style.pointerEvents = 'none';
-        options.root.append(this.tileRoot, this.attribution);
+        options.root.append(this.tileRoot);
+        if (options.showAttribution !== false) options.root.append(this.attribution);
         controllersByRoot.set(options.root, this);
     }
 
@@ -460,9 +463,9 @@ export class MapTileController {
         tileRoot.dataset.mapTiles = '';
         tileRoot.append(...tiles.filter((tile): tile is SVGSVGElement => tile !== undefined));
 
-        // Clone attribution only after initialization has supplied the manifest text.
-        const attribution = this.attribution.cloneNode(true) as SVGGElement;
-        target.replaceChildren(tileRoot, attribution);
+        target.replaceChildren(tileRoot);
+        // Clone real-map attribution only after initialization supplies its manifest text.
+        if (this.options.showAttribution !== false) target.append(this.attribution.cloneNode(true));
     }
 
     /**
@@ -540,19 +543,26 @@ export class MapTileController {
         const manifestUrl = new URL('manifest.json', `${source.origin}/`);
         let session = await this.loadSourceSession(manifestUrl.href);
         const manifest = await this.enqueueFetch(() => this.fetchJson<MapManifest>(manifestUrl, session));
-        if (manifest.formatVersion !== 3 || !Array.isArray(manifest.levels)) {
-            throw new Error(`Map manifest format version must be 3 for ${source.id}`);
+        if (![3, 4].includes(manifest.formatVersion) || !Array.isArray(manifest.levels)) {
+            throw new Error(`Map manifest format version must be 3 or 4 for ${source.id}`);
         }
         if (manifest.projection?.name !== 'WebMercatorQuad' || manifest.projection.tileSize !== MAP_TILE_SIZE) {
             throw new Error(`Unsupported map projection or tile size for ${source.id}`);
         }
-        const overviewManifest = requireLevel(manifest, 'overview');
+        const detailedOnly = manifest.formatVersion === 4;
+        if (detailedOnly && (manifest.levels.length !== 1 || !this.options.forceDetailed)) {
+            throw new Error('A v4 map requires exactly one detailed level and forceDetailed');
+        }
+        const overviewManifest = detailedOnly ? undefined : requireLevel(manifest, 'overview');
         const zoomedManifest = requireLevel(manifest, 'zoomed');
-        if (overviewManifest.zoom !== this.options.routing.ownerZoom || zoomedManifest.zoom !== MAP_COMMON_ZOOM) {
+        if (
+            (overviewManifest && overviewManifest.zoom !== this.options.routing.ownerZoom) ||
+            zoomedManifest.zoom !== MAP_COMMON_ZOOM
+        ) {
             throw new Error(`Unsupported map level zoom for ${source.id}`);
         }
         const [overview, zoomed] = await Promise.all([
-            this.loadLevel(overviewManifest, manifestUrl, session),
+            overviewManifest ? this.loadLevel(overviewManifest, manifestUrl, session) : undefined,
             this.loadLevel(zoomedManifest, manifestUrl, session),
         ]);
         session = await this.confirmSourceSession(session);
@@ -737,12 +747,9 @@ export class MapTileController {
         for (const sourceConfig of sourceConfigs) {
             const source = this.sources.get(sourceConfig.ownerId);
             if (!source) continue;
-            for (const [key, request] of this.getTilesForBounds(
-                source,
-                source.levels[levelName],
-                graphBounds,
-                buffer
-            )) {
+            const level = source.levels[levelName];
+            if (!level) continue;
+            for (const [key, request] of this.getTilesForBounds(source, level, graphBounds, buffer)) {
                 if (desired.has(key)) throw new Error(`Duplicate routed map tile ${key}`);
                 desired.set(key, request);
             }

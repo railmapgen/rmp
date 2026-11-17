@@ -40,6 +40,8 @@ import { isSafari } from '../../util/fonts';
 import { calculateCanvasSize } from '../../util/helpers';
 import { imageStoreIndexedDB } from '../../util/image-store-indexed-db';
 import { stringifyParam } from '../../util/save';
+import { embedMapPackages } from '../../map/local-map';
+import { sendErrorNotification } from '../../util/notifications';
 import SubscriptionBadge from '../subscription-badge';
 import { ToRmgModal } from './rmp-to-rmg';
 import TermsAndConditionsModal from './terms-and-conditions';
@@ -186,7 +188,13 @@ export default function DownloadActions() {
                 images.push({ id: attr.href, base64: (await imageStoreIndexedDB.get(attr.href))! });
             }
         }
-        downloadAs(`RMP_${new Date().valueOf()}.json`, 'application/json', stringifyParam(param, images));
+        const mapPackages = await embedMapPackages(param.present.mapStyle.mapSource);
+        const save = JSON.parse(stringifyParam(param, images));
+        downloadAs(
+            `RMP_${new Date().valueOf()}.json`,
+            'application/json',
+            JSON.stringify({ ...save, ...(mapPackages ? { mapPackages } : {}) })
+        );
     };
     // thanks to this article that includes all steps to convert a svg to a png
     // https://levelup.gitconnected.com/draw-an-svg-to-canvas-and-download-it-as-image-in-javascript-f7f7713cf81f
@@ -319,7 +327,12 @@ export default function DownloadActions() {
         <Menu id="download">
             <MenuButton as={IconButton} size="sm" variant="ghost" icon={<MdDownload />} />
             <MenuList>
-                <MenuItem icon={<MdSave />} onClick={() => handleDownloadJson()}>
+                <MenuItem
+                    icon={<MdSave />}
+                    onClick={() =>
+                        void handleDownloadJson().catch(error => sendErrorNotification(t('error'), String(error)))
+                    }
+                >
                     {t('header.download.config')}
                 </MenuItem>
                 <MenuItem icon={<MdSaveAs />} onClick={() => setIsToRmgOpen(true)}>

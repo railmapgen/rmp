@@ -1022,10 +1022,10 @@
                 "done": "Done",
                 "cameraZoom": "Zoom",
                 "cameraZoomFull": "Full",
-                    "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
-                    "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
-                    "chooseFixedResources": "Choose fixed resources",
-                    "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
+                "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
+                "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
+                "chooseFixedResources": "Choose fixed resources",
+                "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
             },
             "lineLabels": {
                 "title": "Line label information",
@@ -1518,5 +1518,26 @@
         "parallelLimit": "Up to {{count}} parallel lines are free. Subscribe to $t(RMP_CLOUD) for unlimited parallel lines.",
         "redeem": "Click to redeem a subscription.",
         "redeemNamed": "Redeem {{subscription}}"
+    },
+    "mapLibrary": {
+        "title": "Maps",
+        "noMap": "No map",
+        "rmwMap": "RMW maps",
+        "noMapHint": "No background map is displayed.",
+        "realMapHint": "Use a real geographic map as the background.",
+        "hint": "Imported maps are stored in this browser. Importing only adds a map to the library; choose Use to change the current basemap.",
+        "imported": "Map added to library",
+        "importFile": "Import map package",
+        "fromRmw": "Import from RMW",
+        "transferHelp": "Keep both apps on the same origin. You can also export a .rmpmap from RMW and import the file here.",
+        "downloadPackage": "Download map package",
+        "realMap": "Real geographic map",
+        "current": "Current",
+        "use": "Use",
+        "empty": "No local maps yet.",
+        "revision": "Revision {{revision}}",
+        "deleteConfirm": "Delete “{{name}}” from this browser? Other projects referring to this map will need it imported again.",
+        "locate": "Use and locate",
+        "missing": "The local map is missing or unavailable. Reimport its .rmpmap package."
     }
 }

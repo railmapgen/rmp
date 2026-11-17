@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useEvent from 'react-use-event-hook';
 import { GlobalAlertId } from '../constants/global-alerts';
 import { isMapZoomed } from '../map/map-config';
-import { MAP_ROUTING } from '../map/map-routing';
+import { resolveMapSource, subscribeMapLibrary } from '../map/local-map';
 import { compileMapStyleCss } from '../map/map-style';
 import type { MapStyle } from '../map/map-style';
 import { MapTileController, type MapLoadingProgress } from '../map/map-tile-controller';
@@ -62,7 +62,15 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
         onOverviewChange = () => undefined,
         onLoadingChange = () => undefined,
     } = props;
+    const mapSource = mapStyle.mapSource;
+    const effectiveForceDetailed = forceDetailed || !!mapSource;
     const { t } = useTranslation();
+    const [libraryVersion, setLibraryVersion] = React.useState(0);
+    const mapSourceKey = mapSource ? `${mapSource.mapId}/${mapSource.revision}/${mapSource.sha256}` : '';
+    React.useEffect(
+        () => (mapSource ? subscribeMapLibrary(() => setLibraryVersion(version => version + 1)) : undefined),
+        [mapSourceKey]
+    );
     const size = useWindowSize();
     const { height, width } = getCanvasSize(size);
     const mapLayerRef = React.useRef<SVGGElement>(null);
@@ -87,7 +95,7 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
     const editorInteractionActiveRef = React.useRef(editorInteractionActive);
     const notifyLoadError = useEvent((error: unknown) => {
         console.error('Failed to initialize map tiles', error);
-        sendErrorNotification(t('error'), t('map.loadError'));
+        sendErrorNotification(t('error'), mapSource ? t('mapLibrary.missing') : t('map.loadError'));
     });
     const updateOverviewState = useEvent((isOverview: boolean) => {
         onOverviewChange(isOverview);
@@ -100,12 +108,12 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
         (viewport: LiveViewport) => {
             latestViewportRef.current = viewport;
 
-            const isOverview = mapEnabled && !forceDetailed && !isMapZoomed(viewport.zoom);
+            const isOverview = mapEnabled && !effectiveForceDetailed && !isMapZoomed(viewport.zoom);
             updateOverviewState(isOverview);
 
             mapControllerRef.current?.updateViewport(viewport);
         },
-        [forceDetailed, mapEnabled, updateOverviewState]
+        [effectiveForceDetailed, mapEnabled, updateOverviewState]
     );
 
     const markViewportInteraction = React.useCallback(() => {
@@ -131,8 +139,8 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
      * while transient pan/zoom frames continue through `updateViewport`.
      */
     React.useLayoutEffect(() => {
-        updateOverviewState(mapEnabled && !forceDetailed && !isMapZoomed(initialViewport.zoom));
-    }, [forceDetailed, initialViewport.zoom, mapEnabled, updateOverviewState]);
+        updateOverviewState(mapEnabled && !effectiveForceDetailed && !isMapZoomed(initialViewport.zoom));
+    }, [effectiveForceDetailed, initialViewport.zoom, mapEnabled, updateOverviewState]);
 
     React.useEffect(
         () => () => {
@@ -151,12 +159,15 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
         }
 
         const mapLayer = mapLayerRef.current;
+        const source = resolveMapSource(mapSource);
         const controller = new MapTileController({
             root: mapLayer,
-            routing: MAP_ROUTING,
+            routing: source.routing,
+            fetch: source.fetch,
+            showAttribution: source.showAttribution,
             styleCss: mapStyleCssRef.current,
             rasterEnabled: rasterEnabledRef.current,
-            forceDetailed,
+            forceDetailed: effectiveForceDetailed || source.forceDetailed,
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
@@ -190,7 +201,15 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
             controller.dispose();
             if (mapControllerRef.current === controller) mapControllerRef.current = undefined;
         };
-    }, [forceDetailed, mapEnabled, notifyLoadError, updateLoadingAlert, updateViewport]);
+    }, [
+        effectiveForceDetailed,
+        mapEnabled,
+        mapSourceKey,
+        libraryVersion,
+        notifyLoadError,
+        updateLoadingAlert,
+        updateViewport,
+    ]);
 
     viewportSizeRef.current = { height, width };
     mapStyleCssRef.current = mapStyleCss;

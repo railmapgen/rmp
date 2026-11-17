@@ -15,6 +15,8 @@ import { useWindowSize } from '../../util/hooks';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { saveManagerChannel, SaveManagerEvent, SaveManagerEventType } from '../../util/rmt-save';
 import { getInitialParam, parseVersionFromSave, RMPSave, upgrade } from '../../util/save';
+import { restoreMapPackages } from '../../map/local-map';
+import { sendErrorNotification } from '../../util/notifications';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 import ImportFromAarc from './import-from-aarc';
 import RmgParamAppClip from './rmg-param-app-clip';
@@ -52,7 +54,8 @@ export default function OpenActions() {
 
     const loadParam = async (paramStr: string) => {
         // templates may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        const { version, images, mapPackages, ...save } = JSON.parse(await upgrade(paramStr)) as RMPSave;
+        await restoreMapPackages(save.mapStyle.mapSource, mapPackages);
 
         const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         nextGraph.import(save.graph);
@@ -82,7 +85,12 @@ export default function OpenActions() {
 
     const handleConfirmLoad = async () => {
         if (paramToLoad) {
-            await loadParam(paramToLoad);
+            try {
+                await loadParam(paramToLoad);
+            } catch (error) {
+                sendErrorNotification(t('error'), String(error));
+                return;
+            }
 
             const initialParam = await getInitialParam();
             if (paramToLoad.length === initialParam.length) {

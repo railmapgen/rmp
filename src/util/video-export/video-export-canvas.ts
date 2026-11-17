@@ -1,4 +1,4 @@
-import { MAP_ROUTING } from '../../map/map-routing';
+import { resolveMapSource } from '../../map/local-map';
 import { compileMapStyleCss, MapStyle } from '../../map/map-style';
 import { MapTileController } from '../../map/map-tile-controller';
 import { LiveViewport } from '../../redux/viewport/viewport-slice';
@@ -33,9 +33,12 @@ export const createVideoExportCanvas = (
         const mapLayer = document.createElementNS(namespace, 'g');
         mapLayer.setAttribute('data-map-layer', '');
         wrapper.append(mapLayer);
+        const source = resolveMapSource(mapStyle.mapSource);
         controller = new MapTileController({
             root: mapLayer,
-            routing: MAP_ROUTING,
+            routing: source.routing,
+            fetch: source.fetch,
+            showAttribution: source.showAttribution,
             styleCss: css,
             getViewportSize: () => size,
             rasterEnabled: false,

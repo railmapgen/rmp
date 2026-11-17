@@ -3,10 +3,12 @@ import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { GlobalAlertId } from '../constants/global-alerts';
 import { MAP_ZOOMED_SWITCH_THRESHOLD } from '../map/map-config';
+import { MAP_ROUTING } from '../map/map-routing';
+import { notifyMapLibraryChanged } from '../map/local-map';
 import type { MapTileControllerOptions } from '../map/map-tile-controller';
 import { createStore } from '../redux';
 import { setDisableMapPerformanceOptimization } from '../redux/app/app-slice';
-import { setMapEnabled } from '../redux/param/param-slice';
+import { setMapEnabled, setMapStyle } from '../redux/param/param-slice';
 import { closeGlobalAlert } from '../redux/runtime/runtime-slice';
 import { render } from '../test-utils';
 import MapCanvas, { MapCanvasHandle } from './map-canvas';
@@ -181,6 +183,51 @@ describe('MapCanvas', () => {
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
         expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapLoading]).toBeUndefined();
         expect(store.getState().param.present.graph).toBe(graphBeforeToggle);
+    });
+
+    it('injects the local source and keeps editor interaction available at overview scales', () => {
+        const { ref, store, unmount } = renderMapCanvas();
+        const online = mockControllers[0];
+        expect(online.options.routing).toBe(MAP_ROUTING);
+        expect(online.options.showAttribution).toBe(true);
+        const reference = { mapId: '11111111-1111-4111-8111-111111111111', revision: 1, sha256: 'a'.repeat(64) };
+        act(() => store.dispatch(setMapStyle({ ...store.getState().param.present.mapStyle, mapSource: reference })));
+        expect(online.dispose).toHaveBeenCalledOnce();
+        const local = mockControllers.at(-1)!;
+        expect(local.options.routing).not.toBe(MAP_ROUTING);
+        expect(local.options.fetch).toEqual(expect.any(Function));
+        expect(local.options.forceDetailed).toBe(true);
+        expect(local.options.showAttribution).toBe(false);
+        act(() => ref.current?.updateViewport({ x: 10, y: 20, zoom: MAP_ZOOMED_SWITCH_THRESHOLD + 100 }));
+        expect(store.getState().runtime.isMapOverview).toBe(false);
+        expect(store.getState().runtime.globalAlerts[GlobalAlertId.MapOverviewEdit]).toBeUndefined();
+        const count = mockControllers.length;
+        act(() =>
+            store.dispatch(setMapStyle({ ...store.getState().param.present.mapStyle, mapSource: { ...reference } }))
+        );
+        expect(mockControllers).toHaveLength(count);
+        act(() => store.dispatch(setMapStyle({ ...store.getState().param.present.mapStyle, mapSource: undefined })));
+        expect(local.dispose).toHaveBeenCalledOnce();
+        expect(mockControllers.at(-1)!.options.routing).toBe(MAP_ROUTING);
+        unmount();
+    });
+
+    it('restarts a local controller when its source is restored to the library', () => {
+        const { store, unmount } = renderMapCanvas();
+        act(() =>
+            store.dispatch(
+                setMapStyle({
+                    ...store.getState().param.present.mapStyle,
+                    mapSource: { mapId: '11111111-1111-4111-8111-111111111111', revision: 1, sha256: 'a'.repeat(64) },
+                })
+            )
+        );
+        const local = mockControllers.at(-1)!;
+        act(() => notifyMapLibraryChanged());
+        expect(local.dispose).toHaveBeenCalledOnce();
+        expect(mockControllers.at(-1)).not.toBe(local);
+        expect(mockControllers.at(-1)!.initialize).toHaveBeenCalledOnce();
+        unmount();
     });
 
     it('defers raster work until wheel interaction becomes idle', () => {

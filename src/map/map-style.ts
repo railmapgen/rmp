@@ -1,3 +1,5 @@
+import type { LocalMapReference } from './local-map';
+
 export type MapRoadKind = 'path' | 'local' | 'collector' | 'arterial';
 export type MapRailKind = 'metro' | 'national';
 export const MAP_LABEL_GROUPS = [
@@ -56,6 +58,8 @@ export interface MapLabelStyle {
  * here rather than existing only as transient UI state.
  */
 export interface MapStyle {
+    /** Local basemap identity travels with the existing map settings. */
+    mapSource?: LocalMapReference;
     roads: Record<MapRoadKind, MapRoadStyle>;
     rails: Record<MapRailKind, MapRailStyle>;
     labels: {
@@ -107,6 +111,22 @@ export const DEFAULT_MAP_STYLE: MapStyle = {
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     !!value && typeof value === 'object' && !Array.isArray(value);
+/** Validate a local source reference without loading package resources. */
+export const normalizeLocalMapReference = (value: unknown): LocalMapReference | undefined => {
+    if (value === undefined || value === null) return undefined;
+    if (!isRecord(value)) throw new Error('Expected an object');
+    if (
+        typeof value.mapId !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value.mapId)
+    )
+        throw new Error('Invalid local map UUID');
+    if (!Number.isSafeInteger(value.revision) || (value.revision as number) <= 0)
+        throw new Error('Invalid local map revision');
+    if (typeof value.sha256 !== 'string' || !/^[0-9a-f]{64}$/i.test(value.sha256))
+        throw new Error('Invalid local map SHA-256');
+    return { mapId: value.mapId, revision: value.revision as number, sha256: value.sha256.toLowerCase() };
+};
+
 const booleanOr = (value: unknown, fallback: boolean) => (typeof value === 'boolean' ? value : fallback);
 const stringOr = (value: unknown, fallback: string) => (typeof value === 'string' ? value : fallback);
 const numberOr = (value: unknown, fallback: number) =>
@@ -115,6 +135,7 @@ const numberOr = (value: unknown, fallback: number) =>
 /** Completes partial or branch-era persisted styles without trusting malformed leaf values. */
 export const normalizeMapStyle = (value: unknown): MapStyle => {
     const style = isRecord(value) ? value : {};
+    const mapSource = normalizeLocalMapReference(style.mapSource);
     const roads = isRecord(style.roads) ? style.roads : {};
     const rails = isRecord(style.rails) ? style.rails : {};
     const labels = isRecord(style.labels) ? style.labels : {};
@@ -166,6 +187,7 @@ export const normalizeMapStyle = (value: unknown): MapStyle => {
     ) as Record<MapLabelKind, MapLabelStyle>;
 
     return {
+        ...(mapSource ? { mapSource } : {}),
         roads: normalizedRoads,
         rails: normalizedRails,
         labels: {

@@ -7,6 +7,7 @@ import { StationType } from '../constants/stations';
 import { createEmptyTimelineDocument, TimelineDocument } from '../constants/timeline';
 import { createTimelineOverlayModule } from '../constants/timeline-overlays';
 import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import * as mapPortability from '../map/local-map';
 import { blobToBase64 } from '../util/binary';
 import { CURRENT_VERSION } from '../util/save';
 import { createTestLineGraph } from '../test-utils';
@@ -49,6 +50,84 @@ const makeRmpSave = (graph: Graph, overrides: Record<string, unknown> = {}) =>
     });
 
 describe('Timeline project import and sync', () => {
+    it('accepts current painter saves with no map settings and applies the existing defaults', async () => {
+        localStorage.setItem(
+            LocalStorageKey.PARAM,
+            JSON.stringify({
+                version: CURRENT_VERSION,
+                graph: new MultiDirectedGraph().export(),
+            })
+        );
+        try {
+            const parsed = await parseRmpTimelineSource(await getOpenRmpProjectSource());
+            expect(parsed.revision.mapStyle).toEqual(DEFAULT_MAP_STYLE);
+            expect(parsed.revision.mapEnabled).toBe(false);
+            expect(parsed.revision.mapStyle.mapSource).toBeUndefined();
+        } finally {
+            localStorage.removeItem(LocalStorageKey.PARAM);
+        }
+    });
+
+    it('retains an immutable map reference and carries its package only in portable files', async () => {
+        const mapSource = { mapId: '11111111-1111-4111-8111-111111111111', revision: 2, sha256: 'a'.repeat(64) };
+        const mapPackages = [{ sha256: mapSource.sha256, data: 'data:application/octet-stream;base64,bWFw' }];
+        const restore = vi.spyOn(mapPortability, 'restoreMapPackages').mockResolvedValue(undefined);
+        const embed = vi.spyOn(mapPortability, 'embedMapPackages').mockResolvedValue(mapPackages);
+        const create = vi.spyOn(timelineProjectDB, 'createProject').mockResolvedValue(undefined);
+        const getAssets = vi.spyOn(timelineProjectDB, 'getAssets').mockResolvedValue([]);
+        try {
+            const parsed = await parseRmpTimelineSource(
+                makeRmpSave(new MultiDirectedGraph(), { mapStyle: { ...DEFAULT_MAP_STYLE, mapSource }, mapPackages })
+            );
+            expect(parsed.revision.mapStyle.mapSource).toEqual(mapSource);
+            expect(restore).toHaveBeenCalledWith(mapSource, mapPackages);
+            const record: TimelineProjectRecord = {
+                id: 'map-project',
+                name: 'Map project',
+                version: 2,
+                createdAt: 1,
+                updatedAt: 1,
+                revision: parsed.revision,
+            };
+            const exported = JSON.parse(await exportTimelineProjectFile(record));
+            expect(exported.mapPackages).toEqual(mapPackages);
+            expect(exported.revision.mapPackages).toBeUndefined();
+            const restored = await importTimelineProjectFile(JSON.stringify(exported));
+            expect(restored.revision.mapStyle.mapSource).toEqual(mapSource);
+            expect(restored).not.toHaveProperty('mapPackages');
+            expect(embed).toHaveBeenCalledWith(mapSource);
+        } finally {
+            restore.mockRestore();
+            embed.mockRestore();
+            create.mockRestore();
+            getAssets.mockRestore();
+        }
+    });
+
+    it('rejects a broken embedded map before creating or replacing a Timeline project', async () => {
+        const parsed = await parseRmpTimelineSource(makeRmpSave(new MultiDirectedGraph()));
+        const restore = vi.spyOn(mapPortability, 'restoreMapPackages').mockRejectedValue(new Error('Bad map digest'));
+        const create = vi.spyOn(timelineProjectDB, 'createProject');
+        try {
+            await expect(
+                importTimelineProjectFile(
+                    JSON.stringify({
+                        app: 'rmp-timeline',
+                        version: 2,
+                        name: 'Broken map',
+                        revision: parsed.revision,
+                        assets: [],
+                        mapPackages: [{ sha256: 'bad', data: 'bad' }],
+                    })
+                )
+            ).rejects.toThrow('Bad map digest');
+            expect(create).not.toHaveBeenCalled();
+        } finally {
+            restore.mockRestore();
+            create.mockRestore();
+        }
+    });
+
     it('imports a legacy portable file through the version upgrade chain', async () => {
         const parsed = await parseRmpTimelineSource(makeRmpSave(new MultiDirectedGraph()));
         const labelTrack = [

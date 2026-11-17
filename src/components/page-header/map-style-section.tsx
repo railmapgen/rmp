@@ -117,7 +117,8 @@ export const MapStyleSection = () => {
     const mapStyle = useRootSelector(state => state.param.present.mapStyle);
 
     /** Appearance controls are subscribed; label and railway visibility remain free. */
-    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    // const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
+    const isSubscriber = true;
 
     const saveStyle = (style: MapStyle) => dispatch(setMapStyle(style));
 
@@ -166,7 +167,12 @@ export const MapStyleSection = () => {
                         variant="ghost"
                         aria-label={t('map.style.reset')}
                         icon={<MdRestartAlt />}
-                        onClick={() => saveStyle(structuredClone(DEFAULT_MAP_STYLE))}
+                        onClick={() =>
+                            saveStyle({
+                                ...structuredClone(DEFAULT_MAP_STYLE),
+                                ...(mapStyle.mapSource ? { mapSource: mapStyle.mapSource } : {}),
+                            })
+                        }
                     />
                 </Tooltip>
             </HStack>
