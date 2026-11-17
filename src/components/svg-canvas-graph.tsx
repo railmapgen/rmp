@@ -47,9 +47,9 @@ import { SvgRenderProvider, type SvgRenderContextValue } from './svg-render-cont
 import { linePaths, normalizeEdgeAttributes } from './svgs/lines/lines';
 import miscNodes from './svgs/nodes/misc-nodes';
 import { default as stations } from './svgs/stations/stations';
-import { useCanvasLineDrawing } from './use-canvas-line-drawing';
+import { useCanvasLineDrawing, type CanvasLineDrawingHandle } from './use-canvas-line-drawing';
 
-const SvgCanvas = () => {
+const SvgCanvas = React.forwardRef<CanvasLineDrawingHandle>((_, ref) => {
     const dispatch = useRootDispatch();
     const graph = React.useRef(window.graph);
     const refreshAndSave = () => {
@@ -85,6 +85,9 @@ const SvgCanvas = () => {
     // note only the nearest 2 of them will be drawn
     React.useEffect(
         () => {
+            // A touch hold can take over a drag without reaching the node's pointerup handler.
+            setActiveSnapLines([]);
+            setActiveSnapPoint(undefined);
             if (!pointerPosition || !useSnapLines) return;
             const svgViewRange = getViewpointSize(svgViewBoxMin, svgViewBoxZoom, width, height);
             const nodesInViewRange = findNodesInRectangle(
@@ -102,16 +105,24 @@ const SvgCanvas = () => {
 
     // the active snap points, only used when there is only one active snap line
     const [activeSnapPoint, setActiveSnapPoint] = React.useState<SnapPoint | undefined>(undefined);
+
     const {
         drawingGesture,
         pointerOffset,
         begin: beginLine,
         update: updateLine,
         finish: finishLine,
+        cancel: cancelLine,
     } = useCanvasLineDrawing(graph.current, () => {
         setActiveSnapLines([]);
         setActiveSnapPoint(undefined);
     });
+
+    React.useImperativeHandle(
+        ref,
+        () => ({ begin: beginLine, update: updateLine, finish: finishLine, cancel: cancelLine }),
+        [beginLine, updateLine, finishLine, cancelLine]
+    );
 
     const handlePointerDown = useEvent((node: NodeId, e: React.PointerEvent<SVGElement>) => {
         e.stopPropagation();
@@ -441,6 +452,8 @@ const SvgCanvas = () => {
             />
         </>
     );
-};
+});
+
+SvgCanvas.displayName = 'SvgCanvas';
 
 export default SvgCanvas;

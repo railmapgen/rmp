@@ -27,7 +27,7 @@ import {
     NodeSpecificAttrsClipboardData,
     parseClipboardData,
 } from '../../../util/clipboard';
-import { isPortraitClient } from '../../../util/helpers';
+import { isPortraitClient, isTouchClient } from '../../../util/helpers';
 import { sendErrorNotification } from '../../../util/notifications';
 import { normalizeEdgeAttributes } from '../../svgs/lines/lines';
 import InfoSection from './info-section';
@@ -65,7 +65,7 @@ const DetailsPanel = () => {
     );
 
     const handleClose = () => {
-        if (!isPortraitClient()) {
+        if (!isPortraitClient() && !isTouchClient()) {
             dispatch(clearSelected());
         } else {
             dispatch(hideDetailsPanel());

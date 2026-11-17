@@ -2,16 +2,17 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import useEvent from 'react-use-event-hook';
 import { LineId, OverlayProps } from '../../../../constants/constants';
-import { makePoint } from '../../../../constants/path';
+import { PathPoint, makePoint } from '../../../../constants/path';
+import { TOUCH_CONTROL_POINT_RADIUS } from '../../../../constants/touch';
 import { useRootDispatch } from '../../../../redux';
 import { saveGraph } from '../../../../redux/param/param-slice';
 import { refreshEdgesThunk } from '../../../../redux/runtime/runtime-slice';
-import { pointerPosToSVGCoord } from '../../../../util/helpers';
+import { isTouchClient, pointerPosToSVGCoord } from '../../../../util/helpers';
 import { FreeformLineEditorController } from './freeform-editor-controller';
 import { makeFreeformOpenPath } from './freeform-geometry';
 
 type FreeformHandleSelection = { edgeId: string; id: string } | undefined;
-type FreeformDrag = { edgeId: string; id: string } | undefined;
+type FreeformDrag = { edgeId: string; id: string; offset: PathPoint } | undefined;
 
 /**
  * Render and handle the control-point editor for a selected Freeform line.
@@ -35,6 +36,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overl
     );
     const selectedFreeform = controller.getFreeformEditableById(id);
     const handleSize = controller.getHandleSize();
+    const touchHandleRadius = TOUCH_CONTROL_POINT_RADIUS * (svgViewBoxZoom / 100);
 
     // Drag frames only refresh the rendered graph. Saving once at gesture end keeps one drag as one undo step.
     /** Refresh the SVG immediately, and optionally persist a graph snapshot for undo history. */
@@ -66,8 +68,13 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overl
         event.stopPropagation();
         event.preventDefault();
         event.currentTarget.setPointerCapture(event.pointerId);
+        const point = selectedFreeform.attrs.points.find(point => point.id === pointId)!;
+        const pointer = getLocalPointerPosition(event);
+        // A finger can grab anywhere in the touch circle without moving the point to that initial contact position.
+        const offset =
+            event.pointerType === 'touch' ? makePoint(point.x - pointer.x, point.y - pointer.y) : makePoint(0, 0);
         setHandleSelection({ edgeId: id, id: pointId });
-        setFreeformDrag({ edgeId: id, id: pointId });
+        setFreeformDrag({ edgeId: id, id: pointId, offset });
     });
 
     /** Remove a control point from the context-menu gesture. */
@@ -83,7 +90,9 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overl
     const handleOverlayPointerMove = useEvent((event: React.PointerEvent<SVGElement>) => {
         if (!freeformDrag) return;
         event.stopPropagation();
-        if (controller.moveControlPoint(id, freeformDrag.id, getLocalPointerPosition(event))) refreshEdges();
+        const pointer = getLocalPointerPosition(event);
+        const point = makePoint(pointer.x + freeformDrag.offset.x, pointer.y + freeformDrag.offset.y);
+        if (controller.moveControlPoint(id, freeformDrag.id, point)) refreshEdges();
     });
 
     /** Finish the current drag and save exactly one graph snapshot. */
@@ -165,6 +174,25 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overl
                 strokeDasharray={handleSize.dashArray}
                 pointerEvents="none"
             />
+            {isTouchClient() &&
+                points
+                    .slice(1, -1)
+                    .map(point => (
+                        <circle
+                            key={`touch-${point.id}`}
+                            cx={point.x}
+                            cy={point.y}
+                            r={touchHandleRadius}
+                            fill="#3182CE"
+                            opacity={0.15}
+                            cursor="move"
+                            pointerEvents="all"
+                            data-touch-control-target=""
+                            data-touch-editor=""
+                            onPointerDown={event => handlePointPointerDown(point.id, event)}
+                            onContextMenu={event => handlePointContextMenu(point.id, event)}
+                        />
+                    ))}
             {/* Persisted percentages are resolved into source-local coordinates by the editor controller. */}
             {points.map((point, index) => {
                 const isEndpoint = index === 0 || index === points.length - 1;
@@ -187,6 +215,7 @@ export const FreeformLineOverlay = ({ id, svgViewBoxZoom, svgViewBoxMin }: Overl
                         strokeWidth={handleSize.strokeWidth}
                         cursor={isEndpoint ? 'default' : 'move'}
                         pointerEvents={isEndpoint ? 'none' : undefined}
+                        data-touch-editor={isEndpoint ? undefined : ''}
                         onPointerDown={event => handlePointPointerDown(point.id, event)}
                         onContextMenu={event => handlePointContextMenu(point.id, event)}
                     />

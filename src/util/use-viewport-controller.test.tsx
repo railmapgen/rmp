@@ -207,6 +207,93 @@ describe('useViewportController', () => {
         expect(store.getState().viewport.liveViewport).toBeUndefined();
     });
 
+    it('ends a pan at its last move and synchronously flushes a pending frame without a release sample', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.panStart({ x: 10, y: 20 });
+            ref.current?.panMove({ x: 30, y: 50 });
+        });
+        expect(rafCallbacks.size).toBe(1);
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
+
+        act(() => {
+            ref.current?.panEnd();
+            expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(20, 30) scale(1)');
+            expect(ref.current?.viewportGetLatest()).toEqual({ x: -20, y: -30, zoom: 100 });
+            expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: -20, y: -30 });
+        });
+        expect(rafCallbacks.size).toBe(0);
+        flushRaf();
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(20, 30) scale(1)');
+    });
+
+    it('restores the original transform when the final pan viewport already equals the persisted viewport', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+        const persisted = store.getState().param.present;
+
+        act(() => {
+            ref.current?.panStart({ x: 0, y: 0 });
+            ref.current?.panMove({ x: 40, y: 10 });
+        });
+        flushRaf();
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(40, 10) scale(1)');
+
+        act(() => {
+            ref.current?.panMove({ x: 0, y: 0 });
+            ref.current?.panEnd();
+            expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
+            expect(ref.current?.viewportGetLatest()).toEqual({ x: 0, y: 0, zoom: 100 });
+        });
+        expect(store.getState().param.present).toBe(persisted);
+        flushRaf();
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
+    });
+
+    it('commits only the published live viewport when no explicit viewport is supplied', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+
+        act(() => {
+            ref.current?.viewportPreview({ x: 10, y: 20, zoom: 80 }, { publishLiveViewport: true });
+        });
+        flushRaf();
+        act(() => {
+            ref.current?.viewportPreview({ x: 30, y: 40, zoom: 50 });
+            ref.current?.viewportCommitNow();
+        });
+
+        expect(ref.current?.viewportGetLatest()).toEqual({ x: 10, y: 20, zoom: 80 });
+        expect(store.getState().param.present.svgViewBoxMin).toEqual({ x: 10, y: 20 });
+        expect(store.getState().param.present.svgViewBoxZoom).toBe(80);
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
+        flushRaf();
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(-12.5, -25) scale(1.25)');
+    });
+
+    it('does not implicitly commit an unpublished preview when there is no live viewport', () => {
+        const store = createStore();
+        const ref = React.createRef<ViewportControllerApi>();
+        render(<HookHarness ref={ref} viewport={{ x: 0, y: 0, zoom: 100 }} />, { store });
+        const persisted = store.getState().param.present;
+
+        act(() => {
+            ref.current?.viewportPreview({ x: 30, y: 40, zoom: 50 });
+            ref.current?.viewportCommitNow();
+        });
+
+        expect(store.getState().param.present).toBe(persisted);
+        expect(store.getState().viewport.liveViewport).toBeUndefined();
+        expect(rafCallbacks.size).toBe(0);
+        flushRaf();
+        expect(ref.current?.viewportRef.current?.getAttribute('transform')).toBe('translate(0, 0) scale(1)');
+    });
+
     it('rebases drag math around previewed viewport changes during an active drag', () => {
         const store = createStore();
         const ref = React.createRef<ViewportControllerApi>();

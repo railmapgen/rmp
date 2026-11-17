@@ -12,7 +12,7 @@ import { STATION_TYPE_VALUES, StationType } from '../../constants/stations';
 import { defaultRadialTouchMenuState, type RadialTouchMenuState } from '../../constants/touch';
 import i18n from '../../i18n/config';
 import { Node2Font } from '../../util/fonts';
-import { isPortraitClient } from '../../util/helpers';
+import { isPortraitClient, isTouchClient } from '../../util/helpers';
 import { countParallelLines, MAX_PARALLEL_LINES_FREE, MAX_PARALLEL_LINES_PRO } from '../../util/parallel-line-policy';
 import { setAutoParallel } from '../app/app-slice';
 import { loadFonts } from '../fonts/fonts-slice';
@@ -38,8 +38,8 @@ interface RuntimeState {
      * On desktop, it is either 'show' or 'close'.
      * On mobile, it is either 'show', 'hide' or 'close'.
      * 'show' means the panel is open.
-     * 'hide' means the panel is closed but can be opened by clicking the arrow button.
-     * 'close' means the panel is closed and cannot be opened by clicking the arrow button.
+     * 'hide' means the panel is closed but can be opened by clicking the selection button.
+     * 'close' means the panel is closed and cannot be opened by clicking the selection button.
      */
     isDetailsOpen: 'show' | 'hide' | 'close';
     /**
@@ -215,19 +215,13 @@ export const refreshEdgesThunk = createAsyncThunk('runtime/refreshEdges', async 
 });
 
 /**
- * Determine the isDetailsOpen state based on current selected and mode.
- *
- * `detailsOpen = state.selected.size > 0 && !state.mode.startsWith('line') && !state.active`
- *
- * |                      --                      | detailsOpen === true | detailsOpen === false |
- * |----------------------------------------------|----------------------|----------------------|
- * | isMobileClient === true && selected.size > 1 | 'show' or 'hide'     | 'close'              |
- * | isMobileClient === false                     | 'show'               | 'close'              |
+ * Mobile selections stay collapsed until explicitly opened. Repeated updates to
+ * the same selection preserve an open panel; a new selection or drag resets it.
  */
-const getIsDetailsOpen = (state: Draft<RuntimeState>): RuntimeState['isDetailsOpen'] => {
+const getIsDetailsOpen = (state: Draft<RuntimeState>, selectionChanged = false): RuntimeState['isDetailsOpen'] => {
     if (state.selected.size > 0 && !state.mode.startsWith('line') && !state.active) {
-        if (isPortraitClient() && state.selected.size > 1) {
-            return 'hide';
+        if (isPortraitClient() || isTouchClient()) {
+            return !selectionChanged && state.isDetailsOpen === 'show' ? 'show' : 'hide';
         }
         return 'show';
     }
@@ -254,16 +248,20 @@ const runtimeSlice = createSlice({
     initialState,
     reducers: {
         setSelected: (state, action: PayloadAction<Set<Id>>) => {
+            const changed =
+                state.selected.size !== action.payload.size || [...action.payload].some(id => !state.selected.has(id));
             state.selected = action.payload;
-            state.isDetailsOpen = getIsDetailsOpen(state);
+            state.isDetailsOpen = getIsDetailsOpen(state, changed);
         },
         addSelected: (state, action: PayloadAction<Id>) => {
+            const changed = !state.selected.has(action.payload);
             state.selected.add(action.payload);
-            state.isDetailsOpen = getIsDetailsOpen(state);
+            state.isDetailsOpen = getIsDetailsOpen(state, changed);
         },
         removeSelected: (state, action: PayloadAction<Id>) => {
+            const changed = state.selected.has(action.payload);
             state.selected.delete(action.payload);
-            state.isDetailsOpen = getIsDetailsOpen(state);
+            state.isDetailsOpen = getIsDetailsOpen(state, changed);
         },
         clearSelected: state => {
             state.selected = new Set<Id>();

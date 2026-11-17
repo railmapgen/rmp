@@ -32,6 +32,13 @@ div#root {
     box-sizing: border-box;
 }
 
+#canvas,
+#canvas * {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .tools::-webkit-scrollbar {
     display: none;

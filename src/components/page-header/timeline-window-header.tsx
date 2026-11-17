@@ -74,10 +74,10 @@ import TimelineRmpImportModal from '../timeline/timeline-rmp-import-modal';
 import AboutModal from './about-modal';
 import TimelineActions from './timeline-actions';
 import VideoExportModal from './video-export-modal';
+import ResponsiveHeaderActions from './responsive-header-actions';
 
 type PendingTimelineSync = Awaited<ReturnType<typeof prepareTimelineProjectSync>>;
 const COMPACT_HEADER_TEXT_WIDTH = 1150;
-const STACKED_HEADER_WIDTH = 900;
 
 export default function TimelineWindowHeader() {
     const { t } = useTranslation();
@@ -118,7 +118,6 @@ export default function TimelineWindowHeader() {
     }, [fixedResourceEditing]);
     const viewportWidth = windowWidth ?? Number.POSITIVE_INFINITY;
     const isCompactHeaderText = viewportWidth < COMPACT_HEADER_TEXT_WIDTH;
-    const shouldStackHeader = viewportWidth < STACKED_HEADER_WIDTH;
 
     const closeFilesMenu = () => {
         setFilesMenuPage('root');
@@ -230,14 +229,8 @@ export default function TimelineWindowHeader() {
 
     return (
         <RmgWindowHeader>
-            <Flex
-                data-testid="timeline-header-layout"
-                direction={shouldStackHeader ? 'column' : 'row'}
-                width="100%"
-                align={shouldStackHeader ? 'stretch' : 'center'}
-                gap={1}
-            >
-                <HStack minW={0} overflowX="auto" maxW="100%">
+            <Flex data-testid="timeline-header-layout" direction="row" width="100%" align="center" gap={1}>
+                <HStack minW={0} overflowX="auto" maxW="calc(100% - 36px)">
                     <Heading as="h4" size="md" whiteSpace="nowrap">
                         {t('Rail Map Chronicle')}
                     </Heading>
@@ -397,12 +390,7 @@ export default function TimelineWindowHeader() {
                         </>
                     )}
                 </HStack>
-                <HStack
-                    ml={shouldStackHeader ? 0 : 'auto'}
-                    overflowX="auto"
-                    maxW="100%"
-                    justifyContent={shouldStackHeader ? 'flex-end' : 'flex-start'}
-                >
+                <ResponsiveHeaderActions>
                     {active && (
                         <>
                             <IconButton
@@ -465,7 +453,7 @@ export default function TimelineWindowHeader() {
                         icon={<MdHelp />}
                         onClick={() => setIsAboutOpen(true)}
                     />
-                </HStack>
+                </ResponsiveHeaderActions>
             </Flex>
             {active && <VideoExportModal isOpen={isVideoOpen} onClose={() => setIsVideoOpen(false)} />}
             <AboutModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />

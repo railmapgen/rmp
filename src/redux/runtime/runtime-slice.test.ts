@@ -1,23 +1,107 @@
 import { MultiDirectedGraph } from 'graphology';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../constants/constants';
 import { GlobalAlertId } from '../../constants/global-alerts';
 import { LinePathType, LineStyleType } from '../../constants/lines';
 import { MAX_MASTER_NODE_FREE } from '../../constants/master';
 import { MiscNodeType } from '../../constants/nodes';
+import * as clientHelpers from '../../util/helpers';
 import { MAX_PARALLEL_LINES_FREE } from '../../util/parallel';
 import { createStore } from '../index';
 import store from '../store';
 import { applyRedoAction, applyUndoAction, replaceProjectState } from '../param/param-slice';
 import appReducer, {
+    addSelected,
+    clearSelected,
     closeGlobalAlert,
+    hideDetailsPanel,
     refreshEdgesThunk,
     refreshNodesThunk,
+    removeSelected,
+    setActive,
     setGlobalAlert,
     setMode,
+    setSelected,
+    showDetailsPanel,
 } from './runtime-slice';
 
 const realStore = store.getState();
+
+describe('details panel selection behavior', () => {
+    beforeEach(() => {
+        vi.spyOn(clientHelpers, 'isPortraitClient').mockReturnValue(false);
+        vi.spyOn(clientHelpers, 'isTouchClient').mockReturnValue(false);
+    });
+
+    afterEach(() => vi.restoreAllMocks());
+
+    it.each(['stn_A', 'misc_node_A', 'line_A'] as const)(
+        'keeps a single %s selection collapsed on a touch client in landscape',
+        id => {
+            vi.mocked(clientHelpers.isTouchClient).mockReturnValue(true);
+            const selected = appReducer(realStore.runtime, setSelected(new Set([id])));
+            expect(selected.isDetailsOpen).toBe('hide');
+            expect(appReducer(selected, showDetailsPanel()).isDetailsOpen).toBe('show');
+        }
+    );
+
+    it('keeps narrow client selections collapsed even without touch support', () => {
+        vi.mocked(clientHelpers.isPortraitClient).mockReturnValue(true);
+        const selected = appReducer(realStore.runtime, setSelected(new Set(['stn_A'])));
+        expect(selected.isDetailsOpen).toBe('hide');
+    });
+
+    it('preserves the desktop automatic details panel behavior', () => {
+        const single = appReducer(realStore.runtime, setSelected(new Set(['stn_A'])));
+        expect(single.isDetailsOpen).toBe('show');
+        const multiple = appReducer(single, addSelected('stn_B'));
+        expect(multiple.isDetailsOpen).toBe('show');
+        expect(appReducer(multiple, clearSelected()).isDetailsOpen).toBe('close');
+    });
+
+    it('preserves an explicitly opened panel for unchanged selection and idle updates', () => {
+        vi.mocked(clientHelpers.isTouchClient).mockReturnValue(true);
+        let state = appReducer(realStore.runtime, setSelected(new Set(['stn_A', 'stn_B'])));
+        state = appReducer(state, showDetailsPanel());
+        for (const action of [
+            setSelected(new Set(['stn_B', 'stn_A'])),
+            addSelected('stn_A'),
+            removeSelected('stn_missing'),
+            setActive(undefined),
+            setMode('free'),
+        ]) {
+            state = appReducer(state, action);
+            expect(state.isDetailsOpen).toBe('show');
+        }
+        state = appReducer(state, hideDetailsPanel());
+        expect(appReducer(state, setSelected(new Set(['stn_A', 'stn_B']))).isDetailsOpen).toBe('hide');
+    });
+
+    it('collapses explicitly opened details when the selected elements change', () => {
+        vi.mocked(clientHelpers.isTouchClient).mockReturnValue(true);
+        const selected = appReducer(realStore.runtime, setSelected(new Set(['stn_A'])));
+        const opened = appReducer(selected, showDetailsPanel());
+        expect(appReducer(opened, setSelected(new Set(['stn_B']))).isDetailsOpen).toBe('hide');
+        const multiple = appReducer(opened, addSelected('stn_B'));
+        expect(multiple.isDetailsOpen).toBe('hide');
+        expect(appReducer(appReducer(multiple, showDetailsPanel()), removeSelected('stn_A')).isDetailsOpen).toBe(
+            'hide'
+        );
+    });
+
+    it('keeps the selection collapsed after a drag or drawing operation ends', () => {
+        vi.mocked(clientHelpers.isTouchClient).mockReturnValue(true);
+        const selected = appReducer(realStore.runtime, setSelected(new Set(['stn_A'])));
+        const opened = appReducer(selected, showDetailsPanel());
+        const dragging = appReducer(opened, setActive('stn_A'));
+        expect(dragging.isDetailsOpen).toBe('close');
+        expect(appReducer(dragging, setActive(undefined)).isDetailsOpen).toBe('hide');
+        const drawing = appReducer(opened, setMode(`line-${LinePathType.Simple}/${LineStyleType.SingleColor}`));
+        expect(drawing.isDetailsOpen).toBe('close');
+        expect(appReducer(drawing, setMode('free')).isDetailsOpen).toBe('hide');
+        expect(appReducer(opened, clearSelected()).isDetailsOpen).toBe('close');
+    });
+});
 
 describe('ParamSlice', () => {
     it('Can update refresh indicators on undo actions', () => {

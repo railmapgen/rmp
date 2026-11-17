@@ -8,7 +8,6 @@ import { MdHelp, MdRedo, MdSettings, MdTranslate, MdUndo, MdRoute } from 'react-
 import { Events } from '../../constants/constants';
 import { useRootDispatch, useRootSelector } from '../../redux';
 import { redoAction, undoAction } from '../../redux/project-history';
-import { useScreenOrientation } from '../../util/hooks';
 import AboutModal from './about-modal';
 import DownloadActions from './download-actions';
 import { MapToggleButton } from './map-toggle-button';
@@ -17,6 +16,7 @@ import { SearchPopover } from './search-popover';
 import SettingsModal from './settings-modal';
 import { ZoomPopover } from './zoom-popover';
 import { LineInfoModal } from './line-info-modal';
+import ResponsiveHeaderActions from './responsive-header-actions';
 
 export default function WindowHeader() {
     const { t } = useTranslation();
@@ -30,8 +30,6 @@ export default function WindowHeader() {
 
     const environment = useReadyConfig(rmgRuntime.getEnv);
     const appVersion = useReadyConfig(rmgRuntime.getAppVersion);
-
-    const orientation = useScreenOrientation();
 
     React.useEffect(() => {
         // environment !== RmgEnv.DEV -> wait after rmgRuntime.ready() in useReadyConfig
@@ -51,8 +49,8 @@ export default function WindowHeader() {
 
     return (
         <RmgWindowHeader>
-            <Flex direction={orientation === 'landscape' ? 'row' : 'column'} width="100%">
-                <HStack height="32px">
+            <Flex width="100%" align="center" gap={2}>
+                <HStack height="32px" minW={0} maxW="calc(100% - 40px)">
                     <Heading as="h4" size="md" whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">
                         {t('header.about.rmp')}
                     </Heading>
@@ -76,7 +74,7 @@ export default function WindowHeader() {
                     />
                 </HStack>
 
-                <HStack overflowX="auto" ml={orientation === 'landscape' ? 'auto' : undefined}>
+                <ResponsiveHeaderActions>
                     <SearchPopover />
 
                     <IconButton
@@ -141,7 +139,7 @@ export default function WindowHeader() {
                         icon={<MdHelp />}
                         onClick={() => setIsAboutModalOpen(true)}
                     />
-                </HStack>
+                </ResponsiveHeaderActions>
             </Flex>
 
             <SettingsModal isOpen={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />

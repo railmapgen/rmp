@@ -1,9 +1,10 @@
-import { cleanup, fireEvent } from '@testing-library/react';
+import { act, cleanup, fireEvent } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NodeId, RuntimeMode } from '../constants/constants';
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { createStore } from '../redux';
+import { setMode, setPointerPosition } from '../redux/runtime/runtime-slice';
 import { createTestLineGraph, render, TEST_LINE_THEME } from '../test-utils';
 import SvgCanvas from './svg-canvas-graph';
 
@@ -105,5 +106,29 @@ describe('SvgCanvas', () => {
         expect(window.graph.size).toBe(1);
         expect(store.getState().param.past).toHaveLength(1);
         expect(store.getState().runtime.pointerPosition).toBeUndefined();
+    });
+});
+
+describe('canvas node drag guides', () => {
+    it.each(['takeover', 'cancel'])('clears active snap guides when %s replaces the pointer session', end => {
+        const { container, store } = setupCanvas();
+        act(() => store.dispatch(setMode('free')));
+        const source = container.querySelector('#stn_core_stn_A')!;
+        const pointer = (type: string, x: number, y: number) => {
+            const event = new Event(type, { bubbles: true, cancelable: true });
+            Object.defineProperties(event, {
+                clientX: { value: x },
+                clientY: { value: y },
+                pointerId: { value: 1 },
+                pointerType: { value: 'touch' },
+            });
+            fireEvent(source, event);
+        };
+        pointer('pointerdown', 0, 0);
+        pointer('pointermove', 1, 1);
+        pointer('pointermove', 2, 1);
+        expect(container.querySelector('path[stroke="cyan"]')).not.toBeNull();
+        act(() => store.dispatch(setPointerPosition(end === 'takeover' ? { x: 1, y: 1 } : undefined)));
+        expect(container.querySelector('path[stroke="cyan"]')).toBeNull();
     });
 });
