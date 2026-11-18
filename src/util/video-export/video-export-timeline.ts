@@ -1,6 +1,12 @@
 import { MultiDirectedGraph } from 'graphology';
-import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId } from '../../constants/constants';
-import { isElementEntry, TimelineDocument, TimelineElementEntry, TimelineEntry } from '../../constants/timeline';
+import { EdgeAttributes, GraphAttributes, LineId, NodeAttributes, NodeId, StnId } from '../../constants/constants';
+import {
+    isElementEntry,
+    TimelineDocument,
+    TimelineElementEntry,
+    TimelineEntry,
+    TimelineKeyframeStation,
+} from '../../constants/timeline';
 
 type TimelineGraph = MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>;
 type Position = { x: number; y: number };
@@ -20,6 +26,14 @@ interface PositionKeyframe extends Position {
     time: number;
 }
 
+interface StationKeyframe {
+    time: number;
+    station: TimelineKeyframeStation;
+}
+
+/** Finish the brief appearance morph at the authored anchor, leaving its edit frame sharp. */
+export const TIMELINE_STATION_MORPH_SECONDS = 0.24;
+
 export interface VideoTimelineFrame {
     visibleNodes: Set<NodeId>;
     visibleEdges: Set<LineId>;
@@ -27,6 +41,9 @@ export interface VideoTimelineFrame {
     edgeProgress: Map<LineId, number>;
     edgeDirections: Map<LineId, boolean>;
     positions: Map<NodeId, Position>;
+    stationOverrides: Map<StnId, TimelineKeyframeStation>;
+    stationBlur: Map<StnId, number>;
+    stationTransitions: Map<StnId, { from?: TimelineKeyframeStation; to: TimelineKeyframeStation }>;
     disabledNodeAnimations: Set<NodeId>;
     focus: VideoCameraFocus;
 }
@@ -41,6 +58,7 @@ export const createVideoTimelinePlayback = (
 ) => {
     const clips: PlaybackClip[] = [];
     const positions = new Map<NodeId, PositionKeyframe[]>();
+    const stationKeyframes = new Map<StnId, StationKeyframe[]>();
     const entries: { entry: TimelineEntry; trackIndex: number }[] = [];
     timeline.track.forEach((entry, trackIndex) => {
         if (entry.kind === 'pause') {
@@ -89,6 +107,14 @@ export const createVideoTimelinePlayback = (
             if (anchors[anchors.length - 1]?.time === duration) anchors[anchors.length - 1] = anchor;
             else anchors.push(anchor);
             positions.set(entry.refId, anchors);
+            if (entry.station && entry.refId.startsWith('stn_')) {
+                const id = entry.refId as StnId;
+                const frames = stationKeyframes.get(id) ?? [];
+                const frame = { time: duration, station: structuredClone(entry.station) };
+                if (frames[frames.length - 1]?.time === duration) frames[frames.length - 1] = frame;
+                else frames.push(frame);
+                stationKeyframes.set(id, frames);
+            }
             continue;
         }
         let seconds = entry.showAnimation
@@ -198,6 +224,9 @@ export const createVideoTimelinePlayback = (
             edgeProgress: new Map(),
             edgeDirections: new Map(directions),
             positions: new Map(),
+            stationOverrides: new Map(),
+            stationBlur: new Map(),
+            stationTransitions: new Map(),
             disabledNodeAnimations: new Set(),
             focus: { kind: 'none' },
         };
@@ -231,6 +260,35 @@ export const createVideoTimelinePlayback = (
         }
 
         positions.forEach((_anchors, nodeId) => state.positions.set(nodeId, positionAt(nodeId, time)));
+        stationKeyframes.forEach((anchors, id) => {
+            const queryTime = Number.isNaN(time) ? Infinity : time;
+            let low = 0,
+                high = anchors.length;
+            while (low < high) {
+                const middle = (low + high) >>> 1;
+                if (anchors[middle].time <= queryTime) low = middle + 1;
+                else high = middle;
+            }
+            const previous = anchors[low - 1];
+            const next = anchors[low];
+            let station = previous?.station;
+            if (next) {
+                const start = Math.max(previous?.time ?? 0, next.time - TIMELINE_STATION_MORPH_SECONDS);
+                if (queryTime > start && next.time > start) {
+                    const progress = (queryTime - start) / (next.time - start);
+                    if (!previous || JSON.stringify(previous.station) !== JSON.stringify(next.station)) {
+                        // Change the component at peak blur, then sharpen to its exact authored state.
+                        if (progress >= 0.5) station = next.station;
+                        state.stationBlur.set(id, Math.sin(Math.PI * progress) * 2.5);
+                        state.stationTransitions.set(
+                            id,
+                            structuredClone({ from: previous?.station, to: next.station })
+                        );
+                    }
+                }
+            }
+            if (station) state.stationOverrides.set(id, structuredClone(station));
+        });
 
         return state;
     };

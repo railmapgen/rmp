@@ -4,6 +4,7 @@ import { StationAttributes, StationType } from '../../../constants/stations';
 import { useRootDispatch, useRootSelector } from '../../../redux';
 import { saveGraph } from '../../../redux/param/param-slice';
 import { setRefreshNodes } from '../../../redux/runtime/runtime-slice';
+import { StationAttrsContext } from './station-attrs-context';
 
 const DEFAULT_ROTATE_OPTIONS = {
     0: '0',
@@ -32,24 +33,28 @@ interface RotateFieldProps<T extends RotatableStationAttributes> {
 export const RotateField = <T extends RotatableStationAttributes>(props: RotateFieldProps<T>) => {
     const { type, defaultAttributes, getNextAttributes, rotateSelect } = props;
     const dispatch = useRootDispatch();
+    const context = React.useContext(StationAttrsContext);
+    const scopedAttrs = context?.type === type ? context : undefined;
     const { selected } = useRootSelector(state => state.runtime);
     const [selectedFirst] = selected;
     const mapEnabled = useRootSelector(state => state.param.present.mapEnabled);
     const graph = React.useRef(window.graph);
 
-    const attr: T =
-        selectedFirst &&
-        graph.current.hasNode(selectedFirst) &&
-        graph.current.getNodeAttribute(selectedFirst, 'type') === type
-            ? (graph.current.getNodeAttribute(selectedFirst, type)! as T)
-            : defaultAttributes;
+    const attr: T = scopedAttrs
+        ? (scopedAttrs.attrs as T)
+        : selectedFirst &&
+            graph.current.hasNode(selectedFirst) &&
+            graph.current.getNodeAttribute(selectedFirst, 'type') === type
+          ? (graph.current.getNodeAttribute(selectedFirst, type)! as T)
+          : defaultAttributes;
     const rotate = attr.rotate ?? 0;
 
     const updateGraph = (value: string | number) => {
         if (
-            !selectedFirst ||
-            !graph.current.hasNode(selectedFirst) ||
-            graph.current.getNodeAttribute(selectedFirst, 'type') !== type
+            !scopedAttrs &&
+            (!selectedFirst ||
+                !graph.current.hasNode(selectedFirst) ||
+                graph.current.getNodeAttribute(selectedFirst, 'type') !== type)
         ) {
             return false;
         }
@@ -59,20 +64,20 @@ export const RotateField = <T extends RotatableStationAttributes>(props: RotateF
         if (rotateSelect) {
             delete nextAttributes.preciseNameOffsets;
         }
-        graph.current.mergeNodeAttributes(selectedFirst, {
-            [type]: getNextAttributes?.(nextAttributes) ?? nextAttributes,
-        });
+        const next = getNextAttributes?.(nextAttributes) ?? nextAttributes;
+        if (scopedAttrs) scopedAttrs.onChange(next);
+        else graph.current.mergeNodeAttributes(selectedFirst, { [type]: next });
         return true;
     };
 
     const handlePreview = (value: number) => {
-        if (updateGraph(value)) {
+        if (updateGraph(value) && !scopedAttrs) {
             dispatch(setRefreshNodes());
         }
     };
 
     const handleCommit = (value: string | number) => {
-        if (updateGraph(value)) {
+        if (updateGraph(value) && !scopedAttrs) {
             dispatch(saveGraph(graph.current.export()));
             dispatch(setRefreshNodes());
         }
