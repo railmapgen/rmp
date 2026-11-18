@@ -50,7 +50,7 @@ describe('TimelineOnboardingModal', () => {
         expect(within(dialog).getByText('Step 1 of 2')).toBeInTheDocument();
         expect(
             within(dialog).getByAltText(
-                'Three-step illustration: select a starting station, choose a line color, then select the destination station to add the route to the timeline'
+                'Three-step illustration: select a starting station, choose a line colour, then select the destination station to add the route to the timeline'
             )
         ).toHaveAttribute('src', expect.stringContaining('images/timeline-tutorial/add-line.webp'));
 
@@ -68,7 +68,7 @@ describe('TimelineOnboardingModal', () => {
         const firstRender = renderModal('first-project');
         const dialog = await screen.findByRole('dialog', { name: /Rail Map Chronicle quick start/ });
 
-        fireEvent.click(within(dialog).getByRole('checkbox', { name: "Don't show me again" }));
+        fireEvent.click(within(dialog).getByRole('checkbox', { name: "Don't show again" }));
         fireEvent.click(within(dialog).getByRole('button', { name: 'Next' }));
         fireEvent.click(within(dialog).getByRole('button', { name: 'Got it' }));
 
