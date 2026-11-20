@@ -390,6 +390,32 @@
                     "osiPositionLeft": "왼쪽",
                     "osiPositionRight": "오른쪽"
                 },
+                "gzmtrPaidAreaIntPair": {
+                    "displayName": "광저우 지하철 유료환승 페어 역",
+                    "layout": "레이아웃",
+                    "station1": "역 1",
+                    "station2": "역 2",
+                    "dx": "역 2 의 X 오프셋 (px)",
+                    "dy": "역 2 의 Y 오프셋 (px)",
+                    "anchorPosition": "앵커 위치",
+                    "anchorPositionCenter": "페어의 중앙",
+                    "anchorPositionStation1": "역 1",
+                    "anchorPositionStation2": "역 2",
+                    "open": "개통여부",
+                    "secondaryNameZh": "한자 제2명칭",
+                    "secondaryNameEn": "영문 제2명칭",
+                    "columns": "뱃지 열 수",
+                    "direction": "접속 방향",
+                    "directionVertical": "수직",
+                    "directionHorizontal": "수평",
+                    "attachPosition": "연결 위치",
+                    "attachPositionTopLeft": "좌상단",
+                    "attachPositionBottomLeft": "좌하단",
+                    "attachPositionTopRight": "우상단",
+                    "attachPositionBottomRight": "우하단",
+                    "anchorAt": "앵커 뱃지",
+                    "anchorAtCenter": "개별 역 중심"
+                },
                 "bjsubwayBasic": {
                     "displayName": "베이징 지하철 기본역",
                     "open": "개통여부",
@@ -1023,10 +1049,10 @@
                 "done": "완료",
                 "cameraZoom": "확대 배율",
                 "cameraZoomFull": "전체 (Full)",
-                    "lineInformationHint": "주석에 표시할 노선 이름, 색상, 날짜를 변경합니다.",
-                    "editPositionsHint": "미리보기에서 주석 모듈을 추가하고 배치 및 설정합니다.",
-                    "chooseFixedResources": "고정 리소스 선택",
-                    "fixedResourcesHint": "선택한 노드와 노선 구간을 첫 프레임부터 계속 표시합니다."
+                "lineInformationHint": "주석에 표시할 노선 이름, 색상, 날짜를 변경합니다.",
+                "editPositionsHint": "미리보기에서 주석 모듈을 추가하고 배치 및 설정합니다.",
+                "chooseFixedResources": "고정 리소스 선택",
+                "fixedResourcesHint": "선택한 노드와 노선 구간을 첫 프레임부터 계속 표시합니다."
             },
             "lineLabels": {
                 "title": "노선 표시 정보",

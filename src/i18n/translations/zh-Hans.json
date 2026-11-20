@@ -389,6 +389,32 @@
                     "osiPositionLeft": "左侧",
                     "osiPositionRight": "右侧"
                 },
+                "gzmtrPaidAreaIntPair": {
+                    "displayName": "广州地铁付费区换乘成对车站",
+                    "layout": "布局",
+                    "station1": "车站 1",
+                    "station2": "车站 2",
+                    "dx": "车站 2 的 X 偏移（px）",
+                    "dy": "车站 2 的 Y 偏移（px）",
+                    "anchorPosition": "锚点位置",
+                    "anchorPositionCenter": "成对中心",
+                    "anchorPositionStation1": "车站 1",
+                    "anchorPositionStation2": "车站 2",
+                    "open": "开通",
+                    "secondaryNameZh": "中文第二名称",
+                    "secondaryNameEn": "英文第二名称",
+                    "columns": "徽章列数",
+                    "direction": "接入方向",
+                    "directionVertical": "竖直",
+                    "directionHorizontal": "水平",
+                    "attachPosition": "接入位置",
+                    "attachPositionTopLeft": "左上",
+                    "attachPositionBottomLeft": "左下",
+                    "attachPositionTopRight": "右上",
+                    "attachPositionBottomRight": "右下",
+                    "anchorAt": "锚点徽章",
+                    "anchorAtCenter": "子车站中心"
+                },
                 "bjsubwayBasic": {
                     "displayName": "北京地铁基本车站",
                     "open": "开通",
@@ -1021,10 +1047,10 @@
                 "done": "完成",
                 "cameraZoom": "放大倍率",
                 "cameraZoomFull": "全屏（Full）",
-                    "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
-                    "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
-                    "chooseFixedResources": "选择固定资源",
-                    "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
+                "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
+                "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
+                "chooseFixedResources": "选择固定资源",
+                "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
             },
             "lineLabels": {
                 "title": "线路标签信息",

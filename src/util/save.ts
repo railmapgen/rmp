@@ -56,7 +56,7 @@ export interface RMPSave extends ProjectSnapshot {
     images?: { id: string; base64: string }[];
 }
 
-export const CURRENT_VERSION = 81;
+export const CURRENT_VERSION = 82;
 
 /**
  * Temporary load-time repair for legacy saves where node `x`/`y` may be serialized as `null`.
@@ -1104,4 +1104,7 @@ export const UPGRADE_COLLECTION: { [version: number]: (param: string) => string 
         });
         return JSON.stringify({ ...save, version: 81, graph: graph.export() });
     },
+    81: param =>
+        // Bump save version to support Guangzhou Metro paid-area interchange pair stations.
+        JSON.stringify({ ...JSON.parse(param), version: 82 }),
 };
