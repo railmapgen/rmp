@@ -37,6 +37,12 @@ const INNER_CUT = ICON_STROKE_WIDTH * 2.6; // 3.38
 const PILL_RADIUS = HALF_PILL_H; // 9.25
 
 const HALF_WIDTH = BORDER_WIDTH / 2; // 4.55
+/** Both corridor channels are a hair heavier than the station's own border/cut. */
+const CORRIDOR_WALL_WIDTH = 10;
+const CORRIDOR_CHANNEL_WIDTH = 4.2;
+/** Extents of the square-corner border band, measured from the pill's arc centre. */
+const SQUARE_CORNER_INNER = PILL_RADIUS - HALF_WIDTH; // 4.7
+const SQUARE_CORNER_OUTER = PILL_RADIUS + HALF_WIDTH; // 13.8
 /**
  * Half of the white gap inside the border. Everything within this distance of the
  * outline is already white, so the corridor channel may be covered there.
@@ -158,10 +164,19 @@ function getBadgeTranslate(index: number, columns: number, count: number, topHea
 }
 
 /**
- * Vertical access is pulled this far into the station so the corridor wall overlaps the
- * outline instead of merely touching it, which would leave an antialiasing seam.
+ * Vertical access shifts the corridor endpoint this far toward the station's outside:
+ * upward for top corners, downward for bottom corners.
  */
-const VERTICAL_ANCHOR_INSET = 0.5;
+const VERTICAL_ACCESS_OUTSET = 2;
+
+/**
+ * Vertical access also pulls the corridor wall this far into the station so it
+ * overlaps the outline instead of merely touching it, which would leave an
+ * antialiasing seam along the side the corridor leaves from.
+ */
+const VERTICAL_ACCESS_INSET = 0.5;
+/** Horizontal access pulls the endpoint toward the station centre along y by this much. */
+const HORIZONTAL_ACCESS_INSET = 0.5;
 
 /**
  * Point where the corridor meets a station. `alongEdge` shifts the channel along the
@@ -177,8 +192,77 @@ function getAnchorPoint(
 ): Vec {
     const [cx, cy] = centre;
     return direction === 'vertical'
-        ? [cx + (side === 'left' ? -1 : 1) * (halfW - VERTICAL_ANCHOR_INSET), cy + alongEdge]
-        : [cx + alongEdge, cy + (side === 'top' ? -1 : 1) * halfH];
+        ? [cx + (side === 'left' ? -1 : 1) * (halfW - VERTICAL_ACCESS_INSET), cy + alongEdge]
+        : [cx + alongEdge, cy + (side === 'top' ? -1 : 1) * (halfH - HORIZONTAL_ACCESS_INSET)];
+}
+
+/**
+ * Grey L-shaped band that turns the station outline's rounded attach corner into a
+ * square one. It only fills the corner between the pill's arc centre and the outer
+ * bounding box, leaving the interior (and therefore every badge) untouched.
+ */
+function squareCornerPath(centre: Vec, halfW: number, halfH: number, position: PairAttachPosition): string {
+    const sx = isLeftCorner(position) ? -1 : 1;
+    const sy = isTopCorner(position) ? -1 : 1;
+    const cx = centre[0] + sx * (halfW - PILL_RADIUS);
+    const cy = centre[1] + sy * (halfH - PILL_RADIUS);
+    const pt = (ax: number, ay: number) => `${cx + sx * ax},${cy + sy * ay}`;
+    return [
+        `M${pt(0, SQUARE_CORNER_INNER)}`,
+        `L${pt(SQUARE_CORNER_INNER, SQUARE_CORNER_INNER)}`,
+        `L${pt(SQUARE_CORNER_INNER, 0)}`,
+        `L${pt(SQUARE_CORNER_OUTER, 0)}`,
+        `L${pt(SQUARE_CORNER_OUTER, SQUARE_CORNER_OUTER)}`,
+        `L${pt(0, SQUARE_CORNER_OUTER)}`,
+        'Z',
+    ].join(' ');
+}
+
+/** White backing patch that squares its corner where the corridor attaches. */
+function whiteFillSquareCorner(halfW: number, halfH: number, position: PairAttachPosition) {
+    const sx = isLeftCorner(position) ? -1 : 1;
+    const sy = isTopCorner(position) ? -1 : 1;
+    const r = PILL_RADIUS + CORE_MARGIN;
+    const ax = sx * (halfW - PILL_RADIUS);
+    const ay = sy * (halfH - PILL_RADIUS);
+    return { x: sx < 0 ? ax - r : ax, y: sy < 0 ? ay - r : ay, width: r, height: r };
+}
+
+/**
+ * The 2024 outline is a union of individual pills, not one regular rounded rectangle,
+ * and the short row can be centred differently. Clip the white backing to that exact
+ * union (each pill expanded by the inner white cut) so it never spills past the grey
+ * border in any badge arrangement.
+ */
+function whiteFillClipShapes(
+    transfer: InterchangeInfo[],
+    columns: number,
+    topHeavy: boolean,
+    halfW: number,
+    halfH: number,
+    position: PairAttachPosition
+) {
+    const count = transfer.length;
+    const pillW = HALF_PILL_W + CORE_MARGIN;
+    const pillH = HALF_PILL_H + CORE_MARGIN;
+    return (
+        <>
+            {transfer.map((_, i) => {
+                const [bx, by] = getBadgeTranslate(i, columns, count, topHeavy);
+                return (
+                    <rect
+                        key={i}
+                        x={bx - pillW}
+                        y={by - pillH}
+                        width={pillW * 2}
+                        height={pillH * 2}
+                        rx={PILL_RADIUS + CORE_MARGIN}
+                    />
+                );
+            })}
+            <rect {...whiteFillSquareCorner(halfW, halfH, position)} />
+        </>
+    );
 }
 
 /**
@@ -442,11 +526,11 @@ const GzmtrPaidAreaIntPairStation = (props: StationComponentProps) => {
               : 'bottom';
     const alongEdge1 =
         dir1 === 'vertical'
-            ? (isTopCorner(attachPosition1) ? -1 : 1) * (hh1 - HALF_PILL_H)
+            ? (isTopCorner(attachPosition1) ? -1 : 1) * (hh1 - HALF_PILL_H + VERTICAL_ACCESS_OUTSET)
             : (isLeftCorner(attachPosition1) ? -1 : 1) * (hw1 - HALF_PILL_W);
     const alongEdge2 =
         dir2 === 'vertical'
-            ? (isTopCorner(attachPosition2) ? -1 : 1) * (hh2 - HALF_PILL_H)
+            ? (isTopCorner(attachPosition2) ? -1 : 1) * (hh2 - HALF_PILL_H + VERTICAL_ACCESS_OUTSET)
             : (isLeftCorner(attachPosition2) ? -1 : 1) * (hw2 - HALF_PILL_W);
 
     const p1 = getAnchorPoint(stn1, hw1, hh1, side1, dir1, alongEdge1);
@@ -460,6 +544,8 @@ const GzmtrPaidAreaIntPairStation = (props: StationComponentProps) => {
 
     const clip1 = `gzmtr-pair-clip-1-${id}`;
     const clip2 = `gzmtr-pair-clip-2-${id}`;
+    const whiteClip1 = `gzmtr-pair-white-clip-1-${id}`;
+    const whiteClip2 = `gzmtr-pair-white-clip-2-${id}`;
 
     // Anchor the node to the configured point so line endpoints and snapping land there.
     // When a badge is chosen, the anchor sits on that badge's centre instead of the
@@ -522,15 +608,48 @@ const GzmtrPaidAreaIntPairStation = (props: StationComponentProps) => {
                             rx={PILL_RADIUS + CORE_MARGIN}
                         />
                     </clipPath>
+                    <clipPath id={whiteClip1}>
+                        {whiteFillClipShapes(transfer1, columns1, topHeavy1, hw1, hh1, attachPosition1)}
+                    </clipPath>
+                    <clipPath id={whiteClip2}>
+                        {whiteFillClipShapes(transfer2, columns2, topHeavy2, hw2, hh2, attachPosition2)}
+                    </clipPath>
                 </defs>
 
                 <g transform={`scale(${SCALE})`}>
+                    {/* White backing sits below everything, so no gap between a badge and its
+                        outline ever shows the map through it. */}
+                    <g transform={`translate(${stn1[0]}, ${stn1[1]})`}>
+                        <rect
+                            className="gzmtr-pair-white-fill"
+                            clipPath={`url(#${whiteClip1})`}
+                            x={-hw1 - CORE_MARGIN}
+                            y={-hh1 - CORE_MARGIN}
+                            width={(hw1 + CORE_MARGIN) * 2}
+                            height={(hh1 + CORE_MARGIN) * 2}
+                            rx={PILL_RADIUS + CORE_MARGIN}
+                            fill="#fff"
+                        />
+                    </g>
+                    <g transform={`translate(${stn2[0]}, ${stn2[1]})`}>
+                        <rect
+                            className="gzmtr-pair-white-fill"
+                            clipPath={`url(#${whiteClip2})`}
+                            x={-hw2 - CORE_MARGIN}
+                            y={-hh2 - CORE_MARGIN}
+                            width={(hw2 + CORE_MARGIN) * 2}
+                            height={(hh2 + CORE_MARGIN) * 2}
+                            rx={PILL_RADIUS + CORE_MARGIN}
+                            fill="#fff"
+                        />
+                    </g>
+
                     {/* Corridor walls, below the stations so the outline keeps its own rounded corners. */}
                     <path
                         d={tubePath}
                         fill="none"
                         stroke="#aaa"
-                        strokeWidth={BORDER_WIDTH}
+                        strokeWidth={CORRIDOR_WALL_WIDTH}
                         strokeLinecap="butt"
                         strokeLinejoin="round"
                     />
@@ -538,17 +657,48 @@ const GzmtrPaidAreaIntPairStation = (props: StationComponentProps) => {
                     <g transform={`translate(${stn1[0]}, ${stn1[1]})`}>{stationIcon(transfer1, columns1, topHeavy1)}</g>
                     <g transform={`translate(${stn2[0]}, ${stn2[1]})`}>{stationIcon(transfer2, columns2, topHeavy2)}</g>
 
+                    {/* Square off the outline at the corner each corridor attaches to. */}
+                    <path
+                        className="gzmtr-pair-square-corner"
+                        d={squareCornerPath(stn1, hw1, hh1, attachPosition1)}
+                        fill="#aaa"
+                    />
+                    <path
+                        className="gzmtr-pair-square-corner"
+                        d={squareCornerPath(stn2, hw2, hh2, attachPosition2)}
+                        fill="#aaa"
+                    />
+
                     {/* White channel: above the outline so it cuts the grey border open... */}
                     <path
                         d={tubePath}
                         fill="none"
                         stroke="#fff"
-                        strokeWidth={INNER_CUT}
+                        strokeWidth={CORRIDOR_CHANNEL_WIDTH}
                         strokeLinecap="butt"
                         strokeLinejoin="round"
                     />
 
-                    {/* ...but below everything inside the stations, so badges are never covered. */}
+                    {/* Cover the rounded white pill edge at the attach corner so the fill,
+                        not just the grey outline, turns a square corner there. */}
+                    <g transform={`translate(${stn1[0]}, ${stn1[1]})`}>
+                        <rect
+                            className="gzmtr-pair-white-fill-square"
+                            clipPath={`url(#${whiteClip1})`}
+                            {...whiteFillSquareCorner(hw1, hh1, attachPosition1)}
+                            fill="#fff"
+                        />
+                    </g>
+                    <g transform={`translate(${stn2[0]}, ${stn2[1]})`}>
+                        <rect
+                            className="gzmtr-pair-white-fill-square"
+                            clipPath={`url(#${whiteClip2})`}
+                            {...whiteFillSquareCorner(hw2, hh2, attachPosition2)}
+                            fill="#fff"
+                        />
+                    </g>
+
+                    {/* ...and the clipped stations, with their badges, sit above the fill. */}
                     {stationRedraw(transfer1, columns1, topHeavy1, clip1)}
                     <g transform={`translate(${stn2[0]}, ${stn2[1]})`}>
                         {stationRedraw(transfer2, columns2, topHeavy2, clip2)}
