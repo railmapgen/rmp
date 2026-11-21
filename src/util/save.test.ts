@@ -1190,7 +1190,7 @@ describe('Unit tests for param upgrade function', () => {
         });
     });
 
-    it('converts legacy Taipei tram badges from version 80 to light rail badges in version 81', async () => {
+    it('converts legacy Taipei tram badges from version 80 and upgrades to the current version', async () => {
         const graph = new MultiDirectedGraph();
         const common = { visible: false, zIndex: 3, x: 120, y: 80 };
         const color = ['taipei', 'custom', '#123456', '#fff'];
@@ -1226,7 +1226,7 @@ describe('Unit tests for param upgrade function', () => {
         const upgraded = JSON.parse(upgradedString);
         expect(upgraded).toEqual({
             ...oldSave,
-            version: 81,
+            version: CURRENT_VERSION,
             graph: {
                 ...originalGraph,
                 nodes: [
@@ -1241,6 +1241,24 @@ describe('Unit tests for param upgrade function', () => {
                 ],
             },
         });
+        expect(await upgrade(upgradedString)).toBe(upgradedString);
+    });
+
+    it('upgrades version 81 saves to version 82 without changing their content', async () => {
+        const oldSave = {
+            graph: {
+                options: { type: 'directed', multi: true, allowSelfLoops: true },
+                attributes: {},
+                nodes: [],
+                edges: [],
+            },
+            svgViewBoxZoom: 100,
+            svgViewBoxMin: { x: 0, y: 0 },
+            version: 81,
+        };
+
+        const upgradedString = await upgrade(JSON.stringify(oldSave));
+        expect(JSON.parse(upgradedString)).toEqual({ ...oldSave, version: 82 });
         expect(await upgrade(upgradedString)).toBe(upgradedString);
     });
 });
