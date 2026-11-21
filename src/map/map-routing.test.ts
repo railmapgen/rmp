@@ -44,4 +44,31 @@ describe('map regional routing', () => {
         expect(sourceForTile(MAP_ROUTING, 8, 214, 104)?.id).toBe('china');
         expect(sourceForTile(MAP_ROUTING, 8, 227, 100)?.id).toBe('japan');
     });
+
+    it.each([
+        [215, 103], // Sea next to China.
+        [228, 102], // Sea next to Japan.
+        [0, 128], // Open Pacific at the antimeridian.
+    ])('routes Ocean cell %i/%i and its z13 corners to the canonical origin', (x, y) => {
+        const ocean = { id: 'ocean', ownerId: 5, origin: 'https://ocean.tiles.railmapgen.org' };
+        expect(sourceForTile(MAP_ROUTING, 8, x, y)).toEqual(ocean);
+        for (const dx of [0, 31]) {
+            for (const dy of [0, 31]) {
+                expect(sourceForTile(MAP_ROUTING, 13, x * 32 + dx, y * 32 + dy)).toEqual(ocean);
+            }
+        }
+    });
+
+    it.each([
+        [216, 98],
+        [216, 99],
+        [216, 102],
+        [205, 116],
+        [230, 91],
+        [220, 100],
+        [218, 102],
+    ])('leaves undefined coastal cell %i/%i unowned instead of claiming it for Ocean', (x, y) => {
+        expect(sourceForTile(MAP_ROUTING, 8, x, y)).toBeUndefined();
+        expect(sourceForTile(MAP_ROUTING, 13, x * 32, y * 32)).toBeUndefined();
+    });
 });
