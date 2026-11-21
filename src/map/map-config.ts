@@ -13,7 +13,7 @@ export const MAP_COMMON_ZOOM = 13;
  * reduces request count in dense areas while still allowing smaller bundles
  * around sparse dataset boundaries.
  */
-export const MAP_BUNDLE_SIDES = [8, 4, 2, 1] as const;
+export const MAP_BUNDLE_SIDES = [64, 32, 16, 8, 4, 2, 1] as const;
 
 /**
  * The editor origin expressed in the common Web Mercator pixel space.
