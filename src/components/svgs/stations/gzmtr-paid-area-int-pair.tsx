@@ -105,7 +105,7 @@ export interface GzmtrPaidAreaIntPairStationAttributes extends StationAttributes
 const defaultGzmtrPaidAreaIntPairStationAttributes: GzmtrPaidAreaIntPairStationAttributes = {
     ...defaultStationAttributes,
     names: ['淘金', 'Taojin'],
-    names2: ['建设六马路', 'Jianshe 6th Road'],
+    names2: ['建设六马路', 'Jianshe 6ᵗʰ Road'],
     nameOffsetX: 'right',
     nameOffsetY: 'middle',
     nameOffsetX2: 'right',

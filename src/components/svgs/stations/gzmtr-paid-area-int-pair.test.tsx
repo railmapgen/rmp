@@ -131,7 +131,7 @@ describe('GzmtrPaidAreaIntPairStation', () => {
         expect(container.getElementsByTagName('clipPath')).toHaveLength(4);
         expect(getCorridor(container)).toBeInTheDocument();
         expect(getTexts(container)).toEqual(
-            expect.arrayContaining(['淘金', 'Taojin', '建设六马路', 'Jianshe 6th Road'])
+            expect.arrayContaining(['淘金', 'Taojin', '建设六马路', 'Jianshe 6ᵗʰ Road'])
         );
     });
 
