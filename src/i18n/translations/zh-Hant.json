@@ -727,6 +727,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "新加坡MRT聖淘沙捷運樣式"
                 },
+                "gzmtrDifferentNameTransfer": {
+                    "displayName": "廣州地鐵異名轉乘"
+                },
                 "mrtTapeOut": {
                     "displayName": "新加坡MRT出站換乘樣式"
                 },

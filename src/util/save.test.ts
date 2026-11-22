@@ -1226,7 +1226,7 @@ describe('Unit tests for param upgrade function', () => {
         const upgraded = JSON.parse(upgradedString);
         expect(upgraded).toEqual({
             ...oldSave,
-            version: 81,
+            version: CURRENT_VERSION,
             graph: {
                 ...originalGraph,
                 nodes: [

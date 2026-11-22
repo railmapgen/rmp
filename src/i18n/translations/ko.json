@@ -729,6 +729,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "싱가포르 MRT 센토사 익스프레스 스타일"
                 },
+                "gzmtrDifferentNameTransfer": {
+                    "displayName": "광저우 지하철 이명역 환승"
+                },
                 "mrtTapeOut": {
                     "displayName": "싱가포르 MRT 환승을 위한 탭 아웃 스타일"
                 },

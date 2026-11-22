@@ -730,6 +730,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "シンガポールMRTセントーサ・エクスプレス風格"
                 },
+                "gzmtrDifferentNameTransfer": {
+                    "displayName": "広州地下鉄の異名駅乗換"
+                },
                 "mrtTapeOut": {
                     "displayName": "シンガポールMRT改札外乗り換え風格"
                 },

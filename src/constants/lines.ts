@@ -92,6 +92,7 @@ export enum LineStyleType {
     MRTUnderConstruction = 'mrt-under-constr',
     MRTSentosaExpress = 'mrt-sentosa-express',
     MRTTapeOut = 'mrt-tape-out',
+    GzmtrDifferentNameTransfer = 'gzmtr-different-name-transfer',
     JREastSingleColor = 'jr-east-single-color',
     JREastSingleColorPattern = 'jr-east-single-color-pattern',
     LRTSingleColor = 'lrt-single-color',
@@ -137,6 +138,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
     [LineStyleType.MRTTapeOut]?: MRTTapeOutAttributes;
+    [LineStyleType.GzmtrDifferentNameTransfer]?: LineStyleAttributes;
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
     [LineStyleType.LRTSingleColor]?: LRTSingleColorAttributes;
