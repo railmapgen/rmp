@@ -28,11 +28,7 @@ describe('freeform line path registration', () => {
         expect(linePaths[LinePathType.Freeform].overlayComponent).toBeDefined();
         expect(linePaths[LinePathType.Freeform].drawingBehavior).toBeDefined();
 
-        const unsupportedStyles = new Set([
-            LineStyleType.Unknown,
-            LineStyleType.MRTTapeOut,
-            LineStyleType.GzmtrDifferentNameTransfer,
-        ]);
+        const unsupportedStyles = new Set([LineStyleType.Unknown, LineStyleType.MRTTapeOut]);
         Object.entries(lineStyles)
             .filter(([style]) => !unsupportedStyles.has(style as LineStyleType))
             .forEach(([, lineStyle]) => {

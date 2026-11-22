@@ -213,7 +213,15 @@ const gzmtrDifferentNameTransfer: LineStyle<LineStyleAttributes> = {
     attrsComponent: () => null,
     metadata: {
         displayName: 'panel.details.lines.gzmtrDifferentNameTransfer.displayName',
-        supportLinePathType: [LinePathType.Simple, LinePathType.Perpendicular, LinePathType.Bezier],
+        supportLinePathType: [
+            LinePathType.Diagonal,
+            LinePathType.Perpendicular,
+            LinePathType.RotatePerpendicular,
+            LinePathType.RayGuided,
+            LinePathType.Simple,
+            LinePathType.Bezier,
+            LinePathType.Freeform,
+        ],
         supportsReconcile: false,
     },
 };

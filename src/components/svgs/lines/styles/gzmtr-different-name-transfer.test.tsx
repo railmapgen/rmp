@@ -4,10 +4,12 @@ import { describe, expect, it } from 'vitest';
 import type { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
 import { StationType } from '../../../../constants/stations';
+import { canUseLineCombination } from '../../../../util/line-path-availability';
 import { getLines, getNodes } from '../../../../util/process-elements';
 import SvgLayer from '../../../svg-layer';
 import { SvgRenderProvider } from '../../../svg-render-context';
 import gzmtrInt2024 from '../../stations/gzmtr-int-2024';
+import { linePaths } from '../lines';
 import { GZMTR_2024_SCALE, transferJunction } from './gzmtr-transfer-geometry';
 
 function drawing() {
@@ -51,6 +53,28 @@ function renderDrawing(graph: ReturnType<typeof drawing>) {
 }
 
 describe('Guangzhou transfer line style', () => {
+    it.each(Object.values(LinePathType))('follows the authored %s path and opens both capsule ends', type => {
+        expect(canUseLineCombination(type, LineStyleType.GzmtrDifferentNameTransfer, false, true)).toBe(true);
+        const graph = drawing();
+        graph.setNodeAttribute('stn_b', 'x', 85);
+        const [start, end] = linePaths[LinePathType.Freeform].defaultAttrs.points;
+        const attrs =
+            type === LinePathType.Freeform
+                ? { ...linePaths[type].defaultAttrs, points: [start, { id: 'bend', x: 0.45, y: 0.3 }, end] }
+                : linePaths[type].defaultAttrs;
+        graph.mergeEdgeAttributes('line_transfer', { type, [type]: attrs });
+        const doc = renderDrawing(graph);
+        const band = doc.getElementById('line_transfer')!;
+        const centerline = getLines(graph)[0].line!.path.d;
+        expect(band.querySelector('path[stroke="white"]')!.getAttribute('d')).toBe(centerline);
+        const mouths = doc.getElementById('line_transfer.post')!;
+        for (const end of ['stn_a', 'stn_b']) {
+            const mouth = mouths.querySelector(`[data-transfer-mouth="${end}"]`)!;
+            expect(mouth.querySelector('path[fill="#aaa"]')!.getAttribute('d')).toContain('Q');
+            expect(mouth.querySelector('path[fill="white"]')!.getAttribute('d')).toContain('Q');
+        }
+    });
+
     it('paints only the connected mouths at the line z-index and leaves the station hit targets available', () => {
         const graph = drawing();
         graph.setNodeAttribute('stn_b', 'zIndex', 1);
