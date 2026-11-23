@@ -23,6 +23,7 @@ import londonTubeTerminal from './styles/london-tube-terminal';
 import lrtSingleColor from './styles/lrt-single-color';
 import mrtSentosaExpress from './styles/mrt-sentosa-express';
 import mrtTapeOut from './styles/mrt-tape-out';
+import gzmtrDifferentNameTransfer from './styles/gzmtr-different-name-transfer';
 import mrtUnderConstruction from './styles/mrt-under-construction';
 import mtrLightRail from './styles/mtr-light-rail';
 import mtrPaidArea from './styles/mtr-paid-area';
@@ -64,6 +65,7 @@ export const lineStyles = {
     [LineStyleType.MRTUnderConstruction]: mrtUnderConstruction,
     [LineStyleType.MRTSentosaExpress]: mrtSentosaExpress,
     [LineStyleType.MRTTapeOut]: mrtTapeOut,
+    [LineStyleType.GzmtrDifferentNameTransfer]: gzmtrDifferentNameTransfer,
     [LineStyleType.JREastSingleColor]: jrEastSingleColor,
     [LineStyleType.JREastSingleColorPattern]: jrEastSingleColorPattern,
     [LineStyleType.LRTSingleColor]: lrtSingleColor,

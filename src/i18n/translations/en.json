@@ -728,6 +728,9 @@
                 "mrtSentosaExpress": {
                     "displayName": "Singapore MRT Sentosa Express style"
                 },
+                "gzmtrDifferentNameTransfer": {
+                    "displayName": "Guangzhou Metro different-name interchange"
+                },
                 "mrtTapeOut": {
                     "displayName": "Singapore MRT Tap Out to Transfer style"
                 },

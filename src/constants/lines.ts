@@ -79,6 +79,7 @@ export enum LineStyleType {
     ShmetroVirtualInt = 'shmetro-virtual-int',
     GzmtrVirtualInt = 'gzmtr-virtual-int',
     GZMTRLoop = 'gzmtr-loop',
+    GzmtrDifferentNameTransfer = 'gzmtr-different-name-transfer',
     ChinaRailway = 'china-railway',
     BjsubwaySingleColor = 'bjsubway-single-color',
     BjsubwayTram = 'bjsubway-tram',
@@ -137,6 +138,7 @@ export interface ExternalLineStyleAttributes {
     [LineStyleType.MRTUnderConstruction]?: MRTUnderConstructionAttributes;
     [LineStyleType.MRTSentosaExpress]?: MRTSentosaExpressAttributes;
     [LineStyleType.MRTTapeOut]?: MRTTapeOutAttributes;
+    [LineStyleType.GzmtrDifferentNameTransfer]?: LineStyleAttributes;
     [LineStyleType.JREastSingleColor]?: JREastSingleColorAttributes;
     [LineStyleType.JREastSingleColorPattern]?: JREastSingleColorPatternAttributes;
     [LineStyleType.LRTSingleColor]?: LRTSingleColorAttributes;
