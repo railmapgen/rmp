@@ -23,8 +23,7 @@ import {
 
 type Props = LineStyleComponentProps<LineStyleAttributes>;
 
-// A timeline can render an edge on its own while keeping both nodes in its graph.
-// Apply the ordinary band in SVGs that omit the corresponding station symbol.
+/** Restore the full band when a timeline keeps the station in its graph but omits its symbol from the SVG. */
 function absentStationRules(id: string) {
     const value = id.replace(/[^\w-]/gu, c => `\\${c.codePointAt(0)!.toString(16)} `);
     const svg = `svg:not(:has(g[id="${value}"]))`;
@@ -32,6 +31,7 @@ function absentStationRules(id: string) {
             ${svg} [data-transfer-mouth="${value}"] { display: none }`;
 }
 
+/** Locate the badges and out-of-station interchange marker relative to the station anchor for the contour calculation. */
 function stationJunction(path: Path, node: NodeAttributes) {
     const defaults = gzmtrInt2024.defaultAttrs;
     const {
@@ -71,6 +71,7 @@ function stationJunction(path: Path, node: NodeAttributes) {
     return transferJunction(path, badges, node, osi);
 }
 
+/** Collect junctions at visible Guangzhou 2024 stations attached to this edge. A drawing preview has no edge yet. */
 function resolveTransfer(graph: RenderGraph | undefined, id: LineId, path: Path) {
     const junctions: (ReturnType<typeof transferJunction> & { id: string; x: number; y: number })[] = [];
     if (!graph?.hasEdge(id)) return { path, junctions };
@@ -83,11 +84,11 @@ function resolveTransfer(graph: RenderGraph | undefined, id: LineId, path: Path)
     return { path, junctions };
 }
 
-// The main and post components share the same resolved path and contour calculation.
 const views = new WeakMap<
     Path,
     { graph?: RenderGraph; id: LineId; revision: unknown; view: ReturnType<typeof resolveTransfer> }
 >();
+/** Share contours between the band and its post component. A graph refresh can change the badges on the same path. */
 function transferView(graph: RenderGraph | undefined, id: LineId, path: Path, revision: unknown) {
     const cached = views.get(path);
     if (cached && cached.graph === graph && cached.id === id && cached.revision === revision) return cached.view;
@@ -96,9 +97,8 @@ function transferView(graph: RenderGraph | undefined, id: LineId, path: Path, re
     return view;
 }
 
-// RMP updates node positions imperatively during a drag. Resolve the moved edges once per frame,
-// so both paint layers and every selected transfer see the same parallel/auto-simple geometry.
 const dragFrames = new WeakMap<RenderGraph, { time: number; paths: Map<string, Path> }>();
+/** Resolve parallel and auto-simple paths once per drag frame for all transfer bands and their junctions. */
 function draggedPath(graph: RenderGraph, id: LineId, time: number) {
     let frame = dragFrames.get(graph);
     if (frame?.time !== time) {
@@ -113,6 +113,7 @@ function draggedPath(graph: RenderGraph, id: LineId, time: number) {
     return frame.paths.get(id);
 }
 
+/** Follow graph updates during an endpoint drag until the renderer supplies a new path. Previews use the input directly. */
 function useTransfer(id: LineId, input: Path, preview: boolean) {
     const context = useSvgRenderContext();
     const graph = preview ? undefined : context.graph;
@@ -140,6 +141,7 @@ function useTransfer(id: LineId, input: Path, preview: boolean) {
     return transferView(graph, id, drag?.input === input ? drag.path : input, context.graphRefresh);
 }
 
+/** End both strokes flush with the path and clip the band and its hit target where a station junction takes over. */
 function TransferBand({ id, path: input, newLine, handlePointerDown }: Props) {
     const scope = React.useId();
     const { path, junctions } = useTransfer(id, input, newLine);
@@ -147,7 +149,7 @@ function TransferBand({ id, path: input, newLine, handlePointerDown }: Props) {
     if (!band) return null;
     const clipped = junctions.length > 0;
     let body = (
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round" mask={clipped ? `url(#${scope})` : undefined}>
+        <g fill="none" strokeLinecap="butt" strokeLinejoin="round" mask={clipped ? `url(#${scope})` : undefined}>
             <path d={path.d} stroke="#aaa" strokeWidth={BAND_WIDTH} />
             <path d={path.d} stroke="white" strokeWidth={CHANNEL_WIDTH} />
         </g>
@@ -190,6 +192,7 @@ function TransferBand({ id, path: input, newLine, handlePointerDown }: Props) {
     );
 }
 
+/** Paint the grey and white junction contours over stations at the line's z-index while keeping stations clickable. */
 function TransferMouths({ id, path, newLine }: Props) {
     const { junctions } = useTransfer(id, path, newLine);
     return (

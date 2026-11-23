@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { EdgeAttributes, GraphAttributes, NodeAttributes } from '../../../../constants/constants';
 import { LinePathType, LineStyleType } from '../../../../constants/lines';
+import { MiscNodeType } from '../../../../constants/nodes';
 import { StationType } from '../../../../constants/stations';
 import { canUseLineCombination } from '../../../../util/line-path-availability';
 import { getLines, getNodes } from '../../../../util/process-elements';
@@ -112,6 +113,28 @@ describe('Guangzhou transfer line style', () => {
         expect(doc.getElementById('line_transfer.post')!.querySelector('path[fill="white"]')!.getAttribute('d')).toBe(
             inner
         );
+    });
+
+    it('joins both strokes flush at a shared virtual node', () => {
+        const graph = drawing();
+        const attrs = graph.getEdgeAttributes('line_transfer');
+        graph.dropEdge('line_transfer');
+        graph.addNode('misc_node_joint', { x: 0, y: 20, visible: true, zIndex: 0, type: MiscNodeType.Virtual });
+        graph.addDirectedEdgeWithKey('line_first', 'stn_a', 'misc_node_joint', attrs);
+        graph.addDirectedEdgeWithKey('line_second', 'misc_node_joint', 'stn_b', attrs);
+        const doc = renderDrawing(graph);
+        for (const [id, centerline] of [
+            ['line_first', 'M 0 0 L 0 20'],
+            ['line_second', 'M 0 20 L 0 50'],
+        ]) {
+            const band = doc.getElementById(id)!;
+            for (const stroke of ['#aaa', 'white']) {
+                const path = band.querySelector(`path[stroke="${stroke}"]`)!;
+                expect(path.getAttribute('d')).toBe(centerline);
+                expect(path.closest('[stroke-linecap]')?.getAttribute('stroke-linecap') ?? 'butt').toBe('butt');
+            }
+        }
+        expect(doc.querySelector('[data-transfer-mouth="misc_node_joint"]')).toBeNull();
     });
 
     it('keeps a plain band at other or hidden endpoints', () => {

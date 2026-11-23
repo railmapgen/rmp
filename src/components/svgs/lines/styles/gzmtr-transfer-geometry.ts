@@ -49,8 +49,8 @@ function distancesOnRow(points: Ring, y: number, range: number, closed = true) {
 
 function makeRibbon(path: Path) {
     if (!isOpenPath(path) || getOpenPathLength(path) < 1e-6) return;
-    // SVG paints the original centreline at a fixed width. Sample that same curve
-    // for the local distance field, including round joins and round caps.
+    // The visible band follows the original SVG curve. Sample its centreline here
+    // to measure distances near the station shell when building a junction.
     const points = [path.commands[0].to];
     for (const segment of getOpenPathPrimitives(path)) {
         if (segment.kind === 'line') {
