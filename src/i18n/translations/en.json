@@ -1022,10 +1022,10 @@
                 "done": "Done",
                 "cameraZoom": "Zoom",
                 "cameraZoomFull": "Full",
-                "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
-                "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
-                "chooseFixedResources": "Choose fixed resources",
-                "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
+                    "lineInformationHint": "Customize the line names, colors and dates shown in annotations.",
+                    "editPositionsHint": "Add, arrange and configure annotation modules in the preview.",
+                    "chooseFixedResources": "Choose fixed resources",
+                    "fixedResourcesHint": "Keep selected nodes and line sections visible from the first frame."
             },
             "lineLabels": {
                 "title": "Line label information",

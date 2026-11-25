@@ -1,5 +1,7 @@
 import { MAP_BUNDLE_SIDES } from './map-config';
 
+export type BundleFormat = 'RMPB1' | 'RMPB2';
+
 /** Parsed sparse coverage metadata used to reject unavailable tiles before any bundle request. */
 export interface AvailabilityIndex {
     zoom: number;
@@ -27,6 +29,7 @@ export interface BundleEntry {
 
 /** Bundle metadata retains the source bytes so entry spans remain valid without copying every tile. */
 export interface ParsedBundle {
+    format: BundleFormat;
     address: BundleAddress;
     bytes: Uint8Array;
     entries: Map<string, BundleEntry>;
@@ -104,19 +107,27 @@ export const hasAvailableTile = (index: AvailabilityIndex, x: number, y: number)
 export const parseBundle = (buffer: ArrayBuffer): ParsedBundle => {
     const bytes = new Uint8Array(buffer);
     if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RMPB') throw new Error('Invalid RMPB magic');
-    if (bytes[4] !== 1) throw new Error(`Unsupported RMPB version ${bytes[4]}`);
+    const version = bytes[4];
+    if (version !== 1 && version !== 2) throw new Error(`Unsupported RMPB version ${version}`);
+    // RMPB2 widens the tile count to uint32; directory entries and SVG payloads retain the RMPB1 layout.
+    const headerBytes = version === 1 ? 20 : 24;
+    if (bytes.length < headerBytes) throw new Error('Invalid RMPB header length');
+    if (version === 2 && bytes[7] !== 0) throw new Error('Invalid RMPB reserved bytes');
     const zoom = bytes[5];
     const side = bytes[6];
-    const tileCount = bytes[7];
-    if (!(MAP_BUNDLE_SIDES as readonly number[]).includes(side)) throw new Error(`Invalid RMPB side ${side}`);
-    if (tileCount < 1 || tileCount > 64 || tileCount > side * side) {
+    if (!(MAP_BUNDLE_SIDES as readonly number[]).includes(side) || (version === 1 && side > 8)) {
+        throw new Error(`Invalid RMPB side ${side}`);
+    }
+    const view = new DataView(buffer);
+    const tileCount = version === 1 ? bytes[7] : view.getUint32(8, true);
+    if (tileCount < 1 || tileCount > side * side) {
         throw new Error(`Invalid RMPB tile count ${tileCount}`);
     }
 
-    const view = new DataView(buffer);
-    const address = { zoom, side, x: view.getUint32(8, true), y: view.getUint32(12, true) };
-    const payloadOffset = view.getUint32(16, true);
-    const expectedPayloadOffset = 20 + tileCount * 12;
+    const addressOffset = version === 1 ? 8 : 12;
+    const address = { zoom, side, x: view.getUint32(addressOffset, true), y: view.getUint32(addressOffset + 4, true) };
+    const payloadOffset = view.getUint32(addressOffset + 8, true);
+    const expectedPayloadOffset = headerBytes + tileCount * 12;
     if (payloadOffset !== expectedPayloadOffset || payloadOffset > bytes.length) {
         throw new Error('Invalid RMPB payload offset');
     }
@@ -127,7 +138,7 @@ export const parseBundle = (buffer: ArrayBuffer): ParsedBundle => {
     let previousLocalX = -1;
     let previousLocalY = -1;
     for (let index = 0; index < tileCount; index += 1) {
-        const offset = 20 + index * 12;
+        const offset = headerBytes + index * 12;
         const localX = bytes[offset];
         const localY = bytes[offset + 1];
         if (localX >= side || localY >= side) throw new Error('Invalid RMPB local coordinate');
@@ -155,5 +166,5 @@ export const parseBundle = (buffer: ArrayBuffer): ParsedBundle => {
         previousLocalY = localY;
     }
     if (payloadOffset + expectedRelativeOffset !== bytes.length) throw new Error('RMPB has trailing bytes');
-    return { address, bytes, entries };
+    return { format: version === 1 ? 'RMPB1' : 'RMPB2', address, bytes, entries };
 };

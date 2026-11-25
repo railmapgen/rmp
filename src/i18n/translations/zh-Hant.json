@@ -1021,10 +1021,10 @@
                 "done": "完成",
                 "cameraZoom": "放大倍率",
                 "cameraZoomFull": "全螢幕（Full）",
-                "lineInformationHint": "修改畫面標註中使用的路線名稱、顏色和日期。",
-                "editPositionsHint": "在預覽區域新增、排列並設定畫面標註模組。",
-                "chooseFixedResources": "選擇固定資源",
-                "fixedResourcesHint": "讓選取的節點和路線區段從首幀起持續顯示。"
+                    "lineInformationHint": "修改畫面標註中使用的路線名稱、顏色和日期。",
+                    "editPositionsHint": "在預覽區域新增、排列並設定畫面標註模組。",
+                    "chooseFixedResources": "選擇固定資源",
+                    "fixedResourcesHint": "讓選取的節點和路線區段從首幀起持續顯示。"
             },
             "lineLabels": {
                 "title": "路線標籤資訊",

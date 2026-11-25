@@ -406,10 +406,11 @@ export async function readLocalMapPackage(
             'A v4 map needs exactly one level'
         );
         const level = object(manifest.levels[0]);
+        const { bundleFormat } = level;
         assert(
             level.name === 'zoomed' &&
                 level.zoom === MAP_COMMON_ZOOM &&
-                level.bundleFormat === 'RMPB1' &&
+                (bundleFormat === 'RMPB1' || bundleFormat === 'RMPB2') &&
                 level.bundleIndex === INDEX &&
                 level.bundleTemplate === TEMPLATE &&
                 level.availability === AVAILABILITY,
@@ -464,6 +465,7 @@ export async function readLocalMapPackage(
             assert(
                 finite(address.side) &&
                     (MAP_BUNDLE_SIDES as readonly number[]).includes(address.side) &&
+                    (bundleFormat === 'RMPB2' || address.side <= 8) &&
                     Number.isInteger(address.x) &&
                     Number.isInteger(address.y) &&
                     (address.x as number) >= 0 &&
@@ -474,6 +476,7 @@ export async function readLocalMapPackage(
             assert(!declared.has(path), 'Duplicate bundle index entry');
             declared.add(path);
             const bundle = parseBundle(toBuffer(await read(path)));
+            assert(bundle.format === bundleFormat, 'Bundle format does not match the manifest');
             assert(
                 bundle.address.zoom === MAP_COMMON_ZOOM &&
                     bundle.address.side === address.side &&

@@ -1024,10 +1024,10 @@
                 "done": "完了",
                 "cameraZoom": "ズーム",
                 "cameraZoomFull": "全体（Full）",
-                "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
-                "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
-                "chooseFixedResources": "固定リソースを選択",
-                "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
+                    "lineInformationHint": "注釈に表示する路線名、色、日付を変更します。",
+                    "editPositionsHint": "プレビューで注釈モジュールを追加、配置、設定します。",
+                    "chooseFixedResources": "固定リソースを選択",
+                    "fixedResourcesHint": "選択したノードと路線区間を最初のフレームから常に表示します。"
             },
             "lineLabels": {
                 "title": "路線ラベル情報",

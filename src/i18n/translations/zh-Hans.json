@@ -1021,10 +1021,10 @@
                 "done": "完成",
                 "cameraZoom": "放大倍率",
                 "cameraZoomFull": "全屏（Full）",
-                "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
-                "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
-                "chooseFixedResources": "选择固定资源",
-                "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
+                    "lineInformationHint": "修改画面标注中使用的线路名称、颜色和日期。",
+                    "editPositionsHint": "在预览区域添加、排列并设置画面标注模块。",
+                    "chooseFixedResources": "选择固定资源",
+                    "fixedResourcesHint": "让选中的节点和线路区段从首帧起持续显示。"
             },
             "lineLabels": {
                 "title": "线路标签信息",

@@ -117,8 +117,7 @@ export const MapStyleSection = () => {
     const mapStyle = useRootSelector(state => state.param.present.mapStyle);
 
     /** Appearance controls are subscribed; label and railway visibility remain free. */
-    // const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
-    const isSubscriber = true;
+    const isSubscriber = useRootSelector(state => state.account.activeSubscriptions.RMP_CLOUD);
 
     const saveStyle = (style: MapStyle) => dispatch(setMapStyle(style));
 

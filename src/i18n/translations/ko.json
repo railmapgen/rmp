@@ -1023,10 +1023,10 @@
                 "done": "완료",
                 "cameraZoom": "확대 배율",
                 "cameraZoomFull": "전체 (Full)",
-                "lineInformationHint": "주석에 표시할 노선 이름, 색상, 날짜를 변경합니다.",
-                "editPositionsHint": "미리보기에서 주석 모듈을 추가하고 배치 및 설정합니다.",
-                "chooseFixedResources": "고정 리소스 선택",
-                "fixedResourcesHint": "선택한 노드와 노선 구간을 첫 프레임부터 계속 표시합니다."
+                    "lineInformationHint": "주석에 표시할 노선 이름, 색상, 날짜를 변경합니다.",
+                    "editPositionsHint": "미리보기에서 주석 모듈을 추가하고 배치 및 설정합니다.",
+                    "chooseFixedResources": "고정 리소스 선택",
+                    "fixedResourcesHint": "선택한 노드와 노선 구간을 첫 프레임부터 계속 표시합니다."
             },
             "lineLabels": {
                 "title": "노선 표시 정보",
