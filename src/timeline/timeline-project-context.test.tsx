@@ -1,6 +1,6 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MultiDirectedGraph } from 'graphology';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EdgeAttributes, GraphAttributes, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
@@ -25,10 +25,6 @@ const LanguageProbe = () => {
 };
 
 describe('TimelineProjectProvider fonts', () => {
-    beforeEach(() => {
-        vi.clearAllMocks();
-    });
-
     it('loads and exposes fonts required by the project graph', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         graph.addNode('stn_mtr', {
@@ -82,29 +78,5 @@ describe('TimelineProjectProvider fonts', () => {
             TextLanguage.tube,
             TextLanguage.taipei,
         ]);
-    });
-
-    it('invalidates timeline measurements when a later text edit loads another subset', async () => {
-        const original = Object.getOwnPropertyDescriptor(document, 'fonts');
-        const fontSet = Object.assign(new EventTarget(), { ready: Promise.resolve() });
-        Object.defineProperty(document, 'fonts', { configurable: true, value: fontSet });
-        const { unmount } = render(
-            <TimelineProjectProvider projectId="incremental-font-test" graph={new MultiDirectedGraph()} revision={1}>
-                <LanguageProbe />
-            </TimelineProjectProvider>
-        );
-        try {
-            await waitFor(() => expect(screen.getByTestId('font-revision').textContent).toBe('1'));
-            await act(async () => {
-                fontSet.dispatchEvent(new Event('loadingdone'));
-                fontSet.dispatchEvent(new Event('loadingdone'));
-            });
-            expect(screen.getByTestId('font-revision').textContent).toBe('2');
-            expect(loadFont).toHaveBeenCalledTimes(2);
-        } finally {
-            unmount();
-            if (original) Object.defineProperty(document, 'fonts', original);
-            else Reflect.deleteProperty(document, 'fonts');
-        }
     });
 });

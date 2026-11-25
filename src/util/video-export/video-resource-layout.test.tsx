@@ -155,7 +155,7 @@ describe('video resource layout preparation', () => {
         expect(markup).not.toMatch(/NaN|Infinity/);
     });
 
-    it('registers default and special fonts before mounting and measuring resources', async () => {
+    it('waits for fonts before mounting and measuring resources', async () => {
         const fonts = deferred();
         vi.mocked(waitForFonts).mockReturnValueOnce(fonts.promise);
         const layout = createLayout();
@@ -169,39 +169,10 @@ describe('video resource layout preparation', () => {
             TextLanguage.jreast_ja,
             TextLanguage.jreast_en,
         ]);
-        expect(document.body.children).toHaveLength(bodyChildren);
         expect(getBBox).not.toHaveBeenCalled();
         fonts.resolve();
         await preparation;
         expect(getBBox).toHaveBeenCalled();
-        expect(document.body.children).toHaveLength(bodyChildren);
-    });
-
-    it('waits for browser font downloads triggered by mounted text before delivering layout', async () => {
-        const download = deferred();
-        const ready = vi.fn(() => {
-            const host = document.querySelector('[data-video-layout]');
-            const content = host?.shadowRoot?.querySelector('[data-layout-content]');
-            expect(content?.isConnected).toBe(true);
-            expect(content?.textContent).toContain('東京𠮷');
-            return download.promise;
-        });
-        Object.defineProperty(fontSet, 'ready', { configurable: true, get: ready });
-        const layout = createLayout();
-        const graph = makeGraph('東京𠮷');
-        let delivered = false;
-        const preparation = layout.prepare(graph, getNodes(graph)).then(markup => {
-            delivered = true;
-            return markup;
-        });
-
-        await vi.waitFor(() => expect(ready).toHaveBeenCalled());
-        expect(delivered).toBe(false);
-        download.resolve();
-
-        const markup = await preparation;
-        expect(dimensions(markup, 'stn_jr')).toEqual({ width: 37, height: 11 });
-        expect(document.body.children).toHaveLength(bodyChildren);
     });
 
     it('measures system-font resources without requesting downloadable resource fonts', async () => {
@@ -441,23 +412,6 @@ describe('video resource layout preparation', () => {
         await Promise.resolve();
         expect(getBBox).not.toHaveBeenCalled();
         expect(document.body.children).toHaveLength(bodyChildren);
-        await expect(layout.prepare(graph, getNodes(graph))).rejects.toThrow();
-    });
-
-    it('disposes mounted resources while a browser font download remains pending', async () => {
-        const download = deferred();
-        const ready = vi.fn(() => download.promise);
-        Object.defineProperty(fontSet, 'ready', { configurable: true, get: ready });
-        const layout = createLayout();
-        const graph = makeGraph();
-        const preparation = layout.prepare(graph, getNodes(graph));
-        const rejection = expect(preparation).rejects.toThrow();
-        await vi.waitFor(() => expect(ready).toHaveBeenCalled());
-
-        layout.dispose();
-        await rejection;
-        await vi.waitFor(() => expect(document.body.children).toHaveLength(bodyChildren));
-        download.resolve();
         await expect(layout.prepare(graph, getNodes(graph))).rejects.toThrow();
     });
 });

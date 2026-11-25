@@ -47,7 +47,6 @@ describe('font preparation', () => {
     afterEach(() => {
         if (originalFonts) Object.defineProperty(document, 'fonts', originalFonts);
         else Reflect.deleteProperty(document, 'fonts');
-        vi.restoreAllMocks();
     });
 
     it('resolves bundled font files from the application base instead of the current route', async () => {
@@ -111,14 +110,14 @@ describe('font preparation', () => {
         expect(font.configs[0].font.load).not.toHaveBeenCalled();
     });
 
-    it('flushes mounted layout and waits for browser readiness without eagerly loading faces', async () => {
+    it('waits for browser font layout after registration', async () => {
         const browserReady = deferred();
-        Object.defineProperty(document.fonts, 'ready', { configurable: true, value: browserReady.promise });
-        const layout = vi.spyOn(document.body, 'getBoundingClientRect');
+        const getReady = vi.fn(() => browserReady.promise);
+        Object.defineProperty(document.fonts, 'ready', { configurable: true, get: getReady });
         const complete = vi.fn();
         const preparation = fonts.waitForFonts([TextLanguage.mrt, TextLanguage.mrt]).then(complete);
 
-        await vi.waitFor(() => expect(layout).toHaveBeenCalledOnce());
+        await vi.waitFor(() => expect(getReady).toHaveBeenCalledOnce());
         expect(loadedFonts.LTAIdentity.configs[0].font.load).not.toHaveBeenCalled();
         expect(complete).not.toHaveBeenCalled();
         browserReady.resolve();
@@ -127,18 +126,15 @@ describe('font preparation', () => {
         expect(runtime.loadFont).toHaveBeenCalledOnce();
     });
 
-    it('propagates registration failures', async () => {
+    it('propagates font registration and browser layout failures', async () => {
         runtime.loadFont.mockRejectedValueOnce(new Error('Font service unavailable'));
         await expect(fonts.waitForFonts([TextLanguage.mrt])).rejects.toThrow('Font service unavailable');
-    });
 
-    it('does not interpret browser readiness as success for every subset', async () => {
-        const font = makeFont();
-        Object.defineProperty(font.configs[0].font, 'status', { value: 'error' });
-        loadedFonts.LTAIdentity = font;
-
-        await expect(fonts.waitForFonts([TextLanguage.mrt])).resolves.toBeUndefined();
-        expect(font.configs[0].font.load).not.toHaveBeenCalled();
+        const browserReady = deferred();
+        Object.defineProperty(document.fonts, 'ready', { configurable: true, value: browserReady.promise });
+        const preparation = fonts.waitForFonts([]);
+        browserReady.reject(new Error('Browser font layout failed'));
+        await expect(preparation).rejects.toThrow('Browser font layout failed');
     });
 
     it('cancels only the caller waiting for shared registration', async () => {
@@ -179,9 +175,9 @@ describe('font preparation', () => {
         for (const font of Object.values(loadedFonts)) expect(font.configs[0].font.load).not.toHaveBeenCalled();
     });
 
-    it('waits for layout and embeds each family once without rewriting runtime CSS', async () => {
-        const browserReady = deferred();
-        Object.defineProperty(document.fonts, 'ready', { configurable: true, value: browserReady.promise });
+    it('registers and embeds each family once without rewriting runtime CSS', async () => {
+        const registration = deferred<ReturnType<typeof makeFont>>();
+        runtime.loadFont.mockReturnValueOnce(registration.promise);
         const css =
             '@font-face { src: url("data:font/woff2;base64,Zm9udA=="); unicode-range: U+0-FF; font-weight: 400; }';
         runtime.getFontCSS.mockResolvedValue(css);
@@ -189,24 +185,8 @@ describe('font preparation', () => {
 
         await vi.waitFor(() => expect(runtime.loadFont).toHaveBeenCalledOnce());
         expect(runtime.getFontCSS).not.toHaveBeenCalled();
-        browserReady.resolve();
+        registration.resolve(makeFont());
         expect((await preparation).textContent).toBe(css);
         expect(runtime.getFontCSS.mock.calls).toEqual([['M PLUS 2']]);
-    });
-
-    it('refreshes embedded CSS for later subsets while preserving unrelated styles', async () => {
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.innerHTML = '<style>.outline{fill:red}</style>';
-        runtime.getFontCSS
-            .mockResolvedValueOnce('@font-face { unicode-range: U+0-FF; }')
-            .mockResolvedValueOnce('@font-face { unicode-range: U+20000-207FF; }');
-
-        await fonts.updateEmbeddedFonts(svg, [TextLanguage.zh]);
-        await fonts.updateEmbeddedFonts(svg, [TextLanguage.zh]);
-        expect(svg.querySelectorAll('style[data-rmp-fonts]')).toHaveLength(1);
-        expect(svg.querySelector('style[data-rmp-fonts]')?.textContent).toContain('U+20000-207FF');
-        expect(svg.innerHTML).toContain('.outline{fill:red}');
-        expect(runtime.loadFont).toHaveBeenCalledTimes(2);
-        expect(runtime.getFontCSS).toHaveBeenCalledTimes(2);
     });
 });

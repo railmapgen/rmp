@@ -239,14 +239,10 @@ export const createVideoResourceLayout = (options: LayoutOptions = {}) => {
                         )
                     );
                     registry.seal();
-                    const content = shadow.querySelector<SVGGElement>('[data-layout-content]');
-                    if (!content) throw new Error('SVG layout root was not mounted');
-                    // The mounted text lets the browser request its Unicode subsets.
-                    // Wait before accepting measurements made with a fallback font.
-                    host.getBoundingClientRect();
-                    await waitForVideoExportOperation(Promise.resolve(document.fonts?.ready), signal);
                     await waitForVideoExportOperation(registry.ready, signal);
                     throwIfVideoExportAborted(signal);
+                    const content = shadow.querySelector<SVGGElement>('[data-layout-content]');
+                    if (!content) throw new Error('SVG layout root was not mounted');
                     validateGeometry(content);
                     const markup = content.innerHTML;
                     if (markup === previous) {

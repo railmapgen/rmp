@@ -225,12 +225,10 @@ export const loadFont = (lang: TextLanguage): Promise<void> => {
     return task;
 };
 
-/** Wait for registration and browser layout, which does not guarantee every subset loaded successfully. */
+/** Wait for font registration and browser layout without cancelling shared work. */
 export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSignal): Promise<void> => {
     signal?.throwIfAborted();
     const preparation = Promise.all([...new Set(languages)].map(loadFont)).then(async () => {
-        // Mounted text requests its Unicode subsets when layout is flushed.
-        document.body.getBoundingClientRect();
         await document.fonts?.ready;
     });
     if (!signal) return preparation;
@@ -256,9 +254,7 @@ export const waitForFonts = async (languages: TextLanguage[], signal?: AbortSign
 
 export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => {
     await Promise.allSettled([...new Set(languages)].map(loadFont));
-    await waitForFonts([]);
     const s = document.createElement('style');
-    s.dataset.rmpFonts = '';
 
     const families = new Set(languages.filter(lang => lang in FONTS).map(lang => FONTS[lang]!.name));
     const cssPromises = await Promise.allSettled([...families].map(family => rmgRuntime.getFontCSS(family)));
@@ -268,11 +264,4 @@ export const makeBase64EncodedFontsStyle = async (languages: TextLanguage[]) => 
     s.textContent += cssTexts.join('\n');
 
     return s;
-};
-
-/** Refresh embedded subsets after a video resource changes its text. */
-export const updateEmbeddedFonts = async (svg: SVGSVGElement, languages: TextLanguage[]): Promise<void> => {
-    const style = await makeBase64EncodedFontsStyle(languages);
-    svg.querySelectorAll('style[data-rmp-fonts]').forEach(existing => existing.remove());
-    svg.prepend(style);
 };

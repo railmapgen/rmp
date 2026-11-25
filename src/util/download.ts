@@ -28,23 +28,6 @@ export const downloadBlobAs = (filename: string, blob: Blob) => {
     window.URL.revokeObjectURL(url);
 };
 
-/** Let font-driven React measurements commit before freezing the live SVG. */
-const waitForFontLayout = async (canvas: SVGSVGElement) => {
-    if (!canvas.isConnected || typeof requestAnimationFrame !== 'function') return;
-    await new Promise<void>(resolve => {
-        const finish = () => {
-            clearTimeout(timer);
-            if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(frame);
-            resolve();
-        };
-        // Allow a paint cycle for React measurements, with a background-tab fallback.
-        const timer = setTimeout(finish, 100);
-        let frame = requestAnimationFrame(() => {
-            frame = requestAnimationFrame(finish);
-        });
-    });
-};
-
 /**
  * Clone the svg element and add fonts & missing external svg to it.
  * The returned svg should be opened and displayed correctly in any svg viewer.
@@ -68,36 +51,14 @@ export const makeRenderReadySVGElement = async (
     renderGraph?: (clone: SVGSVGElement) => void,
     sourceCanvas?: SVGSVGElement
 ) => {
-    const canvas = sourceCanvas ?? (document.getElementById('canvas') as SVGSVGElement | null);
-    if (!canvas) throw new Error('SVG canvas is not available for export');
-
-    // Font loading can resize text and the resources that measure it. Prepare
-    // fonts before reading bounds or freezing the editor DOM into an export.
-    let fontsStyle: HTMLStyleElement | undefined;
-    if (!isSystemFontsOnly && !renderGraph) {
-        try {
-            fontsStyle = await makeBase64EncodedFontsStyle(languages);
-            await waitForFontLayout(canvas);
-        } catch (err) {
-            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
-            logger.warn(err);
-        }
-    }
-
     // get the minimum and maximum of the graph
     const { xMin, yMin, xMax, yMax } = calculateCanvasSize(graph);
     const [width, height] = [xMax - xMin, yMax - yMin];
 
+    const canvas = sourceCanvas ?? document.getElementById('canvas');
+    if (!canvas) throw new Error('SVG canvas is not available for export');
     const elem = canvas.cloneNode(true) as SVGSVGElement;
     renderGraph?.(elem);
-    if (!isSystemFontsOnly && renderGraph) {
-        try {
-            fontsStyle = await makeBase64EncodedFontsStyle(languages);
-        } catch (err) {
-            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
-            logger.warn(err);
-        }
-    }
     // reset svg viewBox to display all the nodes in the graph
     // otherwise the later drawImage won't be able to show all of them
     elem.setAttribute('viewBox', `${xMin} ${yMin} ${width} ${height}`);
@@ -176,9 +137,14 @@ export const makeRenderReadySVGElement = async (
         positionMapAttributionForExport(elem, { xMin, yMax });
     }
 
-    if (fontsStyle) {
-        elem.querySelectorAll('style[data-rmp-fonts]').forEach(style => style.remove());
-        elem.prepend(fontsStyle);
+    if (!isSystemFontsOnly) {
+        // add additional fonts data to the final svg in encoded base64 format
+        try {
+            elem.prepend(await makeBase64EncodedFontsStyle(languages));
+        } catch (err) {
+            alert(i18n.t('Failed to load fonts. Fonts in the exported PNG will be missing.'));
+            logger.warn(err);
+        }
     }
 
     await loadFacilitiesSvg(elem, graph);

@@ -73,26 +73,15 @@ export function TimelineProjectProvider({
     }, []);
     React.useEffect(() => {
         let cancelled = false;
-        let scheduled = false;
-        const refreshFonts = () => {
-            if (scheduled || cancelled) return;
-            scheduled = true;
-            queueMicrotask(() => {
-                scheduled = false;
-                if (!cancelled) setFontRevision(current => current + 1);
-            });
-        };
-        // Registration no longer downloads every face. Later text edits can
-        // load new subsets that also need to invalidate svg-assets measurements.
-        document.fonts?.addEventListener?.('loadingdone', refreshFonts);
 
         void Promise.allSettled(languages.map(language => loadFont(language)))
             .then(() => document.fonts?.ready)
-            .then(refreshFonts);
+            .then(() => {
+                if (!cancelled) setFontRevision(current => current + 1);
+            });
 
         return () => {
             cancelled = true;
-            document.fonts?.removeEventListener?.('loadingdone', refreshFonts);
         };
     }, [languages]);
     const getAudio = React.useCallback(

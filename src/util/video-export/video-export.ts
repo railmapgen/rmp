@@ -22,7 +22,7 @@ import { compileMapStyleCss, DEFAULT_MAP_STYLE, MapStyle } from '../../map/map-s
 import { renderMapLayerForExport } from '../../map/map-tile-controller';
 import { positionMapAttribution } from '../../map/map-attribution';
 import { isMapZoomed } from '../../map/map-config';
-import { TextLanguage, updateEmbeddedFonts } from '../fonts';
+import { TextLanguage } from '../fonts';
 import { changeStationType, checkAndChangeStationIntType } from '../change-types';
 import { getRmpWatermarkUrl, makeRenderReadySVGElement } from '../download';
 import { calculateCanvasSize } from '../helpers';
@@ -43,7 +43,7 @@ import { createVideoExportCanvas } from './video-export-canvas';
 import { createVideoTimelinePlayback, VideoCameraFocus } from './video-export-timeline';
 import { createVideoFrameScene, VIDEO_FRAME_BASE_VARIANT } from './video-frame-scene';
 import { renderVideoSVGToCanvas } from './video-export-rasterizer';
-import { throwIfVideoExportAborted, waitForVideoExportOperation } from './video-export-control';
+import { throwIfVideoExportAborted } from './video-export-control';
 import type { VideoExportDestinationFactory, VideoExportResult } from './video-export-destination';
 import {
     createVideoResourceLayout,
@@ -1495,7 +1495,6 @@ const prepareVideoRenderer = async (
     geometry.setAttribute('width', String(outputWidth));
     geometry.setAttribute('height', String(outputHeight));
     const scene = createVideoFrameScene(geometry, { nodeIds: allNodes, edgeIds: allEdges });
-    let embeddedFontsDirty = !isSystemFontsOnly;
     const worldGroup = geometry.querySelector<SVGGElement>('[data-editor-layer]');
     const worldGroupId = `rmp_video_world_${++videoWorldGroupSequence}`;
     let minimapBasemap: Promise<string> | undefined;
@@ -1655,7 +1654,6 @@ const prepareVideoRenderer = async (
                     if (scene.getGroup(id)) scene.replaceGroup(groupId, key, template);
             }
             currentStationKeys.set(id, key);
-            embeddedFontsDirty = !isSystemFontsOnly;
         }
     };
     // Fills depend on their surrounding paths, including the visible topology used by automatic station switching.
@@ -1747,7 +1745,6 @@ const prepareVideoRenderer = async (
             }
         }
         layoutRevision = resourceLayout.revision;
-        embeddedFontsDirty = !isSystemFontsOnly;
         scene.invalidate();
         lastFrame = -1;
     };
@@ -1876,12 +1873,6 @@ const prepareVideoRenderer = async (
             annotationKey = key;
         } else
             overlay?.setAttribute('transform', `translate(${viewBox.x}, ${viewBox.y}) scale(${viewBox.width / 1280})`);
-        // Scene groups retain unrevealed text, so one preparation covers ordinary
-        // fade/path frames. Replaced station resources may introduce new shards.
-        if (embeddedFontsDirty) {
-            await waitForVideoExportOperation(updateEmbeddedFonts(geometry, languages), exportRuntime?.signal);
-            embeddedFontsDirty = false;
-        }
         lastFrame = frame;
         return geometry;
     };
