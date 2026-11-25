@@ -4,6 +4,7 @@ import { TextLanguage } from './fonts';
 const runtime = vi.hoisted(() => ({
     loadFont: vi.fn(),
     getLoadedFonts: vi.fn(),
+    getFontCSS: vi.fn(),
 }));
 
 vi.mock('@railmapgen/rmg-runtime', () => ({ default: runtime }));
@@ -35,6 +36,7 @@ describe('font preparation', () => {
         loadedFonts = {};
         runtime.getLoadedFonts.mockReturnValue(loadedFonts);
         runtime.loadFont.mockImplementation(async (name: string) => (loadedFonts[name] ??= makeFont()));
+        runtime.getFontCSS.mockImplementation(async (name: string) => `@font-face { font-family: '${name}'; }`);
         Object.defineProperty(document, 'fonts', {
             configurable: true,
             value: { ready: Promise.resolve(), delete: vi.fn() },
@@ -69,46 +71,54 @@ describe('font preparation', () => {
         });
     });
 
-    it('shares the in-flight download across languages using the same font and reuses success', async () => {
-        const download = deferred<FontFace>();
-        const font = makeFont();
-        vi.mocked(font.configs[0].font.load).mockReturnValue(download.promise);
-        runtime.loadFont.mockResolvedValue(font);
+    it('shares pending registration across languages and lets later requests reach runtime', async () => {
+        const registration = deferred<ReturnType<typeof makeFont>>();
+        runtime.loadFont.mockReturnValueOnce(registration.promise);
 
         const jrEast = fonts.loadFont(TextLanguage.jreast_ja);
         const tokyo = fonts.loadFont(TextLanguage.tokyo_ja);
         expect(jrEast).toBe(tokyo);
         const complete = vi.fn();
         void jrEast.then(complete);
-        await vi.waitFor(() => expect(font.configs[0].font.load).toHaveBeenCalledOnce());
+        await vi.waitFor(() => expect(runtime.loadFont).toHaveBeenCalledOnce());
         expect(complete).not.toHaveBeenCalled();
 
-        download.resolve(font.configs[0].font);
+        const font = makeFont();
+        registration.resolve(font);
         await Promise.all([jrEast, tokyo]);
-        expect(fonts.loadFont(TextLanguage.jreast_ja)).toBe(jrEast);
-        await fonts.loadFont(TextLanguage.tokyo_ja);
-        expect(runtime.loadFont).toHaveBeenCalledOnce();
+        const later = fonts.loadFont(TextLanguage.tokyo_ja);
+        expect(later).not.toBe(jrEast);
+        await later;
+        expect(runtime.loadFont).toHaveBeenCalledTimes(2);
+        expect(font.configs[0].font.load).not.toHaveBeenCalled();
     });
 
-    it('removes a failed FontFace from the runtime so a retry creates a fresh face', async () => {
-        const failedFont = makeFont();
-        vi.mocked(failedFont.configs[0].font.load).mockRejectedValue(new Error('Font download failed'));
-        loadedFonts.LTAIdentity = failedFont;
+    it('retries registration without removing or changing runtime font records', async () => {
+        const font = makeFont();
+        Object.defineProperty(font.configs[0].font, 'status', { value: 'error' });
+        Object.freeze(font.configs[0]);
+        Object.freeze(font.configs);
+        loadedFonts.LTAIdentity = font;
+        runtime.loadFont.mockRejectedValueOnce(new Error('Font service unavailable'));
 
-        await expect(fonts.loadFont(TextLanguage.mrt)).rejects.toThrow('Font download failed');
-        expect(loadedFonts.LTAIdentity).toBeUndefined();
-        expect(document.fonts.delete).toHaveBeenCalledWith(failedFont.configs[0].font);
+        await expect(fonts.loadFont(TextLanguage.mrt)).rejects.toThrow('Font service unavailable');
         await expect(fonts.loadFont(TextLanguage.mrt)).resolves.toBeUndefined();
-        expect(loadedFonts.LTAIdentity).not.toBe(failedFont);
+        expect(runtime.loadFont).toHaveBeenCalledTimes(2);
+        expect(runtime.getLoadedFonts).not.toHaveBeenCalled();
+        expect(loadedFonts.LTAIdentity).toBe(font);
+        expect(document.fonts.delete).not.toHaveBeenCalled();
+        expect(font.configs[0].font.load).not.toHaveBeenCalled();
     });
 
-    it('waits for browser font layout after the requested font faces load', async () => {
+    it('waits for browser font layout after registration', async () => {
         const browserReady = deferred();
-        Object.defineProperty(document.fonts, 'ready', { configurable: true, value: browserReady.promise });
+        const getReady = vi.fn(() => browserReady.promise);
+        Object.defineProperty(document.fonts, 'ready', { configurable: true, get: getReady });
         const complete = vi.fn();
         const preparation = fonts.waitForFonts([TextLanguage.mrt, TextLanguage.mrt]).then(complete);
 
-        await vi.waitFor(() => expect(loadedFonts.LTAIdentity?.configs[0].font.load).toHaveBeenCalledOnce());
+        await vi.waitFor(() => expect(getReady).toHaveBeenCalledOnce());
+        expect(loadedFonts.LTAIdentity.configs[0].font.load).not.toHaveBeenCalled();
         expect(complete).not.toHaveBeenCalled();
         browserReady.resolve();
         await preparation;
@@ -127,9 +137,9 @@ describe('font preparation', () => {
         await expect(preparation).rejects.toThrow('Browser font layout failed');
     });
 
-    it('cancels only the caller waiting for shared downloads', async () => {
+    it('cancels only the caller waiting for shared registration', async () => {
         const registration = deferred<ReturnType<typeof makeFont>>();
-        runtime.loadFont.mockReturnValue(registration.promise);
+        runtime.loadFont.mockReturnValueOnce(registration.promise);
         const controller = new AbortController();
         const cancelled = fonts.waitForFonts([TextLanguage.mrt], controller.signal);
         const waiting = fonts.waitForFonts([TextLanguage.mrt]);
@@ -139,7 +149,6 @@ describe('font preparation', () => {
         await rejection;
         registration.resolve(makeFont());
         await expect(waiting).resolves.toBeUndefined();
-        await expect(fonts.waitForFonts([TextLanguage.mrt])).resolves.toBeUndefined();
         expect(runtime.loadFont).toHaveBeenCalledOnce();
     });
 
@@ -151,5 +160,33 @@ describe('font preparation', () => {
             name: 'AbortError',
         });
         expect(runtime.loadFont).not.toHaveBeenCalled();
+    });
+
+    it('registers shared families from the manifest without downloading their subsets', async () => {
+        for (const language of [TextLanguage.zh, TextLanguage.en, TextLanguage.taipei]) {
+            await fonts.loadFont(language);
+        }
+
+        expect(runtime.loadFont.mock.calls).toEqual([
+            ['Noto Sans CJK SC', undefined],
+            ['Arimo', undefined],
+            ['Taipei Sans TC Beta', undefined],
+        ]);
+        for (const font of Object.values(loadedFonts)) expect(font.configs[0].font.load).not.toHaveBeenCalled();
+    });
+
+    it('registers and embeds each family once without rewriting runtime CSS', async () => {
+        const registration = deferred<ReturnType<typeof makeFont>>();
+        runtime.loadFont.mockReturnValueOnce(registration.promise);
+        const css =
+            '@font-face { src: url("data:font/woff2;base64,Zm9udA=="); unicode-range: U+0-FF; font-weight: 400; }';
+        runtime.getFontCSS.mockResolvedValue(css);
+        const preparation = fonts.makeBase64EncodedFontsStyle([TextLanguage.jreast_ja, TextLanguage.tokyo_ja]);
+
+        await vi.waitFor(() => expect(runtime.loadFont).toHaveBeenCalledOnce());
+        expect(runtime.getFontCSS).not.toHaveBeenCalled();
+        registration.resolve(makeFont());
+        expect((await preparation).textContent).toBe(css);
+        expect(runtime.getFontCSS.mock.calls).toEqual([['M PLUS 2']]);
     });
 });

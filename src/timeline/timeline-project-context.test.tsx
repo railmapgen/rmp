@@ -63,12 +63,14 @@ describe('TimelineProjectProvider fonts', () => {
             </TimelineProjectProvider>
         );
 
-        expect(screen.getByText('mtr_zh,mtr_en,tokyo_ja,tokyo_en,tube,taipei')).not.toBeNull();
+        expect(screen.getByText('zh,en,mtr_zh,mtr_en,tokyo_ja,tokyo_en,tube,taipei')).not.toBeNull();
         await waitFor(() => {
-            expect(loadFont).toHaveBeenCalledTimes(6);
+            expect(loadFont).toHaveBeenCalledTimes(8);
             expect(screen.getByTestId('font-revision').textContent).toBe('1');
         });
         expect(vi.mocked(loadFont).mock.calls.map(([language]) => language)).toEqual([
+            TextLanguage.zh,
+            TextLanguage.en,
             TextLanguage.mtr_zh,
             TextLanguage.mtr_en,
             TextLanguage.tokyo_ja,
