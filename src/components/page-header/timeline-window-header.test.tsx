@@ -107,14 +107,14 @@ describe('TimelineWindowHeader', () => {
         try {
             const files = screen.getByRole('button', { name: 'Files' });
             fireEvent.click(files);
-            fireEvent.click(screen.getByText('Import RMP data'));
+            fireEvent.click(screen.getByText('Import Rail Map Painter data'));
             fireEvent.click(await screen.findByText('Project open in painter'));
             await waitFor(() => expect(yieldSpy).toHaveBeenCalledOnce());
             act(() => store.dispatch(setFixedResourceEditing(true)));
             act(() => store.dispatch(setFixedResourceEditing(false)));
             await act(async () => finishCalculation());
             await waitFor(() => expect(files).not.toBeDisabled());
-            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).toBeNull();
+            expect(screen.queryByRole('dialog', { name: 'Import Rail Map Painter data' })).toBeNull();
             expect(store.getState().project.active!.revision).toEqual(project.revision);
         } finally {
             finishCalculation();
@@ -153,7 +153,7 @@ describe('TimelineWindowHeader', () => {
             expect(screen.getByRole('button', { name: 'Undo' })).toBeDisabled();
             expect(screen.getByRole('button', { name: 'Redo' })).toBeDisabled();
             fireEvent.click(screen.getByRole('button', { name: 'Files' }));
-            expect((await screen.findByText('Import RMP data')).closest('button')).toBeDisabled();
+            expect((await screen.findByText('Import Rail Map Painter data')).closest('button')).toBeDisabled();
             if (mode === 'fixed resources') expect(screen.getByText('Rename project').closest('button')).toBeDisabled();
         }
     );
@@ -189,19 +189,19 @@ describe('TimelineWindowHeader', () => {
         try {
             const files = screen.getByRole('button', { name: 'Files' });
             fireEvent.click(files);
-            fireEvent.click(screen.getByText('Import RMP data'));
+            fireEvent.click(screen.getByText('Import Rail Map Painter data'));
             fireEvent.click(await screen.findByText('Project open in painter'));
 
             expect(files).toBeDisabled();
             expect(files.querySelector('.chakra-spinner')).toBeInTheDocument();
             expect(files).toHaveAttribute('aria-expanded', 'false');
-            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('dialog', { name: 'Import Rail Map Painter data' })).not.toBeInTheDocument();
             expect(store.getState().project.active!.revision).toEqual(project.revision);
             fireEvent.click(files);
             expect(yieldSpy).toHaveBeenCalledTimes(1);
 
             finishCalculation();
-            await screen.findByRole('dialog', { name: 'Import RMP data' });
+            await screen.findByRole('dialog', { name: 'Import Rail Map Painter data' });
             expect(files).not.toBeDisabled();
         } finally {
             finishCalculation();
@@ -232,7 +232,7 @@ describe('TimelineWindowHeader', () => {
             </I18nextProvider>
         );
         fireEvent.click(screen.getByRole('button', { name: 'Insert' }));
-        fireEvent.click(await screen.findByText('Label'));
+        fireEvent.click(await screen.findByText('Annotation'));
         const timeline = store.getState().project.active!.revision.timeline;
         expect(timeline.track).toEqual(project.revision.timeline.track);
         expect(timeline.labelTrack).toHaveLength(1);
@@ -279,7 +279,7 @@ describe('TimelineWindowHeader', () => {
         );
 
         fireEvent.click(screen.getByRole('button', { name: 'Files' }));
-        fireEvent.click(screen.getByText('Import RMP data'));
+        fireEvent.click(screen.getByText('Import Rail Map Painter data'));
         if (apply) {
             fireEvent.click(await screen.findByText('Project open in painter'));
         } else {
@@ -288,10 +288,10 @@ describe('TimelineWindowHeader', () => {
             Object.defineProperty(file, 'text', { value: async () => source });
             fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } });
         }
-        const dialog = await screen.findByRole('dialog', { name: 'Import RMP data' });
+        const dialog = await screen.findByRole('dialog', { name: 'Import Rail Map Painter data' });
         const choice = within(dialog).getByRole('checkbox', { name: 'Populate timeline from line information' });
         if (!apply) fireEvent.click(choice);
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Import RMP data' }));
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Import Rail Map Painter data' }));
 
         await waitFor(() => expect(store.getState().project.past).toHaveLength(1));
         expect(store.getState().project.active!.revision.timeline.track.map(entry => entry.refId)).toEqual(
@@ -342,7 +342,7 @@ describe('TimelineWindowHeader', () => {
         fireEvent.click(within(renameDialog).getByRole('button', { name: 'Cancel' }));
 
         fireEvent.click(files);
-        fireEvent.click(screen.getByText('Import RMP data'));
+        fireEvent.click(screen.getByText('Import Rail Map Painter data'));
         expect(files).toHaveAttribute('aria-expanded', 'true');
         expect(await screen.findByText('Project open in painter')).toBeInTheDocument();
         expect(screen.getByText('Local configuration file')).toBeInTheDocument();

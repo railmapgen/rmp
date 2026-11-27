@@ -97,15 +97,15 @@ describe('TimelineProjectHome', () => {
         );
 
         try {
-            const button = screen.getByRole('button', { name: 'Start from current RMP project' });
+            const button = screen.getByRole('button', { name: 'Start from current Rail Map Painter project' });
             fireEvent.click(button);
             expect(button).toBeDisabled();
             expect(button.querySelector('.chakra-spinner')).toBeInTheDocument();
-            expect(screen.queryByRole('dialog', { name: 'Import RMP data' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('dialog', { name: 'Import Rail Map Painter data' })).not.toBeInTheDocument();
             expect(store.getState().project.active).toBeUndefined();
 
             finishCalculation();
-            await screen.findByRole('dialog', { name: 'Import RMP data' });
+            await screen.findByRole('dialog', { name: 'Import Rail Map Painter data' });
             expect(button).not.toBeDisabled();
         } finally {
             finishCalculation();
@@ -135,13 +135,13 @@ describe('TimelineProjectHome', () => {
             </I18nextProvider>
         );
 
-        fireEvent.click(screen.getByRole('button', { name: 'Start from current RMP project' }));
-        const dialog = await screen.findByRole('dialog', { name: 'Import RMP data' });
+        fireEvent.click(screen.getByRole('button', { name: 'Start from current Rail Map Painter project' }));
+        const dialog = await screen.findByRole('dialog', { name: 'Import Rail Map Painter data' });
         expect(store.getState().project.active).toBeUndefined();
         const choice = within(dialog).getByRole('checkbox', { name: 'Populate timeline from line information' });
         expect(choice).toBeChecked();
         if (!apply) fireEvent.click(choice);
-        fireEvent.click(within(dialog).getByRole('button', { name: 'Import RMP data' }));
+        fireEvent.click(within(dialog).getByRole('button', { name: 'Import Rail Map Painter data' }));
 
         await waitFor(() => expect(store.getState().project.active).toBeDefined());
         expect(store.getState().project.active!.revision.timeline.track.map(entry => entry.refId)).toEqual(
@@ -176,7 +176,7 @@ describe('TimelineProjectHome', () => {
         );
 
         const continueEditing = screen.getByRole('button', { name: 'Continue editing' });
-        const startFromRmp = screen.getByRole('button', { name: 'Start from current RMP project' });
+        const startFromRmp = screen.getByRole('button', { name: 'Start from current Rail Map Painter project' });
         expect(continueEditing.compareDocumentPosition(startFromRmp) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(screen.getByRole('button', { name: 'Import Chronicle project' })).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Import RMP' })).not.toBeInTheDocument();
@@ -227,7 +227,7 @@ describe('TimelineProjectHome', () => {
         const buttons = within(actions).getAllByRole('button');
         expect(buttons).toHaveLength(3);
         expect(buttons[0]).toHaveTextContent('Continue editing');
-        expect(buttons[1]).toHaveTextContent('Start from current RMP project');
+        expect(buttons[1]).toHaveTextContent('Start from current Rail Map Painter project');
         expect(buttons[2]).toHaveTextContent('Import Chronicle project');
     });
 });
