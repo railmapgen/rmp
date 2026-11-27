@@ -290,6 +290,7 @@ describe('Timeline project import and sync', () => {
 
     it('exports and imports a self-contained project with image and audio under a new local id', async () => {
         const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
+        graph.addNode('stn_roundtrip', makeStationAttributes('Base station'));
         graph.addNode('misc_node_image', {
             visible: true,
             zIndex: 0,
@@ -306,6 +307,23 @@ describe('Timeline project import and sync', () => {
         } as NodeAttributes);
         const timeline: TimelineDocument = {
             ...createEmptyTimelineDocument(),
+            track: [
+                { id: 'enter', kind: 'node', refId: 'stn_roundtrip', phase: 'enter', showAnimation: true },
+                {
+                    id: 'keyframe',
+                    kind: 'keyframe',
+                    refId: 'stn_roundtrip',
+                    x: 20,
+                    y: 30,
+                    station: {
+                        type: StationType.ShmetroBasic,
+                        attrs: {
+                            ...makeStationAttributes('Frame station')[StationType.ShmetroBasic]!,
+                            names: ['Frame station', 'Frame station'],
+                        },
+                    },
+                },
+            ],
             fixedResources: ['misc_node_image'],
             overlayModules: [
                 {

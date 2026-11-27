@@ -967,6 +967,12 @@
             "editorPane": "編輯",
             "previewPane": "預覽",
             "keyframeHint": "拖曳車站以設定關鍵幀位置",
+            "keyframeEditor": {
+                "title": "關鍵幀車站",
+                "hint": "修改目前關鍵幀的車站類型和詳細資訊。在右側預覽中拖曳車站可調整位置。",
+                "done": "完成",
+                "stationOnly": "可在右側預覽中調整此關鍵幀的位置。車站關鍵幀支援編輯車站屬性。"
+            },
             "selectLineColor": "選擇線路顏色",
             "selectDestNode": "在畫布中選擇終點車站",
             "noPathFound": "所選顏色在這兩站之間沒有找到路徑。",

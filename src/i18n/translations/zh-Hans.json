@@ -967,6 +967,12 @@
             "editorPane": "编辑",
             "previewPane": "预览",
             "keyframeHint": "拖动车站以设置关键帧位置",
+            "keyframeEditor": {
+                "title": "关键帧车站",
+                "hint": "修改当前关键帧的车站类型和具体信息。在右侧预览中拖动车站可调整位置。",
+                "done": "完成",
+                "stationOnly": "可在右侧预览中调整此关键帧的位置。车站关键帧支持编辑车站属性。"
+            },
             "selectLineColor": "选择线路颜色",
             "selectDestNode": "在画布中选择终点车站",
             "noPathFound": "所选颜色在这两站之间没有找到路径。",

@@ -24,12 +24,14 @@ import {
     TimelineElementEntry,
     TimelineEntry,
     TimelineKeyframeEntry,
+    TimelineKeyframeStation,
     TimelinePauseEntry,
     TimelinePausePosition,
     TimelinePhase,
     TimelineSettings,
     TIMELINE_DOCUMENT_VERSION,
 } from '../constants/timeline';
+import { defaultStationAttributes, StationType, STATION_TYPE_VALUES } from '../constants/stations';
 import {
     createTimelineOverlayModule,
     getTimelineOverlayModules,
@@ -175,6 +177,48 @@ export const updateKeyframePosition = (
     ...doc,
     track: doc.track.map(entry => (entry.id === entryId && entry.kind === 'keyframe' ? { ...entry, x, y } : entry)),
 });
+
+/** The supplied graph may already reflect automatic station types at this cursor. */
+export const getTimelineKeyframeStation = (
+    graph: TimelineGraph,
+    doc: TimelineDocument,
+    entryId: string
+): TimelineKeyframeStation | undefined => {
+    const index = doc.track.findIndex(entry => entry.id === entryId && entry.kind === 'keyframe');
+    const target = doc.track[index];
+    if (!target || target.kind !== 'keyframe' || !target.refId.startsWith('stn_') || !graph.hasNode(target.refId)) {
+        return undefined;
+    }
+    for (let i = index; i >= 0; i--) {
+        const entry = doc.track[i];
+        if (entry.kind === 'keyframe' && entry.refId === target.refId && entry.station) {
+            return structuredClone(entry.station);
+        }
+    }
+    const type = graph.getNodeAttribute(target.refId, 'type');
+    if (!STATION_TYPE_VALUES.has(type as StationType)) return undefined;
+    return {
+        type: type as StationType,
+        attrs: structuredClone(graph.getNodeAttribute(target.refId, type as StationType) ?? defaultStationAttributes),
+    };
+};
+
+/** Save only this keyframe's appearance, without sharing mutable station attributes. */
+export const updateKeyframeStation = (
+    doc: TimelineDocument,
+    entryId: string,
+    station: TimelineKeyframeStation
+): TimelineDocument => {
+    if (!doc.track.some(entry => entry.id === entryId && entry.kind === 'keyframe' && entry.refId.startsWith('stn_'))) {
+        return doc;
+    }
+    return {
+        ...doc,
+        track: doc.track.map(entry =>
+            entry.id === entryId && entry.kind === 'keyframe' ? { ...entry, station: structuredClone(station) } : entry
+        ),
+    };
+};
 
 /**
  * Insert a keyframe for `refId` at the given cursor index.
@@ -343,7 +387,49 @@ interface RawTimelineEntry {
     y?: unknown;
     position?: unknown;
     duration?: unknown;
+    station?: unknown;
 }
+
+const isSerializableStationValue = (value: unknown, ancestors = new Set<object>()): boolean => {
+    if (value === undefined || value === null || typeof value === 'string' || typeof value === 'boolean') return true;
+    if (typeof value === 'number') return Number.isFinite(value);
+    if (typeof value !== 'object' || ancestors.has(value)) return false;
+    if (!Array.isArray(value) && Object.getPrototypeOf(value) !== Object.prototype) return false;
+    ancestors.add(value);
+    const valid = Object.values(value).every(child => isSerializableStationValue(child, ancestors));
+    ancestors.delete(value);
+    return valid;
+};
+
+const normalizeKeyframeStation = (value: unknown): TimelineKeyframeStation | undefined => {
+    if (!value || typeof value !== 'object') return undefined;
+    const station = value as Partial<TimelineKeyframeStation>;
+    if (!STATION_TYPE_VALUES.has(station.type as StationType)) return undefined;
+    const attrs = station.attrs;
+    if (
+        !attrs ||
+        typeof attrs !== 'object' ||
+        Array.isArray(attrs) ||
+        !Array.isArray(attrs.names) ||
+        !attrs.names.length ||
+        !attrs.names.every(name => typeof name === 'string') ||
+        !isSerializableStationValue(attrs)
+    ) {
+        return undefined;
+    }
+    if (attrs.preciseNameOffsets !== undefined) {
+        const offsets = attrs.preciseNameOffsets;
+        if (
+            !offsets ||
+            !Number.isFinite(offsets.x) ||
+            !Number.isFinite(offsets.y) ||
+            !['start', 'middle', 'end'].includes(offsets.anchor)
+        ) {
+            return undefined;
+        }
+    }
+    return { type: station.type as StationType, attrs: structuredClone(attrs) };
+};
 
 const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undefined => {
     if (!entry || typeof entry.id !== 'string') return undefined;
@@ -364,7 +450,15 @@ const normalizeTimelineEntry = (entry?: RawTimelineEntry): TimelineEntry | undef
     if (entry.kind === 'keyframe') {
         if (typeof entry.x !== 'number' || !Number.isFinite(entry.x)) return undefined;
         if (typeof entry.y !== 'number' || !Number.isFinite(entry.y)) return undefined;
-        return { id: entry.id, kind: 'keyframe', refId: entry.refId as NodeId, x: entry.x, y: entry.y };
+        const station = entry.refId.startsWith('stn_') ? normalizeKeyframeStation(entry.station) : undefined;
+        return {
+            id: entry.id,
+            kind: 'keyframe',
+            refId: entry.refId as NodeId,
+            x: entry.x,
+            y: entry.y,
+            ...(station ? { station } : {}),
+        };
     }
 
     if (entry.kind === 'node' || entry.kind === 'edge') {
