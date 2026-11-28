@@ -541,8 +541,7 @@ export async function readLocalMapPackage(
             assert(sourceTiles.size === covered.size, 'Duplicate editable source tile');
             resources.delete('project/rmw.json');
         }
-        const digest = await crypto.subtle.digest('SHA-256', await archive.arrayBuffer());
-        const sha256 = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+        const sha256 = await createHash(await archive.arrayBuffer());
         const record: LocalMapRecord = {
             mapId: metadata.mapId,
             revision: metadata.revision as number,

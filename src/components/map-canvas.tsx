@@ -167,7 +167,7 @@ export const MapCanvasCore = React.forwardRef<MapCanvasHandle, MapCanvasCoreProp
             showAttribution: source.showAttribution,
             styleCss: mapStyleCssRef.current,
             rasterEnabled: rasterEnabledRef.current,
-            forceDetailed: effectiveForceDetailed || source.forceDetailed,
+            forceDetailed: effectiveForceDetailed,
             getViewportSize: () => {
                 const svg = mapLayer.ownerSVGElement;
                 return {
