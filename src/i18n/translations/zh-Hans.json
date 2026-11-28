@@ -1516,5 +1516,26 @@
         "parallelLimit": "免费可使用 {{count}} 条平行线段，订阅「$t(RMP_CLOUD)」后不限数量。",
         "redeem": "点击前往兑换订阅。",
         "redeemNamed": "兑换{{subscription}}"
+    },
+    "mapLibrary": {
+        "title": "地图面板",
+        "noMap": "无地图",
+        "rmwMap": "RMW 地图",
+        "noMapHint": "不显示地图背景。",
+        "realMapHint": "使用真实地理地图作为背景。",
+        "hint": "导入的地图保存在当前浏览器。导入只加入地图库，点击“使用”才会切换当前底图。",
+        "imported": "地图已加入地图库",
+        "importFile": "导入地图包",
+        "fromRmw": "从 RMW 导入",
+        "transferHelp": "请让两个应用处于同一来源。也可以在 RMW 导出 .rmpmap 后，在此导入文件。",
+        "downloadPackage": "下载地图包",
+        "realMap": "真实地理地图",
+        "current": "当前使用",
+        "use": "使用",
+        "empty": "尚未导入本地地图。",
+        "revision": "修订 {{revision}}",
+        "deleteConfirm": "从当前浏览器删除“{{name}}”？引用此地图的其他工程需要重新导入地图包。",
+        "locate": "使用并定位",
+        "missing": "本地地图缺失或不可用，请重新导入对应的 .rmpmap 地图包。"
     }
 }

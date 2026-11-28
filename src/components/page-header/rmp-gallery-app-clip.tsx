@@ -10,6 +10,8 @@ import { useRootDispatch, useRootSelector } from '../../redux';
 import { replaceProject } from '../../redux/project-history';
 import { pullServerImages, saveImagesFromParam } from '../../util/image';
 import { RMPSave, upgrade } from '../../util/save';
+import { restoreMapPackages } from '../../map/local-map';
+import { sendErrorNotification } from '../../util/notifications';
 import ConfirmOverwriteDialog from './confirm-overwrite-dialog';
 
 const RMP_GALLERY_CHANNEL_NAME = 'RMP_GALLERY_CHANNEL';
@@ -51,7 +53,8 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleOpenWork = async (rmpSave: RMPSave) => {
         // works may be obsolete and require upgrades
-        const { version, images, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
+        const { version, images, mapPackages, ...save } = JSON.parse(await upgrade(JSON.stringify(rmpSave))) as RMPSave;
+        await restoreMapPackages(save.mapStyle.mapSource, mapPackages);
 
         const nextGraph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
         nextGraph.import(save.graph);
@@ -81,7 +84,12 @@ export default function RmpGalleryAppClip(props: RmpGalleryAppClipProps) {
 
     const handleConfirmOpen = async () => {
         if (workToLoad) {
-            await handleOpenWork(workToLoad);
+            try {
+                await handleOpenWork(workToLoad);
+            } catch (error) {
+                sendErrorNotification(t('error'), String(error));
+                return;
+            }
         }
         onConfirmClose();
         setWorkToLoad(null);

@@ -1533,5 +1533,26 @@
     "New": "새 기능",
     "Unsupported configuration!": "지원하지 않는 설정입니다.",
     "Zoom": "확대 비율",
-    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다."
+    "Failed to load fonts. Fonts in the exported PNG will be missing.": "글꼴을 불러오지 못했습니다. 내보낸 PNG에 글꼴이 적용되지 않습니다.",
+    "mapLibrary": {
+        "title": "지도 패널",
+        "noMap": "지도 없음",
+        "rmwMap": "RMW 지도",
+        "noMapHint": "배경 지도를 표시하지 않습니다.",
+        "realMapHint": "실제 지리 지도를 배경으로 사용합니다.",
+        "hint": "지도는 현재 브라우저에 저장됩니다. 가져오기는 라이브러리에만 추가되며, 사용을 눌러야 배경 지도가 바뀝니다.",
+        "imported": "지도가 라이브러리에 추가되었습니다",
+        "importFile": "지도 패키지 가져오기",
+        "fromRmw": "RMW에서 가져오기",
+        "transferHelp": "두 앱을 같은 출처에서 여세요. RMW에서 .rmpmap 파일을 내보내 여기서 가져올 수도 있습니다.",
+        "downloadPackage": "지도 패키지 다운로드",
+        "realMap": "실제 지리 지도",
+        "current": "사용 중",
+        "use": "사용",
+        "empty": "아직 로컬 지도가 없습니다.",
+        "revision": "리비전 {{revision}}",
+        "deleteConfirm": "이 브라우저에서 “{{name}}” 지도를 삭제할까요? 이 지도를 참조하는 다른 프로젝트에서는 다시 가져와야 합니다.",
+        "locate": "사용 및 위치 이동",
+        "missing": "로컬 지도를 사용할 수 없습니다. 해당 .rmpmap 패키지를 다시 가져오세요."
+    }
 }

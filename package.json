@@ -21,6 +21,7 @@
         "@railmapgen/rmg-translate": "^3.5.3",
         "@railmapgen/svg-assets": "^8.0.6",
         "@reduxjs/toolkit": "^2.9.0",
+        "@zip.js/zip.js": "^2.25.0",
         "bezier-js": "^6.1.4",
         "canvas-size": "^2.0.0",
         "expr-eval": "^2.0.2",

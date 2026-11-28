@@ -178,7 +178,8 @@ export const restoreMapSvgTilesForExport = (svg: SVGSVGElement) => {
  * viewport-relative placement.
  */
 export const positionMapAttributionForExport = (svg: SVGSVGElement, bounds: { xMin: number; yMax: number }) => {
-    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]')!;
+    const mapAttribution = svg.querySelector<SVGGElement>('[data-map-attribution]');
+    if (!mapAttribution) return;
     const text = mapAttribution.querySelector<SVGTextElement>('[data-map-attribution-text]')?.textContent ?? '';
     if (!text.includes(MAP_ATTRIBUTION_EXPORT_URL)) {
         setMapAttributionText(mapAttribution, `${text} · ${MAP_ATTRIBUTION_EXPORT_URL}`);

@@ -39,7 +39,8 @@ import {
 import { LinePathType, LineStyleType } from '../constants/lines';
 import { MiscNodeType } from '../constants/nodes';
 import { StationType } from '../constants/stations';
-import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { DEFAULT_MAP_STYLE, normalizeMapStyle } from '../map/map-style';
+import type { EmbeddedMapPackage } from '../map/local-map';
 import { ParamState, ProjectSnapshot } from '../redux/param/param-slice';
 import { TextLanguage } from './fonts';
 import { reconcileLineDefinitions } from './line-definitions';
@@ -54,6 +55,7 @@ export interface RMPSave extends ProjectSnapshot {
      */
     version: number;
     images?: { id: string; base64: string }[];
+    mapPackages?: EmbeddedMapPackage[];
 }
 
 export const CURRENT_VERSION = 81;
@@ -132,7 +134,10 @@ const upgradeSaveString = (originalParam: string): string => {
         save = UPGRADE_COLLECTION[version](save);
         version = Number(JSON.parse(save).version);
     }
-    return repairNodeXYNullCoordinates(save);
+    const repaired = repairNodeXYNullCoordinates(save);
+    const upgraded = JSON.parse(repaired) as RMPSave;
+    upgraded.mapStyle = normalizeMapStyle(upgraded.mapStyle);
+    return JSON.stringify(upgraded);
 };
 
 /** Upgrade an explicitly supplied save without reading or writing RMP LocalStorage. */
@@ -189,7 +194,12 @@ export const upgrade: (originalParam: string | null) => Promise<string> = async 
  * and redo stacks. Images are attached only when supplied by an export flow.
  */
 export const stringifyParam = (paramState: ParamState & Pick<RMPSave, 'images'>, images = paramState.images) => {
-    const save: RMPSave = { ...paramState.present, version: CURRENT_VERSION };
+    const {
+        mapPackages: _mapPackages,
+        images: _images,
+        ...project
+    } = paramState.present as ProjectSnapshot & Pick<RMPSave, 'mapPackages' | 'images'>;
+    const save: RMPSave = { ...project, version: CURRENT_VERSION };
     if (images) save.images = images;
     return JSON.stringify(save);
 };

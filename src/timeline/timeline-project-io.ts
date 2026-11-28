@@ -6,6 +6,7 @@ import { MiscNodeType } from '../constants/nodes';
 import { image_endpoint } from '../constants/server';
 import { createEmptyTimelineDocument, TimelineDocument } from '../constants/timeline';
 import { DEFAULT_MAP_STYLE, normalizeMapStyle } from '../map/map-style';
+import { embedMapPackages, restoreMapPackages } from '../map/local-map';
 import { blobToBase64 } from '../util/binary';
 import { reconcileLineDefinitions } from '../util/line-definitions';
 import { yieldLineCalculation } from '../util/line-export';
@@ -87,7 +88,8 @@ export const getOpenRmpProjectSource = async (): Promise<string> => {
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
     graph.import(save.graph);
     const localImageIds = [...new Set(getImageReferences(graph).filter(id => id.startsWith('img-l')))];
-    if (localImageIds.length === 0) return JSON.stringify(save);
+    const mapPackages = await embedMapPackages(save.mapStyle?.mapSource);
+    if (localImageIds.length === 0) return JSON.stringify({ ...save, ...(mapPackages ? { mapPackages } : {}) });
 
     const { imageStoreIndexedDB } = await import('../util/image-store-indexed-db');
     const images = await Promise.all(
@@ -97,7 +99,7 @@ export const getOpenRmpProjectSource = async (): Promise<string> => {
             return { id, base64 };
         })
     );
-    return JSON.stringify({ ...save, images });
+    return JSON.stringify({ ...save, images, ...(mapPackages ? { mapPackages } : {}) });
 };
 
 export const parseRmpTimelineSource = async (
@@ -107,6 +109,7 @@ export const parseRmpTimelineSource = async (
     await yieldLineCalculation();
     const upgraded = await upgradeWithoutBackup(source);
     const save = JSON.parse(upgraded) as RMPSave;
+    await restoreMapPackages(save.mapStyle?.mapSource, save.mapPackages);
     const graph = new MultiDirectedGraph<NodeAttributes, EdgeAttributes, GraphAttributes>();
     // Before its first line-information request, a painter save may have no IDs.
     // Reuse the imported ownership when syncing such a source so Timeline labels
@@ -205,6 +208,7 @@ const normalizeTimelineProjectFile = (raw: unknown): TimelineProjectFile => {
             mapStyle: normalizeMapStyle(validRevision.mapStyle),
             timeline: normalizeTimelineDocument(validRevision.timeline),
         },
+        mapPackages: file.mapPackages,
         assets: file.assets.filter(
             asset =>
                 asset &&
@@ -217,6 +221,7 @@ const normalizeTimelineProjectFile = (raw: unknown): TimelineProjectFile => {
 
 export const importTimelineProjectFile = async (source: string): Promise<TimelineProjectRecord> => {
     const file = normalizeTimelineProjectFile(JSON.parse(source));
+    await restoreMapPackages(file.revision.mapStyle.mapSource, file.mapPackages);
     const assets = await Promise.all(
         file.assets.map(async asset => ({
             id: asset.id,
@@ -248,6 +253,7 @@ export const exportTimelineProjectFile = async (record: TimelineProjectRecord): 
             ...structuredClone(record.revision),
             timeline: normalizeTimelineDocument(record.revision.timeline),
         },
+        mapPackages: await embedMapPackages(record.revision.mapStyle.mapSource),
         assets: await Promise.all(
             assets.map(async asset => ({
                 kind: asset.kind,

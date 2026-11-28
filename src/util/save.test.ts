@@ -3,12 +3,50 @@ import { describe, expect, it } from 'vitest';
 import { EdgeAttributes, GraphAttributes, LocalStorageKey, NodeAttributes } from '../constants/constants';
 import { MiscNodeType } from '../constants/nodes';
 import { createEmptyTimelineDocument } from '../constants/timeline';
-import { DEFAULT_MAP_STYLE } from '../map/map-style';
+import { compileMapStyleCss, DEFAULT_MAP_STYLE, normalizeMapStyle } from '../map/map-style';
 import { createStore } from '../redux';
 import { createTestLineGraph } from '../test-utils';
 import { CURRENT_VERSION, stringifyParam, UPGRADE_COLLECTION, upgrade } from './save';
 
 describe('Unit tests for param upgrade function', () => {
+    it('adapts legacy styles on import for the unchanged settings panel', async () => {
+        const project = createStore().getState().param.present;
+        const source = {
+            ...project,
+            version: CURRENT_VERSION,
+            mapEnabled: true,
+            mapStyle: { roads: { path: { enabled: true, color: '#123456' } }, labels: { enabled: true } },
+        };
+        const imported = JSON.parse(await upgrade(JSON.stringify(source)));
+        expect(imported.mapStyle.roads.path.color).toBe('#123456');
+        expect(imported.mapStyle.roads.path.widthScale).toBe(DEFAULT_MAP_STYLE.roads.path.widthScale);
+        expect(imported.mapStyle.labels.categories).toEqual(DEFAULT_MAP_STYLE.labels.categories);
+        expect(imported.graph).toEqual(project.graph);
+        expect(imported.mapEnabled).toBe(true);
+    });
+
+    it('normalizes the stored map selection without changing rendering styles', () => {
+        const mapSource = { mapId: '11111111-1111-4111-8111-111111111111', revision: 2, sha256: 'A'.repeat(64) };
+        const mapStyle = normalizeMapStyle({ ...DEFAULT_MAP_STYLE, mapSource });
+        expect(mapStyle.mapSource).toEqual({ ...mapSource, sha256: 'a'.repeat(64) });
+        expect(compileMapStyleCss(mapStyle)).toBe(compileMapStyleCss(DEFAULT_MAP_STYLE));
+        expect(normalizeMapStyle(DEFAULT_MAP_STYLE)).not.toHaveProperty('mapSource');
+    });
+
+    it('persists immutable map references without portable package bodies in autosaves', () => {
+        const mapSource = { mapId: '11111111-1111-4111-8111-111111111111', revision: 2, sha256: 'a'.repeat(64) };
+        const param = createStore().getState().param;
+        const present = {
+            ...param.present,
+            mapStyle: { ...param.present.mapStyle, mapSource },
+            mapPackages: [{ sha256: mapSource.sha256, data: 'large body' }],
+        };
+        const saved = JSON.parse(stringifyParam({ ...param, present }));
+        expect(saved.mapStyle.mapSource).toEqual(mapSource);
+        expect(saved.mapPackages).toBeUndefined();
+        expect(saved.version).toBe(CURRENT_VERSION);
+    });
+
     it('serializes mapEnabled without a top-level project type', () => {
         const mapStyle = structuredClone(DEFAULT_MAP_STYLE);
         mapStyle.roads.arterial.color = '#123456';

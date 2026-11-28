@@ -166,7 +166,12 @@ export const MapStyleSection = () => {
                         variant="ghost"
                         aria-label={t('map.style.reset')}
                         icon={<MdRestartAlt />}
-                        onClick={() => saveStyle(structuredClone(DEFAULT_MAP_STYLE))}
+                        onClick={() =>
+                            saveStyle({
+                                ...structuredClone(DEFAULT_MAP_STYLE),
+                                ...(mapStyle.mapSource ? { mapSource: mapStyle.mapSource } : {}),
+                            })
+                        }
                     />
                 </Tooltip>
             </HStack>
